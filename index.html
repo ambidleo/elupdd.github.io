@@ -2627,111 +2627,130 @@
             }
         }
 
-        // ========== MODIFIED ZONING RECORD SAVING ==========
-        async function saveZoningRecord(event) {
-            event.preventDefault();
-            try {
-                clearErrorMessages();
-                const certificationNo = generateCertificationNumber();
-                const series = document.getElementById('series')?.value || '2002';
-                const parcels = document.getElementById('parcels')?.value;
-                const location = document.getElementById('location')?.value;
-                const totalArea = document.getElementById('totalArea')?.value;
-                const proposedUse = document.getElementById('proposedUse')?.value;
-                const dateIssued = document.getElementById('dateIssued')?.value;
-                const requestedBy = document.getElementById('requestedBy')?.value;
-                const amountPaid = document.getElementById('amountPaid')?.value;
-                const orNo = document.getElementById('orNo')?.value || '';
-                const remarks = document.getElementById('remarks')?.value || '';
+        // ========== MODIFIED ZONING RECORD SAVING (with sync fix) ==========
+async function saveZoningRecord(event) {
+    event.preventDefault();
+    try {
+        clearErrorMessages();
 
-                // Validation
-                let hasErrors = false;
-                if (!parcels) { showError('parcels', 'Required'); hasErrors = true; }
-                if (!location) { showError('location', 'Required'); hasErrors = true; }
-                if (!totalArea) { showError('totalArea', 'Required'); hasErrors = true; }
-                if (!proposedUse) { showError('proposedUse', 'Required'); hasErrors = true; }
-                if (!dateIssued) { showError('dateIssued', 'Required'); hasErrors = true; }
-                if (!requestedBy) { showError('requestedBy', 'Required'); hasErrors = true; }
-                if (!amountPaid) { showError('amountPaid', 'Required'); hasErrors = true; }
-                if (hasErrors) {
-                    document.getElementById('formMessages').textContent = 'Please fill in all required fields';
-                    document.getElementById('formMessages').classList.remove('visually-hidden');
-                    setTimeout(() => document.getElementById('formMessages').classList.add('visually-hidden'), 5000);
-                    return false;
-                }
+        // ----- Step 1: Sync counter with latest records -----
+        await fetchCertifications();  // updates certificationCounter.lastNumber from server
 
-                // Collect land holdings
-                const registeredOwners = document.getElementsByName('registeredOwner[]');
-                const tctNos = document.getElementsByName('tctNo[]');
-                const lotNos = document.getElementsByName('lotNo[]');
-                const areaPerTitles = document.getElementsByName('areaPerTitle[]');
-                const zoneclasses = document.getElementsByName('zoneclass[]');
-                if (!registeredOwners || registeredOwners.length === 0) {
-                    alert('Please add at least one land holding.');
-                    return false;
-                }
-                const landHoldings = [];
-                for (let i = 0; i < registeredOwners.length; i++) {
-                    if (!registeredOwners[i]?.value || !tctNos[i]?.value || !zoneclasses[i]?.value) {
-                        alert('Please fill in all required fields in row ' + (i + 1));
-                        return false;
-                    }
-                    const areaValue = areaPerTitles[i] && areaPerTitles[i].value ? parseFloat(areaPerTitles[i].value) : 0;
-                    landHoldings.push({
-                        registeredOwner: registeredOwners[i].value,
-                        tctNo: tctNos[i].value,
-                        lotNo: lotNos[i] && lotNos[i].value ? lotNos[i].value : '',
-                        areaPerTitle: areaValue,
-                        zoneclass: zoneclasses[i].value
-                    });
-                }
+        // ----- Step 2: Generate a unique certification number -----
+        let certificationNo = generateCertificationNumber();
 
-                const clupStatus = document.querySelector('input[name="clupStatus"]:checked')?.value || 'approved';
+        // Safety check: if the number already exists (very rare), increment and retry
+        let existing = zoningCertifications.some(r => r.certificationNo === certificationNo);
+        while (existing) {
+            certificationCounter.lastNumber++;
+            localStorage.setItem('certificationCounter', JSON.stringify(certificationCounter));
+            certificationNo = generateCertificationNumber();
+            existing = zoningCertifications.some(r => r.certificationNo === certificationNo);
+        }
 
-                const record = {
-                    id: Date.now(),
-                    certificationNo,
-                    series,
-                    parcels,
-                    location,
-                    totalArea,
-                    proposedUse,
-                    landHoldings,
-                    dateIssued,
-                    formattedDate: new Date(dateIssued).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
-                    requestedBy,
-                    amountPaid,
-                    orNo,
-                    remarks,
-                    clupStatus,
-                    city: document.getElementById('city')?.value || 'Iloilo City',
-                    approvedBy: document.getElementById('approvedBy')?.value || 'DHSUD',
-                    circularNo: document.getElementById('circularNo')?.value || '2022-002',
-                    approvalDate: document.getElementById('approvalDate')?.value || 'May 12, 2022',
-                    timestamp: new Date().toLocaleString()
-                };
+        const series = document.getElementById('series')?.value || '2002';
+        const parcels = document.getElementById('parcels')?.value;
+        const location = document.getElementById('location')?.value;
+        const totalArea = document.getElementById('totalArea')?.value;
+        const proposedUse = document.getElementById('proposedUse')?.value;
+        const dateIssued = document.getElementById('dateIssued')?.value;
+        const requestedBy = document.getElementById('requestedBy')?.value;
+        const amountPaid = document.getElementById('amountPaid')?.value;
+        const orNo = document.getElementById('orNo')?.value || '';
+        const remarks = document.getElementById('remarks')?.value || '';
 
-                const success = await saveCertificationToSheet(record);
-                if (success) {
-                    // Refresh the list from Google Sheets
-                    await fetchCertifications();
-                    document.getElementById('formMessages').textContent = `Certification ${certificationNo} saved successfully`;
-                    document.getElementById('formMessages').classList.remove('visually-hidden');
-                    alert(`Certification saved successfully!\nCertification No: ${certificationNo}`);
-                    clearZoningForm();
-                    document.getElementById('certificationNo').value = getNextCertificationNumber();
-                    document.getElementById('recordsSection').style.display = 'block';
-                    setTimeout(() => document.getElementById('formMessages').classList.add('visually-hidden'), 5000);
-                } else {
-                    alert('Failed to save record to Google Sheets. Check your script URL.');
-                }
-                return false;
-            } catch (error) {
-                console.error(error);
-                alert('An error occurred while saving.');
+        // ---- Validation (same as before) ----
+        let hasErrors = false;
+        if (!parcels) { showError('parcels', 'Required'); hasErrors = true; }
+        if (!location) { showError('location', 'Required'); hasErrors = true; }
+        if (!totalArea) { showError('totalArea', 'Required'); hasErrors = true; }
+        if (!proposedUse) { showError('proposedUse', 'Required'); hasErrors = true; }
+        if (!dateIssued) { showError('dateIssued', 'Required'); hasErrors = true; }
+        if (!requestedBy) { showError('requestedBy', 'Required'); hasErrors = true; }
+        if (!amountPaid) { showError('amountPaid', 'Required'); hasErrors = true; }
+        if (hasErrors) {
+            document.getElementById('formMessages').textContent = 'Please fill in all required fields';
+            document.getElementById('formMessages').classList.remove('visually-hidden');
+            setTimeout(() => document.getElementById('formMessages').classList.add('visually-hidden'), 5000);
+            return false;
+        }
+
+        // ---- Collect land holdings ----
+        const registeredOwners = document.getElementsByName('registeredOwner[]');
+        const tctNos = document.getElementsByName('tctNo[]');
+        const lotNos = document.getElementsByName('lotNo[]');
+        const areaPerTitles = document.getElementsByName('areaPerTitle[]');
+        const zoneclasses = document.getElementsByName('zoneclass[]');
+        if (!registeredOwners || registeredOwners.length === 0) {
+            alert('Please add at least one land holding.');
+            return false;
+        }
+        const landHoldings = [];
+        for (let i = 0; i < registeredOwners.length; i++) {
+            if (!registeredOwners[i]?.value || !tctNos[i]?.value || !zoneclasses[i]?.value) {
+                alert('Please fill in all required fields in row ' + (i + 1));
                 return false;
             }
+            const areaValue = areaPerTitles[i] && areaPerTitles[i].value ? parseFloat(areaPerTitles[i].value) : 0;
+            landHoldings.push({
+                registeredOwner: registeredOwners[i].value,
+                tctNo: tctNos[i].value,
+                lotNo: lotNos[i] && lotNos[i].value ? lotNos[i].value : '',
+                areaPerTitle: areaValue,
+                zoneclass: zoneclasses[i].value
+            });
         }
+
+        const clupStatus = document.querySelector('input[name="clupStatus"]:checked')?.value || 'approved';
+
+        const record = {
+            id: Date.now(),
+            certificationNo,
+            series,
+            parcels,
+            location,
+            totalArea,
+            proposedUse,
+            landHoldings,
+            dateIssued,
+            formattedDate: new Date(dateIssued).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+            requestedBy,
+            amountPaid,
+            orNo,
+            remarks,
+            clupStatus,
+            city: document.getElementById('city')?.value || 'Iloilo City',
+            approvedBy: document.getElementById('approvedBy')?.value || 'DHSUD',
+            circularNo: document.getElementById('circularNo')?.value || '2022-002',
+            approvalDate: document.getElementById('approvalDate')?.value || 'May 12, 2022',
+            timestamp: new Date().toLocaleString()
+        };
+
+        // ----- Step 3: Save to Google Sheets -----
+        const success = await saveCertificationToSheet(record);
+        if (success) {
+            // ----- Step 4: Refresh records and counter -----
+            await fetchCertifications();  // re-fetches from server, updates counter and table
+
+            document.getElementById('formMessages').textContent = `Certification ${certificationNo} saved successfully`;
+            document.getElementById('formMessages').classList.remove('visually-hidden');
+            alert(`Certification saved successfully!\nCertification No: ${certificationNo}`);
+
+            clearZoningForm();
+            document.getElementById('certificationNo').value = getNextCertificationNumber();
+            document.getElementById('recordsSection').style.display = 'block';
+
+            setTimeout(() => document.getElementById('formMessages').classList.add('visually-hidden'), 5000);
+        } else {
+            alert('Failed to save record to Google Sheets. Check your script URL.');
+        }
+        return false;
+    } catch (error) {
+        console.error(error);
+        alert('An error occurred while saving.');
+        return false;
+    }
+}
 
         // ========== SECTION SWITCHING ==========
         function showSection(sectionId) {
