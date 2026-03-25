@@ -10,8 +10,1348 @@
     <!-- shp.js for shapefile parsing -->
     <script src="https://unpkg.com/shpjs@3.4.3/dist/shp.js"></script>
     <style>
-        /* All existing styles remain unchanged */
-        /* ... (keep the same CSS from original) ... */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #e8f0f9;
+            min-height: 100vh;
+        }
+
+        :root {
+            --primary-dark: #1a4d5e;
+            --primary: #2c6e8f;
+            --primary-light-accessible: #1e7a9c; /* Improved contrast */
+            --secondary: #3a7b5c;
+            --accent-accessible: #d4a017; /* Improved contrast */
+            --earth: #8B5A2B;
+            --water: #3498db;
+            --forest: #27ae60;
+            --urban: #7f8c8d;
+            --background: #f5f9ff;
+            --card-bg: #ffffff;
+            --cert-primary: #8B4513;
+            --cert-secondary: #228B22;
+            --cert-accent: #FFD700;
+        }
+
+        /* Accessibility Styles */
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: var(--primary-dark);
+            color: white;
+            padding: 8px 16px;
+            text-decoration: none;
+            z-index: 10000;
+            border-radius: 0 0 4px 0;
+            font-weight: 600;
+        }
+        
+        .skip-link:focus {
+            top: 0;
+            outline: 3px solid var(--accent-accessible);
+        }
+
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            margin: -1px;
+            padding: 0;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+
+        /* Focus indicators */
+        :focus {
+            outline: 3px solid var(--accent-accessible) !important;
+            outline-offset: 2px !important;
+            box-shadow: 0 0 0 3px rgba(212, 160, 23, 0.3);
+        }
+
+        /* Don't remove focus outlines from interactive elements */
+        a:focus, button:focus, input:focus, select:focus, textarea:focus, [tabindex]:focus {
+            outline: 3px solid var(--accent-accessible) !important;
+        }
+
+        /* Error message styling */
+        .error-message {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 4px;
+            display: block;
+        }
+
+        input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="true"] {
+            border-color: #dc3545 !important;
+        }
+
+        /* Improved contrast for text */
+        .header-content h1, .header-content h2 {
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .btn {
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-warning {
+            background: var(--accent-accessible);
+            color: var(--primary-dark);
+        }
+
+        .btn-warning:hover {
+            background: #b88914;
+        }
+
+        /* Rest of your existing styles remain exactly the same */
+        header {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            color: white;
+            padding: 1.5rem 2rem;
+            border-bottom: 5px solid var(--accent-accessible);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .logo-container {
+            flex-shrink: 0;
+        }
+
+        .logo {
+            background: white;
+            border-radius: 12px;
+            padding: 0.8rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            border: 2px solid var(--accent-accessible);
+            width: 180px;
+            height: 90px;
+        }
+
+        .logo img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .header-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .header-content h1 {
+            font-size: 2.3rem;
+            margin-bottom: 0.3rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            letter-spacing: 1px;
+            line-height: 1.3;
+        }
+
+        .header-content h2 {
+            font-size: 1.4rem;
+            font-weight: 400;
+            opacity: 0.95;
+            font-style: italic;
+            margin-bottom: 0.5rem;
+        }
+
+        .header-badge {
+            background: var(--accent-accessible);
+            color: var(--primary-dark);
+            display: inline-block;
+            padding: 0.3rem 1.5rem;
+            border-radius: 30px;
+            font-weight: bold;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            font-size: 1rem;
+            text-align: center;
+        }
+
+        .nav-bar {
+            background: var(--primary-dark);
+            padding: 0.8rem 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-bar ul {
+            list-style: none;
+            display: flex;
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+        }
+
+        .nav-bar a {
+            color: white;
+            text-decoration: none;
+            font-size: 1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+        }
+
+        .nav-bar a:hover, .nav-bar a.active {
+            background: var(--accent-accessible);
+            color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        /* Map Container Styles */
+        .map-section {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            border-left: 8px solid var(--primary);
+        }
+
+        .map-title {
+            color: var(--primary-dark);
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .map-title span {
+            background: var(--primary-light-accessible);
+            color: white;
+            padding: 0.3rem 1rem;
+            border-radius: 30px;
+            font-size: 0.9rem;
+        }
+
+        .map-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            align-items: center;
+            background: #f8faff;
+            padding: 1.5rem;
+            border-radius: 12px;
+        }
+
+        .file-upload {
+            flex: 2;
+            min-width: 300px;
+            position: relative;
+        }
+
+        .file-upload input[type="file"] {
+            position: absolute;
+            width: 0.1px;
+            height: 0.1px;
+            opacity: 0;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .file-upload label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.8rem 1.5rem;
+            background: var(--primary);
+            color: white;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            border: 2px solid transparent;
+        }
+
+        .file-upload label:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(44, 110, 143, 0.3);
+        }
+
+        .file-upload label.uploading {
+            background: var(--accent-accessible);
+            color: var(--primary-dark);
+            pointer-events: none;
+        }
+
+        .layer-controls {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .layer-list {
+            flex: 1;
+            min-width: 250px;
+            background: white;
+            border-radius: 30px;
+            padding: 0.3rem 1rem;
+            border: 2px solid #e0e7ff;
+        }
+
+        .layer-list select {
+            width: 100%;
+            padding: 0.5rem;
+            border: none;
+            background: transparent;
+            font-size: 0.95rem;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .map-container {
+            height: 500px;
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.2);
+            border: 2px solid var(--primary-light-accessible);
+            margin-bottom: 1.5rem;
+        }
+
+        .map-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            padding: 1rem;
+            background: #f8faff;
+            border-radius: 10px;
+            margin-top: 1rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+
+        .legend-color.approved {
+            background-color: #27ae60;
+            opacity: 0.7;
+        }
+
+        .legend-color.review {
+            background-color: #f39c12;
+            opacity: 0.7;
+        }
+
+        .legend-color.pending {
+            background-color: #e74c3c;
+            opacity: 0.7;
+        }
+
+        .legend-color.shapefile {
+            background-color: #8e44ad;
+            opacity: 0.7;
+        }
+
+        .upload-info {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #e3f2fd;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            color: var(--primary-dark);
+            display: none;
+        }
+
+        .upload-info.show {
+            display: block;
+        }
+
+        .upload-info.error {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .upload-info.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .province-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .province-stat-card {
+            background: linear-gradient(135deg, #f8faff, white);
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 1px solid #e0e7ff;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .province-stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(44, 110, 143, 0.2);
+            border-color: var(--primary);
+        }
+
+        .province-stat-card h4 {
+            color: var(--primary-dark);
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .province-stat-card .status {
+            font-size: 0.9rem;
+            padding: 0.2rem 0.8rem;
+            border-radius: 20px;
+            display: inline-block;
+            margin-top: 0.3rem;
+        }
+
+        .province-stat-card .status.approved {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .province-stat-card .status.review {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .overview-section {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            border-left: 8px solid var(--primary);
+        }
+
+        .overview-title {
+            color: var(--primary-dark);
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .overview-title span {
+            background: var(--primary-light-accessible);
+            color: white;
+            padding: 0.3rem 1rem;
+            border-radius: 30px;
+            font-size: 0.9rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f8faff, white);
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            border: 1px solid #e0e7ff;
+        }
+
+        .stat-number {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            color: #666;
+            margin-top: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .data-section {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .section-header h3 {
+            color: var(--primary-dark);
+            font-size: 1.6rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 30px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(44, 110, 143, 0.3);
+        }
+
+        .btn-success {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #2e5f45;
+            transform: translateY(-2px);
+        }
+
+        .btn-warning {
+            background: var(--accent-accessible);
+            color: var(--primary-dark);
+        }
+
+        .btn-warning:hover {
+            background: #b88914;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+
+        .btn-cert {
+            background: var(--cert-primary);
+            color: white;
+        }
+
+        .btn-cert:hover {
+            background: #6a3510;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .btn-print {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-print:hover {
+            background: #219a52;
+            transform: translateY(-2px);
+        }
+
+        .btn-map {
+            background: var(--primary-light-accessible);
+            color: white;
+        }
+
+        .btn-map:hover {
+            background: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            background: #f8faff;
+            padding: 1.5rem;
+            border-radius: 12px;
+        }
+
+        .search-box {
+            flex: 2;
+            min-width: 250px;
+            position: relative;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 0.8rem 0.8rem 0.8rem 2.5rem;
+            border: 2px solid #e0e7ff;
+            border-radius: 30px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(44, 110, 143, 0.1);
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .filter-group select {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #e0e7ff;
+            border-radius: 30px;
+            font-size: 1rem;
+            background: white;
+            cursor: pointer;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            border-radius: 12px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            min-width: 1000px;
+        }
+
+        caption {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: var(--primary-dark);
+            text-align: left;
+        }
+
+        th {
+            background: var(--primary-dark);
+            color: white;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+
+        th:first-child {
+            border-radius: 12px 0 0 0;
+        }
+
+        th:last-child {
+            border-radius: 0 12px 0 0;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid #e9ecef;
+            vertical-align: middle;
+        }
+
+        tr:hover {
+            background: #f8faff;
+        }
+
+        tr.selected {
+            background: #e8f4f8;
+            border-left: 4px solid var(--primary);
+        }
+
+        .status-badge {
+            padding: 0.3rem 1rem;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .status-approved {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-review {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .status-hold {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 0.4rem 0.8rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .action-btn.view {
+            background: var(--primary-light-accessible);
+            color: white;
+        }
+
+        .action-btn.edit {
+            background: var(--accent-accessible);
+            color: var(--primary-dark);
+        }
+
+        .action-btn.delete {
+            background: #dc3545;
+            color: white;
+        }
+
+        .action-btn.print {
+            background: #27ae60;
+            color: white;
+        }
+
+        .action-btn.save {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .action-btn.cancel {
+            background: #6c757d;
+            color: white;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(3px);
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 800px;
+            width: 95%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            border: 3px solid var(--primary);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 3px solid var(--primary-light-accessible);
+        }
+
+        .modal-header h2 {
+            color: var(--primary-dark);
+            font-size: 1.5rem;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #666;
+            transition: color 0.3s;
+            line-height: 1;
+            padding: 0 8px;
+        }
+
+        .close-btn:hover {
+            color: var(--primary);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group.full-width {
+            grid-column: span 2;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--primary-dark);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #e0e7ff;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(44, 110, 143, 0.1);
+        }
+
+        .form-control[readonly] {
+            background: #f8f9fa;
+            border-color: #ddd;
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            padding: 0.5rem 0;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+
+        .cert-section {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            border: 2px solid var(--cert-accent);
+        }
+
+        .cert-title {
+            color: var(--cert-primary);
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            border-bottom: 3px solid var(--cert-accent);
+            padding-bottom: 0.5rem;
+        }
+
+        .cert-title span {
+            background: var(--cert-secondary);
+            color: white;
+            padding: 0.3rem 1rem;
+            border-radius: 30px;
+            font-size: 1rem;
+        }
+
+        .cert-subtitle {
+            color: var(--cert-primary);
+            font-size: 1.3rem;
+            margin: 2rem 0 1rem;
+            text-decoration: underline;
+        }
+
+        .province-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .province-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border: 1px solid #e0e7ff;
+            transition: all 0.3s;
+        }
+
+        .province-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(44, 110, 143, 0.2);
+            border-color: var(--primary);
+        }
+
+        .province-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light-accessible));
+            color: white;
+            padding: 1rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .province-body {
+            padding: 1.5rem;
+        }
+
+        .province-stat {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px dashed #e0e7ff;
+        }
+
+        .province-stat span:first-child {
+            color: #666;
+        }
+
+        .province-stat span:last-child {
+            font-weight: bold;
+            color: var(--primary-dark);
+        }
+
+        .cert-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .cert-table th {
+            background: var(--cert-primary);
+            color: white;
+            padding: 0.75rem;
+            text-align: left;
+        }
+
+        .cert-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .cert-table tr:hover {
+            background: #f8f4e8;
+        }
+
+        @media print {
+            @page {
+                size: A4;
+                margin: 2cm 1.5cm;
+            }
+            
+            body * {
+                visibility: hidden;
+            }
+            
+            #printSection, #printSection * {
+                visibility: visible;
+            }
+            
+            #printSection {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                background: white;
+                font-family: 'Times New Roman', Times, serif;
+            }
+            
+            .print-document {
+                margin: 0;
+                padding: 0;
+                max-width: 100%;
+                page-break-after: always;
+                page-break-inside: auto;
+            }
+            
+            .print-document h2, 
+            .print-document h3, 
+            .print-document h4 {
+                page-break-after: avoid;
+            }
+            
+            .print-document table {
+                page-break-inside: auto;
+                page-break-before: auto;
+            }
+            
+            .print-document tr {
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
+            
+            .print-document thead {
+                display: table-header-group;
+            }
+            
+            .print-document tfoot {
+                display: table-footer-group;
+            }
+            
+            .print-document .signature-area {
+                page-break-before: avoid;
+                page-break-inside: avoid;
+            }
+            
+            .print-document .notices {
+                page-break-before: avoid;
+                page-break-inside: avoid;
+            }
+        }
+
+        .print-document {
+            font-family: 'Times New Roman', Times, serif;
+            max-width: 100%;
+            margin: 0;
+            padding: 1.5cm 1.5cm 1cm 1.5cm;
+            line-height: 1.5;
+            font-size: 12pt;
+            background: white;
+            box-sizing: border-box;
+        }
+
+        .print-document h2 {
+            text-align: center;
+            font-size: 16pt;
+            font-weight: bold;
+            margin: 0.5cm 0 0.3cm 0;
+            text-transform: uppercase;
+            page-break-after: avoid;
+        }
+
+        .print-document h3 {
+            text-align: center;
+            font-size: 14pt;
+            font-weight: bold;
+            margin: 0.4cm 0 0.2cm 0;
+            page-break-after: avoid;
+        }
+
+        .print-document h4 {
+            text-align: left;
+            font-size: 13pt;
+            font-weight: bold;
+            margin: 0.3cm 0 0.2cm 0;
+            page-break-after: avoid;
+        }
+
+        .print-document .underline {
+            text-decoration: underline;
+        }
+
+        .print-document table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0.5cm 0;
+            font-size: 11pt;
+            page-break-inside: auto;
+            border: 1px solid #000;
+        }
+
+        .print-document th, .print-document td {
+            border: 1px solid #000;
+            padding: 0.3cm 0.2cm;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .print-document th {
+            background: #f0f0f0;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .print-document .signature-area {
+            margin-top: 1.5cm;
+            display: flex;
+            justify-content: flex-end;
+            page-break-before: avoid;
+            page-break-inside: avoid;
+        }
+
+        .print-document .signature-box {
+            text-align: center;
+            width: 8cm;
+        }
+
+        .print-document .signature-line {
+            border-bottom: 2px solid #000;
+            margin: 0.8cm 0 0.2cm 0;
+            width: 100%;
+        }
+
+        .print-document .notices {
+            margin-top: 1cm;
+            font-size: 10pt;
+            border-top: 1px dashed #000;
+            padding-top: 0.3cm;
+            page-break-before: avoid;
+            page-break-inside: avoid;
+        }
+
+        .print-document .notices p {
+            margin: 0.1cm 0;
+            line-height: 1.3;
+        }
+
+        .print-document .header-right {
+            text-align: right;
+            margin-bottom: 0.5cm;
+        }
+
+        .print-document .basic-info {
+            margin: 0.3cm 0;
+        }
+
+        .print-document .basic-info p {
+            margin: 0.1cm 0;
+        }
+
+        .print-document .clup-status {
+            margin: 0.3cm 0;
+            padding: 0.3cm;
+            border: 1px solid #ddd;
+        }
+
+        .print-document .page-break {
+            page-break-before: always;
+        }
+
+        .print-document .keep-together {
+            page-break-inside: avoid;
+        }
+
+        .print-document .avoid-break {
+            page-break-inside: avoid;
+        }
+
+        footer {
+            background: linear-gradient(135deg, var(--primary-dark), #0e2f3a);
+            color: white;
+            padding: 2rem;
+            margin-top: 3rem;
+            text-align: center;
+            position: relative;
+        }
+
+        footer p {
+            opacity: 0.9;
+            margin: 0.5rem 0;
+        }
+
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+                padding: 1rem;
+            }
+            
+            .logo-container {
+                width: 100%;
+                display: flex;
+                justify-content: center;
+            }
+            
+            .logo {
+                width: 150px;
+                height: 75px;
+            }
+            
+            .header-content h1 {
+                font-size: 1.5rem;
+            }
+            
+            .header-content h2 {
+                font-size: 1rem;
+            }
+            
+            .nav-bar ul {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .btn-group {
+                width: 100%;
+            }
+            
+            .btn {
+                flex: 1;
+                justify-content: center;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-group.full-width {
+                grid-column: span 1;
+            }
+            
+            .search-bar {
+                flex-direction: column;
+            }
+            
+            .map-container {
+                height: 350px;
+            }
+            
+            .map-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
     </style>
 </head>
 <body>
@@ -48,10 +1388,189 @@
         <div class="container">
             <!-- Dashboard Section -->
             <div id="dashboard" class="section active" role="region" aria-labelledby="dashboard-heading">
-                <!-- Same dashboard content as original -->
-                ...
-            </div>
+                  <h1 id="dashboard-heading" class="visually-hidden">Dashboard - Regional Planning Overview</h1>
+                <div class="overview-section">
+                    <div class="overview-title">
+                        Regional Planning Overview - Region VI
+                        <span>2024</span>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-number">147</div>
+                            <div class="stat-label">Comprehensive Land Use Plans</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">89</div>
+                            <div class="stat-label">Ongoing Projects</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">23</div>
+                            <div class="stat-label">Environmental Impact Assessments</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">12</div>
+                            <div class="stat-label">Urban Development Zones</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">6</div>
+                            <div class="stat-label">Provinces Covered</div>
+                        </div>
+                    </div>
+                </div>
 
+                <div class="province-grid" role="list" aria-label="Provinces of Region VI">
+                    <div class="province-card" role="listitem">
+                        <div class="province-header">
+                            <span>Aklan</span>
+                            <span aria-hidden="true">🏝️</span>
+                        </div>
+                        <div class="province-body">
+                            <div class="province-stat">
+                                <span>Land Area:</span>
+                                <span>1,821.42 km²</span>
+                            </div>
+                            <div class="province-stat">
+                                <span>CLUP Status:</span>
+                                <span style="color: #27ae60;">Approved</span>
+                            </div>
+                            <div class="province-stat">
+                                <span>Ongoing Projects:</span>
+                                <span>15</span>
+                            </div>
+                            <div class="province-stat">
+                                <span>Environmental Zones:</span>
+                                <span>8</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="province-card" role="listitem">
+                        <div class="province-header">
+                            <span>Antique</span>
+                            <span aria-hidden="true">🏔️</span>
+                        </div>
+                        <div class="province-body">
+                            <div class="province-stat">
+                                <span>Land Area:</span>
+                                <span>2,729.17 km²</span>
+                            </div>
+                            <div class="province-stat">
+                                <span>CLUP Status:</span>
+                                <span style="color: #f39c12;">For Review</span>
+                            </div>
+                            <div class="province-stat">
+                                <span>Ongoing Projects:</span>
+                                <span>12</span>
+                            </div>
+                            <div class="province-stat">
+                                <span>Environmental Zones:</span>
+                                <span>10</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="province-card" role="listitem">
+                        <div class="province-header">
+                            <span>Capiz</span>
+                            <span aria-hidden="true">🦐</span>
+                        </div>
+                        <div class="province-body">
+                            <div class="province-stat">
+                                <span>Land Area:</span>
+                                <span>2,594.64 km²</span>
+                            </div>
+                            <div class="province-stat">
+                                <span>CLUP Status:</span>
+                                <span style="color: #27ae60;">Approved</span>
+                            </div>
+                            <div class="province-stat">
+                                <span>Ongoing Projects:</span>
+                                <span>18</span>
+                            </div>
+                            <div class="province-stat">
+                                <span>Environmental Zones:</span>
+                                <span>12</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="province-card" role="listitem">
+                        <div class="province-header">
+                            <span>Guimaras</span>
+                            <span aria-hidden="true">🥭</span>
+                        </div>
+                        <div class="province-body">
+                            <div class="province-stat">
+                                <span>Land Area:</span>
+                                <span>604.57 km²</span>
+                            </div>
+                            <div class="province-stat">
+                                <span>CLUP Status:</span>
+                                <span style="color: #27ae60;">Approved</span>
+                            </div>
+                            <div class="province-stat">
+                                <span>Ongoing Projects:</span>
+                                <span>8</span>
+                            </div>
+                            <div class="province-stat">
+                                <span>Environmental Zones:</span>
+                                <span>6</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="province-card" role="listitem">
+                        <div class="province-header">
+                            <span>Iloilo</span>
+                            <span aria-hidden="true">🏛️</span>
+                        </div>
+                        <div class="province-body">
+                            <div class="province-stat">
+                                <span>Land Area:</span>
+                                <span>5,079.17 km²</span>
+                            </div>
+                            <div class="province-stat">
+                                <span>CLUP Status:</span>
+                                <span style="color: #27ae60;">Approved</span>
+                            </div>
+                            <div class="province-stat">
+                                <span>Ongoing Projects:</span>
+                                <span>25</span>
+                            </div>
+                            <div class="province-stat">
+                                <span>Environmental Zones:</span>
+                                <span>15</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="province-card" role="listitem">
+                        <div class="province-header">
+                            <span>Negros Occidental</span>
+                            <span aria-hidden="true">🎭</span>
+                        </div>
+                        <div class="province-body">
+                            <div class="province-stat">
+                                <span>Land Area:</span>
+                                <span>7,965.21 km²</span>
+                            </div>
+                            <div class="province-stat">
+                                <span>CLUP Status:</span>
+                                <span style="color: #f39c12;">For Review</span>
+                            </div>
+                            <div class="province-stat">
+                                <span>Ongoing Projects:</span>
+                                <span>22</span>
+                            </div>
+                            <div class="province-stat">
+                                <span>Environmental Zones:</span>
+                                <span>14</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <!-- Map Section (with layer control) -->
             <div id="map" class="section" style="display: none;" role="region" aria-labelledby="map-heading">
                 <div class="map-section">
@@ -110,22 +1629,317 @@
 
             <!-- Land Use Plans Section (unchanged) -->
             <div id="plans" class="section" style="display: none;" role="region" aria-labelledby="plans-heading">
-                <!-- Same as original -->
-                ...
+                <h1 id="plans-heading" class="visually-hidden">Comprehensive Land Use Plans</h1>
+                <div class="data-section">
+                    <div class="section-header">
+                        <h3><span aria-hidden="true">📋</span> Comprehensive Land Use Plans (CLUP)</h3>
+                        <div class="btn-group">
+                            <button class="btn btn-primary" onclick="openAddModal()" aria-label="Add new land use plan">
+                                <span aria-hidden="true">➕</span> Add New Plan
+                            </button>
+                            <button class="btn btn-success" onclick="exportData()" aria-label="Export data to JSON">
+                                <span aria-hidden="true">📥</span> Export Data
+                            </button>
+                            <button class="btn btn-map" onclick="showOnMap()" aria-label="View plans on map">
+                                <span aria-hidden="true">🗺️</span> View on Map
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="search-bar" role="search">
+                        <div class="search-box">
+                            <span aria-hidden="true">🔍</span>
+                            <label for="planSearch" class="visually-hidden">Search plans</label>
+                            <input type="text" id="planSearch" placeholder="Search by LGU, province, or status..." onkeyup="filterPlans()">
+                        </div>
+                        <div class="filter-group">
+                            <label for="provinceFilter" class="visually-hidden">Filter by province</label>
+                            <select id="provinceFilter" onchange="filterPlans()" aria-label="Filter by province">
+                                <option value="">All Provinces</option>
+                                <option value="Aklan">Aklan</option>
+                                <option value="Antique">Antique</option>
+                                <option value="Capiz">Capiz</option>
+                                <option value="Guimaras">Guimaras</option>
+                                <option value="Iloilo">Iloilo</option>
+                                <option value="Negros Occidental">Negros Occidental</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="statusFilter" class="visually-hidden">Filter by status</label>
+                            <select id="statusFilter" onchange="filterPlans()" aria-label="Filter by status">
+                                <option value="">All Status</option>
+                                <option value="Approved">Approved</option>
+                                <option value="Pending">Pending</option>
+                                <option value="For Review">For Review</option>
+                                <option value="On Hold">On Hold</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table id="plansTable" aria-label="Land Use Plans">
+                            <caption class="visually-hidden">List of Comprehensive Land Use Plans in Region VI</caption>
+                            <thead>
+                                <tr>
+                                    <th scope="col">LGU/Municipality</th>
+                                    <th scope="col">Province</th>
+                                    <th scope="col">Plan Period</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Date Submitted</th>
+                                    <th scope="col">Date Approved</th>
+                                    <th scope="col">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="plansTableBody">
+                            </tbody>
+                        </table>
+                    </div>
             </div>
 
             <!-- Site Zoning Certification Section (with Google Sheets backend) -->
             <div id="zoning" class="section" style="display: none;" role="region" aria-labelledby="zoning-heading">
-                <!-- Same form as original -->
-                ...
-            </div>
+                <h1 id="zoning-heading" class="visually-hidden">Site Zoning Certification</h1>
+                <div class="cert-section">
+                    <div class="cert-title">
+                        <span aria-hidden="true">🏷️</span> Site Zoning Certification - Data Entry
+                    </div>
+                    
+                    <form id="zoningForm" onsubmit="return saveZoningRecord(event)" novalidate>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="certificationNo" id="certNoLabel">Certification No.</label>
+                                <input type="text" class="form-control" id="certificationNo" 
+                                       aria-labelledby="certNoLabel"
+                                       aria-describedby="certNoHelp"
+                                       readonly style="background: #f0f0f0; cursor: not-allowed;">
+                                <small id="certNoHelp" style="color: #666;">Auto-generated</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="series">Series</label>
+                                <input type="text" class="form-control" id="series" value="2002" readonly
+                                       aria-describedby="seriesHelp">
+                                <small id="seriesHelp" class="visually-hidden">Series year, read-only field</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="parcels">No. of Parcels</label>
+                                <input type="text" class="form-control" id="parcels" 
+                                       placeholder="e.g., Three hundred seventy-five (375) parcels" 
+                                       required
+                                       aria-required="true">
+                            </div>
+                            
+                            <div class="form-group full-width">
+                                <label for="location">Location of the Property</label>
+                                <input type="text" class="form-control" id="location" 
+                                       placeholder="Enter complete address" 
+                                       required
+                                       aria-required="true">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="totalArea">Total Area (ha.)</label>
+                                <input type="text" class="form-control" id="totalArea" 
+                                       placeholder="e.g., 15.5026" 
+                                       required
+                                       aria-required="true">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="proposedUse">Proposed Use</label>
+                                <input type="text" class="form-control" id="proposedUse" 
+                                       placeholder="e.g., Residential-3 Zone" 
+                                       required
+                                       aria-required="true">
+                            </div>
+                            
+                            <!-- Multiple Entries Section for Land Holdings -->
+                            <div class="form-group full-width">
+                                <div id="landHoldingsHeading" style="font-weight: 600; margin-bottom: 0.5rem; color: var(--primary-dark); font-size: 0.9rem;">
+                                    Land Holdings (Multiple Entries)
+                                </div>
+                                <div style="margin-bottom: 10px;">
+                                    <button type="button" class="btn btn-success" onclick="addLandHolding()" 
+                                            style="padding: 5px 10px; font-size: 0.9rem;"
+                                            aria-label="Add another property">
+                                        <span aria-hidden="true">➕</span> Add Another Property
+                                    </button>
+                                    <small style="margin-left: 10px; color: #666;">Each property can have its own lot number and area</small>
+                                </div>
+                                
+                                <div id="landHoldingsContainer" role="group" aria-labelledby="landHoldingsHeading">
+                                    <!-- First row will be added by JavaScript on page load -->
+                                </div>
+                            </div>
 
-            <!-- Reports Section (unchanged) -->
+                            <div class="form-group">
+                                <label for="dateIssued">Date Issued</label>
+                                <input type="date" class="form-control" id="dateIssued" required aria-required="true">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="requestedBy">Requested By</label>
+                                <input type="text" class="form-control" id="requestedBy" 
+                                       placeholder="Name of requester" 
+                                       required
+                                       aria-required="true">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="amountPaid">Amount Paid (₱)</label>
+                                <input type="text" class="form-control" id="amountPaid" 
+                                       placeholder="e.g., 13,680" 
+                                       required
+                                       aria-required="true">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="orNo">O.R. No.</label>
+                                <input type="text" class="form-control" id="orNo" placeholder="Official Receipt Number">
+                            </div>
+                            
+                            <div class="form-group full-width">
+                                <label for="remarks">Remarks/Notes</label>
+                                <textarea class="form-control" id="remarks" rows="3" placeholder="Enter any additional notes"></textarea>
+                            </div>
+                        </div>
+                        
+                        <!-- CLUP Status Section -->
+                        <h3 class="cert-subtitle" id="clupStatusHeading">CLUP/Zoning Ordinance Status</h3>
+                        
+                        <div class="form-group" role="group" aria-labelledby="clupStatusHeading">
+                            <div style="font-weight: 600; margin-bottom: 0.5rem; color: var(--primary-dark); font-size: 0.9rem;">Select Status:</div>
+                            <div class="radio-group">
+                                <label class="radio-option">
+                                    <input type="radio" name="clupStatus" value="approved" checked aria-describedby="approvedDesc"> 
+                                    <span>With Approved CLUP/ZO</span>
+                                </label>
+                                <span id="approvedDesc" class="visually-hidden">Select if the area has an approved Comprehensive Land Use Plan</span>
+                                
+                                <label class="radio-option">
+                                    <input type="radio" name="clupStatus" value="pending" aria-describedby="pendingDesc"> 
+                                    <span>With CLUP/ZO Pending Approval</span>
+                                </label>
+                                <span id="pendingDesc" class="visually-hidden">Select if the Comprehensive Land Use Plan is pending approval</span>
+                                
+                                <label class="radio-option">
+                                    <input type="radio" name="clupStatus" value="none" aria-describedby="noneDesc"> 
+                                    <span>Without CLUP/ZO</span>
+                                </label>
+                                <span id="noneDesc" class="visually-hidden">Select if there is no Comprehensive Land Use Plan</span>
+                            </div>
+                        </div>
+                        
+                        <div id="approvedDetails" role="region" aria-labelledby="approvedDetailsHeading" style="margin-top: 1rem; padding: 1rem; background: #f8f4e8; border-radius: 8px;">
+                            <h4 id="approvedDetailsHeading" class="visually-hidden">Approved CLUP Details</h4>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="city">City/Municipality</label>
+                                    <input type="text" class="form-control" id="city" value="">
+                                </div>
+                                <div class="form-group">
+                                    <label for="approvedBy">Approved by</label>
+                                    <input type="text" class="form-control" id="approvedBy" value="">
+                                </div>
+                                <div class="form-group">
+                                    <label for="circularNo">Department Circular No.</label>
+                                    <input type="text" class="form-control" id="circularNo" value="">
+                                </div>
+                                <div class="form-group">
+                                    <label for="approvalDate">Date of Approval</label>
+                                    <input type="text" class="form-control" id="approvalDate" value="">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="formMessages" role="alert" aria-live="assertive" class="visually-hidden"></div>
+                        
+                        <div style="display: flex; gap: 1rem; margin-top: 2rem; justify-content: center; flex-wrap: wrap;">
+                            <button type="submit" class="btn btn-success" aria-label="Save certification record">
+                                <span aria-hidden="true">💾</span> Save Certification
+                            </button>
+                            <button type="button" class="btn btn-primary" onclick="clearZoningForm()" aria-label="Clear form">
+                                <span aria-hidden="true">🔄</span> Clear Form
+                            </button>
+                            <button type="button" class="btn btn-cert" onclick="viewAllCertifications()" aria-label="View all records">
+                                <span aria-hidden="true">📋</span> View All Records
+                            </button>
+                            <button type="button" class="btn btn-print" onclick="printBlankForm()" aria-label="Print blank form">
+                                <span aria-hidden="true">🖨️</span> Print Blank Form
+                            </button>
+                            <button type="button" class="btn btn-warning" onclick="resetCertificationCounter()" aria-label="Reset certification counter">
+                                <span aria-hidden="true">🔄</span> Reset Counter
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="cert-section" id="recordsSection" style="display: none;" role="region" aria-labelledby="records-heading">
+                    <div class="cert-title">
+                        <span aria-hidden="true">📋</span> Saved Certifications
+                    </div>
+                    
+                    <div style="overflow-x: auto;">
+                        <table class="cert-table" id="certificationsTable" aria-label="Saved zoning certifications">
+                            <caption class="visually-hidden">List of all saved zoning certifications</caption>
+                            <thead>
+                                <tr>
+                                    <th scope="col">Certification No.</th>
+                                    <th scope="col">No. of Parcels</th>
+                                    <th scope="col">Location</th>
+                                    <th scope="col">Total Area</th>
+                                    <th scope="col">Date Issued</th>
+                                    <th scope="col">Requested By</th>
+                                    <th scope="col">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="certificationsTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div style="text-align: right; margin-top: 1rem;">
+                        <button class="btn btn-secondary" onclick="toggleRecordsView()" aria-label="Hide records section">Hide Records</button>
+                    </div>
+                </div>
+            </div>
+             <!-- Reports Section -->
             <div id="reports" class="section" style="display: none;" role="region" aria-labelledby="reports-heading">
-                <!-- Same as original -->
-                ...
+                <h1 id="reports-heading" class="visually-hidden">Planning Reports</h1>
+                <div class="data-section">
+                    <div class="section-header">
+                        <h3><span aria-hidden="true">📊</span> Planning Reports</h3>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card" onclick="generateReport('annual')" role="button" tabindex="0" 
+                             onkeypress="if(event.key==='Enter'||event.key===' ') generateReport('annual')"
+                             aria-label="Generate annual report">
+                            <div class="stat-number" aria-hidden="true">📅</div>
+                            <div class="stat-label">Annual Report</div>
+                        </div>
+                        <div class="stat-card" onclick="generateReport('quarterly')" role="button" tabindex="0"
+                             onkeypress="if(event.key==='Enter'||event.key===' ') generateReport('quarterly')"
+                             aria-label="Generate quarterly report">
+                            <div class="stat-number" aria-hidden="true">📆</div>
+                            <div class="stat-label">Quarterly Report</div>
+                        </div>
+                        <div class="stat-card" onclick="generateReport('project')" role="button" tabindex="0"
+                             onkeypress="if(event.key==='Enter'||event.key===' ') generateReport('project')"
+                             aria-label="Generate project status report">
+                            <div class="stat-number" aria-hidden="true">🏗️</div>
+                            <div class="stat-label">Project Status</div>
+                        </div>
+                        <div class="stat-card" onclick="generateReport('environmental')" role="button" tabindex="0"
+                             onkeypress="if(event.key==='Enter'||event.key===' ') generateReport('environmental')"
+                             aria-label="Generate environmental report">
+                            <div class="stat-number" aria-hidden="true">🌳</div>
+                            <div class="stat-label">Environmental Report</div>
+                        </div>
+                    </div>
+                </div>
             </div>
-
             <div id="dataModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalDescription">
                 <div class="modal-content">
                     <div class="modal-header">
