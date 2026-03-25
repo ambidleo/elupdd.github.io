@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ELUPDD Region VI - Environmental Land Use & Urban Planning</title>
+    <title>ELUPDD - Region VI | Environmental Land Use & Urban Planning</title>
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <!-- shp.js for shapefile parsing - using specific version -->
+    <!-- shp.js for shapefile parsing -->
     <script src="https://unpkg.com/shpjs@3.4.3/dist/shp.js"></script>
     <style>
         * {
@@ -24,9 +24,9 @@
         :root {
             --primary-dark: #1a4d5e;
             --primary: #2c6e8f;
-            --primary-light-accessible: #1e7a9c; /* Improved contrast */
+            --primary-light: #4a9fc5;
             --secondary: #3a7b5c;
-            --accent-accessible: #d4a017; /* Improved contrast */
+            --accent: #f0b429;
             --earth: #8B5A2B;
             --water: #3498db;
             --forest: #27ae60;
@@ -38,93 +38,11 @@
             --cert-accent: #FFD700;
         }
 
-        /* Accessibility Styles */
-        .skip-link {
-            position: absolute;
-            top: -40px;
-            left: 0;
-            background: var(--primary-dark);
-            color: white;
-            padding: 8px 16px;
-            text-decoration: none;
-            z-index: 10000;
-            border-radius: 0 0 4px 0;
-            font-weight: 600;
-        }
-        
-        .skip-link:focus {
-            top: 0;
-            outline: 3px solid var(--accent-accessible);
-        }
-
-        .visually-hidden {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            margin: -1px;
-            padding: 0;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            border: 0;
-        }
-
-        /* Focus indicators */
-        :focus {
-            outline: 3px solid var(--accent-accessible) !important;
-            outline-offset: 2px !important;
-            box-shadow: 0 0 0 3px rgba(212, 160, 23, 0.3);
-        }
-
-        /* Don't remove focus outlines from interactive elements */
-        a:focus, button:focus, input:focus, select:focus, textarea:focus, [tabindex]:focus {
-            outline: 3px solid var(--accent-accessible) !important;
-        }
-
-        /* Error message styling */
-        .error-message {
-            color: #dc3545;
-            font-size: 0.875rem;
-            margin-top: 4px;
-            display: block;
-        }
-
-        input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="true"] {
-            border-color: #dc3545 !important;
-        }
-
-        /* Improved contrast for text */
-        .header-content h1, .header-content h2 {
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-        }
-
-        .btn {
-            font-weight: 600;
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: var(--primary-dark);
-        }
-
-        .btn-warning {
-            background: var(--accent-accessible);
-            color: var(--primary-dark);
-        }
-
-        .btn-warning:hover {
-            background: #b88914;
-        }
-
-        /* Rest of your existing styles remain exactly the same */
         header {
             background: linear-gradient(135deg, var(--primary-dark), var(--primary));
             color: white;
             padding: 1.5rem 2rem;
-            border-bottom: 5px solid var(--accent-accessible);
+            border-bottom: 5px solid var(--accent);
             position: relative;
             overflow: hidden;
             display: flex;
@@ -144,7 +62,7 @@
             align-items: center;
             justify-content: center;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            border: 2px solid var(--accent-accessible);
+            border: 2px solid var(--accent);
             width: 180px;
             height: 90px;
         }
@@ -181,7 +99,7 @@
         }
 
         .header-badge {
-            background: var(--accent-accessible);
+            background: var(--accent);
             color: var(--primary-dark);
             display: inline-block;
             padding: 0.3rem 1.5rem;
@@ -224,7 +142,7 @@
         }
 
         .nav-bar a:hover, .nav-bar a.active {
-            background: var(--accent-accessible);
+            background: var(--accent);
             color: var(--primary-dark);
             transform: translateY(-2px);
         }
@@ -263,7 +181,7 @@
         }
 
         .map-title span {
-            background: var(--primary-light-accessible);
+            background: var(--primary-light);
             color: white;
             padding: 0.3rem 1rem;
             border-radius: 30px;
@@ -279,6 +197,34 @@
             background: #f8faff;
             padding: 1.5rem;
             border-radius: 12px;
+        }
+
+        .basemap-selector {
+            flex: 1;
+            min-width: 180px;
+        }
+        
+        .basemap-selector select {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 2px solid #e0e7ff;
+            border-radius: 30px;
+            font-size: 0.95rem;
+            background: white;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--primary-dark);
+            transition: all 0.3s;
+        }
+        
+        .basemap-selector select:hover {
+            border-color: var(--primary);
+        }
+        
+        .basemap-selector select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(44, 110, 143, 0.1);
         }
 
         .file-upload {
@@ -308,6 +254,8 @@
             transition: all 0.3s;
             font-weight: 600;
             border: 2px solid transparent;
+            width: 100%;
+            justify-content: center;
         }
 
         .file-upload label:hover {
@@ -317,7 +265,7 @@
         }
 
         .file-upload label.uploading {
-            background: var(--accent-accessible);
+            background: var(--accent);
             color: var(--primary-dark);
             pointer-events: none;
         }
@@ -353,7 +301,7 @@
             border-radius: 12px;
             overflow: hidden;
             box-shadow: 0 3px 15px rgba(0,0,0,0.2);
-            border: 2px solid var(--primary-light-accessible);
+            border: 2px solid var(--primary-light);
             margin-bottom: 1.5rem;
         }
 
@@ -490,7 +438,7 @@
         }
 
         .overview-title span {
-            background: var(--primary-light-accessible);
+            background: var(--primary-light);
             color: white;
             padding: 0.3rem 1rem;
             border-radius: 30px;
@@ -591,12 +539,12 @@
         }
 
         .btn-warning {
-            background: var(--accent-accessible);
+            background: var(--accent);
             color: var(--primary-dark);
         }
 
         .btn-warning:hover {
-            background: #b88914;
+            background: #e0a800;
             transform: translateY(-2px);
         }
 
@@ -641,7 +589,7 @@
         }
 
         .btn-map {
-            background: var(--primary-light-accessible);
+            background: var(--primary-light);
             color: white;
         }
 
@@ -715,14 +663,6 @@
             border-collapse: collapse;
             background: white;
             min-width: 1000px;
-        }
-
-        caption {
-            font-size: 1.1rem;
-            font-weight: bold;
-            margin-bottom: 0.5rem;
-            color: var(--primary-dark);
-            text-align: left;
         }
 
         th {
@@ -807,12 +747,12 @@
         }
 
         .action-btn.view {
-            background: var(--primary-light-accessible);
+            background: var(--primary-light);
             color: white;
         }
 
         .action-btn.edit {
-            background: var(--accent-accessible);
+            background: var(--accent);
             color: var(--primary-dark);
         }
 
@@ -883,7 +823,7 @@
             align-items: center;
             margin-bottom: 1.5rem;
             padding-bottom: 1rem;
-            border-bottom: 3px solid var(--primary-light-accessible);
+            border-bottom: 3px solid var(--primary-light);
         }
 
         .modal-header h2 {
@@ -899,7 +839,6 @@
             color: #666;
             transition: color 0.3s;
             line-height: 1;
-            padding: 0 8px;
         }
 
         .close-btn:hover {
@@ -1025,7 +964,7 @@
         }
 
         .province-header {
-            background: linear-gradient(135deg, var(--primary), var(--primary-light-accessible));
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
             color: white;
             padding: 1rem;
             font-size: 1.2rem;
@@ -1356,13 +1295,11 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
-    <a href="#main-content" class="skip-link">Skip to main content</a>
-
-    <header role="banner">
+    <header>
         <div class="logo-container">
             <div class="logo">
                 <img src="C:\Users\DHSUD USER\Desktop\website\DHSUD LOGO.png" 
-                     alt="DHSUD Logo - Department of Human Settlements and Urban Development"
+                     alt="DHSUD Logo"
                      style="width: 100%; height: 100%; object-fit: contain;">
             </div>
         </div>
@@ -1374,621 +1311,529 @@
         </div>
     </header>
 
-    <nav class="nav-bar" aria-label="Main navigation" role="navigation">
-        <ul role="menubar">
-            <li role="none">
-                <a href="#" onclick="showSection('dashboard')" class="active" role="menuitem" aria-current="page">
-                    <span aria-hidden="true">🏠</span>
-                    <span>Dashboard</span>
-                </a>
-            </li>
-            <li role="none">
-                <a href="#" onclick="showSection('map')" role="menuitem">
-                    <span aria-hidden="true">🗺️</span>
-                    <span>Regional Map</span>
-                </a>
-            </li>
-            <li role="none">
-                <a href="#" onclick="showSection('plans')" role="menuitem">
-                    <span aria-hidden="true">📋</span>
-                    <span>Land Use Plans</span>
-                </a>
-            </li>
-            <li role="none">
-                <a href="#" onclick="showSection('zoning')" role="menuitem">
-                    <span aria-hidden="true">🏷️</span>
-                    <span>Site Zoning Certification</span>
-                </a>
-            </li>
-            <li role="none">
-                <a href="#" onclick="showSection('reports')" role="menuitem">
-                    <span aria-hidden="true">📊</span>
-                    <span>Reports</span>
-                </a>
-            </li>
-            <li role="none">
-                <a href="#" onclick="openAboutModal()" role="menuitem">
-                    <span aria-hidden="true">ℹ️</span>
-                    <span>About</span>
-                </a>
-            </li>
+    <nav class="nav-bar">
+        <ul>
+            <li><a href="#" onclick="showSection('dashboard')" class="active">🏠 Dashboard</a></li>
+            <li><a href="#" onclick="showSection('map')">🗺️ Regional Map</a></li>
+            <li><a href="#" onclick="showSection('plans')">📋 Land Use Plans</a></li>
+            <li><a href="#" onclick="showSection('zoning')">🏷️ Site Zoning Certification</a></li>
+            <li><a href="#" onclick="showSection('reports')">📊 Reports</a></li>
+            <li><a href="#" onclick="openAboutModal()">ℹ️ About</a></li>
         </ul>
     </nav>
 
-    <main id="main-content" role="main">
-        <div class="container">
-            <!-- Dashboard Section -->
-            <div id="dashboard" class="section active" role="region" aria-labelledby="dashboard-heading">
-                <h1 id="dashboard-heading" class="visually-hidden">Dashboard - Regional Planning Overview</h1>
-                <div class="overview-section">
-                    <div class="overview-title">
-                        Regional Planning Overview - Region VI
-                        <span>2024</span>
-                    </div>
-                    
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-number">147</div>
-                            <div class="stat-label">Comprehensive Land Use Plans</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number">89</div>
-                            <div class="stat-label">Ongoing Projects</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number">23</div>
-                            <div class="stat-label">Environmental Impact Assessments</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number">12</div>
-                            <div class="stat-label">Urban Development Zones</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number">6</div>
-                            <div class="stat-label">Provinces Covered</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="province-grid" role="list" aria-label="Provinces of Region VI">
-                    <div class="province-card" role="listitem">
-                        <div class="province-header">
-                            <span>Aklan</span>
-                            <span aria-hidden="true">🏝️</span>
-                        </div>
-                        <div class="province-body">
-                            <div class="province-stat">
-                                <span>Land Area:</span>
-                                <span>1,821.42 km²</span>
-                            </div>
-                            <div class="province-stat">
-                                <span>CLUP Status:</span>
-                                <span style="color: #27ae60;">Approved</span>
-                            </div>
-                            <div class="province-stat">
-                                <span>Ongoing Projects:</span>
-                                <span>15</span>
-                            </div>
-                            <div class="province-stat">
-                                <span>Environmental Zones:</span>
-                                <span>8</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="province-card" role="listitem">
-                        <div class="province-header">
-                            <span>Antique</span>
-                            <span aria-hidden="true">🏔️</span>
-                        </div>
-                        <div class="province-body">
-                            <div class="province-stat">
-                                <span>Land Area:</span>
-                                <span>2,729.17 km²</span>
-                            </div>
-                            <div class="province-stat">
-                                <span>CLUP Status:</span>
-                                <span style="color: #f39c12;">For Review</span>
-                            </div>
-                            <div class="province-stat">
-                                <span>Ongoing Projects:</span>
-                                <span>12</span>
-                            </div>
-                            <div class="province-stat">
-                                <span>Environmental Zones:</span>
-                                <span>10</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="province-card" role="listitem">
-                        <div class="province-header">
-                            <span>Capiz</span>
-                            <span aria-hidden="true">🦐</span>
-                        </div>
-                        <div class="province-body">
-                            <div class="province-stat">
-                                <span>Land Area:</span>
-                                <span>2,594.64 km²</span>
-                            </div>
-                            <div class="province-stat">
-                                <span>CLUP Status:</span>
-                                <span style="color: #27ae60;">Approved</span>
-                            </div>
-                            <div class="province-stat">
-                                <span>Ongoing Projects:</span>
-                                <span>18</span>
-                            </div>
-                            <div class="province-stat">
-                                <span>Environmental Zones:</span>
-                                <span>12</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="province-card" role="listitem">
-                        <div class="province-header">
-                            <span>Guimaras</span>
-                            <span aria-hidden="true">🥭</span>
-                        </div>
-                        <div class="province-body">
-                            <div class="province-stat">
-                                <span>Land Area:</span>
-                                <span>604.57 km²</span>
-                            </div>
-                            <div class="province-stat">
-                                <span>CLUP Status:</span>
-                                <span style="color: #27ae60;">Approved</span>
-                            </div>
-                            <div class="province-stat">
-                                <span>Ongoing Projects:</span>
-                                <span>8</span>
-                            </div>
-                            <div class="province-stat">
-                                <span>Environmental Zones:</span>
-                                <span>6</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="province-card" role="listitem">
-                        <div class="province-header">
-                            <span>Iloilo</span>
-                            <span aria-hidden="true">🏛️</span>
-                        </div>
-                        <div class="province-body">
-                            <div class="province-stat">
-                                <span>Land Area:</span>
-                                <span>5,079.17 km²</span>
-                            </div>
-                            <div class="province-stat">
-                                <span>CLUP Status:</span>
-                                <span style="color: #27ae60;">Approved</span>
-                            </div>
-                            <div class="province-stat">
-                                <span>Ongoing Projects:</span>
-                                <span>25</span>
-                            </div>
-                            <div class="province-stat">
-                                <span>Environmental Zones:</span>
-                                <span>15</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="province-card" role="listitem">
-                        <div class="province-header">
-                            <span>Negros Occidental</span>
-                            <span aria-hidden="true">🎭</span>
-                        </div>
-                        <div class="province-body">
-                            <div class="province-stat">
-                                <span>Land Area:</span>
-                                <span>7,965.21 km²</span>
-                            </div>
-                            <div class="province-stat">
-                                <span>CLUP Status:</span>
-                                <span style="color: #f39c12;">For Review</span>
-                            </div>
-                            <div class="province-stat">
-                                <span>Ongoing Projects:</span>
-                                <span>22</span>
-                            </div>
-                            <div class="province-stat">
-                                <span>Environmental Zones:</span>
-                                <span>14</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Map Section -->
-            <div id="map" class="section" style="display: none;" role="region" aria-labelledby="map-heading">
-                <h1 id="map-heading" class="visually-hidden">Regional Navigation Map - Western Visayas</h1>
-                <div class="map-section">
-                    <div class="map-title">
-                        <span aria-hidden="true">🗺️</span> Regional Navigation Map - Western Visayas (Region VI)
-                    </div>
-                    
-                    <!-- Map Controls -->
-                    <div class="map-controls">
-                        <div class="file-upload">
-                            <input type="file" id="shapefileUpload" accept=".zip,.geojson,.json" multiple
-                                   aria-describedby="fileUploadHelp">
-                            <label for="shapefileUpload" id="uploadLabel">
-                                <span aria-hidden="true">📁</span> Upload GeoJSON or Shapefile (ZIP)
-                            </label>
-                            <small id="fileUploadHelp" style="display: block; margin-top: 5px; color: #666;">
-                                Upload GeoJSON files or zipped shapefiles
-                            </small>
-                        </div>
-                        
-                        <div class="layer-controls">
-                            <button class="btn btn-danger" onclick="clearUploadedLayers()" style="display: none;" id="clearLayersBtn" aria-label="Clear all uploaded layers">
-                                <span aria-hidden="true">🗑️</span> Clear Layers
-                            </button>
-                        </div>
-                        
-                        <div class="layer-list" id="layerListContainer" style="display: none;">
-                            <label for="layerSelect" class="visually-hidden">Select layer to toggle visibility</label>
-                            <select id="layerSelect" onchange="toggleLayerVisibility()" aria-label="Layer visibility control">
-                                <option value="">Select Layer to Toggle</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <!-- Upload Status -->
-                    <div id="uploadInfo" class="upload-info" role="status" aria-live="polite"></div>
-                    
-                    <div id="regionMap" class="map-container" role="application" aria-label="Interactive map of Western Visayas region"></div>
-                    
-                    <div class="map-legend" role="complementary" aria-label="Map legend">
-                        <div class="legend-item">
-                            <div class="legend-color approved" aria-hidden="true"></div>
-                            <span>Approved CLUP</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-color review" aria-hidden="true"></div>
-                            <span>For Review</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-color shapefile" aria-hidden="true"></div>
-                            <span>Uploaded Layer</span>
-                        </div>
-                    </div>
-
-                    <div class="province-stats" id="provinceStats" role="region" aria-label="Province statistics">
-                        <!-- Province stats will be populated by JavaScript -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- Land Use Plans Section -->
-            <div id="plans" class="section" style="display: none;" role="region" aria-labelledby="plans-heading">
-                <h1 id="plans-heading" class="visually-hidden">Comprehensive Land Use Plans</h1>
-                <div class="data-section">
-                    <div class="section-header">
-                        <h3><span aria-hidden="true">📋</span> Comprehensive Land Use Plans (CLUP)</h3>
-                        <div class="btn-group">
-                            <button class="btn btn-primary" onclick="openAddModal()" aria-label="Add new land use plan">
-                                <span aria-hidden="true">➕</span> Add New Plan
-                            </button>
-                            <button class="btn btn-success" onclick="exportData()" aria-label="Export data to JSON">
-                                <span aria-hidden="true">📥</span> Export Data
-                            </button>
-                            <button class="btn btn-map" onclick="showOnMap()" aria-label="View plans on map">
-                                <span aria-hidden="true">🗺️</span> View on Map
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="search-bar" role="search">
-                        <div class="search-box">
-                            <span aria-hidden="true">🔍</span>
-                            <label for="planSearch" class="visually-hidden">Search plans</label>
-                            <input type="text" id="planSearch" placeholder="Search by LGU, province, or status..." onkeyup="filterPlans()">
-                        </div>
-                        <div class="filter-group">
-                            <label for="provinceFilter" class="visually-hidden">Filter by province</label>
-                            <select id="provinceFilter" onchange="filterPlans()" aria-label="Filter by province">
-                                <option value="">All Provinces</option>
-                                <option value="Aklan">Aklan</option>
-                                <option value="Antique">Antique</option>
-                                <option value="Capiz">Capiz</option>
-                                <option value="Guimaras">Guimaras</option>
-                                <option value="Iloilo">Iloilo</option>
-                                <option value="Negros Occidental">Negros Occidental</option>
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label for="statusFilter" class="visually-hidden">Filter by status</label>
-                            <select id="statusFilter" onchange="filterPlans()" aria-label="Filter by status">
-                                <option value="">All Status</option>
-                                <option value="Approved">Approved</option>
-                                <option value="Pending">Pending</option>
-                                <option value="For Review">For Review</option>
-                                <option value="On Hold">On Hold</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="table-responsive">
-                        <table id="plansTable" aria-label="Land Use Plans">
-                            <caption class="visually-hidden">List of Comprehensive Land Use Plans in Region VI</caption>
-                            <thead>
-                                <tr>
-                                    <th scope="col">LGU/Municipality</th>
-                                    <th scope="col">Province</th>
-                                    <th scope="col">Plan Period</th>
-                                    <th scope="col">Status</th>
-                                    <th scope="col">Date Submitted</th>
-                                    <th scope="col">Date Approved</th>
-                                    <th scope="col">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="plansTableBody">
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Site Zoning Certification Section -->
-            <div id="zoning" class="section" style="display: none;" role="region" aria-labelledby="zoning-heading">
-                <h1 id="zoning-heading" class="visually-hidden">Site Zoning Certification</h1>
-                <div class="cert-section">
-                    <div class="cert-title">
-                        <span aria-hidden="true">🏷️</span> Site Zoning Certification - Data Entry
-                    </div>
-                    
-                    <form id="zoningForm" onsubmit="return saveZoningRecord(event)" novalidate>
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="certificationNo" id="certNoLabel">Certification No.</label>
-                                <input type="text" class="form-control" id="certificationNo" 
-                                       aria-labelledby="certNoLabel"
-                                       aria-describedby="certNoHelp"
-                                       readonly style="background: #f0f0f0; cursor: not-allowed;">
-                                <small id="certNoHelp" style="color: #666;">Auto-generated</small>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="series">Series</label>
-                                <input type="text" class="form-control" id="series" value="2002" readonly
-                                       aria-describedby="seriesHelp">
-                                <small id="seriesHelp" class="visually-hidden">Series year, read-only field</small>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="parcels">No. of Parcels</label>
-                                <input type="text" class="form-control" id="parcels" 
-                                       placeholder="e.g., Three hundred seventy-five (375) parcels" 
-                                       required
-                                       aria-required="true">
-                            </div>
-                            
-                            <div class="form-group full-width">
-                                <label for="location">Location of the Property</label>
-                                <input type="text" class="form-control" id="location" 
-                                       placeholder="Enter complete address" 
-                                       required
-                                       aria-required="true">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="totalArea">Total Area (ha.)</label>
-                                <input type="text" class="form-control" id="totalArea" 
-                                       placeholder="e.g., 15.5026" 
-                                       required
-                                       aria-required="true">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="proposedUse">Proposed Use</label>
-                                <input type="text" class="form-control" id="proposedUse" 
-                                       placeholder="e.g., Residential-3 Zone" 
-                                       required
-                                       aria-required="true">
-                            </div>
-                            
-                            <!-- Multiple Entries Section for Land Holdings -->
-                            <div class="form-group full-width">
-                                <div id="landHoldingsHeading" style="font-weight: 600; margin-bottom: 0.5rem; color: var(--primary-dark); font-size: 0.9rem;">
-                                    Land Holdings (Multiple Entries)
-                                </div>
-                                <div style="margin-bottom: 10px;">
-                                    <button type="button" class="btn btn-success" onclick="addLandHolding()" 
-                                            style="padding: 5px 10px; font-size: 0.9rem;"
-                                            aria-label="Add another property">
-                                        <span aria-hidden="true">➕</span> Add Another Property
-                                    </button>
-                                    <small style="margin-left: 10px; color: #666;">Each property can have its own lot number and area</small>
-                                </div>
-                                
-                                <div id="landHoldingsContainer" role="group" aria-labelledby="landHoldingsHeading">
-                                    <!-- First row will be added by JavaScript on page load -->
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="dateIssued">Date Issued</label>
-                                <input type="date" class="form-control" id="dateIssued" required aria-required="true">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="requestedBy">Requested By</label>
-                                <input type="text" class="form-control" id="requestedBy" 
-                                       placeholder="Name of requester" 
-                                       required
-                                       aria-required="true">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="amountPaid">Amount Paid (₱)</label>
-                                <input type="text" class="form-control" id="amountPaid" 
-                                       placeholder="e.g., 13,680" 
-                                       required
-                                       aria-required="true">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="orNo">O.R. No.</label>
-                                <input type="text" class="form-control" id="orNo" placeholder="Official Receipt Number">
-                            </div>
-                            
-                            <div class="form-group full-width">
-                                <label for="remarks">Remarks/Notes</label>
-                                <textarea class="form-control" id="remarks" rows="3" placeholder="Enter any additional notes"></textarea>
-                            </div>
-                        </div>
-                        
-                        <!-- CLUP Status Section -->
-                        <h3 class="cert-subtitle" id="clupStatusHeading">CLUP/Zoning Ordinance Status</h3>
-                        
-                        <div class="form-group" role="group" aria-labelledby="clupStatusHeading">
-                            <div style="font-weight: 600; margin-bottom: 0.5rem; color: var(--primary-dark); font-size: 0.9rem;">Select Status:</div>
-                            <div class="radio-group">
-                                <label class="radio-option">
-                                    <input type="radio" name="clupStatus" value="approved" checked aria-describedby="approvedDesc"> 
-                                    <span>With Approved CLUP/ZO</span>
-                                </label>
-                                <span id="approvedDesc" class="visually-hidden">Select if the area has an approved Comprehensive Land Use Plan</span>
-                                
-                                <label class="radio-option">
-                                    <input type="radio" name="clupStatus" value="pending" aria-describedby="pendingDesc"> 
-                                    <span>With CLUP/ZO Pending Approval</span>
-                                </label>
-                                <span id="pendingDesc" class="visually-hidden">Select if the Comprehensive Land Use Plan is pending approval</span>
-                                
-                                <label class="radio-option">
-                                    <input type="radio" name="clupStatus" value="none" aria-describedby="noneDesc"> 
-                                    <span>Without CLUP/ZO</span>
-                                </label>
-                                <span id="noneDesc" class="visually-hidden">Select if there is no Comprehensive Land Use Plan</span>
-                            </div>
-                        </div>
-                        
-                        <div id="approvedDetails" role="region" aria-labelledby="approvedDetailsHeading" style="margin-top: 1rem; padding: 1rem; background: #f8f4e8; border-radius: 8px;">
-                            <h4 id="approvedDetailsHeading" class="visually-hidden">Approved CLUP Details</h4>
-                            <div class="form-grid">
-                                <div class="form-group">
-                                    <label for="city">City/Municipality</label>
-                                    <input type="text" class="form-control" id="city" value="">
-                                </div>
-                                <div class="form-group">
-                                    <label for="approvedBy">Approved by</label>
-                                    <input type="text" class="form-control" id="approvedBy" value="">
-                                </div>
-                                <div class="form-group">
-                                    <label for="circularNo">Department Circular No.</label>
-                                    <input type="text" class="form-control" id="circularNo" value="">
-                                </div>
-                                <div class="form-group">
-                                    <label for="approvalDate">Date of Approval</label>
-                                    <input type="text" class="form-control" id="approvalDate" value="">
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div id="formMessages" role="alert" aria-live="assertive" class="visually-hidden"></div>
-                        
-                        <div style="display: flex; gap: 1rem; margin-top: 2rem; justify-content: center; flex-wrap: wrap;">
-                            <button type="submit" class="btn btn-success" aria-label="Save certification record">
-                                <span aria-hidden="true">💾</span> Save Certification
-                            </button>
-                            <button type="button" class="btn btn-primary" onclick="clearZoningForm()" aria-label="Clear form">
-                                <span aria-hidden="true">🔄</span> Clear Form
-                            </button>
-                            <button type="button" class="btn btn-cert" onclick="viewAllCertifications()" aria-label="View all records">
-                                <span aria-hidden="true">📋</span> View All Records
-                            </button>
-                            <button type="button" class="btn btn-print" onclick="printBlankForm()" aria-label="Print blank form">
-                                <span aria-hidden="true">🖨️</span> Print Blank Form
-                            </button>
-                            <button type="button" class="btn btn-warning" onclick="resetCertificationCounter()" aria-label="Reset certification counter">
-                                <span aria-hidden="true">🔄</span> Reset Counter
-                            </button>
-                        </div>
-                    </form>
+    <main class="container">
+        <!-- Dashboard Section -->
+        <div id="dashboard" class="section active">
+            <div class="overview-section">
+                <div class="overview-title">
+                    Regional Planning Overview - Region VI
+                    <span>2024</span>
                 </div>
                 
-                <div class="cert-section" id="recordsSection" style="display: none;" role="region" aria-labelledby="records-heading">
-                    <div class="cert-title">
-                        <span aria-hidden="true">📋</span> Saved Certifications
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">147</div>
+                        <div class="stat-label">Comprehensive Land Use Plans</div>
                     </div>
-                    
-                    <div style="overflow-x: auto;">
-                        <table class="cert-table" id="certificationsTable" aria-label="Saved zoning certifications">
-                            <caption class="visually-hidden">List of all saved zoning certifications</caption>
-                            <thead>
-                                <tr>
-                                    <th scope="col">Certification No.</th>
-                                    <th scope="col">No. of Parcels</th>
-                                    <th scope="col">Location</th>
-                                    <th scope="col">Total Area</th>
-                                    <th scope="col">Date Issued</th>
-                                    <th scope="col">Requested By</th>
-                                    <th scope="col">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="certificationsTableBody">
-                            </tbody>
-                        </table>
+                    <div class="stat-card">
+                        <div class="stat-number">89</div>
+                        <div class="stat-label">Ongoing Projects</div>
                     </div>
-                    
-                    <div style="text-align: right; margin-top: 1rem;">
-                        <button class="btn btn-secondary" onclick="toggleRecordsView()" aria-label="Hide records section">Hide Records</button>
+                    <div class="stat-card">
+                        <div class="stat-number">23</div>
+                        <div class="stat-label">Environmental Impact Assessments</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">12</div>
+                        <div class="stat-label">Urban Development Zones</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">6</div>
+                        <div class="stat-label">Provinces Covered</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Reports Section -->
-            <div id="reports" class="section" style="display: none;" role="region" aria-labelledby="reports-heading">
-                <h1 id="reports-heading" class="visually-hidden">Planning Reports</h1>
-                <div class="data-section">
-                    <div class="section-header">
-                        <h3><span aria-hidden="true">📊</span> Planning Reports</h3>
+            <div class="province-grid">
+                <div class="province-card">
+                    <div class="province-header">
+                        <span>Aklan</span>
+                        <span>🏝️</span>
                     </div>
-                    
-                    <div class="stats-grid">
-                        <div class="stat-card" onclick="generateReport('annual')" role="button" tabindex="0" 
-                             onkeypress="if(event.key==='Enter'||event.key===' ') generateReport('annual')"
-                             aria-label="Generate annual report">
-                            <div class="stat-number" aria-hidden="true">📅</div>
-                            <div class="stat-label">Annual Report</div>
+                    <div class="province-body">
+                        <div class="province-stat">
+                            <span>Land Area:</span>
+                            <span>1,821.42 km²</span>
                         </div>
-                        <div class="stat-card" onclick="generateReport('quarterly')" role="button" tabindex="0"
-                             onkeypress="if(event.key==='Enter'||event.key===' ') generateReport('quarterly')"
-                             aria-label="Generate quarterly report">
-                            <div class="stat-number" aria-hidden="true">📆</div>
-                            <div class="stat-label">Quarterly Report</div>
+                        <div class="province-stat">
+                            <span>CLUP Status:</span>
+                            <span style="color: #27ae60;">Approved</span>
                         </div>
-                        <div class="stat-card" onclick="generateReport('project')" role="button" tabindex="0"
-                             onkeypress="if(event.key==='Enter'||event.key===' ') generateReport('project')"
-                             aria-label="Generate project status report">
-                            <div class="stat-number" aria-hidden="true">🏗️</div>
-                            <div class="stat-label">Project Status</div>
+                        <div class="province-stat">
+                            <span>Ongoing Projects:</span>
+                            <span>15</span>
                         </div>
-                        <div class="stat-card" onclick="generateReport('environmental')" role="button" tabindex="0"
-                             onkeypress="if(event.key==='Enter'||event.key===' ') generateReport('environmental')"
-                             aria-label="Generate environmental report">
-                            <div class="stat-number" aria-hidden="true">🌳</div>
-                            <div class="stat-label">Environmental Report</div>
+                        <div class="province-stat">
+                            <span>Environmental Zones:</span>
+                            <span>8</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="province-card">
+                    <div class="province-header">
+                        <span>Antique</span>
+                        <span>🏔️</span>
+                    </div>
+                    <div class="province-body">
+                        <div class="province-stat">
+                            <span>Land Area:</span>
+                            <span>2,729.17 km²</span>
+                        </div>
+                        <div class="province-stat">
+                            <span>CLUP Status:</span>
+                            <span style="color: #f39c12;">For Review</span>
+                        </div>
+                        <div class="province-stat">
+                            <span>Ongoing Projects:</span>
+                            <span>12</span>
+                        </div>
+                        <div class="province-stat">
+                            <span>Environmental Zones:</span>
+                            <span>10</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="province-card">
+                    <div class="province-header">
+                        <span>Capiz</span>
+                        <span>🦐</span>
+                    </div>
+                    <div class="province-body">
+                        <div class="province-stat">
+                            <span>Land Area:</span>
+                            <span>2,594.64 km²</span>
+                        </div>
+                        <div class="province-stat">
+                            <span>CLUP Status:</span>
+                            <span style="color: #27ae60;">Approved</span>
+                        </div>
+                        <div class="province-stat">
+                            <span>Ongoing Projects:</span>
+                            <span>18</span>
+                        </div>
+                        <div class="province-stat">
+                            <span>Environmental Zones:</span>
+                            <span>12</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="province-card">
+                    <div class="province-header">
+                        <span>Guimaras</span>
+                        <span>🥭</span>
+                    </div>
+                    <div class="province-body">
+                        <div class="province-stat">
+                            <span>Land Area:</span>
+                            <span>604.57 km²</span>
+                        </div>
+                        <div class="province-stat">
+                            <span>CLUP Status:</span>
+                            <span style="color: #27ae60;">Approved</span>
+                        </div>
+                        <div class="province-stat">
+                            <span>Ongoing Projects:</span>
+                            <span>8</span>
+                        </div>
+                        <div class="province-stat">
+                            <span>Environmental Zones:</span>
+                            <span>6</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="province-card">
+                    <div class="province-header">
+                        <span>Iloilo</span>
+                        <span>🏛️</span>
+                    </div>
+                    <div class="province-body">
+                        <div class="province-stat">
+                            <span>Land Area:</span>
+                            <span>5,079.17 km²</span>
+                        </div>
+                        <div class="province-stat">
+                            <span>CLUP Status:</span>
+                            <span style="color: #27ae60;">Approved</span>
+                        </div>
+                        <div class="province-stat">
+                            <span>Ongoing Projects:</span>
+                            <span>25</span>
+                        </div>
+                        <div class="province-stat">
+                            <span>Environmental Zones:</span>
+                            <span>15</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="province-card">
+                    <div class="province-header">
+                        <span>Negros Occidental</span>
+                        <span>🎭</span>
+                    </div>
+                    <div class="province-body">
+                        <div class="province-stat">
+                            <span>Land Area:</span>
+                            <span>7,965.21 km²</span>
+                        </div>
+                        <div class="province-stat">
+                            <span>CLUP Status:</span>
+                            <span style="color: #f39c12;">For Review</span>
+                        </div>
+                        <div class="province-stat">
+                            <span>Ongoing Projects:</span>
+                            <span>22</span>
+                        </div>
+                        <div class="province-stat">
+                            <span>Environmental Zones:</span>
+                            <span>14</span>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div id="dataModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalDescription">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h2 id="modalTitle">View/Edit Record</h2>
-                        <button class="close-btn" onclick="closeModal()" aria-label="Close dialog">&times;</button>
+        <!-- Map Section with Basemap Selector -->
+        <div id="map" class="section" style="display: none;">
+            <div class="map-section">
+                <div class="map-title">
+                    <span>🗺️</span> Regional Navigation Map - Western Visayas (Region VI)
+                </div>
+                
+                <!-- Map Controls with Basemap Selector -->
+                <div class="map-controls">
+                    <div class="basemap-selector">
+                        <label for="basemapSelect" class="visually-hidden" style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0;">Select map view type</label>
+                        <select id="basemapSelect" onchange="changeBasemap(this.value)">
+                            <option value="street">🗺️ Street Map</option>
+                            <option value="satellite">🛰️ Satellite</option>
+                            <option value="terrain">⛰️ Terrain</option>
+                        </select>
                     </div>
-                    <div id="modalDescription" class="visually-hidden">Dialog for viewing or editing records</div>
-                    <div id="modalBody" class="modal-body">
+                    
+                    <div class="file-upload">
+                        <input type="file" id="shapefileUpload" accept=".zip,.geojson,.json" multiple>
+                        <label for="shapefileUpload" id="uploadLabel">
+                            <span>📁</span> Upload GeoJSON or Shapefile (ZIP)
+                        </label>
+                        <small style="display: block; margin-top: 5px; color: #666;">Upload GeoJSON files or zipped shapefiles</small>
                     </div>
+                    
+                    <div class="layer-controls">
+                        <button class="btn btn-danger" onclick="clearUploadedLayers()" style="display: none;" id="clearLayersBtn">
+                            <span>🗑️</span> Clear Layers
+                        </button>
+                    </div>
+                    
+                    <div class="layer-list" id="layerListContainer" style="display: none;">
+                        <select id="layerSelect" onchange="toggleLayerVisibility()">
+                            <option value="">Select Layer to Toggle</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Upload Status -->
+                <div id="uploadInfo" class="upload-info"></div>
+                
+                <div id="regionMap" class="map-container"></div>
+                
+                <div class="map-legend">
+                    <div class="legend-item">
+                        <div class="legend-color approved"></div>
+                        <span>Approved CLUP</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color review"></div>
+                        <span>For Review</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color shapefile"></div>
+                        <span>Uploaded Shapefile/Zoning Map</span>
+                    </div>
+                </div>
+
+                <div class="province-stats" id="provinceStats">
+                    <!-- Province stats will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Land Use Plans Section -->
+        <div id="plans" class="section" style="display: none;">
+            <div class="data-section">
+                <div class="section-header">
+                    <h3>📋 Comprehensive Land Use Plans (CLUP)</h3>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="openAddModal()">
+                            <span>➕</span> Add New Plan
+                        </button>
+                        <button class="btn btn-success" onclick="exportData()">
+                            <span>📥</span> Export Data
+                        </button>
+                        <button class="btn btn-map" onclick="showOnMap()">
+                            <span>🗺️</span> View on Map
+                        </button>
+                    </div>
+                </div>
+
+                <div class="search-bar">
+                    <div class="search-box">
+                        <i>🔍</i>
+                        <input type="text" id="planSearch" placeholder="Search by LGU, province, or status..." onkeyup="filterPlans()">
+                    </div>
+                    <div class="filter-group">
+                        <select id="provinceFilter" onchange="filterPlans()">
+                            <option value="">All Provinces</option>
+                            <option value="Aklan">Aklan</option>
+                            <option value="Antique">Antique</option>
+                            <option value="Capiz">Capiz</option>
+                            <option value="Guimaras">Guimaras</option>
+                            <option value="Iloilo">Iloilo</option>
+                            <option value="Negros Occidental">Negros Occidental</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <select id="statusFilter" onchange="filterPlans()">
+                            <option value="">All Status</option>
+                            <option value="Approved">Approved</option>
+                            <option value="Pending">Pending</option>
+                            <option value="For Review">For Review</option>
+                            <option value="On Hold">On Hold</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table id="plansTable">
+                        <thead>
+                            <tr>
+                                <th>LGU/Municipality</th>
+                                <th>Province</th>
+                                <th>Plan Period</th>
+                                <th>Status</th>
+                                <th>Date Submitted</th>
+                                <th>Date Approved</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="plansTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Site Zoning Certification Section -->
+        <div id="zoning" class="section" style="display: none;">
+            <div class="cert-section">
+                <div class="cert-title">
+                    <span>🏷️</span> Site Zoning Certification - Data Entry
+                </div>
+                
+                <form id="zoningForm" onsubmit="return saveZoningRecord(event)">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="certificationNo">Certification No.</label>
+                            <input type="text" class="form-control" id="certificationNo" readonly style="background: #f0f0f0; cursor: not-allowed;">
+                            <small style="color: #666;">Auto-generated</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="series">Series</label>
+                            <input type="text" class="form-control" id="series" value="2002" readonly>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="parcels">No. of Parcels</label>
+                            <input type="text" class="form-control" id="parcels" placeholder="e.g., Three hundred seventy-five (375) parcels" required>
+                        </div>
+                        
+                        <div class="form-group full-width">
+                            <label for="location">Location of the Property</label>
+                            <input type="text" class="form-control" id="location" placeholder="Enter complete address" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="totalArea">Total Area (ha.)</label>
+                            <input type="text" class="form-control" id="totalArea" placeholder="e.g., 15.5026" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="proposedUse">Proposed Use</label>
+                            <input type="text" class="form-control" id="proposedUse" placeholder="e.g., Residential-3 Zone" required>
+                        </div>
+                        
+                        <!-- Multiple Entries Section for Land Holdings -->
+                        <div class="form-group full-width">
+                            <div style="font-weight: 600; margin-bottom: 0.5rem; color: var(--primary-dark); font-size: 0.9rem;">Land Holdings (Multiple Entries)</div>
+                            <div style="margin-bottom: 10px;">
+                                <button type="button" class="btn btn-success" onclick="addLandHolding()" style="padding: 5px 10px; font-size: 0.9rem;">
+                                    <span>➕</span> Add Another Property
+                                </button>
+                                <small style="margin-left: 10px; color: #666;">Each property can have its own lot number and area</small>
+                            </div>
+                            
+                            <div id="landHoldingsContainer">
+                                <!-- First row will be added by JavaScript on page load -->
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="dateIssued">Date Issued</label>
+                            <input type="date" class="form-control" id="dateIssued" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="requestedBy">Requested By</label>
+                            <input type="text" class="form-control" id="requestedBy" placeholder="Name of requester" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="amountPaid">Amount Paid (₱)</label>
+                            <input type="text" class="form-control" id="amountPaid" placeholder="e.g., 13,680" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="orNo">O.R. No.</label>
+                            <input type="text" class="form-control" id="orNo" placeholder="Official Receipt Number">
+                        </div>
+                        
+                        <div class="form-group full-width">
+                            <label for="remarks">Remarks/Notes</label>
+                            <textarea class="form-control" id="remarks" rows="3" placeholder="Enter any additional notes"></textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- CLUP Status Section -->
+                    <h3 class="cert-subtitle">CLUP/Zoning Ordinance Status</h3>
+                    
+                    <div class="form-group">
+                        <div style="font-weight: 600; margin-bottom: 0.5rem; color: var(--primary-dark); font-size: 0.9rem;">Select Status:</div>
+                        <div class="radio-group">
+                            <label class="radio-option">
+                                <input type="radio" name="clupStatus" value="approved" checked> 
+                                <span>With Approved CLUP/ZO</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="clupStatus" value="pending"> 
+                                <span>With CLUP/ZO Pending Approval</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="clupStatus" value="none"> 
+                                <span>Without CLUP/ZO</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div id="approvedDetails" style="margin-top: 1rem; padding: 1rem; background: #f8f4e8; border-radius: 8px;">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="city">City/Municipality</label>
+                                <input type="text" class="form-control" id="city" value="">
+                            </div>
+                            <div class="form-group">
+                                <label for="approvedBy">Approved by</label>
+                                <input type="text" class="form-control" id="approvedBy" value="">
+                            </div>
+                            <div class="form-group">
+                                <label for="circularNo">Department Circular No.</label>
+                                <input type="text" class="form-control" id="circularNo" value="">
+                            </div>
+                            <div class="form-group">
+                                <label for="approvalDate">Date of Approval</label>
+                                <input type="text" class="form-control" id="approvalDate" value="">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 1rem; margin-top: 2rem; justify-content: center; flex-wrap: wrap;">
+                        <button type="submit" class="btn btn-success">💾 Save Certification</button>
+                        <button type="button" class="btn btn-primary" onclick="clearZoningForm()">🔄 Clear Form</button>
+                        <button type="button" class="btn btn-cert" onclick="viewAllCertifications()">📋 View All Records</button>
+                        <button type="button" class="btn btn-print" onclick="printBlankForm()">🖨️ Print Blank Form</button>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="cert-section" id="recordsSection" style="display: none;">
+                <div class="cert-title">
+                    <span>📋</span> Saved Certifications
+                </div>
+                
+                <div style="overflow-x: auto;">
+                    <table class="cert-table" id="certificationsTable">
+                        <thead>
+                            32~
+                                <th>Certification No.</th>
+                                <th>No. of Parcels</th>
+                                <th>Location</th>
+                                <th>Total Area</th>
+                                <th>Date Issued</th>
+                                <th>Requested By</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="certificationsTableBody">
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div style="text-align: right; margin-top: 1rem;">
+                    <button class="btn btn-secondary" onclick="toggleRecordsView()">Hide Records</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reports Section -->
+        <div id="reports" class="section" style="display: none;">
+            <div class="data-section">
+                <div class="section-header">
+                    <h3>📊 Planning Reports</h3>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card" onclick="generateReport('annual')" style="cursor: pointer;">
+                        <div class="stat-number">📅</div>
+                        <div class="stat-label">Annual Report</div>
+                    </div>
+                    <div class="stat-card" onclick="generateReport('quarterly')" style="cursor: pointer;">
+                        <div class="stat-number">📆</div>
+                        <div class="stat-label">Quarterly Report</div>
+                    </div>
+                    <div class="stat-card" onclick="generateReport('project')" style="cursor: pointer;">
+                        <div class="stat-number">🏗️</div>
+                        <div class="stat-label">Project Status</div>
+                    </div>
+                    <div class="stat-card" onclick="generateReport('environmental')" style="cursor: pointer;">
+                        <div class="stat-number">🌳</div>
+                        <div class="stat-label">Environmental Report</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="dataModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="modalTitle">View/Edit Record</h2>
+                    <button class="close-btn" onclick="closeModal()">&times;</button>
+                </div>
+                <div id="modalBody" class="modal-body">
                 </div>
             </div>
         </div>
@@ -1996,11 +1841,11 @@
 
     <div id="printSection" style="display: none;"></div>
 
-    <footer role="contentinfo">
+    <footer>
         <p>Environmental Land Use and Urban Planning Development Division</p>
         <p>Department of Human Settlements and Urban Development - Region VI</p>
-        <p><span aria-hidden="true">📍</span> 3rd Floor, DHSUD Regional Office VI, Diversion Road, Mandurriao, Iloilo City</p>
-        <p><span aria-hidden="true">📞</span> (033) 123-4567 | <span aria-hidden="true">📧</span> elupdd.region6@dhsud.gov.ph</p>
+        <p>📍 3rd Floor, DHSUD Regional Office VI, Diversion Road, Mandurriao, Iloilo City</p>
+        <p>📞 (033) 123-4567 | 📧 elupdd.region6@dhsud.gov.ph</p>
         <p style="margin-top: 1rem; font-size: 0.9rem;">© 2024 All Rights Reserved</p>
     </footer>
 
@@ -2208,6 +2053,23 @@
         // Map variable
         let regionMap = null;
         let mapInitialized = false;
+        let currentBasemap = null;
+        
+        // Basemap layers
+        const basemaps = {
+            street: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 19
+            }),
+            satellite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+                maxZoom: 19
+            }),
+            terrain: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+                attribution: 'Map data: &copy; <a href="https://www.opentopomap.org">OpenTopoMap</a> contributors',
+                maxZoom: 17
+            })
+        };
         
         // Uploaded layers storage
         let uploadedLayers = [];
@@ -2275,14 +2137,34 @@
             return `${certificationCounter.prefix}${year}-${number}`;
         }
 
+        // Change basemap function
+        function changeBasemap(basemapType) {
+            if (!regionMap) return;
+            
+            // Remove current basemap
+            if (currentBasemap) {
+                regionMap.removeLayer(currentBasemap);
+            }
+            
+            // Add new basemap
+            currentBasemap = basemaps[basemapType].addTo(regionMap);
+            
+            // Announce change for screen readers
+            const uploadInfo = document.getElementById('uploadInfo');
+            uploadInfo.innerHTML = `Map view changed to ${basemapType}`;
+            uploadInfo.className = 'upload-info show';
+            setTimeout(() => {
+                uploadInfo.className = 'upload-info';
+            }, 2000);
+        }
+
         // Initialize map
         function initMap() {
             if (!mapInitialized) {
                 regionMap = L.map('regionMap').setView([11.0, 122.5], 8);
                 
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                }).addTo(regionMap);
+                // Add default street basemap
+                currentBasemap = basemaps.street.addTo(regionMap);
                 
                 provinceData.forEach(province => {
                     const customIcon = L.divIcon({
@@ -2331,7 +2213,7 @@
             const uploadInfo = document.getElementById('uploadInfo');
             
             uploadLabel.classList.add('uploading');
-            uploadLabel.innerHTML = '<span aria-hidden="true">⏳</span> Processing...';
+            uploadLabel.innerHTML = '<span>⏳</span> Processing...';
             uploadInfo.className = 'upload-info show';
             uploadInfo.innerHTML = 'Reading file...';
             
@@ -2359,7 +2241,7 @@
                     }
                 } catch (err) {
                     uploadLabel.classList.remove('uploading');
-                    uploadLabel.innerHTML = '<span aria-hidden="true">📁</span> Upload GeoJSON or Shapefile (ZIP)';
+                    uploadLabel.innerHTML = '<span>📁</span> Upload GeoJSON or Shapefile (ZIP)';
                     uploadInfo.className = 'upload-info show error';
                     uploadInfo.innerHTML = '❌ Error: ' + err.message;
                 }
@@ -2367,7 +2249,7 @@
             
             reader.onerror = function() {
                 uploadLabel.classList.remove('uploading');
-                uploadLabel.innerHTML = '<span aria-hidden="true">📁</span> Upload GeoJSON or Shapefile (ZIP)';
+                uploadLabel.innerHTML = '<span>📁</span> Upload GeoJSON or Shapefile (ZIP)';
                 uploadInfo.className = 'upload-info show error';
                 uploadInfo.innerHTML = '❌ Error reading file';
             };
@@ -2434,7 +2316,7 @@
                 const uploadInfo = document.getElementById('uploadInfo');
                 
                 uploadLabel.classList.remove('uploading');
-                uploadLabel.innerHTML = '<span aria-hidden="true">📁</span> Upload GeoJSON or Shapefile (ZIP)';
+                uploadLabel.innerHTML = '<span>📁</span> Upload GeoJSON or Shapefile (ZIP)';
                 uploadInfo.className = 'upload-info show success';
                 uploadInfo.innerHTML = `✅ Loaded: ${displayName}`;
                 
@@ -2539,7 +2421,6 @@
             const province = provinceData.find(p => p.name === provinceName);
             if (province && regionMap) {
                 regionMap.setView(province.coordinates, 10);
-                // Announce for screen readers
                 const uploadInfo = document.getElementById('uploadInfo');
                 uploadInfo.innerHTML = `Map focused on ${provinceName}`;
                 uploadInfo.className = 'upload-info show';
@@ -2622,16 +2503,6 @@
                 }
             }
             
-            // Update page title for screen readers
-            const sectionNames = {
-                'dashboard': 'Dashboard',
-                'map': 'Regional Map',
-                'plans': 'Land Use Plans',
-                'zoning': 'Site Zoning Certification',
-                'reports': 'Reports'
-            };
-            document.title = `ELUPDD Region VI - ${sectionNames[sectionId] || 'Home'}`;
-            
             if (sectionId === 'map') {
                 initMap();
                 setTimeout(() => {
@@ -2653,17 +2524,15 @@
             const timestamp = Date.now();
             const newRow = document.createElement('div');
             newRow.className = 'land-holding-row';
-            newRow.setAttribute('role', 'group');
-            newRow.setAttribute('aria-label', `Land holding entry ${rowCount + 1}`);
             newRow.style.cssText = 'display: grid; grid-template-columns: 2fr 1.5fr 1.5fr 1fr 1fr 0.5fr; gap: 10px; margin-bottom: 15px; padding: 15px; background: #f9f9f9; border-radius: 5px; border: 1px solid #e0e0e0;';
             newRow.innerHTML = `
                 <div>
                     <label for="owner_${timestamp}_${rowCount}" style="font-size: 0.85rem; font-weight: 600;">Registered Owner</label>
-                    <input type="text" class="form-control" id="owner_${timestamp}_${rowCount}" name="registeredOwner[]" placeholder="Enter registered owner" required style="padding: 0.6rem;" aria-required="true">
+                    <input type="text" class="form-control" id="owner_${timestamp}_${rowCount}" name="registeredOwner[]" placeholder="Enter registered owner" required style="padding: 0.6rem;">
                 </div>
                 <div>
                     <label for="tct_${timestamp}_${rowCount}" style="font-size: 0.85rem; font-weight: 600;">TCT/OCT No.</label>
-                    <input type="text" class="form-control" id="tct_${timestamp}_${rowCount}" name="tctNo[]" placeholder="Enter TCT/OCT number" required style="padding: 0.6rem;" aria-required="true">
+                    <input type="text" class="form-control" id="tct_${timestamp}_${rowCount}" name="tctNo[]" placeholder="Enter TCT/OCT number" required style="padding: 0.6rem;">
                 </div>
                 <div>
                     <label for="lot_${timestamp}_${rowCount}" style="font-size: 0.85rem; font-weight: 600;">Lot Number</label>
@@ -2675,13 +2544,10 @@
                 </div>
                 <div>
                     <label for="zone_${timestamp}_${rowCount}" style="font-size: 0.85rem; font-weight: 600;">Zone Classification</label>
-                    <input type="text" class="form-control" id="zone_${timestamp}_${rowCount}" name="zoneclass[]" placeholder="e.g., Residential-3" required style="padding: 0.6rem;" aria-required="true">
+                    <input type="text" class="form-control" id="zone_${timestamp}_${rowCount}" name="zoneclass[]" placeholder="e.g., Residential-3" required style="padding: 0.6rem;">
                 </div>
                 <div style="display: flex; align-items: flex-end; justify-content: center;">
-                    <button type="button" class="btn btn-danger" onclick="removeLandHolding(this)" style="padding: 0.6rem 1rem; height: 42px;" aria-label="Remove this land holding">
-                        <span aria-hidden="true">🗑️</span>
-                        <span class="visually-hidden">Remove</span>
-                    </button>
+                    <button type="button" class="btn btn-danger" onclick="removeLandHolding(this)" style="padding: 0.6rem 1rem; height: 42px;">🗑️</button>
                 </div>
             `;
             container.appendChild(newRow);
@@ -2701,9 +2567,6 @@
             event.preventDefault();
             
             try {
-                // Clear any previous error messages
-                clearErrorMessages();
-                
                 const certificationNo = generateCertificationNumber();
                 
                 const series = document.getElementById('series')?.value || '2002';
@@ -2717,44 +2580,8 @@
                 const orNo = document.getElementById('orNo')?.value || '';
                 const remarks = document.getElementById('remarks')?.value || '';
                 
-                // Validate required fields
-                let hasErrors = false;
-                if (!parcels) {
-                    showError('parcels', 'This field is required');
-                    hasErrors = true;
-                }
-                if (!location) {
-                    showError('location', 'This field is required');
-                    hasErrors = true;
-                }
-                if (!totalArea) {
-                    showError('totalArea', 'This field is required');
-                    hasErrors = true;
-                }
-                if (!proposedUse) {
-                    showError('proposedUse', 'This field is required');
-                    hasErrors = true;
-                }
-                if (!dateIssued) {
-                    showError('dateIssued', 'This field is required');
-                    hasErrors = true;
-                }
-                if (!requestedBy) {
-                    showError('requestedBy', 'This field is required');
-                    hasErrors = true;
-                }
-                if (!amountPaid) {
-                    showError('amountPaid', 'This field is required');
-                    hasErrors = true;
-                }
-                
-                if (hasErrors) {
-                    const formMessages = document.getElementById('formMessages');
-                    formMessages.textContent = 'Please fill in all required fields';
-                    formMessages.classList.remove('visually-hidden');
-                    setTimeout(() => {
-                        formMessages.classList.add('visually-hidden');
-                    }, 5000);
+                if (!parcels || !location || !totalArea || !proposedUse || !dateIssued || !requestedBy || !amountPaid) {
+                    alert('Please fill in all required fields.');
                     return false;
                 }
                 
@@ -2823,21 +2650,12 @@
                 zoningCertifications.push(record);
                 saveZoningData();
                 
-                // Announce success for screen readers
-                const formMessages = document.getElementById('formMessages');
-                formMessages.textContent = `Certification ${certificationNo} saved successfully`;
-                formMessages.classList.remove('visually-hidden');
-                
                 alert(`Certification saved successfully!\nCertification No: ${certificationNo}`);
                 
                 clearZoningForm();
                 document.getElementById('certificationNo').value = getNextCertificationNumber();
                 document.getElementById('recordsSection').style.display = 'block';
                 renderCertificationsTable();
-                
-                setTimeout(() => {
-                    formMessages.classList.add('visually-hidden');
-                }, 5000);
                 
                 return false;
                 
@@ -2846,31 +2664,6 @@
                 alert('An error occurred while saving.');
                 return false;
             }
-        }
-
-        function showError(fieldId, message) {
-            const field = document.getElementById(fieldId);
-            field.setAttribute('aria-invalid', 'true');
-            
-            const errorId = fieldId + '-error';
-            let errorSpan = document.getElementById(errorId);
-            
-            if (!errorSpan) {
-                errorSpan = document.createElement('span');
-                errorSpan.id = errorId;
-                errorSpan.className = 'error-message';
-                field.parentNode.appendChild(errorSpan);
-            }
-            
-            errorSpan.textContent = message;
-            field.setAttribute('aria-describedby', errorId);
-        }
-
-        function clearErrorMessages() {
-            document.querySelectorAll('[aria-invalid="true"]').forEach(field => {
-                field.removeAttribute('aria-invalid');
-            });
-            document.querySelectorAll('.error-message').forEach(el => el.remove());
         }
 
         function getDaySuffix(day) {
@@ -2885,7 +2678,6 @@
 
         function clearZoningForm() {
             document.getElementById('zoningForm').reset();
-            clearErrorMessages();
             
             const container = document.getElementById('landHoldingsContainer');
             container.innerHTML = '';
@@ -2909,7 +2701,7 @@
             tbody.innerHTML = '';
             
             if (zoningCertifications.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 2rem;">No records found.</td></tr>';
+                tbody.innerHTML = '路径<td colspan="7" style="text-align: center; padding: 2rem;">No records found.</td></tr>';
                 return;
             }
             
@@ -2926,22 +2718,10 @@
                     <td>${record.requestedBy || 'N/A'}</td>
                     <td>
                         <div class="action-btns">
-                            <button class="action-btn view" onclick="viewZoningRecord(${record.id})" aria-label="View record ${record.certificationNo}">
-                                <span aria-hidden="true">👁️</span>
-                                <span class="visually-hidden">View</span>
-                            </button>
-                            <button class="action-btn edit" onclick="editZoningRecord(${record.id})" aria-label="Edit record ${record.certificationNo}">
-                                <span aria-hidden="true">✏️</span>
-                                <span class="visually-hidden">Edit</span>
-                            </button>
-                            <button class="action-btn print" onclick="printZoningRecord(${record.id})" aria-label="Print record ${record.certificationNo}">
-                                <span aria-hidden="true">🖨️</span>
-                                <span class="visually-hidden">Print</span>
-                            </button>
-                            <button class="action-btn delete" onclick="deleteZoningRecord(${record.id})" aria-label="Delete record ${record.certificationNo}">
-                                <span aria-hidden="true">🗑️</span>
-                                <span class="visually-hidden">Delete</span>
-                            </button>
+                            <button class="action-btn view" onclick="viewZoningRecord(${record.id})">👁️ View</button>
+                            <button class="action-btn edit" onclick="editZoningRecord(${record.id})">✏️ Edit</button>
+                            <button class="action-btn print" onclick="printZoningRecord(${record.id})">🖨️ Print</button>
+                            <button class="action-btn delete" onclick="deleteZoningRecord(${record.id})">🗑️</button>
                         </div>
                     </td>
                 `;
@@ -3006,17 +2786,15 @@
                     const timestamp = Date.now() + idx;
                     const row = document.createElement('div');
                     row.className = 'land-holding-row';
-                    row.setAttribute('role', 'group');
-                    row.setAttribute('aria-label', `Land holding entry ${idx + 1}`);
                     row.style.cssText = 'display: grid; grid-template-columns: 2fr 1.5fr 1.5fr 1fr 1fr 0.5fr; gap: 10px; margin-bottom: 15px; padding: 15px; background: #f9f9f9; border-radius: 5px; border: 1px solid #e0e0e0;';
                     row.innerHTML = `
                         <div>
                             <label for="owner_${timestamp}_${idx}" style="font-size: 0.85rem; font-weight: 600;">Registered Owner</label>
-                            <input type="text" class="form-control" id="owner_${timestamp}_${idx}" name="registeredOwner[]" value="${holding.registeredOwner.replace(/"/g, '&quot;')}" required style="padding: 0.6rem;" aria-required="true">
+                            <input type="text" class="form-control" id="owner_${timestamp}_${idx}" name="registeredOwner[]" value="${holding.registeredOwner.replace(/"/g, '&quot;')}" required style="padding: 0.6rem;">
                         </div>
                         <div>
                             <label for="tct_${timestamp}_${idx}" style="font-size: 0.85rem; font-weight: 600;">TCT/OCT No.</label>
-                            <input type="text" class="form-control" id="tct_${timestamp}_${idx}" name="tctNo[]" value="${holding.tctNo.replace(/"/g, '&quot;')}" required style="padding: 0.6rem;" aria-required="true">
+                            <input type="text" class="form-control" id="tct_${timestamp}_${idx}" name="tctNo[]" value="${holding.tctNo.replace(/"/g, '&quot;')}" required style="padding: 0.6rem;">
                         </div>
                         <div>
                             <label for="lot_${timestamp}_${idx}" style="font-size: 0.85rem; font-weight: 600;">Lot Number</label>
@@ -3028,13 +2806,10 @@
                         </div>
                         <div>
                             <label for="zone_${timestamp}_${idx}" style="font-size: 0.85rem; font-weight: 600;">Zone Classification</label>
-                            <input type="text" class="form-control" id="zone_${timestamp}_${idx}" name="zoneclass[]" value="${holding.zoneclass.replace(/"/g, '&quot;')}" required style="padding: 0.6rem;" aria-required="true">
+                            <input type="text" class="form-control" id="zone_${timestamp}_${idx}" name="zoneclass[]" value="${holding.zoneclass.replace(/"/g, '&quot;')}" required style="padding: 0.6rem;">
                         </div>
                         <div style="display: flex; align-items: flex-end; justify-content: center;">
-                            <button type="button" class="btn btn-danger" onclick="removeLandHolding(this)" style="padding: 0.6rem 1rem; height: 42px;" aria-label="Remove this land holding">
-                                <span aria-hidden="true">🗑️</span>
-                                <span class="visually-hidden">Remove</span>
-                            </button>
+                            <button type="button" class="btn btn-danger" onclick="removeLandHolding(this)" style="padding: 0.6rem 1rem; height: 42px;">🗑️</button>
                         </div>
                     `;
                     container.appendChild(row);
@@ -3064,15 +2839,6 @@
                     zoningCertifications.splice(index, 1);
                     saveZoningData();
                     renderCertificationsTable();
-                    
-                    // Announce for screen readers
-                    const formMessages = document.getElementById('formMessages');
-                    formMessages.textContent = 'Record deleted successfully';
-                    formMessages.classList.remove('visually-hidden');
-                    setTimeout(() => {
-                        formMessages.classList.add('visually-hidden');
-                    }, 3000);
-                    
                     alert('Record deleted successfully!');
                 }
             }
@@ -3284,29 +3050,29 @@
                     
                     <table style="width: 100%; border-collapse: collapse; margin: 0.5cm 0; font-size: 11pt;">
                         <thead>
-                            <tr>
+                            32~
                                 <th style="border: 1px solid #000; padding: 0.3cm; text-align: center; background: #f0f0f0;">Registered Owner</th>
                                 <th style="border: 1px solid #000; padding: 0.3cm; text-align: center; background: #f0f0f0;">Lot Number</th>
                                 <th style="border: 1px solid #000; padding: 0.3cm; text-align: center; background: #f0f0f0;">OCT/TCT No.</th>
                                 <th style="border: 1px solid #000; padding: 0.3cm; text-align: center; background: #f0f0f0;">Area Per Title (Ha)</th>
                                 <th style="border: 1px solid #000; padding: 0.3cm; text-align: center; background: #f0f0f0;">Area Applied for Conversion (Ha)</th>
                                 <th style="border: 1px solid #000; padding: 0.3cm; text-align: center; background: #f0f0f0;">Zone Classification</th>
-                            </tr>
+                            32~
                         </thead>
                         <tbody>
-                            <tr>
+                            32~
                                 <td style="border: 1px solid #000; padding: 0.3cm;">______________________</td>
                                 <td style="border: 1px solid #000; padding: 0.3cm;">______________</td>
                                 <td style="border: 1px solid #000; padding: 0.3cm;">______________________</td>
                                 <td style="border: 1px solid #000; padding: 0.3cm; text-align: right;">${totalArea}</td>
                                 <td style="border: 1px solid #000; padding: 0.3cm;"></td>
                                 <td style="border: 1px solid #000; padding: 0.3cm;">${proposedUse}</td>
-                            </tr>
-                            <tr>
+                            32~
+                            32~
                                 <td colspan="4" style="border: 1px solid #000; padding: 0.3cm; text-align: right;"><strong>Total</strong></td>
                                 <td style="border: 1px solid #000; padding: 0.3cm; text-align: right;"><strong>${totalArea}</strong></td>
                                 <td style="border: 1px solid #000; padding: 0.3cm;"></td>
-                            </tr>
+                            32~
                         </tbody>
                     </table>
                     
@@ -3366,13 +3132,6 @@
         function viewAllCertifications() {
             document.getElementById('recordsSection').style.display = 'block';
             renderCertificationsTable();
-            // Announce for screen readers
-            const formMessages = document.getElementById('formMessages');
-            formMessages.textContent = 'Showing all certification records';
-            formMessages.classList.remove('visually-hidden');
-            setTimeout(() => {
-                formMessages.classList.add('visually-hidden');
-            }, 3000);
         }
 
         function toggleRecordsView() {
@@ -3400,18 +3159,9 @@
                     <td>${plan.dateApproved === 'Pending' ? 'Pending' : formatDate(plan.dateApproved)}</td>
                     <td>
                         <div class="action-btns">
-                            <button class="action-btn view" onclick="viewPlan(${index})" aria-label="View plan for ${plan.lgu}">
-                                <span aria-hidden="true">👁️</span>
-                                <span class="visually-hidden">View</span>
-                            </button>
-                            <button class="action-btn edit" onclick="editPlan(${index})" aria-label="Edit plan for ${plan.lgu}">
-                                <span aria-hidden="true">✏️</span>
-                                <span class="visually-hidden">Edit</span>
-                            </button>
-                            <button class="action-btn delete" onclick="deletePlan(${index})" aria-label="Delete plan for ${plan.lgu}">
-                                <span aria-hidden="true">🗑️</span>
-                                <span class="visually-hidden">Delete</span>
-                            </button>
+                            <button class="action-btn view" onclick="viewPlan(${index})">👁️ View</button>
+                            <button class="action-btn edit" onclick="editPlan(${index})">✏️ Edit</button>
+                            <button class="action-btn delete" onclick="deletePlan(${index})">🗑️</button>
                         </div>
                     </td>
                 `;
@@ -3450,18 +3200,9 @@
                     <td>${plan.dateApproved === 'Pending' ? 'Pending' : formatDate(plan.dateApproved)}</td>
                     <td>
                         <div class="action-btns">
-                            <button class="action-btn view" onclick="viewPlan(${landUsePlans.findIndex(p => p.id === plan.id)})" aria-label="View plan for ${plan.lgu}">
-                                <span aria-hidden="true">👁️</span>
-                                <span class="visually-hidden">View</span>
-                            </button>
-                            <button class="action-btn edit" onclick="editPlan(${landUsePlans.findIndex(p => p.id === plan.id)})" aria-label="Edit plan for ${plan.lgu}">
-                                <span aria-hidden="true">✏️</span>
-                                <span class="visually-hidden">Edit</span>
-                            </button>
-                            <button class="action-btn delete" onclick="deletePlan(${landUsePlans.findIndex(p => p.id === plan.id)})" aria-label="Delete plan for ${plan.lgu}">
-                                <span aria-hidden="true">🗑️</span>
-                                <span class="visually-hidden">Delete</span>
-                            </button>
+                            <button class="action-btn view" onclick="viewPlan(${landUsePlans.findIndex(p => p.id === plan.id)})">👁️ View</button>
+                            <button class="action-btn edit" onclick="editPlan(${landUsePlans.findIndex(p => p.id === plan.id)})">✏️ Edit</button>
+                            <button class="action-btn delete" onclick="deletePlan(${landUsePlans.findIndex(p => p.id === plan.id)})">🗑️</button>
                         </div>
                     </td>
                 `;
@@ -3483,15 +3224,6 @@
                 landUsePlans.splice(index, 1);
                 renderPlansTable();
                 filterPlans();
-                
-                // Announce for screen readers
-                const formMessages = document.getElementById('formMessages');
-                formMessages.textContent = 'Plan deleted successfully';
-                formMessages.classList.remove('visually-hidden');
-                setTimeout(() => {
-                    formMessages.classList.add('visually-hidden');
-                }, 3000);
-                
                 alert('Record deleted successfully!');
             }
         }
@@ -3626,12 +3358,12 @@
                 <form onsubmit="saveNewPlan(event)">
                     <div class="form-grid">
                         <div class="form-group">
-                            <label for="lgu">LGU/Municipality</label>
-                            <input type="text" class="form-control" id="lgu" name="lgu" required aria-required="true">
+                            <label>LGU/Municipality</label>
+                            <input type="text" class="form-control" name="lgu" required>
                         </div>
                         <div class="form-group">
-                            <label for="province">Province</label>
-                            <select class="form-control" id="province" name="province" required aria-required="true">
+                            <label>Province</label>
+                            <select class="form-control" name="province" required>
                                 <option value="">Select Province</option>
                                 <option value="Aklan">Aklan</option>
                                 <option value="Antique">Antique</option>
@@ -3642,12 +3374,12 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="planPeriod">Plan Period</label>
-                            <input type="text" class="form-control" id="planPeriod" name="planPeriod" placeholder="e.g., 2024-2033" required aria-required="true">
+                            <label>Plan Period</label>
+                            <input type="text" class="form-control" name="planPeriod" placeholder="e.g., 2024-2033" required>
                         </div>
                         <div class="form-group">
-                            <label for="status">Status</label>
-                            <select class="form-control" id="status" name="status" required aria-required="true">
+                            <label>Status</label>
+                            <select class="form-control" name="status" required>
                                 <option value="Pending">Pending</option>
                                 <option value="For Review">For Review</option>
                                 <option value="Approved">Approved</option>
@@ -3655,16 +3387,16 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="dateSubmitted">Date Submitted</label>
-                            <input type="date" class="form-control" id="dateSubmitted" name="dateSubmitted" required aria-required="true">
+                            <label>Date Submitted</label>
+                            <input type="date" class="form-control" name="dateSubmitted" required>
                         </div>
                         <div class="form-group">
-                            <label for="dateApproved">Date Approved</label>
-                            <input type="date" class="form-control" id="dateApproved" name="dateApproved">
+                            <label>Date Approved</label>
+                            <input type="date" class="form-control" name="dateApproved">
                         </div>
                         <div class="form-group full-width">
-                            <label for="remarks">Remarks</label>
-                            <textarea class="form-control" id="remarks" name="remarks" rows="3"></textarea>
+                            <label>Remarks</label>
+                            <textarea class="form-control" name="remarks" rows="3"></textarea>
                         </div>
                     </div>
                     <div style="text-align: right; margin-top: 1rem; display: flex; gap: 1rem; justify-content: flex-end;">
@@ -3711,15 +3443,6 @@
             }
             
             closeModal();
-            
-            // Announce for screen readers
-            const formMessages = document.getElementById('formMessages');
-            formMessages.textContent = 'Record updated successfully';
-            formMessages.classList.remove('visually-hidden');
-            setTimeout(() => {
-                formMessages.classList.add('visually-hidden');
-            }, 3000);
-            
             alert('Record updated successfully!');
         }
 
@@ -3743,15 +3466,6 @@
             renderPlansTable();
             filterPlans();
             closeModal();
-            
-            // Announce for screen readers
-            const formMessages = document.getElementById('formMessages');
-            formMessages.textContent = 'New plan added successfully';
-            formMessages.classList.remove('visually-hidden');
-            setTimeout(() => {
-                formMessages.classList.add('visually-hidden');
-            }, 3000);
-            
             alert('New plan added successfully!');
         }
 
@@ -3819,18 +3533,23 @@
                 certificationCounter.lastNumber = startFrom;
                 localStorage.setItem('certificationCounter', JSON.stringify(certificationCounter));
                 document.getElementById('certificationNo').value = getNextCertificationNumber();
-                
-                // Announce for screen readers
-                const formMessages = document.getElementById('formMessages');
-                formMessages.textContent = `Counter reset. Next number will be: ${getNextCertificationNumber()}`;
-                formMessages.classList.remove('visually-hidden');
-                setTimeout(() => {
-                    formMessages.classList.add('visually-hidden');
-                }, 5000);
-                
                 alert(`Counter reset. Next number will be: ${getNextCertificationNumber()}`);
             }
         }
+
+        // Add reset counter button
+        setTimeout(() => {
+            const formActions = document.querySelector('#zoningForm div[style*="justify-content: center"]');
+            if (formActions) {
+                const resetBtn = document.createElement('button');
+                resetBtn.type = 'button';
+                resetBtn.className = 'btn btn-warning';
+                resetBtn.innerHTML = '🔄 Reset Counter';
+                resetBtn.onclick = () => resetCertificationCounter();
+                resetBtn.style.marginLeft = '10px';
+                formActions.appendChild(resetBtn);
+            }
+        }, 1000);
 
         function formatDate(dateString) {
             if (!dateString || dateString === 'Pending') return dateString;
@@ -3852,28 +3571,7 @@
             linkElement.setAttribute('href', dataUri);
             linkElement.setAttribute('download', exportFileDefaultName);
             linkElement.click();
-            
-            // Announce for screen readers
-            const formMessages = document.getElementById('formMessages');
-            formMessages.textContent = 'Data exported successfully';
-            formMessages.classList.remove('visually-hidden');
-            setTimeout(() => {
-                formMessages.classList.add('visually-hidden');
-            }, 3000);
         }
-
-        // Add keyboard support for all clickable elements
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' || e.key === ' ') {
-                const target = e.target;
-                if (target.getAttribute('role') === 'button' || 
-                    target.classList.contains('stat-card') ||
-                    target.classList.contains('province-stat-card')) {
-                    e.preventDefault();
-                    target.click();
-                }
-            }
-        });
     </script>
 </body>
 </html>
