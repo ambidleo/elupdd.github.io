@@ -1603,40 +1603,169 @@
                 </div>
             </div>
 
-            <!-- Map Section -->
-            <div id="map" class="section" style="display: none;" role="region" aria-labelledby="map-heading">
-                <h1 id="map-heading" class="visually-hidden">Regional Navigation Map - Western Visayas</h1>
-                <div class="map-section">
-                    <div class="map-title">
-                        <span aria-hidden="true">🗺️</span> Regional Navigation Map - Western Visayas (Region VI)
-                    </div>
-                    
-                    <!-- Map Controls -->
-                    <div class="map-controls">
-                        <div class="file-upload">
-                            <input type="file" id="shapefileUpload" accept=".zip,.geojson,.json" multiple
-                                   aria-describedby="fileUploadHelp">
-                            <label for="shapefileUpload" id="uploadLabel">
-                                <span aria-hidden="true">📁</span> Upload GeoJSON or Shapefile (ZIP)
-                            </label>
-                            <small id="fileUploadHelp" style="display: block; margin-top: 5px; color: #666;">
-                                Upload GeoJSON files or zipped shapefiles
-                            </small>
-                        </div>
-                        
-                        <div class="layer-controls">
-                            <button class="btn btn-danger" onclick="clearUploadedLayers()" style="display: none;" id="clearLayersBtn" aria-label="Clear all uploaded layers">
-                                <span aria-hidden="true">🗑️</span> Clear Layers
-                            </button>
-                        </div>
-                        
-                        <div class="layer-list" id="layerListContainer" style="display: none;">
-                            <label for="layerSelect" class="visually-hidden">Select layer to toggle visibility</label>
-                            <select id="layerSelect" onchange="toggleLayerVisibility()" aria-label="Layer visibility control">
-                                <option value="">Select Layer to Toggle</option>
-                            </select>
-                        </div>
-                    </div>
+          let map = null;
+    let currentBaseLayer = null;
+    let uploadedLayers = [];
+    let layerCounter = 0;
+    
+    // Define base map layers
+    const baseMaps = {
+        street: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }),
+        satellite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles &copy; Esri'
+        }),
+        terrain: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+            attribution: 'Map data: OpenTopoMap contributors'
+        })
+    };
+    
+    function initMap() {
+        if (map) return;
+        map = L.map('regionMap').setView([11.0, 122.5], 8);
+        currentBaseLayer = baseMaps.street;
+        currentBaseLayer.addTo(map);
+        
+        // Add province markers
+        provinceData.forEach(prov => {
+            const icon = L.divIcon({ html: `<div style="background:${prov.color}; width:16px;height:16px;border-radius:50%;border:2px solid white;"></div>`, iconSize:[16,16] });
+            L.marker(prov.coordinates, { icon }).bindPopup(`<b>${prov.name}</b><br>Capital: ${prov.capital}<br>CLUP: ${prov.clupStatus}`).addTo(map);
+        });
+        
+        renderProvinceStats();
+        setupFileUpload();
+    }
+    
+    // Switch base map function - MAIN MAP SELECTOR FEATURE
+    function switchBasemap(type) {
+        if (currentBaseLayer) map.removeLayer(currentBaseLayer);
+        currentBaseLayer = baseMaps[type];
+        currentBaseLayer.addTo(map);
+        
+        // Update active button styling
+        document.querySelectorAll('.basemap-btn').forEach(btn => {
+            if (btn.dataset.basemap === type) btn.classList.add('active');
+            else btn.classList.remove('active');
+        });
+        
+        // Announce for screen readers
+        const uploadInfo = document.getElementById('uploadInfo');
+        uploadInfo.innerHTML = `Map base layer changed to ${type}`;
+        uploadInfo.className = 'upload-info show';
+        setTimeout(() => uploadInfo.className = 'upload-info', 2000);
+    }
+    
+    // Setup base map selector event listeners
+    function setupBasemapSelector() {
+        document.querySelectorAll('.basemap-btn').forEach(btn => {
+            btn.removeEventListener('click', basemapClickHandler);
+            btn.addEventListener('click', basemapClickHandler);
+        });
+    }
+    
+    function basemapClickHandler(e) {
+        switchBasemap(e.currentTarget.dataset.basemap);
+    }
+    
+    // File upload handler
+    function setupFileUpload() {
+        const fileInput = document.getElementById('shapefileUpload');
+        fileInput.addEventListener('change', handleFileSelect);
+    }
+    
+    async function handleFileSelect(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const uploadInfo = document.getElementById('uploadInfo');
+        uploadInfo.className = 'upload-info show';
+        uploadInfo.innerHTML = 'Processing file...';
+        
+        try {
+            let geojson;
+            if (file.name.endsWith('.geojson') || file.name.endsWith('.json')) {
+                const text = await file.text();
+                geojson = JSON.parse(text);
+            } else if (file.name.endsWith('.zip')) {
+                const arrayBuf = await file.arrayBuffer();
+                geojson = await shp(arrayBuf);
+            } else throw new Error('Unsupported format. Use .geojson or .zip shapefile');
+            
+            addGeoJsonLayer(geojson, file.name);
+            uploadInfo.className = 'upload-info show success';
+            uploadInfo.innerHTML = `✅ Loaded: ${file.name}`;
+            setTimeout(() => uploadInfo.className = 'upload-info', 3000);
+        } catch (err) {
+            uploadInfo.className = 'upload-info show error';
+            uploadInfo.innerHTML = `❌ Error: ${err.message}`;
+        }
+        e.target.value = '';
+    }
+    
+    function addGeoJsonLayer(geojson, name) {
+        layerCounter++;
+        const layerId = `layer_${layerCounter}`;
+        const color = '#8e44ad';
+        const geoLayer = L.geoJSON(geojson, {
+            style: { color: color, weight: 2, fillOpacity: 0.3, fillColor: color },
+            onEachFeature: (f, l) => { if (f.properties) l.bindPopup(JSON.stringify(f.properties)); }
+        }).addTo(map);
+        
+        uploadedLayers.push({ id: layerId, name: name || `Layer ${layerCounter}`, layer: geoLayer, visible: true });
+        updateLayerSelect();
+        document.getElementById('clearLayersBtn').style.display = 'inline-flex';
+        map.fitBounds(geoLayer.getBounds());
+    }
+    
+    function updateLayerSelect() {
+        const container = document.getElementById('layerListContainer');
+        const select = document.getElementById('layerSelect');
+        if (uploadedLayers.length > 0) {
+            container.style.display = 'block';
+            select.innerHTML = '<option value="">Select Layer to Toggle</option>';
+            uploadedLayers.forEach(l => {
+                const opt = document.createElement('option');
+                opt.value = l.id;
+                opt.textContent = `${l.visible ? '👁️' : '👁️‍🗨️'} ${l.name}`;
+                select.appendChild(opt);
+            });
+        } else {
+            container.style.display = 'none';
+        }
+    }
+    
+    function toggleLayerVisibility() {
+        const select = document.getElementById('layerSelect');
+        const id = select.value;
+        if (!id) return;
+        const layer = uploadedLayers.find(l => l.id === id);
+        if (layer) {
+            if (layer.visible) { map.removeLayer(layer.layer); layer.visible = false; }
+            else { layer.layer.addTo(map); layer.visible = true; }
+            updateLayerSelect();
+            select.value = id;
+        }
+    }
+    
+    function clearUploadedLayers() {
+        uploadedLayers.forEach(l => { if (map.hasLayer(l.layer)) map.removeLayer(l.layer); });
+        uploadedLayers = [];
+        updateLayerSelect();
+        document.getElementById('clearLayersBtn').style.display = 'none';
+    }
+    
+    function renderProvinceStats() {
+        const container = document.getElementById('provinceStats');
+        if (!container) return;
+        container.innerHTML = '';
+        provinceData.forEach(p => {
+            const card = document.createElement('div');
+            card.className = 'province-stat-card';
+            card.onclick = () => { if (map) map.setView(p.coordinates, 10); };
+            card.innerHTML = `<h4>${p.name}</h4><p>Capital: ${p.capital}</p><p>Projects: ${p.projects}</p><span class="status ${p.clupStatus === 'Approved' ? 'approved' : 'review'}">${p.clupStatus}</span>`;
+            container.appendChild(card);
+        });
+    }  
                     
                     <!-- Upload Status -->
                     <div id="uploadInfo" class="upload-info" role="status" aria-live="polite"></div>
