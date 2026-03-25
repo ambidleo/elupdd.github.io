@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>ELUPDD Region VI - Environmental Land Use & Urban Planning</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- shp.js for shapefile parsing -->
+    <script src="https://unpkg.com/shpjs@3.4.3/dist/shp.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Roboto, Arial, sans-serif; background: #eef2f5; color: #1a2a32; line-height: 1.5; }
+        :root {
+            --primary-dark: #0b4b5c;
+            --primary: #1e6f8c;
+            --primary-light: #3498b0;
+            --accent: #e6a017;
+            --success: #2b7a4b;
+            --warning: #c97e0a;
+            --danger: #bc3f2e;
+            --gray-bg: #f8fafc;
+            --card-border: #cbd5e1;
+        }
+        .skip-link { position: absolute; top: -40px; left: 0; background: var(--primary-dark); color: white; padding: 8px 16px; z-index: 10000; text-decoration: none; border-radius: 0 0 4px 0; font-weight: bold; }
+        .skip-link:focus { top: 0; outline: 3px solid var(--accent); }
+        :focus { outline: 3px solid var(--accent); outline-offset: 2px; }
+        .visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+        .error-message { color: #c0392b; font-size: 0.8rem; margin-top: 4px; display: block; }
+        button, .btn { cursor: pointer; font-weight: 600; transition: 0.2s; border: none; border-radius: 2rem; padding: 0.6rem 1.4rem; font-size: 0.9rem; background: var(--primary); color: white; }
+        .btn-sm { padding: 0.3rem 1rem; font-size: 0.8rem; }
+        .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+        .btn-success { background: var(--success); }
+        .btn-warning { background: var(--accent); color: #2c3e2f; }
+        .btn-danger { background: var(--danger); }
+        .btn-secondary { background: #5a6e7c; }
+        header { background: linear-gradient(110deg, var(--primary-dark), var(--primary)); color: white; padding: 1rem 2rem; display: flex; flex-wrap: wrap; align-items: center; gap: 2rem; border-bottom: 5px solid var(--accent); }
+        .logo { background: white; border-radius: 20px; padding: 0.5rem 1.2rem; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: inline-block; border: 1px solid var(--accent); }
+        .logo img { max-width: 140px; max-height: 70px; object-fit: contain; }
+        .header-content { flex:1; text-align: center; }
+        .header-content h1 { font-size: 1.8rem; margin-bottom: 0.3rem; }
+        .header-content h2 { font-size: 1.2rem; font-weight: 400; }
+        .header-badge { background: var(--accent); color: var(--primary-dark); display: inline-block; padding: 0.3rem 1.5rem; border-radius: 30px; font-weight: bold; font-size: 0.9rem; }
+        .nav-bar { background: var(--primary-dark); padding: 0.8rem 2rem; position: sticky; top: 0; z-index: 1000; }
+        .nav-bar ul { list-style: none; display: flex; gap: 2rem; max-width: 1400px; margin: 0 auto; flex-wrap: wrap; }
+        .nav-bar a { color: white; text-decoration: none; padding: 0.5rem 1rem; border-radius: 20px; transition: 0.3s; display: flex; align-items: center; gap: 0.5rem; font-weight: 500; }
+        .nav-bar a:hover, .nav-bar a.active { background: var(--accent); color: var(--primary-dark); }
+        .container { max-width: 1400px; margin: 2rem auto; padding: 0 2rem; }
+        .section { display: none; }
+        .section.active { display: block; }
+        .overview-section, .map-section, .data-section, .cert-section { background: white; border-radius: 15px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 5px 20px rgba(0,0,0,0.1); border-left: 8px solid var(--primary); }
+        .map-container { height: 500px; width: 100%; border-radius: 12px; overflow: hidden; margin-bottom: 1.5rem; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin: 2rem 0; }
+        .stat-card { background: linear-gradient(135deg, #f8faff, white); padding: 1.5rem; border-radius: 12px; text-align: center; box-shadow: 0 3px 10px rgba(0,0,0,0.1); cursor: pointer; }
+        .stat-number { font-size: 2.2rem; font-weight: bold; color: var(--primary); }
+        .province-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin: 2rem 0; }
+        .province-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .province-header { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; padding: 1rem; font-weight: bold; }
+        .province-body { padding: 1.5rem; }
+        .table-responsive { overflow-x: auto; border-radius: 12px; }
+        table { width: 100%; border-collapse: collapse; background: white; }
+        th { background: var(--primary-dark); color: white; padding: 1rem; text-align: left; }
+        td { padding: 1rem; border-bottom: 1px solid #e9ecef; }
+        .status-badge { padding: 0.3rem 1rem; border-radius: 30px; font-size: 0.8rem; font-weight: 600; display: inline-block; }
+        .status-approved { background: #d4edda; color: #155724; }
+        .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+        .form-group.full-width { grid-column: span 2; }
+        .form-control { width: 100%; padding: 0.8rem; border: 2px solid #e0e7ff; border-radius: 10px; }
+        .radio-group { display: flex; gap: 1.5rem; flex-wrap: wrap; padding: 0.5rem 0; }
+        .action-btns { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .action-btn { padding: 0.4rem 0.8rem; border: none; border-radius: 5px; cursor: pointer; font-size: 0.8rem; font-weight: 600; }
+        .action-btn.view { background: #3498db; color: white; }
+        .action-btn.edit { background: #f39c12; color: white; }
+        .action-btn.delete { background: #e74c3c; color: white; }
+        .action-btn.print { background: #27ae60; color: white; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; }
+        .modal.active { display: flex; }
+        .modal-content { background: white; border-radius: 20px; padding: 2rem; max-width: 800px; width: 95%; max-height: 90vh; overflow-y: auto; }
+        .sync-status { position: fixed; bottom: 20px; right: 20px; background: var(--primary-dark); color: white; padding: 8px 16px; border-radius: 20px; font-size: 12px; z-index: 1000; cursor: pointer; }
+        .sync-status.synced { background: var(--success); }
+        .sync-status.syncing { background: var(--warning); animation: pulse 1s infinite; }
+        .sync-status.error { background: var(--danger); }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+        @media (max-width: 768px) { .form-grid { grid-template-columns: 1fr; } .form-group.full-width { grid-column: span 1; } .nav-bar ul { flex-direction: column; } }
+    </style>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <header>
+        <div class="logo">
+            <img src="DHSUD LOGO.png" alt="DHSUD Logo" onerror="this.src='https://via.placeholder.com/140x70?text=DHSUD'">
+        </div>
+        <div class="header-content">
+            <h1>ENVIRONMENTAL LAND USE AND URBAN PLANNING</h1>
+            <h2>DEVELOPMENT DIVISION - REGION VI</h2>
+            <div class="header-badge">Western Visayas • Sustainable Development • Resilient Communities</div>
+        </div>
+    </header>
+
+    <nav class="nav-bar">
+        <ul>
+            <li><a href="#" onclick="showSection('dashboard')" class="active">🏠 Dashboard</a></li>
+            <li><a href="#" onclick="showSection('map')">🗺️ Regional Map</a></li>
+            <li><a href="#" onclick="showSection('plans')">📋 Land Use Plans</a></li>
+            <li><a href="#" onclick="showSection('zoning')">🏷️ Site Zoning Certification</a></li>
+            <li><a href="#" onclick="showSection('reports')">📊 Reports</a></li>
+            <li><a href="#" onclick="openAboutModal()">ℹ️ About</a></li>
+        </ul>
+    </nav>
+
+    <main id="main-content">
+        <div class="container">
+            <!-- Dashboard Section -->
+            <div id="dashboard" class="section active">
+                <div class="overview-section">
+                    <h2>Regional Planning Overview - Region VI</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card"><div class="stat-number" id="totalPlans">147</div><div class="stat-label">Comprehensive Land Use Plans</div></div>
+                        <div class="stat-card"><div class="stat-number">89</div><div class="stat-label">Ongoing Projects</div></div>
+                        <div class="stat-card"><div class="stat-number" id="totalCertifications">0</div><div class="stat-label">Site Zoning Certifications</div></div>
+                        <div class="stat-card"><div class="stat-number">6</div><div class="stat-label">Provinces Covered</div></div>
+                    </div>
+                </div>
+                <div class="province-grid">
+                    <div class="province-card"><div class="province-header">Aklan 🏝️</div><div class="province-body"><p><strong>Land Area:</strong> 1,821.42 km²</p><p><strong>CLUP Status:</strong> ✅ Approved</p><p><strong>Projects:</strong> 15</p></div></div>
+                    <div class="province-card"><div class="province-header">Antique 🏔️</div><div class="province-body"><p><strong>Land Area:</strong> 2,729.17 km²</p><p><strong>CLUP Status:</strong> 🔄 For Review</p><p><strong>Projects:</strong> 12</p></div></div>
+                    <div class="province-card"><div class="province-header">Capiz 🦐</div><div class="province-body"><p><strong>Land Area:</strong> 2,594.64 km²</p><p><strong>CLUP Status:</strong> ✅ Approved</p><p><strong>Projects:</strong> 18</p></div></div>
+                    <div class="province-card"><div class="province-header">Guimaras 🥭</div><div class="province-body"><p><strong>Land Area:</strong> 604.57 km²</p><p><strong>CLUP Status:</strong> ✅ Approved</p><p><strong>Projects:</strong> 8</p></div></div>
+                    <div class="province-card"><div class="province-header">Iloilo 🏛️</div><div class="province-body"><p><strong>Land Area:</strong> 5,079.17 km²</p><p><strong>CLUP Status:</strong> ✅ Approved</p><p><strong>Projects:</strong> 25</p></div></div>
+                    <div class="province-card"><div class="province-header">Negros Occidental 🎭</div><div class="province-body"><p><strong>Land Area:</strong> 7,965.21 km²</p><p><strong>CLUP Status:</strong> 🔄 For Review</p><p><strong>Projects:</strong> 22</p></div></div>
+                </div>
+            </div>
+
+            <!-- Map Section -->
+            <div id="map" class="section" style="display: none;">
+                <div class="map-section">
+                    <h2>🗺️ Regional Navigation Map - Western Visayas</h2>
+                    <div class="map-controls" style="display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                        <input type="file" id="shapefileUpload" accept=".zip,.geojson,.json" style="display: none;">
+                        <button class="btn" onclick="document.getElementById('shapefileUpload').click()">📁 Upload GeoJSON/Shapefile</button>
+                        <button class="btn btn-danger" onclick="clearUploadedLayers()" id="clearLayersBtn" style="display: none;">🗑️ Clear Layers</button>
+                    </div>
+                    <div id="regionMap" class="map-container"></div>
+                    <div class="map-legend" style="display: flex; gap: 2rem;">
+                        <div><span style="background: #27ae60; width: 20px; height: 20px; display: inline-block; border-radius: 4px;"></span> Approved CLUP</div>
+                        <div><span style="background: #f39c12; width: 20px; height: 20px; display: inline-block; border-radius: 4px;"></span> For Review</div>
+                        <div><span style="background: #8e44ad; width: 20px; height: 20px; display: inline-block; border-radius: 4px;"></span> Uploaded Layer</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Land Use Plans Section -->
+            <div id="plans" class="section" style="display: none;">
+                <div class="data-section">
+                    <div class="section-header" style="display: flex; justify-content: space-between; margin-bottom: 1.5rem;">
+                        <h3>📋 Comprehensive Land Use Plans (CLUP)</h3>
+                        <div><button class="btn btn-primary" onclick="openAddModal()">➕ Add New Plan</button></div>
+                    </div>
+                    <div class="table-responsive">
+                        <table id="plansTable">
+                            <thead><tr><th>LGU/Municipality</th><th>Province</th><th>Plan Period</th><th>Status</th><th>Actions</th></tr></thead>
+                            <tbody id="plansTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Site Zoning Certification Section with Google Sheets Integration -->
+            <div id="zoning" class="section" style="display: none;">
+                <div class="cert-section">
+                    <h2>🏷️ Site Zoning Certification - Data Entry</h2>
+                    <div id="syncStatus" class="sync-status" onclick="syncWithGoogleSheets()">🔄 Checking sync...</div>
+                    
+                    <form id="zoningForm" onsubmit="return saveZoningRecord(event)">
+                        <div class="form-grid">
+                            <div class="form-group"><label>Certification No.</label><input type="text" class="form-control" id="certificationNo" readonly style="background:#f0f0f0;"></div>
+                            <div class="form-group"><label>Series</label><input type="text" class="form-control" id="series" value="2002" readonly></div>
+                            <div class="form-group"><label>No. of Parcels</label><input type="text" class="form-control" id="parcels" required></div>
+                            <div class="form-group full-width"><label>Location of the Property</label><input type="text" class="form-control" id="location" required></div>
+                            <div class="form-group"><label>Total Area (ha.)</label><input type="text" class="form-control" id="totalArea" required></div>
+                            <div class="form-group"><label>Proposed Use</label><input type="text" class="form-control" id="proposedUse" required></div>
+                            <div class="form-group full-width">
+                                <div style="font-weight: 600; margin-bottom: 0.5rem;">Land Holdings</div>
+                                <button type="button" class="btn btn-success btn-sm" onclick="addLandHolding()">➕ Add Property</button>
+                                <div id="landHoldingsContainer"></div>
+                            </div>
+                            <div class="form-group"><label>Date Issued</label><input type="date" class="form-control" id="dateIssued" required></div>
+                            <div class="form-group"><label>Requested By</label><input type="text" class="form-control" id="requestedBy" required></div>
+                            <div class="form-group"><label>Amount Paid (₱)</label><input type="text" class="form-control" id="amountPaid" required></div>
+                            <div class="form-group"><label>O.R. No.</label><input type="text" class="form-control" id="orNo"></div>
+                            <div class="form-group full-width"><label>Remarks</label><textarea class="form-control" id="remarks" rows="2"></textarea></div>
+                            <div class="form-group full-width">
+                                <label>CLUP/Zoning Ordinance Status</label>
+                                <div class="radio-group">
+                                    <label><input type="radio" name="clupStatus" value="approved" checked> With Approved CLUP/ZO</label>
+                                    <label><input type="radio" name="clupStatus" value="pending"> With CLUP/ZO Pending Approval</label>
+                                    <label><input type="radio" name="clupStatus" value="none"> Without CLUP/ZO</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 1rem; margin-top: 2rem; justify-content: center;">
+                            <button type="submit" class="btn btn-success">💾 Save Certification</button>
+                            <button type="button" class="btn btn-primary" onclick="clearZoningForm()">🔄 Clear Form</button>
+                            <button type="button" class="btn btn-print" onclick="viewAllCertifications()">📋 View All Records</button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="cert-section" id="recordsSection" style="display: none;">
+                    <h2>📋 Saved Certifications (Shared Across All Users)</h2>
+                    <div style="overflow-x: auto;">
+                        <table class="cert-table" id="certificationsTable" style="width: 100%;">
+                            <thead><tr><th>Certification No.</th><th>Parcels</th><th>Location</th><th>Total Area</th><th>Date Issued</th><th>Requested By</th><th>Actions</th></tr></thead>
+                            <tbody id="certificationsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports Section -->
+            <div id="reports" class="section" style="display: none;">
+                <div class="data-section">
+                    <h3>📊 Planning Reports</h3>
+                    <div class="stats-grid">
+                        <div class="stat-card" onclick="generateReport('annual')"><div class="stat-number">📅</div><div class="stat-label">Annual Report</div></div>
+                        <div class="stat-card" onclick="generateReport('quarterly')"><div class="stat-number">📆</div><div class="stat-label">Quarterly Report</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="dataModal" class="modal"><div class="modal-content"><div class="modal-header"><h2 id="modalTitle">View Record</h2><button class="close-btn" onclick="closeModal()">&times;</button></div><div id="modalBody"></div></div></div>
+    <div id="printSection" style="display: none;"></div>
+
+    <footer style="background: var(--primary-dark); color: white; padding: 2rem; text-align: center;">
+        <p>Environmental Land Use and Urban Planning Development Division - Region VI</p>
+        <p>Department of Human Settlements and Urban Development</p>
+    </footer>
+
+    <script>
+        // ==================== GOOGLE SHEETS CONFIGURATION ====================
+        // IMPORTANT: You need to deploy your own Google Apps Script Web App
+        // Step-by-step instructions below this code
+        
+        // Replace these with your actual Google Apps Script Web App URL
+        // After deploying your Google Apps Script, paste the URL here:
+        const GOOGLE_SHEETS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzqrLKB7FEzDOvox8npsHdY60ooFuyfdv8B3fZS6AOaVuaeL6h8vDJow3PGv2VGJ7Gx5g/exec";
+	let useGoogleSheets = true;
+        
+        // ==================== DATA STORAGE ====================
+        let zoningCertifications = [];
+        let landUsePlans = [
+            { id: 1, lgu: "Kalibo", province: "Aklan", planPeriod: "2020-2029", status: "Approved", dateSubmitted: "2020-03-15", dateApproved: "2020-08-20" },
+            { id: 2, lgu: "San Jose", province: "Antique", planPeriod: "2021-2030", status: "For Review", dateSubmitted: "2021-06-10", dateApproved: "Pending" },
+            { id: 3, lgu: "Roxas City", province: "Capiz", planPeriod: "2022-2031", status: "Approved", dateSubmitted: "2022-02-20", dateApproved: "2022-07-15" },
+            { id: 4, lgu: "Jordan", province: "Guimaras", planPeriod: "2021-2030", status: "Approved", dateSubmitted: "2021-04-05", dateApproved: "2021-09-12" },
+            { id: 5, lgu: "Iloilo City", province: "Iloilo", planPeriod: "2023-2032", status: "For Review", dateSubmitted: "2023-01-10", dateApproved: "Pending" },
+            { id: 6, lgu: "Bacolod City", province: "Negros Occidental", planPeriod: "2022-2031", status: "Approved", dateSubmitted: "2022-05-18", dateApproved: "2022-11-22" }
+        ];
+        
+        let certificationCounter = { lastNumber: 0, prefix: 'SZC-RVI', year: new Date().getFullYear().toString().slice(-2) };
+        
+        // ==================== GOOGLE SHEETS API FUNCTIONS ====================
+        
+        // Load all certifications from Google Sheets
+        async function loadFromGoogleSheets() {
+            if (!useGoogleSheets || GOOGLE_SHEETS_WEB_APP_URL === "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE") {
+                // Fallback to localStorage if Google Sheets not configured
+                loadFromLocalStorage();
+                return;
+            }
+            
+            updateSyncStatus('syncing', 'Syncing with cloud...');
+            
+            try {
+                const response = await fetch(`${GOOGLE_SHEETS_WEB_APP_URL}?action=get`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                if (!response.ok) throw new Error('Network error');
+                
+                const data = await response.json();
+                
+                if (data.success && data.records) {
+                    zoningCertifications = data.records.map(record => ({
+                        ...record,
+                        id: record.id || Date.now() + Math.random(),
+                        formattedDate: record.dateIssued ? new Date(record.dateIssued).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : ''
+                    }));
+                    
+                    // Also save to localStorage as cache
+                    localStorage.setItem('zoningCertifications', JSON.stringify(zoningCertifications));
+                    
+                    updateSyncStatus('synced', `✅ Synced: ${zoningCertifications.length} records`);
+                    
+                    // Update dashboard count
+                    document.getElementById('totalCertifications').textContent = zoningCertifications.length;
+                    
+                    // Refresh table
+                    renderCertificationsTable();
+                } else {
+                    throw new Error(data.error || 'Failed to load data');
+                }
+            } catch (error) {
+                console.error('Error loading from Google Sheets:', error);
+                updateSyncStatus('error', '⚠️ Offline mode - using local data');
+                loadFromLocalStorage();
+            }
+        }
+        
+        // Save a new certification to Google Sheets
+        async function saveToGoogleSheets(record) {
+            if (!useGoogleSheets || GOOGLE_SHEETS_WEB_APP_URL === "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE") {
+                // Fallback to localStorage
+                saveToLocalStorage(record);
+                return true;
+            }
+            
+            updateSyncStatus('syncing', 'Saving to cloud...');
+            
+            try {
+                const response = await fetch(`${GOOGLE_SHEETS_WEB_APP_URL}?action=add`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(record)
+                });
+                
+                if (!response.ok) throw new Error('Network error');
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    updateSyncStatus('synced', '✅ Saved to cloud');
+                    return true;
+                } else {
+                    throw new Error(result.error || 'Save failed');
+                }
+            } catch (error) {
+                console.error('Error saving to Google Sheets:', error);
+                updateSyncStatus('error', '⚠️ Offline - saved locally only');
+                saveToLocalStorage(record);
+                return false;
+            }
+        }
+        
+        // Delete a certification from Google Sheets
+        async function deleteFromGoogleSheets(recordId) {
+            if (!useGoogleSheets || GOOGLE_SHEETS_WEB_APP_URL === "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE") {
+                deleteFromLocalStorage(recordId);
+                return true;
+            }
+            
+            updateSyncStatus('syncing', 'Deleting from cloud...');
+            
+            try {
+                const response = await fetch(`${GOOGLE_SHEETS_WEB_APP_URL}?action=delete&id=${recordId}`, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    updateSyncStatus('synced', '✅ Deleted from cloud');
+                    return true;
+                } else {
+                    throw new Error(result.error || 'Delete failed');
+                }
+            } catch (error) {
+                console.error('Error deleting from Google Sheets:', error);
+                updateSyncStatus('error', '⚠️ Delete failed');
+                return false;
+            }
+        }
+        
+        // ==================== LOCAL STORAGE FALLBACK ====================
+        
+        function loadFromLocalStorage() {
+            const saved = localStorage.getItem('zoningCertifications');
+            if (saved) {
+                try {
+                    zoningCertifications = JSON.parse(saved);
+                    console.log(`Loaded ${zoningCertifications.length} records from localStorage`);
+                } catch(e) { zoningCertifications = []; }
+            } else {
+                zoningCertifications = [];
+            }
+            document.getElementById('totalCertifications').textContent = zoningCertifications.length;
+            renderCertificationsTable();
+        }
+        
+        function saveToLocalStorage(record) {
+            zoningCertifications.push(record);
+            localStorage.setItem('zoningCertifications', JSON.stringify(zoningCertifications));
+            document.getElementById('totalCertifications').textContent = zoningCertifications.length;
+            renderCertificationsTable();
+        }
+        
+        function deleteFromLocalStorage(recordId) {
+            const index = zoningCertifications.findIndex(r => r.id == recordId);
+            if (index !== -1) {
+                zoningCertifications.splice(index, 1);
+                localStorage.setItem('zoningCertifications', JSON.stringify(zoningCertifications));
+                renderCertificationsTable();
+                document.getElementById('totalCertifications').textContent = zoningCertifications.length;
+            }
+        }
+        
+        function updateSyncStatus(status, message) {
+            const statusDiv = document.getElementById('syncStatus');
+            if (statusDiv) {
+                statusDiv.className = `sync-status ${status}`;
+                statusDiv.innerHTML = message;
+                setTimeout(() => {
+                    if (statusDiv.className === `sync-status ${status}` && status !== 'syncing') {
+                        statusDiv.className = 'sync-status synced';
+                        statusDiv.innerHTML = '✅ Connected';
+                    }
+                }, 3000);
+            }
+        }
+        
+        // Manual sync button
+        async function syncWithGoogleSheets() {
+            if (useGoogleSheets && GOOGLE_SHEETS_WEB_APP_URL !== "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE") {
+                await loadFromGoogleSheets();
+            } else {
+                updateSyncStatus('error', '⚠️ Google Sheets not configured');
+                alert('Google Sheets integration needs configuration. Contact administrator to set up the Google Apps Script Web App URL.');
+            }
+        }
+        
+        // ==================== CERTIFICATION FUNCTIONS ====================
+        
+        function generateCertificationNumber() {
+            certificationCounter.lastNumber++;
+            const number = certificationCounter.lastNumber.toString().padStart(3, '0');
+            const year = new Date().getFullYear().toString().slice(-2);
+            return `${certificationCounter.prefix}${year}-${number}`;
+        }
+        
+        function getNextCertificationNumber() {
+            const nextNumber = certificationCounter.lastNumber + 1;
+            const number = nextNumber.toString().padStart(3, '0');
+            const year = new Date().getFullYear().toString().slice(-2);
+            return `${certificationCounter.prefix}${year}-${number}`;
+        }
+        
+        async function saveZoningRecord(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            try {
+                const certificationNo = generateCertificationNumber();
+                const parcels = document.getElementById('parcels').value;
+                const location = document.getElementById('location').value;
+                const totalArea = document.getElementById('totalArea').value;
+                const proposedUse = document.getElementById('proposedUse').value;
+                const dateIssued = document.getElementById('dateIssued').value;
+                const requestedBy = document.getElementById('requestedBy').value;
+                const amountPaid = document.getElementById('amountPaid').value;
+                const orNo = document.getElementById('orNo').value || '';
+                const remarks = document.getElementById('remarks').value || '';
+                
+                // Collect land holdings
+                const registeredOwners = document.getElementsByName('registeredOwner[]');
+                const tctNos = document.getElementsByName('tctNo[]');
+                const lotNos = document.getElementsByName('lotNo[]');
+                const areaPerTitles = document.getElementsByName('areaPerTitle[]');
+                const zoneclasses = document.getElementsByName('zoneclass[]');
+                
+                const landHoldings = [];
+                for (let i = 0; i < registeredOwners.length; i++) {
+                    landHoldings.push({
+                        registeredOwner: registeredOwners[i]?.value || '',
+                        tctNo: tctNos[i]?.value || '',
+                        lotNo: lotNos[i]?.value || '',
+                        areaPerTitle: areaPerTitles[i]?.value || 0,
+                        zoneclass: zoneclasses[i]?.value || ''
+                    });
+                }
+                
+                const clupStatusElem = document.querySelector('input[name="clupStatus"]:checked');
+                const clupStatus = clupStatusElem ? clupStatusElem.value : 'approved';
+                
+                const record = {
+                    id: Date.now(),
+                    certificationNo: certificationNo,
+                    series: '2002',
+                    parcels: parcels,
+                    location: location,
+                    totalArea: totalArea,
+                    proposedUse: proposedUse,
+                    landHoldings: landHoldings,
+                    dateIssued: dateIssued,
+                    formattedDate: new Date(dateIssued).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+                    requestedBy: requestedBy,
+                    amountPaid: amountPaid,
+                    orNo: orNo,
+                    remarks: remarks,
+                    clupStatus: clupStatus,
+                    timestamp: new Date().toISOString()
+                };
+                
+                // Save to Google Sheets or localStorage
+                if (useGoogleSheets && GOOGLE_SHEETS_WEB_APP_URL !== "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE") {
+                    await saveToGoogleSheets(record);
+                    await loadFromGoogleSheets(); // Refresh to get latest from cloud
+                } else {
+                    saveToLocalStorage(record);
+                }
+                
+                alert(`✅ Certification ${certificationNo} saved successfully!`);
+                
+                // Clear form
+                clearZoningForm();
+                document.getElementById('certificationNo').value = getNextCertificationNumber();
+                
+                // Show records section
+                document.getElementById('recordsSection').style.display = 'block';
+                
+                return false;
+            } catch (error) {
+                console.error('Error saving:', error);
+                alert('Error saving record: ' + error.message);
+                return false;
+            }
+        }
+        
+        function renderCertificationsTable() {
+            const tbody = document.getElementById('certificationsTableBody');
+            if (!tbody) return;
+            
+            tbody.innerHTML = '';
+            
+            if (!zoningCertifications || zoningCertifications.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">No records found. Add your first certification!</td></tr>';
+                return;
+            }
+            
+            const sorted = [...zoningCertifications].sort((a, b) => new Date(b.dateIssued) - new Date(a.dateIssued));
+            
+            sorted.forEach(record => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td><strong>${record.certificationNo || 'N/A'}</strong></td>
+                    <td>${record.parcels || 'N/A'}</td>
+                    <td>${record.location ? record.location.substring(0, 40) : 'N/A'}</td>
+                    <td>${record.totalArea || 'N/A'} ha</td>
+                    <td>${record.formattedDate || record.dateIssued || 'N/A'}</td>
+                    <td>${record.requestedBy || 'N/A'}</td>
+                    <td>
+                        <div class="action-btns">
+                            <button class="action-btn view" onclick="viewZoningRecord(${record.id})">👁️ View</button>
+                            <button class="action-btn print" onclick="printZoningRecord(${record.id})">🖨️ Print</button>
+                            <button class="action-btn delete" onclick="deleteZoningRecord(${record.id})">🗑️ Delete</button>
+                        </div>
+                    </td>
+                `;
+            });
+        }
+        
+        function viewZoningRecord(id) {
+            const record = zoningCertifications.find(r => r.id == id);
+            if (!record) return;
+            
+            let details = `<div style="padding: 1rem;"><h3>${record.certificationNo}</h3>`;
+            details += `<p><strong>Location:</strong> ${record.location}</p>`;
+            details += `<p><strong>Total Area:</strong> ${record.totalArea} ha</p>`;
+            details += `<p><strong>Proposed Use:</strong> ${record.proposedUse}</p>`;
+            details += `<p><strong>Requested By:</strong> ${record.requestedBy}</p>`;
+            details += `<p><strong>Date Issued:</strong> ${record.formattedDate}</p>`;
+            details += `<p><strong>Amount Paid:</strong> ₱ ${record.amountPaid}</p>`;
+            if (record.landHoldings && record.landHoldings.length) {
+                details += `<h4>Land Holdings (${record.landHoldings.length})</h4><ul>`;
+                record.landHoldings.forEach(h => {
+                    details += `<li>${h.registeredOwner} - ${h.tctNo} - ${h.zoneclass}</li>`;
+                });
+                details += `</ul>`;
+            }
+            details += `<div style="margin-top: 1rem;"><button class="btn btn-primary" onclick="closeModal()">Close</button></div></div>`;
+            
+            document.getElementById('modalTitle').textContent = 'View Certification';
+            document.getElementById('modalBody').innerHTML = details;
+            document.getElementById('dataModal').classList.add('active');
+        }
+        
+        async function deleteZoningRecord(id) {
+            if (confirm('Are you sure you want to delete this record?')) {
+                if (useGoogleSheets && GOOGLE_SHEETS_WEB_APP_URL !== "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE") {
+                    await deleteFromGoogleSheets(id);
+                    await loadFromGoogleSheets();
+                } else {
+                    deleteFromLocalStorage(id);
+                }
+                alert('Record deleted successfully!');
+            }
+        }
+        
+        function printZoningRecord(id) {
+            const record = zoningCertifications.find(r => r.id == id);
+            if (!record) return;
+            
+            const printContent = `
+                <div style="font-family: monospace; padding: 20px;">
+                    <h2>DEPARTMENT OF HUMAN SETTLEMENTS AND URBAN DEVELOPMENT</h2>
+                    <h3>Region VI, Iloilo City</h3>
+                    <h3>CERTIFICATION</h3>
+                    <p><strong>Certification No.:</strong> ${record.certificationNo}</p>
+                    <p><strong>Location:</strong> ${record.location}</p>
+                    <p><strong>Total Area:</strong> ${record.totalArea} hectares</p>
+                    <p><strong>Proposed Use:</strong> ${record.proposedUse}</p>
+                    <p><strong>Requested By:</strong> ${record.requestedBy}</p>
+                    <p><strong>Date Issued:</strong> ${record.formattedDate}</p>
+                    <p><strong>Amount Paid:</strong> ₱ ${record.amountPaid}</p>
+                    <div class="signature-area" style="margin-top: 50px;">
+                        <p>_________________________</p>
+                        <p><strong>EnP EVA MARIA P. MARFIL</strong></p>
+                        <p>Regional Director</p>
+                    </div>
+                </div>
+            `;
+            
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(printContent);
+            printWindow.document.close();
+            printWindow.print();
+        }
+        
+        function addLandHolding() {
+            const container = document.getElementById('landHoldingsContainer');
+            const timestamp = Date.now();
+            const rowCount = container.children.length;
+            const newRow = document.createElement('div');
+            newRow.className = 'land-holding-row';
+            newRow.style.cssText = 'display: grid; grid-template-columns: 2fr 1.5fr 1fr 1fr 0.5fr; gap: 10px; margin-bottom: 10px; padding: 10px; background: #f9f9f9; border-radius: 5px;';
+            newRow.innerHTML = `
+                <input type="text" class="form-control" name="registeredOwner[]" placeholder="Registered Owner" required style="padding: 0.5rem;">
+                <input type="text" class="form-control" name="tctNo[]" placeholder="TCT/OCT No." required style="padding: 0.5rem;">
+                <input type="text" class="form-control" name="lotNo[]" placeholder="Lot No." style="padding: 0.5rem;">
+                <input type="number" step="0.0001" class="form-control" name="areaPerTitle[]" placeholder="Area (ha)" style="padding: 0.5rem;">
+                <input type="text" class="form-control" name="zoneclass[]" placeholder="Zone Class" required style="padding: 0.5rem;">
+                <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">🗑️</button>
+            `;
+            container.appendChild(newRow);
+        }
+        
+        function clearZoningForm() {
+            document.getElementById('zoningForm').reset();
+            const container = document.getElementById('landHoldingsContainer');
+            container.innerHTML = '';
+            addLandHolding();
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('dateIssued').value = today;
+        }
+        
+        function viewAllCertifications() {
+            document.getElementById('recordsSection').style.display = 'block';
+            renderCertificationsTable();
+        }
+        
+        function renderPlansTable() {
+            const tbody = document.getElementById('plansTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            landUsePlans.forEach(plan => {
+                tbody.innerHTML += `<tr><td>${plan.lgu}</td><td>${plan.province}</td><td>${plan.planPeriod}</td><td><span class="status-badge status-approved">${plan.status}</span></td><td><button class="action-btn view" onclick="viewPlan(${plan.id})">View</button></td></tr>`;
+            });
+        }
+        
+        function viewPlan(id) {
+            const plan = landUsePlans.find(p => p.id == id);
+            alert(`LGU: ${plan.lgu}\nProvince: ${plan.province}\nPlan Period: ${plan.planPeriod}\nStatus: ${plan.status}`);
+        }
+        
+        function openAddModal() {
+            alert('Add new plan feature - implement as needed');
+        }
+        
+        function generateReport(type) {
+            alert(`Generating ${type} report...\nTotal Certifications: ${zoningCertifications.length}`);
+        }
+        
+        function openAboutModal() {
+            document.getElementById('modalTitle').textContent = 'About ELUPDD Region VI';
+            document.getElementById('modalBody').innerHTML = `
+                <div><h3>Environmental Land Use and Urban Planning Development Division</h3>
+                <p>A region with planned, resilient, and sustainable communities.</p>
+                <p><strong>Data Sharing:</strong> All site zoning certifications are shared across all users via Google Sheets integration.</p>
+                </div>
+                <button class="btn btn-primary" onclick="closeModal()">Close</button>
+            `;
+            document.getElementById('dataModal').classList.add('active');
+        }
+        
+        function closeModal() { document.getElementById('dataModal').classList.remove('active'); }
+        
+        // Map functions
+        let regionMap = null;
+        let uploadedLayers = [];
+        
+        function initMap() {
+            if (!regionMap) {
+                regionMap = L.map('regionMap').setView([11.0, 122.5], 8);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(regionMap);
+                const provinceCoords = [[11.7074, 122.3630], [10.7435, 121.9413], [11.5853, 122.7511], [10.6583, 122.6233], [10.7202, 122.5621], [10.6710, 122.9494]];
+                provinceCoords.forEach(coord => L.marker(coord).addTo(regionMap));
+            }
+        }
+        
+        function clearUploadedLayers() { uploadedLayers.forEach(l => regionMap.removeLayer(l)); uploadedLayers = []; document.getElementById('clearLayersBtn').style.display = 'none'; }
+        
+        document.getElementById('shapefileUpload')?.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (file && window.shp) {
+                const geojson = await window.shp(file);
+                const layer = L.geoJSON(geojson).addTo(regionMap);
+                uploadedLayers.push(layer);
+                document.getElementById('clearLayersBtn').style.display = 'inline-flex';
+                regionMap.fitBounds(layer.getBounds());
+            }
+        });
+        
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+            document.getElementById(sectionId).style.display = 'block';
+            if (sectionId === 'map') { initMap(); setTimeout(() => regionMap?.invalidateSize(), 100); }
+            if (sectionId === 'zoning') renderCertificationsTable();
+        }
+        
+        // Initialize on load
+        window.onload = function() {
+            renderPlansTable();
+            loadFromLocalStorage(); // Start with localStorage, will sync to cloud if configured
+            document.getElementById('certificationNo').value = getNextCertificationNumber();
+            document.getElementById('dateIssued').value = new Date().toISOString().split('T')[0];
+            addLandHolding();
+            document.getElementById('totalCertifications').textContent = zoningCertifications.length;
+            
+            // Try to connect to Google Sheets if configured
+            if (useGoogleSheets && GOOGLE_SHEETS_WEB_APP_URL !== "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE") {
+                loadFromGoogleSheets();
+            }
+        };
+        
+        // Make functions global
+        window.showSection = showSection; window.saveZoningRecord = saveZoningRecord;
+        window.addLandHolding = addLandHolding; window.clearZoningForm = clearZoningForm;
+        window.viewAllCertifications = viewAllCertifications; window.viewZoningRecord = viewZoningRecord;
+        window.deleteZoningRecord = deleteZoningRecord; window.printZoningRecord = printZoningRecord;
+        window.closeModal = closeModal; window.openAboutModal = openAboutModal;
+        window.generateReport = generateReport; window.openAddModal = openAddModal;
+        window.clearUploadedLayers = clearUploadedLayers; window.syncWithGoogleSheets = syncWithGoogleSheets;
+    </script>
+</body>
+</html>
