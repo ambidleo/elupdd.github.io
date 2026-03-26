@@ -2009,35 +2009,233 @@
     </footer>
 
     <script>
-        // ========== GOOGLE SHEETS CONFIGURATION ==========
-        // Replace this URL with your deployed Google Apps Script web app URL
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyXE0y1pjfcQx2L5vd2YuoJQJNtSqrvAgHH3uHrCpjqQ_SRpFjZ16kgdDqOiXW04awj2A/exec";
+       // ========== GOOGLE SHEETS CONFIGURATION ==========
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyXE0y1pjfcQx2L5vd2YuoJQJNtSqrvAgHH3uHrCpjqQ_SRpFjZ16kgdDqOiXW04awj2A/exec";
 
-        // ========== GLOBAL DATA ==========
-        let landUsePlans = [
-            { id:1, lgu:"Kalibo", province:"Aklan", planPeriod:"2020-2029", status:"Approved", dateSubmitted:"2020-03-15", dateApproved:"2020-08-20", remarks:"Tourism zones" },
-            { id:2, lgu:"San Jose", province:"Antique", planPeriod:"2021-2030", status:"For Review", dateSubmitted:"2021-06-10", dateApproved:"Pending", remarks:"Under review" },
-            { id:3, lgu:"Roxas City", province:"Capiz", planPeriod:"2022-2031", status:"Approved", dateSubmitted:"2022-02-20", dateApproved:"2022-07-15", remarks:"Coastal management" },
-            { id:4, lgu:"Jordan", province:"Guimaras", planPeriod:"2021-2030", status:"Approved", dateSubmitted:"2021-04-05", dateApproved:"2021-09-12", remarks:"Agricultural preservation" },
-            { id:5, lgu:"Iloilo City", province:"Iloilo", planPeriod:"2023-2032", status:"For Review", dateSubmitted:"2023-01-10", dateApproved:"Pending", remarks:"Urban renewal" },
-            { id:6, lgu:"Bacolod City", province:"Negros Occidental", planPeriod:"2022-2031", status:"Approved", dateSubmitted:"2022-05-18", dateApproved:"2022-11-22", remarks:"Mixed-use zones" }
-        ];
-        let projects = [
-            { id:1, name:"Boracay Rehabilitation", location:"Malay, Aklan", type:"Environmental", budget:"250,000,000", status:"Ongoing", completion:75 },
-            { id:2, name:"Iloilo River Esplanade", location:"Iloilo City", type:"Urban Development", budget:"180,000,000", status:"Ongoing", completion:60 },
-            { id:3, name:"Bacolod MassKara Park", location:"Bacolod City", type:"Tourism Infrastructure", budget:"95,000,000", status:"Planning", completion:25 }
-        ];
-        let eiaRecords = [
-            { id:1, project:"Coastal Development", location:"Roxas City", type:"EIS", dateFiled:"2024-01-10", status:"Under Review" },
-            { id:2, project:"Highway Expansion", location:"Iloilo", type:"IEE", dateFiled:"2024-02-15", status:"Approved" }
-        ];
-        let zoningCertifications = []; // will be loaded from Google Sheets
-        let certificationCounter = { lastNumber: 0, prefix: 'SZC-RVI', year: new Date().getFullYear().toString().slice(-2) };
-        let regionMap = null;
-        let mapInitialized = false;
-        let uploadedLayers = [];
-        let layerCounter = 0;
+// ========== GLOBAL DATA ==========
+let landUsePlans = [ ... ]; // unchanged
+let projects = [ ... ]; // unchanged
+let eiaRecords = [ ... ]; // unchanged
+let zoningCertifications = [];
+let certificationCounter = { lastCertNumber: 0, prefix: 'SZC-RVI', year: new Date().getFullYear().toString().slice(-2) };
+let regionMap = null;
+let mapInitialized = false;
+let uploadedLayers = [];
+let layerCounter = 0;
 
+// ... other functions unchanged up to fetchCertifications ...
+
+// ========== UPDATED GOOGLE SHEETS FUNCTIONS ==========
+async function fetchCertifications() {
+    try {
+        const response = await fetch(GOOGLE_SCRIPT_URL);
+        const data = await response.json();
+        zoningCertifications = data;
+
+        // Extract the highest numeric suffix from certification numbers
+        let maxNum = 0;
+        zoningCertifications.forEach(record => {
+            const certNo = record.certificationNo;
+            if (certNo) {
+                // Expected format: SZC-RVI25-001
+                const match = certNo.match(/-(\d+)$/);
+                if (match) {
+                    const num = parseInt(match[1], 10);
+                    if (num > maxNum) maxNum = num;
+                }
+            }
+        });
+        certificationCounter.lastCertNumber = maxNum;
+        localStorage.setItem('certificationCounter', JSON.stringify(certificationCounter));
+        renderCertificationsTable();
+        return data;
+    } catch (error) {
+        console.error("Error fetching certifications:", error);
+        alert("Failed to load records from Google Sheets. Check your script URL and permissions.");
+        return [];
+    }
+}
+
+// ========== UPDATED HELPER FUNCTIONS ==========
+function loadCounter() {
+    const saved = localStorage.getItem('certificationCounter');
+    if (saved) {
+        try {
+            certificationCounter = JSON.parse(saved);
+            certificationCounter.year = new Date().getFullYear().toString().slice(-2);
+        } catch (e) {
+            console.error('Error parsing counter:', e);
+            resetCounter();
+        }
+    } else {
+        certificationCounter.lastCertNumber = 0;
+    }
+    localStorage.setItem('certificationCounter', JSON.stringify(certificationCounter));
+}
+
+function resetCounter() {
+    certificationCounter = {
+        lastCertNumber: 0,
+        prefix: 'SZC-RVI',
+        year: new Date().getFullYear().toString().slice(-2)
+    };
+    localStorage.setItem('certificationCounter', JSON.stringify(certificationCounter));
+}
+
+function generateCertificationNumber() {
+    certificationCounter.lastCertNumber++;
+    const number = certificationCounter.lastCertNumber.toString().padStart(3, '0');
+    const year = new Date().getFullYear().toString().slice(-2);
+    const certNumber = `${certificationCounter.prefix}${year}-${number}`;
+    localStorage.setItem('certificationCounter', JSON.stringify(certificationCounter));
+    return certNumber;
+}
+
+function getNextCertificationNumber() {
+    const nextNumber = certificationCounter.lastCertNumber + 1;
+    const number = nextNumber.toString().padStart(3, '0');
+    const year = new Date().getFullYear().toString().slice(-2);
+    return `${certificationCounter.prefix}${year}-${number}`;
+}
+
+// ========== UPDATED SAVE FUNCTION ==========
+async function saveZoningRecord(event) {
+    event.preventDefault();
+    try {
+        clearErrorMessages();
+
+        // Sync counter with latest records (ensures we have the latest max number)
+        await fetchCertifications();
+
+        let certificationNo = generateCertificationNumber();
+
+        // Safety check: ensure generated number doesn't already exist (very rare)
+        let existing = zoningCertifications.some(r => r.certificationNo === certificationNo);
+        while (existing) {
+            certificationCounter.lastCertNumber++;
+            localStorage.setItem('certificationCounter', JSON.stringify(certificationCounter));
+            certificationNo = generateCertificationNumber();
+            existing = zoningCertifications.some(r => r.certificationNo === certificationNo);
+        }
+
+        // ... rest of the function unchanged (collecting form data, validation, etc.) ...
+        const series = document.getElementById('series')?.value || '2002';
+        const parcels = document.getElementById('parcels')?.value;
+        const location = document.getElementById('location')?.value;
+        const totalArea = document.getElementById('totalArea')?.value;
+        const proposedUse = document.getElementById('proposedUse')?.value;
+        const dateIssued = document.getElementById('dateIssued')?.value;
+        const requestedBy = document.getElementById('requestedBy')?.value;
+        const amountPaid = document.getElementById('amountPaid')?.value;
+        const orNo = document.getElementById('orNo')?.value || '';
+        const remarks = document.getElementById('remarks')?.value || '';
+
+        // Validation (same as before)
+        let hasErrors = false;
+        if (!parcels) { showError('parcels', 'Required'); hasErrors = true; }
+        if (!location) { showError('location', 'Required'); hasErrors = true; }
+        if (!totalArea) { showError('totalArea', 'Required'); hasErrors = true; }
+        if (!proposedUse) { showError('proposedUse', 'Required'); hasErrors = true; }
+        if (!dateIssued) { showError('dateIssued', 'Required'); hasErrors = true; }
+        if (!requestedBy) { showError('requestedBy', 'Required'); hasErrors = true; }
+        if (!amountPaid) { showError('amountPaid', 'Required'); hasErrors = true; }
+        if (hasErrors) {
+            document.getElementById('formMessages').textContent = 'Please fill in all required fields';
+            document.getElementById('formMessages').classList.remove('visually-hidden');
+            setTimeout(() => document.getElementById('formMessages').classList.add('visually-hidden'), 5000);
+            return false;
+        }
+
+        // Collect land holdings
+        const registeredOwners = document.getElementsByName('registeredOwner[]');
+        const tctNos = document.getElementsByName('tctNo[]');
+        const lotNos = document.getElementsByName('lotNo[]');
+        const areaPerTitles = document.getElementsByName('areaPerTitle[]');
+        const zoneclasses = document.getElementsByName('zoneclass[]');
+        if (!registeredOwners || registeredOwners.length === 0) {
+            alert('Please add at least one land holding.');
+            return false;
+        }
+        const landHoldings = [];
+        for (let i = 0; i < registeredOwners.length; i++) {
+            if (!registeredOwners[i]?.value || !tctNos[i]?.value || !zoneclasses[i]?.value) {
+                alert('Please fill in all required fields in row ' + (i + 1));
+                return false;
+            }
+            const areaValue = areaPerTitles[i] && areaPerTitles[i].value ? parseFloat(areaPerTitles[i].value) : 0;
+            landHoldings.push({
+                registeredOwner: registeredOwners[i].value,
+                tctNo: tctNos[i].value,
+                lotNo: lotNos[i] && lotNos[i].value ? lotNos[i].value : '',
+                areaPerTitle: areaValue,
+                zoneclass: zoneclasses[i].value
+            });
+        }
+
+        const clupStatus = document.querySelector('input[name="clupStatus"]:checked')?.value || 'approved';
+
+        const record = {
+            id: Date.now(),
+            certificationNo,
+            series,
+            parcels,
+            location,
+            totalArea,
+            proposedUse,
+            landHoldings,
+            dateIssued,
+            formattedDate: new Date(dateIssued).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+            requestedBy,
+            amountPaid,
+            orNo,
+            remarks,
+            clupStatus,
+            city: document.getElementById('city')?.value || 'Iloilo City',
+            approvedBy: document.getElementById('approvedBy')?.value || 'DHSUD',
+            circularNo: document.getElementById('circularNo')?.value || '2022-002',
+            approvalDate: document.getElementById('approvalDate')?.value || 'May 12, 2022',
+            timestamp: new Date().toLocaleString()
+        };
+
+        // Save to Google Sheets
+        const success = await saveCertificationToSheet(record);
+        if (success) {
+            await fetchCertifications(); // refresh local data
+            document.getElementById('formMessages').textContent = `Certification ${certificationNo} saved successfully`;
+            document.getElementById('formMessages').classList.remove('visually-hidden');
+            alert(`Certification saved successfully!\nCertification No: ${certificationNo}`);
+
+            clearZoningForm();
+            document.getElementById('certificationNo').value = getNextCertificationNumber();
+            document.getElementById('recordsSection').style.display = 'block';
+
+            setTimeout(() => document.getElementById('formMessages').classList.add('visually-hidden'), 5000);
+        } else {
+            alert('Failed to save record to Google Sheets. Check your script URL.');
+        }
+        return false;
+    } catch (error) {
+        console.error(error);
+        alert('An error occurred while saving.');
+        return false;
+    }
+}
+
+// ========== RESET COUNTER (UPDATED) ==========
+function resetCertificationCounter(startFrom = 0) {
+    if (confirm('Are you sure you want to reset the certification counter? This action should be used carefully!')) {
+        certificationCounter.lastCertNumber = startFrom;
+        localStorage.setItem('certificationCounter', JSON.stringify(certificationCounter));
+        document.getElementById('certificationNo').value = getNextCertificationNumber();
+        const formMessages = document.getElementById('formMessages');
+        formMessages.textContent = `Counter reset. Next number will be: ${getNextCertificationNumber()}`;
+        formMessages.classList.remove('visually-hidden');
+        setTimeout(() => {
+            formMessages.classList.add('visually-hidden');
+        }, 5000);
+        alert(`Counter reset. Next number will be: ${getNextCertificationNumber()}`);
+    }
+}
         // ========== MAP LAYER CONTROL ==========
         let baseLayers = {
             "OpenStreetMap": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
