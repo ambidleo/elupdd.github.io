@@ -10,7 +10,7 @@
     <!-- shp.js for shapefile parsing -->
     <script src="https://unpkg.com/shpjs@3.4.3/dist/shp.js"></script>
     <style>
-        /* (CSS omitted for brevity – same as original) */
+        /* (CSS omitted for brevity – same as original but included in final) */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #e8f0f9; min-height: 100vh; }
         :root { --primary-dark: #1a4d5e; --primary: #2c6e8f; --primary-light-accessible: #1e7a9c; --secondary: #3a7b5c; --accent-accessible: #d4a017; --earth: #8B5A2B; --water: #3498db; --forest: #27ae60; --urban: #7f8c8d; --background: #f5f9ff; --card-bg: #ffffff; --cert-primary: #8B4513; --cert-secondary: #228B22; --cert-accent: #FFD700; }
@@ -225,7 +225,8 @@
     <header role="banner">
         <div class="logo-container">
             <div class="logo">
-               <img src="DHSUD LOGO.png" alt="DHSUD Logo" style="width: 100%; height: 100%; object-fit: contain;">
+                <img src="DHSUD LOGO.png" alt="DHSUD Logo" style="width: 100%; height: 100%; object-fit: contain;">
+                <span style="font-size: 1.2rem; font-weight: bold; color: #1a4d5e;">DHSUD</span>
             </div>
         </div>
 
@@ -330,7 +331,7 @@
                     <div class="table-responsive">
                         <table id="plansTable" aria-label="Land Use Plans">
                             <caption class="visually-hidden">List of Comprehensive Land Use Plans in Region VI</caption>
-                            <thead><tr><th scope="col">LGU/Municipality</th><th scope="col">Province</th><th scope="col">Plan Period</th><th scope="col">Status</th><th scope="col">Date Submitted</th><th scope="col">Date Approved</th><th scope="col">Actions</th></tr></thead>
+                            <thead>汽<th scope="col">LGU/Municipality</th><th scope="col">Province</th><th scope="col">Plan Period</th><th scope="col">Status</th><th scope="col">Date Submitted</th><th scope="col">Date Approved</th><th scope="col">Actions</th></thead>
                             <tbody id="plansTableBody"></tbody>
                         </table>
                     </div>
@@ -432,6 +433,7 @@
 
     <script>
         // ========== GOOGLE SHEETS CONFIGURATION ==========
+        // REPLACE WITH YOUR OWN APPS SCRIPT WEB APP URL (deployed as a Web app with access: Anyone)
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyqku_sSMmTKLnRK_hgNJhcrYf3jZMkug1PHN6dvEmGPhLiDaWFUbaDnAumgsbtZyquPw/exec";
 
         // ========== GLOBAL DATA ==========
@@ -496,57 +498,57 @@
             currentBaseLayer.addTo(regionMap);
         }
 
-        // ========== GOOGLE SHEETS FUNCTIONS (with CRUD) ==========
+        // ========== GOOGLE SHEETS FUNCTIONS (with URL-encoded POST to avoid CORS) ==========
         async function fetchCertifications() {
-    try {
-        const response = await fetch(GOOGLE_SCRIPT_URL + '?action=get', { method: 'GET' });
-        const data = await response.json();
-        zoningCertifications = data;
-        updateCounterFromData();
-        renderCertificationsTable();
-        return data;
-    } catch (error) {
-        console.error("Error fetching certifications:", error);
-        document.getElementById('formMessages').textContent = 'Failed to load records. Check your script URL.';
-        document.getElementById('formMessages').classList.remove('visually-hidden');
-        setTimeout(() => document.getElementById('formMessages').classList.add('visually-hidden'), 5000);
-        return [];
-    }
-}
-
-async function saveCertificationToSheet(record, action = 'add') {
-    try {
-        const params = new URLSearchParams();
-        params.append('action', action);
-        params.append('data', JSON.stringify(record));
-        const response = await fetch(GOOGLE_SCRIPT_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: params.toString()
-        });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const result = await response.json();
-        return result.success;
-    } catch (error) {
-        console.error("Error saving to Google Sheets:", error);
-        return false;
-    }
-
-function updateCounterFromData() {
-    let maxNum = 0;
-    zoningCertifications.forEach(record => {
-        const certNo = record.certificationNo;
-        if (certNo) {
-            const match = certNo.match(/-(\d+)$/);
-            if (match) {
-                const num = parseInt(match[1], 10);
-                if (num > maxNum) maxNum = num;
+            try {
+                const response = await fetch(GOOGLE_SCRIPT_URL + '?action=get', { method: 'GET' });
+                const data = await response.json();
+                zoningCertifications = data;
+                updateCounterFromData();
+                renderCertificationsTable();
+                return data;
+            } catch (error) {
+                console.error("Error fetching certifications:", error);
+                document.getElementById('formMessages').textContent = 'Failed to load records. Check your script URL.';
+                document.getElementById('formMessages').classList.remove('visually-hidden');
+                setTimeout(() => document.getElementById('formMessages').classList.add('visually-hidden'), 5000);
+                return [];
             }
         }
-    });
-    certificationCounter.lastCertNumber = maxNum;
-    localStorage.setItem('certificationCounter', JSON.stringify(certificationCounter));
-}
+
+        async function saveCertificationToSheet(record, action = 'add') {
+            try {
+                const params = new URLSearchParams();
+                params.append('action', action);
+                params.append('data', JSON.stringify(record));
+                const response = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: params.toString()
+                });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const result = await response.json();
+                return result.success;
+            } catch (error) {
+                console.error("Error saving to Google Sheets:", error);
+                return false;
+            }
+        }
+
+        function updateCounterFromData() {
+            let maxNum = 0;
+            zoningCertifications.forEach(record => {
+                const certNo = record.certificationNo;
+                if (certNo) {
+                    const match = certNo.match(/-(\d+)$/);
+                    if (match) {
+                        const num = parseInt(match[1], 10);
+                        if (num > maxNum) maxNum = num;
+                    }
+                }
+            });
+            certificationCounter.lastCertNumber = maxNum;
+            localStorage.setItem('certificationCounter', JSON.stringify(certificationCounter));
         }
 
         // ========== HELPER FUNCTIONS ==========
@@ -835,7 +837,6 @@ function updateCounterFromData() {
                     certificationNo = existing.certificationNo;
                 } else {
                     certificationNo = generateCertificationNumber();
-                    // Safety: ensure no duplicate
                     while (zoningCertifications.some(r => r.certificationNo === certificationNo)) {
                         certificationCounter.lastCertNumber++;
                         localStorage.setItem('certificationCounter', JSON.stringify(certificationCounter));
@@ -854,7 +855,6 @@ function updateCounterFromData() {
                 const orNo = document.getElementById('orNo')?.value || '';
                 const remarks = document.getElementById('remarks')?.value || '';
 
-                // Validation
                 let hasErrors = false;
                 if (!parcels) { showError('parcels', 'Required'); hasErrors = true; }
                 if (!location) { showError('location', 'Required'); hasErrors = true; }
@@ -870,7 +870,6 @@ function updateCounterFromData() {
                     return false;
                 }
 
-                // Collect land holdings
                 const registeredOwners = document.getElementsByName('registeredOwner[]');
                 const tctNos = document.getElementsByName('tctNo[]');
                 const lotNos = document.getElementsByName('lotNo[]');
@@ -945,47 +944,44 @@ function updateCounterFromData() {
 
         // ========== SECTION SWITCHING ==========
         function showSection(sectionId) {
-    document.querySelectorAll('.section').forEach(section => {
-        section.style.display = 'none';
-    });
-    document.getElementById(sectionId).style.display = 'block';
+            document.querySelectorAll('.section').forEach(section => {
+                section.style.display = 'none';
+            });
+            document.getElementById(sectionId).style.display = 'block';
 
-    // Update active menu link
-    document.querySelectorAll('.nav-bar a').forEach(link => {
-        link.classList.remove('active');
-        link.removeAttribute('aria-current');
-    });
-    const links = document.querySelectorAll('.nav-bar a');
-    for (let link of links) {
-        if (link.getAttribute('onclick')?.includes(sectionId)) {
-            link.classList.add('active');
-            link.setAttribute('aria-current', 'page');
-            break;
+            document.querySelectorAll('.nav-bar a').forEach(link => {
+                link.classList.remove('active');
+                link.removeAttribute('aria-current');
+            });
+            const links = document.querySelectorAll('.nav-bar a');
+            for (let link of links) {
+                if (link.getAttribute('onclick')?.includes(sectionId)) {
+                    link.classList.add('active');
+                    link.setAttribute('aria-current', 'page');
+                    break;
+                }
+            }
+
+            const sectionNames = {
+                'dashboard': 'Dashboard',
+                'map': 'Regional Map',
+                'plans': 'Land Use Plans',
+                'zoning': 'Site Zoning Certification',
+                'reports': 'Reports'
+            };
+            document.title = `ELUPDD Region VI - ${sectionNames[sectionId] || 'Home'}`;
+
+            if (sectionId === 'map') {
+                initMap();
+                setTimeout(() => {
+                    if (regionMap) regionMap.invalidateSize();
+                }, 100);
+            }
+
+            if (sectionId === 'zoning') {
+                renderCertificationsTable();
+            }
         }
-    }
-
-    // Update page title
-    const sectionNames = {
-        'dashboard': 'Dashboard',
-        'map': 'Regional Map',
-        'plans': 'Land Use Plans',
-        'zoning': 'Site Zoning Certification',
-        'reports': 'Reports'
-    };
-    document.title = `ELUPDD Region VI - ${sectionNames[sectionId] || 'Home'}`;
-
-    // Map specific init
-    if (sectionId === 'map') {
-        initMap();
-        setTimeout(() => {
-            if (regionMap) regionMap.invalidateSize();
-        }, 100);
-    }
-
-    if (sectionId === 'zoning') {
-        renderCertificationsTable();
-    }
-}
 
         // ========== MAP INITIALIZATION ==========
         function initMap() {
