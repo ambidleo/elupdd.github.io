@@ -8,7 +8,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/shpjs@3.4.3/dist/shp.js"></script>
     <style>
-        /* ===== Full CSS (same as before, omitted for brevity – include your original CSS here) ===== */
+        /* ===== Full CSS (same as before, unchanged) ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #e8f0f9; min-height: 100vh; }
         :root { --primary-dark: #1a4d5e; --primary: #2c6e8f; --primary-light-accessible: #1e7a9c; --secondary: #3a7b5c; --accent-accessible: #d4a017; --earth: #8B5A2B; --water: #3498db; --forest: #27ae60; --urban: #7f8c8d; --background: #f5f9ff; --card-bg: #ffffff; --cert-primary: #8B4513; --cert-secondary: #228B22; --cert-accent: #FFD700; }
@@ -244,7 +244,7 @@
 
     <main id="main-content" role="main">
         <div class="container">
-            <!-- Dashboard Section -->
+            <!-- Dashboard Section (same as before) -->
             <div id="dashboard" class="section active" role="region" aria-labelledby="dashboard-heading">
                 <h1 id="dashboard-heading" class="visually-hidden">Dashboard - Regional Planning Overview</h1>
                 <div class="overview-section">
@@ -267,7 +267,7 @@
                 </div>
             </div>
 
-            <!-- Map Section -->
+            <!-- Map Section (simplified, unchanged) -->
             <div id="map" class="section" style="display: none;" role="region" aria-labelledby="map-heading">
                 <h1 id="map-heading" class="visually-hidden">Regional Navigation Map - Western Visayas</h1>
                 <div class="map-section">
@@ -305,7 +305,7 @@
                 </div>
             </div>
 
-            <!-- Land Use Plans Section -->
+            <!-- Land Use Plans Section (simplified) -->
             <div id="plans" class="section" style="display: none;" role="region" aria-labelledby="plans-heading">
                 <h1 id="plans-heading" class="visually-hidden">Comprehensive Land Use Plans</h1>
                 <div class="data-section">
@@ -327,7 +327,7 @@
                             <caption class="visually-hidden">List of Comprehensive Land Use Plans in Region VI</caption>
                             <thead>汽<th>LGU/Municipality</th><th>Province</th><th>Plan Period</th><th>Status</th><th>Date Submitted</th><th>Date Approved</th><th>Actions</th></thead>
                             <tbody id="plansTableBody"></tbody>
-                          </table>
+                         </table>
                     </div>
                 </div>
             </div>
@@ -385,12 +385,12 @@
                 </div>
                 <div class="cert-section" id="recordsSection" style="display:none;">
                     <div class="cert-title"><span aria-hidden="true">📋</span> Saved Certifications</div>
-                    <div style="overflow-x:auto;"><table class="cert-table" id="certificationsTable"><thead>汽<th>Certification No.</th><th>No. of Parcels</th><th>Location</th><th>Total Area</th><th>Date Issued</th><th>Requested By</th><th>Actions</th></thead><tbody id="certificationsTableBody"></tbody></table></div>
+                    <div style="overflow-x:auto;"><table class="cert-table" id="certificationsTable"><thead>汽<th>Certification No.</th><th>No. of Parcels</th><th>Location</th><th>Total Area</th><th>Date Issued</th><th>Requested By</th><th>Actions</th></thead><tbody id="certificationsTableBody"></tbody> </table></div>
                     <div style="text-align:right; margin-top:1rem;"><button class="btn btn-secondary" onclick="toggleRecordsView()">Hide Records</button></div>
                 </div>
             </div>
 
-            <!-- Reports Section -->
+            <!-- Reports Section (simplified) -->
             <div id="reports" class="section" style="display: none;" role="region" aria-labelledby="reports-heading">
                 <h1 id="reports-heading" class="visually-hidden">Planning Reports</h1>
                 <div class="data-section">
@@ -454,9 +454,10 @@
         let layerCounter = 0;
         let currentEditingId = null;
 
-        // ========== HELPER: Escape HTML ==========
+        // ========== FIXED escapeHtml ==========
         function escapeHtml(str) {
-            if (!str) return '';
+            if (str == null) return '';
+            str = String(str);
             return str.replace(/[&<>]/g, function(m) {
                 if (m === '&') return '&amp;';
                 if (m === '<') return '&lt;';
@@ -645,18 +646,18 @@
             const tbody = document.getElementById('certificationsTableBody');
             if (!tbody) return;
             tbody.innerHTML = '';
-            if (!zoningCertifications.length) { tbody.innerHTML = '汽<td colspan="7" style="text-align:center;">No records found. </td> </tr>'; return; }
+            if (!zoningCertifications.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No records found.</td></tr>'; return; }
             const sorted = [...zoningCertifications].sort((a,b) => new Date(b.dateIssued) - new Date(a.dateIssued));
             sorted.forEach(rec => {
                 const row = tbody.insertRow();
                 row.innerHTML = `
-                    <td>${escapeHtml(rec.certificationNo)}</td>
-                    <td>${escapeHtml(rec.parcels)}</td>
-                    <td>${escapeHtml(rec.location)}</td>
-                    <td>${escapeHtml(rec.totalArea)} ha</td>
-                    <td>${escapeHtml(rec.formattedDate || rec.dateIssued)}</td>
-                    <td>${escapeHtml(rec.requestedBy)}</td>
-                    <td><div class="action-btns"><button class="action-btn view" onclick="viewZoningRecord(${rec.id})">👁️ View</button><button class="action-btn edit" onclick="editZoningRecord(${rec.id})">✏️ Edit</button><button class="action-btn print" onclick="printZoningRecord(${rec.id})">🖨️ Print</button><button class="action-btn delete" onclick="deleteZoningRecord(${rec.id})">🗑️ Delete</button></div></td>
+                     <td>${escapeHtml(rec.certificationNo)}</td>
+                     <td>${escapeHtml(rec.parcels)}</td>
+                     <td>${escapeHtml(rec.location)}</td>
+                     <td>${escapeHtml(rec.totalArea)} ha</td>
+                     <td>${escapeHtml(rec.formattedDate || rec.dateIssued)}</td>
+                     <td>${escapeHtml(rec.requestedBy)}</td>
+                     <td><div class="action-btns"><button class="action-btn view" onclick="viewZoningRecord(${rec.id})">👁️ View</button><button class="action-btn edit" onclick="editZoningRecord(${rec.id})">✏️ Edit</button><button class="action-btn print" onclick="printZoningRecord(${rec.id})">🖨️ Print</button><button class="action-btn delete" onclick="deleteZoningRecord(${rec.id})">🗑️ Delete</button></div></td>
                 `;
             });
         }
@@ -737,7 +738,6 @@
             const rec = zoningCertifications.find(r => r.id == id);
             if (!rec) return;
 
-            // Build the detailed certificate layout (same as blank form, filled with record data)
             const certNo = rec.certificationNo;
             const series = rec.series || '2002';
             const parcels = rec.parcels;
@@ -748,8 +748,6 @@
             const requestedBy = rec.requestedBy;
             const amountPaid = rec.amountPaid;
             const orNo = rec.orNo || '___________';
-            const clupStatusText = rec.clupStatus === 'approved' ? 'WITH APPROVED CLUP/ZO' : (rec.clupStatus === 'pending' ? 'WITH CLUP/ZO PENDING APPROVAL' : 'WITHOUT CLUP/ZO');
-            const clupStatusChecked = rec.clupStatus === 'approved' ? '✓' : (rec.clupStatus === 'pending' ? '✓' : '✓'); // check only the selected one
 
             let landHoldingsHtml = '';
             if (rec.landHoldings && rec.landHoldings.length) {
@@ -1225,7 +1223,7 @@
 
         function showOnMap() { showSection('map'); setTimeout(() => regionMap?.invalidateSize(), 100); }
 
-        // ========== LAND USE PLANS ==========
+        // ========== LAND USE PLANS (simplified, kept from original) ==========
         function renderPlansTable() {
             const tbody = document.getElementById('plansTableBody');
             if (!tbody) return;
