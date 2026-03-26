@@ -945,22 +945,47 @@ function updateCounterFromData() {
 
         // ========== SECTION SWITCHING ==========
         function showSection(sectionId) {
-            document.querySelectorAll('.section').forEach(section => section.style.display = 'none');
-            document.getElementById(sectionId).style.display = 'block';
-            document.querySelectorAll('.nav-bar a').forEach(link => { link.classList.remove('active'); link.removeAttribute('aria-current'); });
-            const links = document.querySelectorAll('.nav-bar a');
-            for (let link of links) {
-                if (link.getAttribute('onclick')?.includes(sectionId)) {
-                    link.classList.add('active');
-                    link.setAttribute('aria-current', 'page');
-                    break;
-                }
-            }
-            const sectionNames = { 'dashboard': 'Dashboard', 'map': 'Regional Map', 'plans': 'Land Use Plans', 'zoning': 'Site Zoning Certification', 'reports': 'Reports' };
-            document.title = `ELUPDD Region VI - ${sectionNames[sectionId] || 'Home'}`;
-            if (sectionId === 'map') { initMap(); setTimeout(() => { if (regionMap) regionMap.invalidateSize(); }, 100); }
-            if (sectionId === 'zoning') renderCertificationsTable();
+    document.querySelectorAll('.section').forEach(section => {
+        section.style.display = 'none';
+    });
+    document.getElementById(sectionId).style.display = 'block';
+
+    // Update active menu link
+    document.querySelectorAll('.nav-bar a').forEach(link => {
+        link.classList.remove('active');
+        link.removeAttribute('aria-current');
+    });
+    const links = document.querySelectorAll('.nav-bar a');
+    for (let link of links) {
+        if (link.getAttribute('onclick')?.includes(sectionId)) {
+            link.classList.add('active');
+            link.setAttribute('aria-current', 'page');
+            break;
         }
+    }
+
+    // Update page title
+    const sectionNames = {
+        'dashboard': 'Dashboard',
+        'map': 'Regional Map',
+        'plans': 'Land Use Plans',
+        'zoning': 'Site Zoning Certification',
+        'reports': 'Reports'
+    };
+    document.title = `ELUPDD Region VI - ${sectionNames[sectionId] || 'Home'}`;
+
+    // Map specific init
+    if (sectionId === 'map') {
+        initMap();
+        setTimeout(() => {
+            if (regionMap) regionMap.invalidateSize();
+        }, 100);
+    }
+
+    if (sectionId === 'zoning') {
+        renderCertificationsTable();
+    }
+}
 
         // ========== MAP INITIALIZATION ==========
         function initMap() {
