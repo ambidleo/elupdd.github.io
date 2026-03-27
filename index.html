@@ -683,14 +683,6 @@
             return `${day}${ordinal(day)} day of ${monthNames[month]} ${year}`;
         }
 
-        // Format any date string; if not a valid date, return original
-        function formatDateString(dateStr) {
-            if (!dateStr) return '___________';
-            const d = new Date(dateStr);
-            if (!isNaN(d.getTime())) return formatOrdinalDate(d);
-            return dateStr;
-        }
-
         // Format YYYY-MM-DD to mm/dd/yyyy
         function formatToMMDDYYYY(dateStr) {
             if (!dateStr) return '___________';
@@ -764,18 +756,18 @@
                     </table>`;
             }
 
-            // --- Status section (Date of Approval in ordinal) ---
+            // --- Status section (Date of Approval in mm/dd/yyyy) ---
             const clupStatus = rec.clupStatus || 'approved';
             const city = rec.city || '______________________';
             const circularNo = rec.circularNo || '___________';
             const approvalDateRaw = rec.approvalDate || '___________';
-            const approvalDateFormatted = formatDateString(approvalDateRaw); // uses formatOrdinalDate
+            const approvalDateFormatted = formatToMMDDYYYY(approvalDateRaw); // mm/dd/yyyy
             const agriculturalLand = '___________';
             const reclassified = '___________';
             const reclassYear = '___________';
             const resolutionNo = '___________';
             const resolutionDateRaw = '___________';
-            const resolutionDateFormatted = formatDateString(resolutionDateRaw);
+            const resolutionDateFormatted = formatToMMDDYYYY(resolutionDateRaw);
 
             const check1 = clupStatus === 'approved' ? '[✓]' : '[ ]';
             const check2 = clupStatus === 'pending' ? '[✓]' : '[ ]';
@@ -797,9 +789,9 @@
                 <p>THIS IS TO CERTIFY that the municipality of <strong>${escapeHtml(city)}</strong> has not submitted its Comprehensive Land Use Plan/ Zoning Ordinance to this Office.</p>
             `;
 
-            // Format Date Issued and O.R. Date as mm/dd/yyyy
-            const formattedDateIssued = formatToMMDDYYYY(dateIssued);
-            const footerDate = orDate ? formatToMMDDYYYY(orDate) : formattedDateIssued;
+            // Format Date Issued and O.R. Date as ordinal
+            const formattedDateIssued = formatOrdinalDate(dateIssued);
+            const footerDate = orDate ? formatOrdinalDate(orDate) : formattedDateIssued;
 
             const printContent = `
                 <div class="print-document">
