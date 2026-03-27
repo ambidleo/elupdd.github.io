@@ -215,6 +215,25 @@
             .map-container { height: 350px; }
             .map-controls { flex-direction: column; align-items: stretch; }
         }
+        /* new style for review section */
+        .review-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            border-left: 8px solid var(--accent-accessible);
+        }
+        .review-card .section-header {
+            margin-bottom: 1.5rem;
+        }
+        .review-card h3 {
+            font-size: 1.6rem;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
     </style>
 </head>
 <body>
@@ -244,7 +263,7 @@
 
     <main id="main-content" role="main">
         <div class="container">
-            <!-- Dashboard Section (same as before) -->
+            <!-- Dashboard Section (same as before, plus new review card) -->
             <div id="dashboard" class="section active" role="region" aria-labelledby="dashboard-heading">
                 <h1 id="dashboard-heading" class="visually-hidden">Dashboard - Regional Planning Overview</h1>
                 <div class="overview-section">
@@ -264,6 +283,31 @@
                     <div class="province-card" role="listitem"><div class="province-header"><span>Guimaras</span><span aria-hidden="true">🥭</span></div><div class="province-body"><div class="province-stat"><span>Land Area:</span><span>604.57 km²</span></div><div class="province-stat"><span>CLUP Status:</span><span style="color:#27ae60;">Approved</span></div><div class="province-stat"><span>Ongoing Projects:</span><span>8</span></div><div class="province-stat"><span>Environmental Zones:</span><span>6</span></div></div></div>
                     <div class="province-card" role="listitem"><div class="province-header"><span>Iloilo</span><span aria-hidden="true">🏛️</span></div><div class="province-body"><div class="province-stat"><span>Land Area:</span><span>5,079.17 km²</span></div><div class="province-stat"><span>CLUP Status:</span><span style="color:#27ae60;">Approved</span></div><div class="province-stat"><span>Ongoing Projects:</span><span>25</span></div><div class="province-stat"><span>Environmental Zones:</span><span>15</span></div></div></div>
                     <div class="province-card" role="listitem"><div class="province-header"><span>Negros Occidental</span><span aria-hidden="true">🎭</span></div><div class="province-body"><div class="province-stat"><span>Land Area:</span><span>7,965.21 km²</span></div><div class="province-stat"><span>CLUP Status:</span><span style="color:#f39c12;">For Review</span></div><div class="province-stat"><span>Ongoing Projects:</span><span>22</span></div><div class="province-stat"><span>Environmental Zones:</span><span>14</span></div></div></div>
+                </div>
+
+                <!-- NEW: CLUP and PDPFP REVIEW Section -->
+                <div class="review-card">
+                    <div class="section-header">
+                        <h3><span aria-hidden="true">📋</span> CLUP and PDPFP REVIEW</h3>
+                        <div class="btn-group">
+                            <button class="btn btn-primary" onclick="openReviewModal()"><span aria-hidden="true">➕</span> Add Review Entry</button>
+                            <button class="btn btn-success" onclick="exportReviewData()"><span aria-hidden="true">📥</span> Export Data</button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table id="reviewTable" aria-label="CLUP and PDPFP review records">
+                            <caption class="visually-hidden">List of CLUP and PDPFP review entries</caption>
+                            <thead>
+                                <tr>
+                                    <th>LGU/Province</th>
+                                    <th>Reviewer</th>
+                                    <th>Dates</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reviewTableBody"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
@@ -325,9 +369,11 @@
                     <div class="table-responsive">
                         <table id="plansTable" aria-label="Land Use Plans">
                             <caption class="visually-hidden">List of Comprehensive Land Use Plans in Region VI</caption>
-                            <thead>汽<th>LGU/Municipality</th><th>Province</th><th>Plan Period</th><th>Status</th><th>Date Submitted</th><th>Date Approved</th><th>Actions</th></thead>
+                            <thead>
+                                <tr><th>LGU/Municipality</th><th>Province</th><th>Plan Period</th><th>Status</th><th>Date Submitted</th><th>Date Approved</th><th>Actions</th></tr>
+                            </thead>
                             <tbody id="plansTableBody"></tbody>
-                         </table>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -385,7 +431,7 @@
                 </div>
                 <div class="cert-section" id="recordsSection" style="display:none;">
                     <div class="cert-title"><span aria-hidden="true">📋</span> Saved Certifications</div>
-                    <div style="overflow-x:auto;"><table class="cert-table" id="certificationsTable"><thead>汽<th>Certification No.</th><th>No. of Parcels</th><th>Location</th><th>Total Area</th><th>Date Issued</th><th>Requested By</th><th>Actions</th></thead><tbody id="certificationsTableBody"></tbody> </table></div>
+                    <div style="overflow-x:auto;"><table class="cert-table" id="certificationsTable"><thead><tr><th>Certification No.</th><th>No. of Parcels</th><th>Location</th><th>Total Area</th><th>Date Issued</th><th>Requested By</th><th>Actions</th></tr></thead><tbody id="certificationsTableBody"></tbody></table></div>
                     <div style="text-align:right; margin-top:1rem;"><button class="btn btn-secondary" onclick="toggleRecordsView()">Hide Records</button></div>
                 </div>
             </div>
@@ -454,6 +500,120 @@
         let layerCounter = 0;
         let currentEditingId = null;
 
+        // ========== NEW: CLUP/PDPFP REVIEW DATA ==========
+        let reviewRecords = [];
+        let currentReviewId = null;
+
+        function loadReviewData() {
+            const stored = localStorage.getItem('clupPdpfpReviews');
+            if (stored) {
+                reviewRecords = JSON.parse(stored);
+            } else {
+                // sample data
+                reviewRecords = [
+                    { id: 1, lgu: "Kalibo, Aklan", reviewer: "Maria R. Santos", dates: "2024-02-10" },
+                    { id: 2, lgu: "San Jose, Antique", reviewer: "John D. Reyes", dates: "2024-03-05" },
+                    { id: 3, lgu: "Roxas City, Capiz", reviewer: "Luzviminda C. Fernandez", dates: "2024-01-20" }
+                ];
+                saveReviewData();
+            }
+            renderReviewTable();
+        }
+
+        function saveReviewData() {
+            localStorage.setItem('clupPdpfpReviews', JSON.stringify(reviewRecords));
+        }
+
+        function renderReviewTable() {
+            const tbody = document.getElementById('reviewTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            reviewRecords.forEach(rec => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${escapeHtml(rec.lgu)}</td>
+                    <td>${escapeHtml(rec.reviewer)}</td>
+                    <td>${escapeHtml(rec.dates)}</td>
+                    <td><div class="action-btns"><button class="action-btn edit" onclick="openReviewModal(${rec.id})">✏️ Edit</button><button class="action-btn delete" onclick="deleteReviewRecord(${rec.id})">🗑️ Delete</button></div></td>
+                `;
+            });
+        }
+
+        function openReviewModal(id = null) {
+            currentReviewId = id;
+            if (id !== null) {
+                const rec = reviewRecords.find(r => r.id === id);
+                if (rec) {
+                    document.getElementById('modalTitle').textContent = 'Edit Review Entry';
+                    document.getElementById('modalBody').innerHTML = `
+                        <form onsubmit="saveReviewEntry(event)">
+                            <div class="form-grid">
+                                <div class="form-group full-width"><label>LGU/Province</label><input type="text" class="form-control" name="lgu" value="${escapeHtml(rec.lgu)}" required></div>
+                                <div class="form-group full-width"><label>Reviewer</label><input type="text" class="form-control" name="reviewer" value="${escapeHtml(rec.reviewer)}" required></div>
+                                <div class="form-group full-width"><label>Dates</label><input type="text" class="form-control" name="dates" value="${escapeHtml(rec.dates)}" required placeholder="e.g., 2024-03-15 or March 15, 2024"></div>
+                            </div>
+                            <div style="text-align:right; margin-top:1rem;"><button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button><button type="submit" class="btn btn-success">Save</button></div>
+                        </form>
+                    `;
+                }
+            } else {
+                document.getElementById('modalTitle').textContent = 'Add Review Entry';
+                document.getElementById('modalBody').innerHTML = `
+                    <form onsubmit="saveReviewEntry(event)">
+                        <div class="form-grid">
+                            <div class="form-group full-width"><label>LGU/Province</label><input type="text" class="form-control" name="lgu" required></div>
+                            <div class="form-group full-width"><label>Reviewer</label><input type="text" class="form-control" name="reviewer" required></div>
+                            <div class="form-group full-width"><label>Dates</label><input type="text" class="form-control" name="dates" required placeholder="e.g., 2024-03-15 or March 15, 2024"></div>
+                        </div>
+                        <div style="text-align:right; margin-top:1rem;"><button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button><button type="submit" class="btn btn-success">Save</button></div>
+                    </form>
+                `;
+            }
+            document.getElementById('dataModal').classList.add('active');
+        }
+
+        function saveReviewEntry(event) {
+            event.preventDefault();
+            const form = event.target;
+            const lgu = form.lgu.value.trim();
+            const reviewer = form.reviewer.value.trim();
+            const dates = form.dates.value.trim();
+            if (!lgu || !reviewer || !dates) {
+                alert('Please fill all fields.');
+                return false;
+            }
+            if (currentReviewId !== null) {
+                const index = reviewRecords.findIndex(r => r.id === currentReviewId);
+                if (index !== -1) {
+                    reviewRecords[index] = { ...reviewRecords[index], lgu, reviewer, dates };
+                }
+            } else {
+                const newId = reviewRecords.length ? Math.max(...reviewRecords.map(r => r.id)) + 1 : 1;
+                reviewRecords.push({ id: newId, lgu, reviewer, dates });
+            }
+            saveReviewData();
+            renderReviewTable();
+            closeModal();
+            return false;
+        }
+
+        function deleteReviewRecord(id) {
+            if (confirm('Delete this review entry?')) {
+                reviewRecords = reviewRecords.filter(r => r.id !== id);
+                saveReviewData();
+                renderReviewTable();
+            }
+        }
+
+        function exportReviewData() {
+            const dataStr = JSON.stringify(reviewRecords, null, 2);
+            const a = document.createElement('a');
+            a.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+            a.download = 'clup_pdpfp_reviews.json';
+            a.click();
+            alert('Exported');
+        }
+
         // ========== FIXED escapeHtml ==========
         function escapeHtml(str) {
             if (str == null) return '';
@@ -489,7 +649,7 @@
             currentBaseLayer.addTo(regionMap);
         }
 
-        // ========== GOOGLE SHEETS / LOCALSTORAGE ==========
+        // ========== GOOGLE SHEETS / LOCALSTORAGE (unchanged) ==========
         async function fetchCertifications() {
             try {
                 const response = await fetch(GOOGLE_SCRIPT_URL + '?action=get', { method: 'GET' });
@@ -557,7 +717,7 @@
             localStorage.setItem('certificationCounter', JSON.stringify(certificationCounter));
         }
 
-        // ========== HELPER FUNCTIONS ==========
+        // ========== HELPER FUNCTIONS (unchanged) ==========
         function loadCounter() {
             const saved = localStorage.getItem('certificationCounter');
             if (saved) {
@@ -651,13 +811,13 @@
             sorted.forEach(rec => {
                 const row = tbody.insertRow();
                 row.innerHTML = `
-                     <td>${escapeHtml(rec.certificationNo)}</td>
-                     <td>${escapeHtml(rec.parcels)}</td>
-                     <td>${escapeHtml(rec.location)}</td>
-                     <td>${escapeHtml(rec.totalArea)} ha</td>
-                     <td>${escapeHtml(rec.formattedDate || rec.dateIssued)}</td>
-                     <td>${escapeHtml(rec.requestedBy)}</td>
-                     <td><div class="action-btns"><button class="action-btn view" onclick="viewZoningRecord(${rec.id})">👁️ View</button><button class="action-btn edit" onclick="editZoningRecord(${rec.id})">✏️ Edit</button><button class="action-btn print" onclick="printZoningRecord(${rec.id})">🖨️ Print</button><button class="action-btn delete" onclick="deleteZoningRecord(${rec.id})">🗑️ Delete</button></div></td>
+                    <td>${escapeHtml(rec.certificationNo)}</td>
+                    <td>${escapeHtml(rec.parcels)}</td>
+                    <td>${escapeHtml(rec.location)}</td>
+                    <td>${escapeHtml(rec.totalArea)} ha</td>
+                    <td>${escapeHtml(rec.formattedDate || rec.dateIssued)}</td>
+                    <td>${escapeHtml(rec.requestedBy)}</td>
+                    <td><div class="action-btns"><button class="action-btn view" onclick="viewZoningRecord(${rec.id})">👁️ View</button><button class="action-btn edit" onclick="editZoningRecord(${rec.id})">✏️ Edit</button><button class="action-btn print" onclick="printZoningRecord(${rec.id})">🖨️ Print</button><button class="action-btn delete" onclick="deleteZoningRecord(${rec.id})">🗑️ Delete</button></div></td>
                 `;
             });
         }
@@ -1022,9 +1182,7 @@
                     alert(`Saved! No: ${certificationNo}`);
                     clearZoningForm();
                     document.getElementById('certificationNo').value = getNextCertificationNumber();
-                    // Force records section to be visible
                     document.getElementById('recordsSection').style.display = 'block';
-                    // Re-render to be safe
                     renderCertificationsTable();
                     setTimeout(() => document.getElementById('formMessages').classList.add('visually-hidden'), 5000);
                 } else {
@@ -1290,6 +1448,7 @@
         // ========== INIT ==========
         window.onload = () => {
             loadCounter();
+            loadReviewData();   // load review table data
             fetchCertifications().then(() => renderCertificationsTable());
             renderPlansTable();
             document.getElementById('certificationNo').value = getNextCertificationNumber();
