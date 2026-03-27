@@ -360,7 +360,7 @@
                 </div>
             </div>
 
-            <!-- Site Zoning Certification Section (updated with calendar for approval date) -->
+            <!-- Site Zoning Certification Section (updated with mm/dd/yyyy) -->
             <div id="zoning" class="section" style="display: none;" role="region" aria-labelledby="zoning-heading">
                 <h1 id="zoning-heading" class="visually-hidden">Site Zoning Certification</h1>
                 <div class="cert-section">
@@ -378,11 +378,11 @@
                                 <div><button type="button" class="btn btn-success" onclick="addLandHolding()" style="padding:5px 10px; font-size:0.9rem;">➕ Add Another Property</button><small style="margin-left:10px;">Each property can have its own lot number and area</small></div>
                                 <div id="landHoldingsContainer"></div>
                             </div>
-                            <div class="form-group"><label for="dateIssued">Date Issued</label><input type="date" class="form-control" id="dateIssued" required></div>
+                            <div class="form-group"><label for="dateIssued">Date Issued</label><input type="text" class="form-control" id="dateIssued" placeholder="MM/DD/YYYY" required></div>
                             <div class="form-group"><label for="requestedBy">Requested By</label><input type="text" class="form-control" id="requestedBy" placeholder="Name of requester" required></div>
                             <div class="form-group"><label for="amountPaid">Amount Paid (₱)</label><input type="text" class="form-control" id="amountPaid" placeholder="e.g., 13,680" required></div>
                             <div class="form-group"><label for="orNo">O.R. No.</label><input type="text" class="form-control" id="orNo" placeholder="Official Receipt Number"></div>
-                            <div class="form-group"><label for="orDate">O.R. Date</label><input type="date" class="form-control" id="orDate"></div>
+                            <div class="form-group"><label for="orDate">O.R. Date</label><input type="text" class="form-control" id="orDate" placeholder="MM/DD/YYYY"></div>
                             <div class="form-group full-width"><label for="remarks">Remarks/Notes</label><textarea class="form-control" id="remarks" rows="3"></textarea></div>
                         </div>
                         <h3 class="cert-subtitle">CLUP/Zoning Ordinance Status</h3>
@@ -399,7 +399,7 @@
                                 <div class="form-group"><label for="city">City/Municipality</label><input type="text" class="form-control" id="city"></div>
                                 <div class="form-group"><label for="approvedBy">Approved by</label><input type="text" class="form-control" id="approvedBy"></div>
                                 <div class="form-group"><label for="circularNo">Department Circular No.</label><input type="text" class="form-control" id="circularNo"></div>
-                                <div class="form-group"><label for="approvalDate">Date of Approval</label><input type="date" class="form-control" id="approvalDate"></div>
+                                <div class="form-group"><label for="approvalDate">Date of Approval</label><input type="text" class="form-control" id="approvalDate" placeholder="MM/DD/YYYY"></div>
                             </div>
                         </div>
                         <div id="formMessages" role="alert" class="visually-hidden"></div>
@@ -661,39 +661,40 @@
             });
         }
 
-        // UTC-based date formatter
-        function formatOrdinalDate(dateInput) {
-            if (!dateInput) return "___________";
-            let date;
-            if (typeof dateInput === 'string') {
-                date = new Date(dateInput);
-            } else if (dateInput instanceof Date) {
-                date = dateInput;
-            } else {
-                return "___________";
-            }
-            if (isNaN(date.getTime())) return "___________";
-            const day = date.getUTCDate();
-            const month = date.getUTCMonth();
-            const year = date.getUTCFullYear();
-            const ordinal = (d) => {
-                if (d > 3 && d < 21) return 'th';
-                switch (d % 10) {
-                    case 1: return 'st';
-                    case 2: return 'nd';
-                    case 3: return 'rd';
-                    default: return 'th';
-                }
-            };
-            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-            return `${day}${ordinal(day)} day of ${monthNames[month]} ${year}`;
+        // Parse mm/dd/yyyy string to Date object (UTC)
+        function parseMDY(dateStr) {
+            if (!dateStr) return null;
+            const parts = dateStr.split('/');
+            if (parts.length !== 3) return null;
+            const month = parseInt(parts[0], 10) - 1;
+            const day = parseInt(parts[1], 10);
+            const year = parseInt(parts[2], 10);
+            if (isNaN(month) || isNaN(day) || isNaN(year)) return null;
+            return new Date(Date.UTC(year, month, day));
         }
 
-        function formatDateString(dateStr) {
+        // Format any date string to mm/dd/yyyy, or return original if not a date
+        function formatToMMDDYYYY(dateStr) {
             if (!dateStr) return '___________';
-            const date = new Date(dateStr);
-            if (isNaN(date.getTime())) return dateStr; // keep original if not a date
-            return formatOrdinalDate(date);
+            // First try mm/dd/yyyy
+            let parts = dateStr.split('/');
+            if (parts.length === 3) {
+                const month = parseInt(parts[0], 10);
+                const day = parseInt(parts[1], 10);
+                const year = parseInt(parts[2], 10);
+                if (!isNaN(month) && !isNaN(day) && !isNaN(year) && month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+                    return `${month.toString().padStart(2,'0')}/${day.toString().padStart(2,'0')}/${year}`;
+                }
+            }
+            // Try native date parsing
+            const d = new Date(dateStr);
+            if (!isNaN(d.getTime())) {
+                const month = d.getUTCMonth() + 1;
+                const day = d.getUTCDate();
+                const year = d.getUTCFullYear();
+                return `${month.toString().padStart(2,'0')}/${day.toString().padStart(2,'0')}/${year}`;
+            }
+            return dateStr; // fallback to original string
         }
 
         // ========== PRINT FUNCTIONS ==========
@@ -761,13 +762,13 @@
             const city = rec.city || '______________________';
             const circularNo = rec.circularNo || '___________';
             const approvalDateRaw = rec.approvalDate || '___________';
-            const approvalDateFormatted = formatDateString(approvalDateRaw);
+            const approvalDateFormatted = formatToMMDDYYYY(approvalDateRaw);
             const agriculturalLand = '___________';
             const reclassified = '___________';
             const reclassYear = '___________';
             const resolutionNo = '___________';
             const resolutionDateRaw = '___________';
-            const resolutionDateFormatted = formatDateString(resolutionDateRaw);
+            const resolutionDateFormatted = formatToMMDDYYYY(resolutionDateRaw);
 
             const check1 = clupStatus === 'approved' ? '[✓]' : '[ ]';
             const check2 = clupStatus === 'pending' ? '[✓]' : '[ ]';
@@ -789,8 +790,8 @@
                 <p>THIS IS TO CERTIFY that the municipality of <strong>${escapeHtml(city)}</strong> has not submitted its Comprehensive Land Use Plan/ Zoning Ordinance to this Office.</p>
             `;
 
-            const formattedDate = formatOrdinalDate(dateIssued);
-            const footerDate = orDate ? formatOrdinalDate(orDate) : formattedDate;
+            const formattedDate = formatToMMDDYYYY(dateIssued);
+            const footerDate = orDate ? formatToMMDDYYYY(orDate) : formattedDate;
 
             const printContent = `
                 <div class="print-document">
@@ -1131,7 +1132,6 @@
             addLandHolding();
             document.getElementById('certificationNo').value = getNextCertificationNumber();
             document.getElementById('series').value = '2002';
-            document.getElementById('dateIssued').value = new Date().toISOString().split('T')[0];
             document.getElementById('orDate').value = '';
             document.getElementById('approvalDate').value = '';
             currentEditingId = null;
@@ -1214,18 +1214,7 @@
             if (rec.city) document.getElementById('city').value = rec.city;
             if (rec.approvedBy) document.getElementById('approvedBy').value = rec.approvedBy;
             if (rec.circularNo) document.getElementById('circularNo').value = rec.circularNo;
-            if (rec.approvalDate) {
-                // Format date for input type="date" (YYYY-MM-DD)
-                let approvalDateVal = rec.approvalDate;
-                if (approvalDateVal && !approvalDateVal.match(/^\d{4}-\d{2}-\d{2}$/)) {
-                    // Try to parse as a date and format
-                    const d = new Date(approvalDateVal);
-                    if (!isNaN(d.getTime())) {
-                        approvalDateVal = d.toISOString().split('T')[0];
-                    }
-                }
-                document.getElementById('approvalDate').value = approvalDateVal;
-            }
+            if (rec.approvalDate) document.getElementById('approvalDate').value = rec.approvalDate;
             showSection('zoning');
         }
 
@@ -1337,7 +1326,7 @@
                     id: currentEditingId || Date.now(),
                     certificationNo, series, parcels, location, totalArea, proposedUse,
                     landHoldings, dateIssued,
-                    formattedDate: new Date(dateIssued).toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' }),
+                    formattedDate: dateIssued ? formatToMMDDYYYY(dateIssued) : '',
                     requestedBy, amountPaid, orNo, orDate, remarks, clupStatus,
                     city: document.getElementById('city')?.value || 'Iloilo City',
                     approvedBy: document.getElementById('approvedBy')?.value || 'DHSUD',
@@ -1625,7 +1614,6 @@
             fetchCertifications().then(() => renderCertificationsTable());
             renderPlansTable();
             document.getElementById('certificationNo').value = getNextCertificationNumber();
-            document.getElementById('dateIssued').value = new Date().toISOString().split('T')[0];
             if (document.getElementById('landHoldingsContainer').children.length === 0) addLandHolding();
         };
     </script>
