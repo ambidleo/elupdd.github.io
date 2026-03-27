@@ -263,11 +263,11 @@
 
     <main id="main-content" role="main">
         <div class="container">
-            <!-- Dashboard Section (province cards removed) -->
+            <!-- Dashboard Section -->
             <div id="dashboard" class="section active" role="region" aria-labelledby="dashboard-heading">
                 <h1 id="dashboard-heading" class="visually-hidden">Dashboard - CLUP & PDPFP Review</h1>
 
-                <!-- CLUP and PDPFP REVIEW Section (Google Sheets integrated) -->
+                <!-- CLUP and PDPFP REVIEW Section -->
                 <div class="review-card">
                     <div class="section-header">
                         <h3><span aria-hidden="true">📋</span> CLUP and PDPFP REVIEW</h3>
@@ -280,7 +280,7 @@
                         <table id="reviewTable" aria-label="CLUP and PDPFP review records">
                             <caption class="visually-hidden">List of CLUP and PDPFP review entries</caption>
                             <thead>
-                                <tr>
+                                汽
                                     <th>LGU/Province</th>
                                     <th>Reviewer</th>
                                     <th>Dates</th>
@@ -360,7 +360,7 @@
                 </div>
             </div>
 
-            <!-- Site Zoning Certification Section (updated with O.R. Date) -->
+            <!-- Site Zoning Certification Section (updated with calendar for approval date) -->
             <div id="zoning" class="section" style="display: none;" role="region" aria-labelledby="zoning-heading">
                 <h1 id="zoning-heading" class="visually-hidden">Site Zoning Certification</h1>
                 <div class="cert-section">
@@ -399,7 +399,7 @@
                                 <div class="form-group"><label for="city">City/Municipality</label><input type="text" class="form-control" id="city"></div>
                                 <div class="form-group"><label for="approvedBy">Approved by</label><input type="text" class="form-control" id="approvedBy"></div>
                                 <div class="form-group"><label for="circularNo">Department Circular No.</label><input type="text" class="form-control" id="circularNo"></div>
-                                <div class="form-group"><label for="approvalDate">Date of Approval</label><input type="text" class="form-control" id="approvalDate"></div>
+                                <div class="form-group"><label for="approvalDate">Date of Approval</label><input type="date" class="form-control" id="approvalDate"></div>
                             </div>
                         </div>
                         <div id="formMessages" role="alert" class="visually-hidden"></div>
@@ -454,7 +454,6 @@
 
     <script>
         // ========== CONFIGURATION ==========
-        // Replace with your own Apps Script web app URL (deployed with "Anyone" access)
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyf7jh6ZfSY6fX3l2EsQRTv3B5--FpK7wFZvpZJ0OHgktlUmnXTOscbwNRdhWzlza6gWg/exec";
 
         // ========== GLOBAL DATA ==========
@@ -483,11 +482,10 @@
         let layerCounter = 0;
         let currentEditingId = null;
 
-        // ========== REVIEW DATA (Google Sheets integrated) ==========
+        // ========== REVIEW DATA ==========
         let reviewRecords = [];
         let currentReviewId = null;
 
-        // Fetch review records from Google Sheets
         async function fetchReviewRecords() {
             try {
                 const response = await fetch(GOOGLE_SCRIPT_URL + '?action=get&data_type=review', { method: 'GET' });
@@ -509,7 +507,6 @@
             }
         }
 
-        // Save review record to Google Sheets (add, update, delete)
         async function saveReviewToSheet(record, action) {
             try {
                 const params = new URLSearchParams();
@@ -526,16 +523,12 @@
                 return result.success === true;
             } catch (error) {
                 console.warn("Google Sheets save failed, using localStorage", error);
-                // Fallback to localStorage
                 let stored = JSON.parse(localStorage.getItem('clupPdpfpReviews') || '[]');
-                if (action === 'add') {
-                    stored.push(record);
-                } else if (action === 'update') {
+                if (action === 'add') stored.push(record);
+                else if (action === 'update') {
                     const index = stored.findIndex(r => r.id == record.id);
                     if (index !== -1) stored[index] = record;
-                } else if (action === 'delete') {
-                    stored = stored.filter(r => r.id != record.id);
-                }
+                } else if (action === 'delete') stored = stored.filter(r => r.id != record.id);
                 localStorage.setItem('clupPdpfpReviews', JSON.stringify(stored));
                 reviewRecords = stored;
                 renderReviewTable();
@@ -607,7 +600,6 @@
             }
             let success = false;
             if (currentReviewId !== null) {
-                // update
                 const updatedRec = { id: currentReviewId, lgu, reviewer, dates };
                 success = await saveReviewToSheet(updatedRec, 'update');
                 if (success) {
@@ -616,7 +608,6 @@
                     saveReviewToLocal();
                 }
             } else {
-                // add
                 const newId = reviewRecords.length ? Math.max(...reviewRecords.map(r => r.id)) + 1 : 1;
                 const newRec = { id: newId, lgu, reviewer, dates };
                 success = await saveReviewToSheet(newRec, 'add');
@@ -670,12 +661,21 @@
             });
         }
 
-        // Helper to format date as "15th day of February 2025"
-        function formatOrdinalDate(dateString) {
-            if (!dateString) return "___________";
-            const date = new Date(dateString);
-            if (isNaN(date.getTime())) return dateString;
-            const day = date.getDate();
+        // UTC-based date formatter
+        function formatOrdinalDate(dateInput) {
+            if (!dateInput) return "___________";
+            let date;
+            if (typeof dateInput === 'string') {
+                date = new Date(dateInput);
+            } else if (dateInput instanceof Date) {
+                date = dateInput;
+            } else {
+                return "___________";
+            }
+            if (isNaN(date.getTime())) return "___________";
+            const day = date.getUTCDate();
+            const month = date.getUTCMonth();
+            const year = date.getUTCFullYear();
             const ordinal = (d) => {
                 if (d > 3 && d < 21) return 'th';
                 switch (d % 10) {
@@ -686,15 +686,21 @@
                 }
             };
             const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-            return `${day}${ordinal(day)} day of ${monthNames[date.getMonth()]} ${date.getFullYear()}`;
+            return `${day}${ordinal(day)} day of ${monthNames[month]} ${year}`;
         }
 
-        // ========== PRINT FUNCTIONS (UPDATED) ==========
+        function formatDateString(dateStr) {
+            if (!dateStr) return '___________';
+            const date = new Date(dateStr);
+            if (isNaN(date.getTime())) return dateStr; // keep original if not a date
+            return formatOrdinalDate(date);
+        }
+
+        // ========== PRINT FUNCTIONS ==========
         function printZoningRecord(id) {
             const rec = zoningCertifications.find(r => r.id == id);
             if (!rec) return;
 
-            // --- Basic data ---
             const certNo = rec.certificationNo;
             const series = rec.series || '2002';
             const parcels = rec.parcels || '______________________';
@@ -707,7 +713,6 @@
             const orNo = rec.orNo || '___________';
             const orDate = rec.orDate || '';
 
-            // --- Land holdings table: ensure array exists, even if empty ---
             let landHoldingsArray = Array.isArray(rec.landHoldings) ? rec.landHoldings : [];
             let landHoldingsHtml = '';
 
@@ -715,30 +720,11 @@
                 landHoldingsHtml = `
                     <table style="width:100%; border-collapse:collapse; margin:0.5cm 0;">
                         <thead>
-                            <tr>
-                                <th style="border:1px solid #000; padding:0.3cm;">Registered Owner</th>
-                                <th style="border:1px solid #000; padding:0.3cm;">Lot Number</th>
-                                <th style="border:1px solid #000; padding:0.3cm;">OCT/TCT No.</th>
-                                <th style="border:1px solid #000; padding:0.3cm;">Area Per Title (Ha)</th>
-                                <th style="border:1px solid #000; padding:0.3cm;">Area Applied for Conversion (Ha)</th>
-                                <th style="border:1px solid #000; padding:0.3cm;">Zone Classification</th>
-                            </tr>
+                            <tr><th style="border:1px solid #000; padding:0.3cm;">Registered Owner</th><th style="border:1px solid #000; padding:0.3cm;">Lot Number</th><th style="border:1px solid #000; padding:0.3cm;">OCT/TCT No.</th><th style="border:1px solid #000; padding:0.3cm;">Area Per Title (Ha)</th><th style="border:1px solid #000; padding:0.3cm;">Area Applied for Conversion (Ha)</th><th style="border:1px solid #000; padding:0.3cm;">Zone Classification</th></tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td style="border:1px solid #000; padding:0.3cm;">______________________</td>
-                                <td style="border:1px solid #000; padding:0.3cm;">______________</td>
-                                <td style="border:1px solid #000; padding:0.3cm;">______________________</td>
-                                <td style="border:1px solid #000; padding:0.3cm; text-align:right;">${escapeHtml(totalArea)}</td>
-                                <td style="border:1px solid #000; padding:0.3cm;">___________</td>
-                                <td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(proposedUse)}</td>
-                            </tr>
-                            <tr>
-                                <td colspan="3" style="border:1px solid #000; padding:0.3cm; text-align:right;"><strong>Total</strong></td>
-                                <td style="border:1px solid #000; padding:0.3cm; text-align:right;"><strong>${escapeHtml(totalArea)}</strong></td>
-                                <td style="border:1px solid #000; padding:0.3cm;">&nbsp;</td>
-                                <td style="border:1px solid #000; padding:0.3cm;">&nbsp;</td>
-                            </tr>
+                            <tr><td style="border:1px solid #000; padding:0.3cm;">______________________</td><td style="border:1px solid #000; padding:0.3cm;">______________</td><td style="border:1px solid #000; padding:0.3cm;">______________________</td><td style="border:1px solid #000; padding:0.3cm; text-align:right;">${escapeHtml(totalArea)}</td><td style="border:1px solid #000; padding:0.3cm;">___________</td><td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(proposedUse)}</td></tr>
+                            <tr><td colspan="3" style="border:1px solid #000; padding:0.3cm; text-align:right;"><strong>Total</strong></td><td style="border:1px solid #000; padding:0.3cm; text-align:right;"><strong>${escapeHtml(totalArea)}</strong></td><td style="border:1px solid #000; padding:0.3cm;">&nbsp;</td><td style="border:1px solid #000; padding:0.3cm;">&nbsp;</td></tr>
                         </tbody>
                     </table>`;
             } else {
@@ -766,32 +752,22 @@
                     </tr>`;
                 landHoldingsHtml = `
                     <table style="width:100%; border-collapse:collapse; margin:0.5cm 0;">
-                        <thead>
-                            <tr>
-                                <th style="border:1px solid #000; padding:0.3cm;">Registered Owner</th>
-                                <th style="border:1px solid #000; padding:0.3cm;">Lot Number</th>
-                                <th style="border:1px solid #000; padding:0.3cm;">OCT/TCT No.</th>
-                                <th style="border:1px solid #000; padding:0.3cm;">Area Per Title (Ha)</th>
-                                <th style="border:1px solid #000; padding:0.3cm;">Area Applied for Conversion (Ha)</th>
-                                <th style="border:1px solid #000; padding:0.3cm;">Zone Classification</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${rowsHtml}
-                        </tbody>
+                        <thead><tr><th style="border:1px solid #000; padding:0.3cm;">Registered Owner</th><th style="border:1px solid #000; padding:0.3cm;">Lot Number</th><th style="border:1px solid #000; padding:0.3cm;">OCT/TCT No.</th><th style="border:1px solid #000; padding:0.3cm;">Area Per Title (Ha)</th><th style="border:1px solid #000; padding:0.3cm;">Area Applied for Conversion (Ha)</th><th style="border:1px solid #000; padding:0.3cm;">Zone Classification</th></tr></thead>
+                        <tbody>${rowsHtml}</tbody>
                     </table>`;
             }
 
-            // --- Status section: show all three options with correct checkmark ---
             const clupStatus = rec.clupStatus || 'approved';
             const city = rec.city || '______________________';
             const circularNo = rec.circularNo || '___________';
-            const approvalDate = rec.approvalDate || '___________';
+            const approvalDateRaw = rec.approvalDate || '___________';
+            const approvalDateFormatted = formatDateString(approvalDateRaw);
             const agriculturalLand = '___________';
             const reclassified = '___________';
             const reclassYear = '___________';
             const resolutionNo = '___________';
-            const resolutionDate = '___________';
+            const resolutionDateRaw = '___________';
+            const resolutionDateFormatted = formatDateString(resolutionDateRaw);
 
             const check1 = clupStatus === 'approved' ? '[✓]' : '[ ]';
             const check2 = clupStatus === 'pending' ? '[✓]' : '[ ]';
@@ -799,14 +775,14 @@
 
             const statusHtml = `
                 <p>1. <strong>${check1} WITH APPROVED CLUP/ZO</strong></p>
-                <p>THIS IS TO CERTIFY that the above-described landholdings is/are zoned for use/s specified in the above table per approved <strong>Comprehensive Land Use Plan/Zoning Ordinance</strong> of <strong>${escapeHtml(city)}</strong>, as approved by the <strong>DHSUD</strong> through <strong>Department Circular No. ${escapeHtml(circularNo)}</strong> dated <strong>${escapeHtml(approvalDate)}</strong> in accordance with pertinent issuances;</p>
+                <p>THIS IS TO CERTIFY that the above-described landholdings is/are zoned for use/s specified in the above table per approved <strong>Comprehensive Land Use Plan/Zoning Ordinance</strong> of <strong>${escapeHtml(city)}</strong>, as approved by the <strong>DHSUD</strong> through <strong>Department Circular No. ${escapeHtml(circularNo)}</strong> dated <strong>${escapeHtml(approvalDateFormatted)}</strong> in accordance with pertinent issuances;</p>
                 <p>Further, the proposed conversion:</p>
                 <p>&nbsp;&nbsp;&nbsp;[ ] Conforms/is compatible with the approved land use plan and/or Zoning Ordinance.</p>
                 <p>&nbsp;&nbsp;&nbsp;[ ] Does not conform/is not compatible with the approved land use plan and/or Zoning Ordinance.</p>
-                <p>Per record of this office, the city/municipality of ${escapeHtml(city)} has a total zoned agricultural land of <strong>${agriculturalLand}</strong> hectares of which <strong>${reclassified}</strong> hectares have been reclassified since <strong>${reclassYear}</strong>, as approved by the DHSUD/SP per DHSUD/SP Resolution No. <strong>${resolutionNo}</strong> dated <strong>${resolutionDate}</strong>.</p>
+                <p>Per record of this office, the city/municipality of ${escapeHtml(city)} has a total zoned agricultural land of <strong>${agriculturalLand}</strong> hectares of which <strong>${reclassified}</strong> hectares have been reclassified since <strong>${reclassYear}</strong>, as approved by the DHSUD/SP per DHSUD/SP Resolution No. <strong>${resolutionNo}</strong> dated <strong>${escapeHtml(resolutionDateFormatted)}</strong>.</p>
 
                 <p>2. <strong>${check2} WITH CLUP/ZO PENDING APPROVAL BY HLURB/SP</strong></p>
-                <p>THIS IS TO CERTIFY that the above-described property/ies lie/s is/are located within the area zoned for <strong>${escapeHtml(proposedUse)}</strong> use per Comprehensive Land Use Plan/Zoning Ordinance No. <strong>${escapeHtml(circularNo)}</strong> dated <strong>${escapeHtml(approvalDate)}</strong> submitted to HLURB/SP for approval on <strong>${escapeHtml(approvalDate)}</strong> and same remains pending to date.</p>
+                <p>THIS IS TO CERTIFY that the above-described property/ies lie/s is/are located within the area zoned for <strong>${escapeHtml(proposedUse)}</strong> use per Comprehensive Land Use Plan/Zoning Ordinance No. <strong>${escapeHtml(circularNo)}</strong> dated <strong>${escapeHtml(approvalDateFormatted)}</strong> submitted to HLURB/SP for approval on <strong>${escapeHtml(approvalDateFormatted)}</strong> and same remains pending to date.</p>
                 <p>THIS IS TO CERTIFY FURTHER that per record of this office-said city/municipality of <strong>${escapeHtml(city)}</strong> will have a total zoned agricultural land of <strong>${agriculturalLand}</strong> hectares.</p>
 
                 <p>3. <strong>${check3} WITHOUT CLUP/ZO</strong></p>
@@ -814,8 +790,7 @@
             `;
 
             const formattedDate = formatOrdinalDate(dateIssued);
-            const displayDate = dateIssued ? new Date(dateIssued).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '___________';
-            const footerDate = orDate ? new Date(orDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : displayDate;
+            const footerDate = orDate ? formatOrdinalDate(orDate) : formattedDate;
 
             const printContent = `
                 <div class="print-document">
@@ -898,34 +873,12 @@
             const totalArea = document.getElementById('totalArea').value || '__________';
             const proposedUse = document.getElementById('proposedUse').value || '______________________';
 
-            // Generate blank land holdings table with one empty row
             const landHoldingsHtml = `
                 <table style="width:100%; border-collapse:collapse; margin:0.5cm 0;">
-                    <thead>
-                        <tr>
-                            <th style="border:1px solid #000; padding:0.3cm;">Registered Owner</th>
-                            <th style="border:1px solid #000; padding:0.3cm;">Lot Number</th>
-                            <th style="border:1px solid #000; padding:0.3cm;">OCT/TCT No.</th>
-                            <th style="border:1px solid #000; padding:0.3cm;">Area Per Title (Ha)</th>
-                            <th style="border:1px solid #000; padding:0.3cm;">Area Applied for Conversion (Ha)</th>
-                            <th style="border:1px solid #000; padding:0.3cm;">Zone Classification</th>
-                        </tr>
-                    </thead>
+                    <thead><tr><th style="border:1px solid #000; padding:0.3cm;">Registered Owner</th><th style="border:1px solid #000; padding:0.3cm;">Lot Number</th><th style="border:1px solid #000; padding:0.3cm;">OCT/TCT No.</th><th style="border:1px solid #000; padding:0.3cm;">Area Per Title (Ha)</th><th style="border:1px solid #000; padding:0.3cm;">Area Applied for Conversion (Ha)</th><th style="border:1px solid #000; padding:0.3cm;">Zone Classification</th></tr></thead>
                     <tbody>
-                        <tr>
-                            <td style="border:1px solid #000; padding:0.3cm;">______________________</td>
-                            <td style="border:1px solid #000; padding:0.3cm;">______________</td>
-                            <td style="border:1px solid #000; padding:0.3cm;">______________________</td>
-                            <td style="border:1px solid #000; padding:0.3cm; text-align:right;">${escapeHtml(totalArea)}</td>
-                            <td style="border:1px solid #000; padding:0.3cm;">___________</td>
-                            <td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(proposedUse)}</td>
-                        </tr>
-                        <tr>
-                            <td colspan="3" style="border:1px solid #000; padding:0.3cm; text-align:right;"><strong>Total</strong></td>
-                            <td style="border:1px solid #000; padding:0.3cm; text-align:right;"><strong>${escapeHtml(totalArea)}</strong></td>
-                            <td style="border:1px solid #000; padding:0.3cm;">&nbsp;</td>
-                            <td style="border:1px solid #000; padding:0.3cm;">&nbsp;</td>
-                        </tr>
+                        <tr><td style="border:1px solid #000; padding:0.3cm;">______________________</td><td style="border:1px solid #000; padding:0.3cm;">______________</td><td style="border:1px solid #000; padding:0.3cm;">______________________</td><td style="border:1px solid #000; padding:0.3cm; text-align:right;">${escapeHtml(totalArea)}</td><td style="border:1px solid #000; padding:0.3cm;">___________</td><td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(proposedUse)}</td></tr>
+                        <tr><td colspan="3" style="border:1px solid #000; padding:0.3cm; text-align:right;"><strong>Total</strong></td><td style="border:1px solid #000; padding:0.3cm; text-align:right;"><strong>${escapeHtml(totalArea)}</strong></td><td style="border:1px solid #000; padding:0.3cm;">&nbsp;</td><td style="border:1px solid #000; padding:0.3cm;">&nbsp;</td></tr>
                     </tbody>
                 </table>`;
 
@@ -1009,7 +962,7 @@
             setTimeout(() => ps.style.display = 'none', 1000);
         }
 
-        // ========== MAP LAYER CONTROL (unchanged) ==========
+        // ========== MAP LAYER CONTROL ==========
         let baseLayers = {
             "OpenStreetMap": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }),
             "Humanitarian": L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }),
@@ -1032,7 +985,7 @@
             currentBaseLayer.addTo(regionMap);
         }
 
-        // ========== GOOGLE SHEETS / LOCALSTORAGE (zoning unchanged) ==========
+        // ========== GOOGLE SHEETS / LOCALSTORAGE (zoning) ==========
         async function fetchCertifications() {
             try {
                 const response = await fetch(GOOGLE_SCRIPT_URL + '?action=get', { method: 'GET' });
@@ -1099,7 +1052,7 @@
             localStorage.setItem('certificationCounter', JSON.stringify(certificationCounter));
         }
 
-        // ========== HELPER FUNCTIONS (unchanged) ==========
+        // ========== HELPER FUNCTIONS ==========
         function loadCounter() {
             const saved = localStorage.getItem('certificationCounter');
             if (saved) {
@@ -1180,6 +1133,7 @@
             document.getElementById('series').value = '2002';
             document.getElementById('dateIssued').value = new Date().toISOString().split('T')[0];
             document.getElementById('orDate').value = '';
+            document.getElementById('approvalDate').value = '';
             currentEditingId = null;
         }
 
@@ -1260,7 +1214,18 @@
             if (rec.city) document.getElementById('city').value = rec.city;
             if (rec.approvedBy) document.getElementById('approvedBy').value = rec.approvedBy;
             if (rec.circularNo) document.getElementById('circularNo').value = rec.circularNo;
-            if (rec.approvalDate) document.getElementById('approvalDate').value = rec.approvalDate;
+            if (rec.approvalDate) {
+                // Format date for input type="date" (YYYY-MM-DD)
+                let approvalDateVal = rec.approvalDate;
+                if (approvalDateVal && !approvalDateVal.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                    // Try to parse as a date and format
+                    const d = new Date(approvalDateVal);
+                    if (!isNaN(d.getTime())) {
+                        approvalDateVal = d.toISOString().split('T')[0];
+                    }
+                }
+                document.getElementById('approvalDate').value = approvalDateVal;
+            }
             showSection('zoning');
         }
 
@@ -1328,6 +1293,7 @@
                 const orNo = document.getElementById('orNo')?.value || '';
                 const orDate = document.getElementById('orDate')?.value || '';
                 const remarks = document.getElementById('remarks')?.value || '';
+                const approvalDate = document.getElementById('approvalDate')?.value || '';
 
                 let hasErrors = false;
                 if (!parcels) { showError('parcels', 'Required'); hasErrors = true; }
@@ -1376,7 +1342,7 @@
                     city: document.getElementById('city')?.value || 'Iloilo City',
                     approvedBy: document.getElementById('approvedBy')?.value || 'DHSUD',
                     circularNo: document.getElementById('circularNo')?.value || '2022-002',
-                    approvalDate: document.getElementById('approvalDate')?.value || 'May 12, 2022',
+                    approvalDate: approvalDate,
                     timestamp: new Date().toLocaleString()
                 };
 
@@ -1588,7 +1554,7 @@
 
         function showOnMap() { showSection('map'); setTimeout(() => regionMap?.invalidateSize(), 100); }
 
-        // ========== LAND USE PLANS (simplified, kept from original) ==========
+        // ========== LAND USE PLANS ==========
         function renderPlansTable() {
             const tbody = document.getElementById('plansTableBody');
             if (!tbody) return;
@@ -1655,7 +1621,7 @@
         // ========== INIT ==========
         window.onload = () => {
             loadCounter();
-            fetchReviewRecords();   // load review data from Sheets
+            fetchReviewRecords();
             fetchCertifications().then(() => renderCertificationsTable());
             renderPlansTable();
             document.getElementById('certificationNo').value = getNextCertificationNumber();
