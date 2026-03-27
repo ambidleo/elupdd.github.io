@@ -689,28 +689,28 @@
         }
 
         // ========== PRINT FUNCTIONS (UPDATED) ==========
-       function printZoningRecord(id) {
+      function printZoningRecord(id) {
     const rec = zoningCertifications.find(r => r.id == id);
     if (!rec) return;
 
     // --- Basic data ---
     const certNo = rec.certificationNo;
     const series = rec.series || '2002';
-    const parcels = rec.parcels;
-    const location = rec.location;
-    const totalArea = rec.totalArea;
-    const proposedUse = rec.proposedUse;
+    const parcels = rec.parcels || '______________________';
+    const location = rec.location || '______________________';
+    const totalArea = rec.totalArea || '__________';
+    const proposedUse = rec.proposedUse || '______________________';
     const dateIssued = rec.dateIssued;
-    const requestedBy = rec.requestedBy;
-    const amountPaid = rec.amountPaid;
+    const requestedBy = rec.requestedBy || '______________________';
+    const amountPaid = rec.amountPaid || '___________';
     const orNo = rec.orNo || '___________';
 
     // --- Land holdings table: ensure array exists, even if empty ---
     let landHoldingsArray = Array.isArray(rec.landHoldings) ? rec.landHoldings : [];
     let landHoldingsHtml = '';
 
-    // If no holdings, create a placeholder row
     if (landHoldingsArray.length === 0) {
+        // No holdings: create a placeholder row with underscores
         landHoldingsHtml = `
             <table style="width:100%; border-collapse:collapse; margin:0.5cm 0;">
                 <thead>
@@ -741,7 +741,6 @@
                 </tbody>
             </table>`;
     } else {
-        // Build table with actual land holdings
         let totalAreaSum = 0;
         let rowsHtml = '';
         landHoldingsArray.forEach(h => {
@@ -749,12 +748,12 @@
             totalAreaSum += area;
             rowsHtml += `
                 <tr>
-                    <td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(h.registeredOwner)}</td>
-                    <td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(h.lotNo || '')}</td>
-                    <td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(h.tctNo)}</td>
+                    <td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(h.registeredOwner || '______________________')}</td>
+                    <td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(h.lotNo || '______________')}</td>
+                    <td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(h.tctNo || '______________________')}</td>
                     <td style="border:1px solid #000; padding:0.3cm; text-align:right;">${area.toFixed(4)}</td>
                     <td style="border:1px solid #000; padding:0.3cm;">___________</td>
-                    <td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(h.zoneclass)}</td>
+                    <td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(h.zoneclass || '______________________')}</td>
                 </tr>`;
         });
         // Total row
@@ -784,11 +783,10 @@
             </table>`;
     }
 
-    // --- Status section based on clupStatus ---
+    // --- Status section based on clupStatus (only one section) ---
     let statusHtml = '';
     const clupStatus = rec.clupStatus || 'approved';
-    const city = rec.city || '___________';
-    const approvedBy = rec.approvedBy || '___________';
+    const city = rec.city || '______________________';
     const circularNo = rec.circularNo || '___________';
     const approvalDate = rec.approvalDate || '___________';
     const agriculturalLand = '___________';
