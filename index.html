@@ -705,12 +705,11 @@
     const amountPaid = rec.amountPaid || '___________';
     const orNo = rec.orNo || '___________';
 
-    // --- Land holdings table: ensure array exists, even if empty ---
+    // --- Land holdings table (unchanged) ---
     let landHoldingsArray = Array.isArray(rec.landHoldings) ? rec.landHoldings : [];
     let landHoldingsHtml = '';
 
     if (landHoldingsArray.length === 0) {
-        // No holdings: create a placeholder row with underscores
         landHoldingsHtml = `
             <table style="width:100%; border-collapse:collapse; margin:0.5cm 0;">
                 <thead>
@@ -756,7 +755,6 @@
                     <td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(h.zoneclass || '______________________')}</td>
                 </tr>`;
         });
-        // Total row
         rowsHtml += `
             <tr>
                 <td colspan="3" style="border:1px solid #000; padding:0.3cm; text-align:right;"><strong>Total</strong></td>
@@ -783,8 +781,7 @@
             </table>`;
     }
 
-    // --- Status section based on clupStatus (only one section) ---
-    let statusHtml = '';
+    // --- Status section: show all three options with correct checkmark ---
     const clupStatus = rec.clupStatus || 'approved';
     const city = rec.city || '______________________';
     const circularNo = rec.circularNo || '___________';
@@ -795,24 +792,27 @@
     const resolutionNo = '___________';
     const resolutionDate = '___________';
 
-    if (clupStatus === 'approved') {
-        statusHtml = `
-            <p>1. <strong>[✓] WITH APPROVED CLUP/ZO</strong></p>
-            <p>THIS IS TO CERTIFY that the above-described landholdings is/are zoned for use/s specified in the above table per approved <strong>Comprehensive Land Use Plan/Zoning Ordinance</strong> of <strong>${escapeHtml(city)}</strong>, as approved by the <strong>DHSUD</strong> through <strong>Department Circular No. ${escapeHtml(circularNo)}</strong> dated <strong>${escapeHtml(approvalDate)}</strong> in accordance with pertinent issuances;</p>
-            <p>Further, the proposed conversion:</p>
-            <p>&nbsp;&nbsp;&nbsp;[ ] Conforms/is compatible with the approved land use plan and/or Zoning Ordinance.</p>
-            <p>&nbsp;&nbsp;&nbsp;[ ] Does not conform/is not compatible with the approved land use plan and/or Zoning Ordinance.</p>
-            <p>Per record of this office, the city/municipality of ${escapeHtml(city)} has a total zoned agricultural land of <strong>${agriculturalLand}</strong> hectares of which <strong>${reclassified}</strong> hectares have been reclassified since <strong>${reclassYear}</strong>, as approved by the DHSUD/SP per DHSUD/SP Resolution No. <strong>${resolutionNo}</strong> dated <strong>${resolutionDate}</strong>.</p>`;
-    } else if (clupStatus === 'pending') {
-        statusHtml = `
-            <p>2. <strong>[✓] WITH CLUP/ZO PENDING APPROVAL BY HLURB/SP</strong></p>
-            <p>THIS IS TO CERTIFY that the above-described property/ies lie/s is/are located within the area zoned for <strong>${escapeHtml(proposedUse)}</strong> use per Comprehensive Land Use Plan/Zoning Ordinance No. <strong>${escapeHtml(circularNo)}</strong> dated <strong>${escapeHtml(approvalDate)}</strong> submitted to HLURB/SP for approval on <strong>${escapeHtml(approvalDate)}</strong> and same remains pending to date.</p>
-            <p>THIS IS TO CERTIFY FURTHER that per record of this office-said city/municipality of <strong>${escapeHtml(city)}</strong> will have a total zoned agricultural land of <strong>${agriculturalLand}</strong> hectares.</p>`;
-    } else {
-        statusHtml = `
-            <p>3. <strong>[✓] WITHOUT CLUP/ZO</strong></p>
-            <p>THIS IS TO CERTIFY that the municipality of <strong>${escapeHtml(city)}</strong> has not submitted its Comprehensive Land Use Plan/ Zoning Ordinance to this Office.</p>`;
-    }
+    // Checkmark for each option
+    const check1 = clupStatus === 'approved' ? '[✓]' : '[ ]';
+    const check2 = clupStatus === 'pending' ? '[✓]' : '[ ]';
+    const check3 = clupStatus === 'none' ? '[✓]' : '[ ]';
+
+    // Build the three blocks
+    const statusHtml = `
+        <p>1. <strong>${check1} WITH APPROVED CLUP/ZO</strong></p>
+        <p>THIS IS TO CERTIFY that the above-described landholdings is/are zoned for use/s specified in the above table per approved <strong>Comprehensive Land Use Plan/Zoning Ordinance</strong> of <strong>${escapeHtml(city)}</strong>, as approved by the <strong>DHSUD</strong> through <strong>Department Circular No. ${escapeHtml(circularNo)}</strong> dated <strong>${escapeHtml(approvalDate)}</strong> in accordance with pertinent issuances;</p>
+        <p>Further, the proposed conversion:</p>
+        <p>&nbsp;&nbsp;&nbsp;[ ] Conforms/is compatible with the approved land use plan and/or Zoning Ordinance.</p>
+        <p>&nbsp;&nbsp;&nbsp;[ ] Does not conform/is not compatible with the approved land use plan and/or Zoning Ordinance.</p>
+        <p>Per record of this office, the city/municipality of ${escapeHtml(city)} has a total zoned agricultural land of <strong>${agriculturalLand}</strong> hectares of which <strong>${reclassified}</strong> hectares have been reclassified since <strong>${reclassYear}</strong>, as approved by the DHSUD/SP per DHSUD/SP Resolution No. <strong>${resolutionNo}</strong> dated <strong>${resolutionDate}</strong>.</p>
+
+        <p>2. <strong>${check2} WITH CLUP/ZO PENDING APPROVAL BY HLURB/SP</strong></p>
+        <p>THIS IS TO CERTIFY that the above-described property/ies lie/s is/are located within the area zoned for <strong>${escapeHtml(proposedUse)}</strong> use per Comprehensive Land Use Plan/Zoning Ordinance No. <strong>${escapeHtml(circularNo)}</strong> dated <strong>${escapeHtml(approvalDate)}</strong> submitted to HLURB/SP for approval on <strong>${escapeHtml(approvalDate)}</strong> and same remains pending to date.</p>
+        <p>THIS IS TO CERTIFY FURTHER that per record of this office-said city/municipality of <strong>${escapeHtml(city)}</strong> will have a total zoned agricultural land of <strong>${agriculturalLand}</strong> hectares.</p>
+
+        <p>3. <strong>${check3} WITHOUT CLUP/ZO</strong></p>
+        <p>THIS IS TO CERTIFY that the municipality of <strong>${escapeHtml(city)}</strong> has not submitted its Comprehensive Land Use Plan/ Zoning Ordinance to this Office.</p>
+    `;
 
     const formattedDate = formatOrdinalDate(dateIssued);
     const displayDate = dateIssued ? new Date(dateIssued).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '___________';
@@ -846,7 +846,7 @@
             </div>
             ${landHoldingsHtml}
 
-            <h4 style="margin: 0.5cm 0 0.3cm; font-size: 14pt;">II. STATUS OF COMPREHENSIVE LAND USE PLAN (CLUP) ZONING ORDINANCE (ZO)</h3>
+            <h4 style="margin: 0.5cm 0 0.3cm; font-size: 14pt;">II. STATUS OF COMPREHENSIVE LAND USE PLAN (CLUP) ZONING ORDINANCE (ZO)</h4>
             <div class="clup-status" style="margin: 0.3cm 0; white-space: pre-line; font-size: 12pt; line-height: 1.5;">
                 ${statusHtml}
             </div>
@@ -872,9 +872,9 @@
                 <p style="margin: 0.1cm 0;">4. Any misrepresentation on the part of the requesting party shall be a ground for cancellation of this certification.</p>
             </div>
 
-             <div class="notices" style="margin-top: 1cm; font-size: 10pt; border-top: 1px dashed #000; padding-top: 0.3cm;">
+            <div style="margin-top: 0.5cm; display: flex; justify-content: space-between; font-size: 11pt;">
+                <div><p style="margin: 0.1cm 0;"><strong>${escapeHtml(certNo)}</strong></p></div>
                 <div style="text-align: right;">
-                    <p style="margin: 0.1cm 0;"><strong>${escapeHtml(certNo)}</strong></p>
                     <p style="margin: 0.1cm 0;"><strong>O.R. No. :</strong> ${escapeHtml(orNo)}</p>
                     <p style="margin: 0.1cm 0;"><strong>Amount Paid :</strong> P ${escapeHtml(amountPaid)}</p>
                     <p style="margin: 0.1cm 0;"><strong>Date :</strong> ${displayDate}</p>
