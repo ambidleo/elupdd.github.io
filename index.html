@@ -696,10 +696,7 @@
             }
             return dateStr; // fallback to original string
         }
-                // ... existing helpers ...
-
-        function formatDateString(dateStr) { ... }
-
+                
         // ADD THIS FUNCTION BELOW
         function formatToMMDDYYYY(dateStr) {
             if (!dateStr) return '___________';
@@ -711,10 +708,7 @@
             return `${month.toString().padStart(2,'0')}/${day.toString().padStart(2,'0')}/${year}`;
         }
 
-        // ========== PRINT FUNCTIONS ==========
-        function printZoningRecord(id) { ... }
-
-        // ========== PRINT FUNCTIONS ==========
+              // ========== PRINT FUNCTIONS ==========
         function printZoningRecord(id) {
     const rec = zoningCertifications.find(r => r.id == id);
     if (!rec) return;
