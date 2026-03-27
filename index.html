@@ -164,25 +164,25 @@
         .cert-table td { padding: 0.75rem; border-bottom: 1px solid #e0e0e0; }
         .cert-table tr:hover { background: #f8f4e8; }
         @media print {
-            @page { size: A4; margin: 2cm 1.5cm; }
+            @page { size: A4; margin: 1.5cm; }
             body * { visibility: hidden; }
             #printSection, #printSection * { visibility: visible; }
             #printSection { position: absolute; left: 0; top: 0; width: 100%; background: white; font-family: 'Times New Roman', Times, serif; }
-            .print-document { margin: 0; padding: 0; max-width: 100%; page-break-after: always; page-break-inside: auto; }
+            .print-document { margin: 0; padding: 1cm; max-width: 100%; page-break-after: always; page-break-inside: auto; font-size: 11pt; }
             .print-document h2, .print-document h3, .print-document h4 { page-break-after: avoid; }
-            .print-document table { page-break-inside: auto; page-break-before: auto; }
+            .print-document table { page-break-inside: auto; page-break-before: auto; table-layout: auto; width: 100%; word-wrap: break-word; }
             .print-document tr { page-break-inside: avoid; page-break-after: auto; }
             .print-document thead { display: table-header-group; }
             .print-document tfoot { display: table-footer-group; }
             .print-document .signature-area { page-break-before: avoid; page-break-inside: avoid; }
             .print-document .notices { page-break-before: avoid; page-break-inside: avoid; }
         }
-        .print-document { font-family: 'Times New Roman', Times, serif; max-width: 100%; margin: 0; padding: 1.5cm 1.5cm 1cm 1.5cm; line-height: 1.5; font-size: 12pt; background: white; box-sizing: border-box; }
+        .print-document { font-family: 'Times New Roman', Times, serif; max-width: 100%; margin: 0; padding: 1cm; line-height: 1.5; font-size: 11pt; background: white; box-sizing: border-box; }
         .print-document h2 { text-align: center; font-size: 16pt; font-weight: bold; margin: 0.5cm 0 0.3cm 0; text-transform: uppercase; page-break-after: avoid; }
         .print-document h3 { text-align: center; font-size: 14pt; font-weight: bold; margin: 0.4cm 0 0.2cm 0; page-break-after: avoid; }
         .print-document h4 { text-align: left; font-size: 13pt; font-weight: bold; margin: 0.3cm 0 0.2cm 0; page-break-after: avoid; }
         .print-document .underline { text-decoration: underline; }
-        .print-document table { width: 100%; border-collapse: collapse; margin: 0.5cm 0; font-size: 11pt; page-break-inside: auto; border: 1px solid #000; }
+        .print-document table { width: 100%; border-collapse: collapse; margin: 0.5cm 0; font-size: 11pt; page-break-inside: auto; border: 1px solid #000; table-layout: auto; word-wrap: break-word; }
         .print-document th, .print-document td { border: 1px solid #000; padding: 0.3cm 0.2cm; text-align: left; vertical-align: top; }
         .print-document th { background: #f0f0f0; font-weight: bold; text-align: center; }
         .print-document .signature-area { margin-top: 1.5cm; display: flex; justify-content: flex-end; page-break-before: avoid; page-break-inside: avoid; }
@@ -280,11 +280,7 @@
                         <table id="reviewTable" aria-label="CLUP and PDPFP review records">
                             <caption class="visually-hidden">List of CLUP and PDPFP review entries</caption>
                             <thead>
-                                    <th>LGU/Province</th>
-                                    <th>Reviewer</th>
-                                    <th>Dates</th>
-                                    <th>Actions</th>
-                                 </tr>
+                                <tr><th>LGU/Province</th><th>Reviewer</th><th>Dates</th><th>Actions</th></tr>
                             </thead>
                             <tbody id="reviewTableBody"></tbody>
                         </table>
@@ -350,16 +346,14 @@
                     <div class="table-responsive">
                         <table id="plansTable" aria-label="Land Use Plans">
                             <caption class="visually-hidden">List of Comprehensive Land Use Plans in Region VI</caption>
-                            <thead>
-                                <th>LGU/Municipality</th><th>Province</th><th>Plan Period</th><th>Status</th><th>Date Submitted</th><th>Date Approved</th><th>Actions</th> </tr>
-                            </thead>
+                            <thead><tr><th>LGU/Municipality</th><th>Province</th><th>Plan Period</th><th>Status</th><th>Date Submitted</th><th>Date Approved</th><th>Actions</th></tr></thead>
                             <tbody id="plansTableBody"></tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <!-- Site Zoning Certification Section (calendar pickers) -->
+            <!-- Site Zoning Certification Section (with added Province field) -->
             <div id="zoning" class="section" style="display: none;" role="region" aria-labelledby="zoning-heading">
                 <h1 id="zoning-heading" class="visually-hidden">Site Zoning Certification</h1>
                 <div class="cert-section">
@@ -396,6 +390,7 @@
                         <div id="approvedDetails" style="margin-top:1rem; padding:1rem; background:#f8f4e8; border-radius:8px;">
                             <div class="form-grid">
                                 <div class="form-group"><label for="city">City/Municipality</label><input type="text" class="form-control" id="city"></div>
+                                <div class="form-group"><label for="province">Province</label><input type="text" class="form-control" id="province" placeholder="e.g., Iloilo, Aklan, etc."></div>
                                 <div class="form-group"><label for="approvedBy">Approved by</label><input type="text" class="form-control" id="approvedBy"></div>
                                 <div class="form-group"><label for="circularNo">Department Circular No.</label><input type="text" class="form-control" id="circularNo"></div>
                                 <div class="form-group"><label for="approvalDate">Date of Approval</label><input type="date" class="form-control" id="approvalDate"></div>
@@ -413,7 +408,7 @@
                 </div>
                 <div class="cert-section" id="recordsSection" style="display:none;">
                     <div class="cert-title"><span aria-hidden="true">📋</span> Saved Certifications</div>
-                    <div style="overflow-x:auto;"><table class="cert-table" id="certificationsTable"><thead><th>Certification No.</th><th>No. of Parcels</th><th>Location</th><th>Total Area</th><th>Date Issued</th><th>Requested By</th><th>Actions</th> </tr></thead><tbody id="certificationsTableBody"></tbody></table></div>
+                    <div style="overflow-x:auto;"><table class="cert-table" id="certificationsTable"><thead><tr><th>Certification No.</th><th>No. of Parcels</th><th>Location</th><th>Total Area</th><th>Date Issued</th><th>Requested By</th><th>Actions</th></tr></thead><tbody id="certificationsTableBody"></tbody></table></div>
                     <div style="text-align:right; margin-top:1rem;"><button class="btn btn-secondary" onclick="toggleRecordsView()">Hide Records</button></div>
                 </div>
             </div>
@@ -709,7 +704,7 @@
             const orNo = rec.orNo || '___________';
             const orDate = rec.orDate || '';
 
-            // --- Land holdings table with bold header and total row ---
+            // --- Land holdings table (unchanged) ---
             let landHoldingsArray = Array.isArray(rec.landHoldings) ? rec.landHoldings : [];
             let landHoldingsHtml = '';
 
@@ -717,27 +712,30 @@
                 landHoldingsHtml = `
                     <table class="land-holdings-table" style="width:100%; border-collapse:collapse; margin:0.5cm 0;">
                         <thead>
+                            <tr>
                                 <th style="border:1px solid #000; padding:0.3cm; font-weight: bold; color: black;">Registered Owner</th>
                                 <th style="border:1px solid #000; padding:0.3cm; font-weight: bold; color: black;">Lot Number</th>
                                 <th style="border:1px solid #000; padding:0.3cm; font-weight: bold; color: black;">OCT/TCT No.</th>
                                 <th style="border:1px solid #000; padding:0.3cm; font-weight: bold; color: black;">Area Per Title (Ha)</th>
                                 <th style="border:1px solid #000; padding:0.3cm; font-weight: bold; color: black;">Area Applied for Conversion (Ha)</th>
                                 <th style="border:1px solid #000; padding:0.3cm; font-weight: bold; color: black;">Zone Classification</th>
-                             </tr>
+                            </tr>
                         </thead>
                         <tbody>
+                            <tr>
                                 <td style="border:1px solid #000; padding:0.3cm;">______________________</td>
                                 <td style="border:1px solid #000; padding:0.3cm;">______________</td>
                                 <td style="border:1px solid #000; padding:0.3cm;">______________________</td>
                                 <td style="border:1px solid #000; padding:0.3cm; text-align:right;">${escapeHtml(totalArea)}</td>
                                 <td style="border:1px solid #000; padding:0.3cm;">___________</td>
                                 <td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(proposedUse)}</td>
-                             </tr>
+                            </tr>
+                            <tr>
                                 <td colspan="3" style="border:1px solid #000; padding:0.3cm; text-align:right;"><strong>Total</strong></td>
                                 <td style="border:1px solid #000; padding:0.3cm; text-align:right; font-weight: bold; color: black;"><strong>${escapeHtml(totalArea)}</strong></td>
                                 <td style="border:1px solid #000; padding:0.3cm;">&nbsp;</td>
                                 <td style="border:1px solid #000; padding:0.3cm;">&nbsp;</td>
-                             </tr>
+                            </tr>
                         </tbody>
                     </table>`;
             } else {
@@ -747,32 +745,33 @@
                     const area = h.areaPerTitle ? parseFloat(h.areaPerTitle) : 0;
                     totalAreaSum += area;
                     rowsHtml += `
+                        <tr>
                             <td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(h.registeredOwner || '______________________')}</td>
                             <td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(h.lotNo || '______________')}</td>
                             <td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(h.tctNo || '______________________')}</td>
                             <td style="border:1px solid #000; padding:0.3cm; text-align:right;">${area.toFixed(4)}</td>
                             <td style="border:1px solid #000; padding:0.3cm;">___________</td>
                             <td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(h.zoneclass || '______________________')}</td>
-                         </tr>`;
+                        </tr>`;
                 });
                 rowsHtml += `
-                    
+                    <tr>
                         <td colspan="3" style="border:1px solid #000; padding:0.3cm; text-align:right;"><strong>Total</strong></td>
                         <td style="border:1px solid #000; padding:0.3cm; text-align:right; font-weight: bold; color: black;"><strong>${totalAreaSum.toFixed(4)}</strong></td>
                         <td style="border:1px solid #000; padding:0.3cm;">&nbsp;</td>
                         <td style="border:1px solid #000; padding:0.3cm;">&nbsp;</td>
-                     </tr>`;
+                    </tr>`;
                 landHoldingsHtml = `
                     <table class="land-holdings-table" style="width:100%; border-collapse:collapse; margin:0.5cm 0;">
                         <thead>
-                            
+                            <tr>
                                 <th style="border:1px solid #000; padding:0.3cm; font-weight: bold; color: black;">Registered Owner</th>
                                 <th style="border:1px solid #000; padding:0.3cm; font-weight: bold; color: black;">Lot Number</th>
                                 <th style="border:1px solid #000; padding:0.3cm; font-weight: bold; color: black;">OCT/TCT No.</th>
                                 <th style="border:1px solid #000; padding:0.3cm; font-weight: bold; color: black;">Area Per Title (Ha)</th>
                                 <th style="border:1px solid #000; padding:0.3cm; font-weight: bold; color: black;">Area Applied for Conversion (Ha)</th>
                                 <th style="border:1px solid #000; padding:0.3cm; font-weight: bold; color: black;">Zone Classification</th>
-                             </tr>
+                            </tr>
                         </thead>
                         <tbody>
                             ${rowsHtml}
@@ -784,6 +783,8 @@
             const clupStatus = rec.clupStatus || 'approved';
             const approvedBy = rec.approvedBy || '______________________';
             const city = rec.city || '______________________';
+            const province = rec.province || '______________________';
+            const cityProvince = province && province !== '______________________' ? `${city}, ${province}` : city;
             const circularNo = rec.circularNo || '___________';
             const approvalDateRaw = rec.approvalDate || '___________';
             const approvalDateFormatted = formatToMMDDYYYY(approvalDateRaw);
@@ -800,7 +801,7 @@
 
             const statusHtml = `
                 <p>1. <strong>${check1} WITH APPROVED CLUP/ZO</strong></p>
-                <p>THIS IS TO CERTIFY that the above-described landholdings is/are zoned for use/s specified in the above table per approved <strong>Comprehensive Land Use Plan/Zoning Ordinance</strong> of <strong>${escapeHtml(city)}</strong>, as approved by the <strong>${escapeHtml(approvedBy)}</strong> through <strong>Department Circular No. ${escapeHtml(circularNo)}</strong> dated <strong>${escapeHtml(approvalDateFormatted)}</strong> in accordance with pertinent issuances;</p>
+                <p>THIS IS TO CERTIFY that the above-described landholdings is/are zoned for use/s specified in the above table per approved <strong>Comprehensive Land Use Plan/Zoning Ordinance</strong> of <strong>${escapeHtml(cityProvince)}</strong>, as approved by the <strong>${escapeHtml(approvedBy)}</strong> through <strong>Department Circular No. ${escapeHtml(circularNo)}</strong> dated <strong>${escapeHtml(approvalDateFormatted)}</strong> in accordance with pertinent issuances;</p>
                 <p>Further, the proposed conversion:</p>
                 <p>&nbsp;&nbsp;&nbsp;[ ] Conforms/is compatible with the approved land use plan and/or Zoning Ordinance.</p>
                 <p>&nbsp;&nbsp;&nbsp;[ ] Does not conform/is not compatible with the approved land use plan and/or Zoning Ordinance.</p>
@@ -871,8 +872,11 @@
                         <p style="margin: 0.1cm 0;">2. This certification <strong>shall not</strong> be construed as a Locational Clearance/Certificate of Zoning Compliance/Development Permit or License to Sell.</p>
                         <p style="margin: 0.1cm 0;">3. This <strong>shall not</strong> be construed as a certification as to the ownership by the applicant of the above listed parcel(s) of land.</p>
                         <p style="margin: 0.1cm 0;">4. Any misrepresentation on the part of the requesting party shall be a ground for cancellation of this certification.</p>
-    
-                             <p style="margin: 0.1cm 0;"><strong>${escapeHtml(certNo)}</strong></p>
+                    </div>
+
+                    <div style="margin-top: 0.5cm; display: flex; justify-content: space-between; font-size: 11pt;">
+                        <div><p style="margin: 0.1cm 0;"><strong>${escapeHtml(certNo)}</strong></p></div>
+                        <div style="text-align: right;">
                             <p style="margin: 0.1cm 0;"><strong>O.R. No. :</strong> ${escapeHtml(orNo)}</p>
                             <p style="margin: 0.1cm 0;"><strong>Amount Paid :</strong> P ${escapeHtml(amountPaid)}</p>
                             <p style="margin: 0.1cm 0;"><strong>Date :</strong> ${escapeHtml(footerDate)}</p>
@@ -899,30 +903,30 @@
             const landHoldingsHtml = `
                 <table class="land-holdings-table" style="width:100%; border-collapse:collapse; margin:0.5cm 0;">
                     <thead>
-                        
+                        <tr>
                             <th style="border:1px solid #000; padding:0.3cm; font-weight: bold; color: black;">Registered Owner</th>
                             <th style="border:1px solid #000; padding:0.3cm; font-weight: bold; color: black;">Lot Number</th>
                             <th style="border:1px solid #000; padding:0.3cm; font-weight: bold; color: black;">OCT/TCT No.</th>
                             <th style="border:1px solid #000; padding:0.3cm; font-weight: bold; color: black;">Area Per Title (Ha)</th>
                             <th style="border:1px solid #000; padding:0.3cm; font-weight: bold; color: black;">Area Applied for Conversion (Ha)</th>
                             <th style="border:1px solid #000; padding:0.3cm; font-weight: bold; color: black;">Zone Classification</th>
-                         </tr>
+                        </tr>
                     </thead>
                     <tbody>
-                        
+                        <tr>
                             <td style="border:1px solid #000; padding:0.3cm;">______________________</td>
                             <td style="border:1px solid #000; padding:0.3cm;">______________</td>
                             <td style="border:1px solid #000; padding:0.3cm;">______________________</td>
                             <td style="border:1px solid #000; padding:0.3cm; text-align:right;">${escapeHtml(totalArea)}</td>
                             <td style="border:1px solid #000; padding:0.3cm;">___________</td>
                             <td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(proposedUse)}</td>
-                         </tr>
-                        
+                        </tr>
+                        <tr>
                             <td colspan="3" style="border:1px solid #000; padding:0.3cm; text-align:right;"><strong>Total</strong></td>
                             <td style="border:1px solid #000; padding:0.3cm; text-align:right; font-weight: bold; color: black;"><strong>${escapeHtml(totalArea)}</strong></td>
                             <td style="border:1px solid #000; padding:0.3cm;">&nbsp;</td>
                             <td style="border:1px solid #000; padding:0.3cm;">&nbsp;</td>
-                         </tr>
+                        </tr>
                     </tbody>
                 </table>`;
 
@@ -953,6 +957,8 @@
                         <p style="margin: 0.1cm 0;"><strong>D. Proposed Use :</strong> ${escapeHtml(proposedUse)}</p>
                         <p style="margin: 0.1cm 0;"><strong>E. Description of Land Holdings :</strong></p>
                     </div>
+                    ${landHoldingsHtml}
+
                     <h4 style="margin: 0.5cm 0 0.3cm; font-size: 14pt;">II. STATUS OF COMPREHENSIVE LAND USE PLAN (CLUP) ZONING ORDINANCE (ZO)</h4>
                     <div class="clup-status" style="margin: 0.3cm 0; white-space: pre-line; font-size: 12pt; line-height: 1.5;">
                         <p>1. [ ] WITH APPROVED CLUP/ZO</p>
@@ -1175,6 +1181,7 @@
             document.getElementById('series').value = '2002';
             document.getElementById('orDate').value = '';
             document.getElementById('approvalDate').value = '';
+            document.getElementById('province').value = '';
             currentEditingId = null;
         }
 
@@ -1233,6 +1240,11 @@
             document.getElementById('orNo').value = rec.orNo || '';
             document.getElementById('orDate').value = rec.orDate || '';
             document.getElementById('remarks').value = rec.remarks || '';
+            document.getElementById('city').value = rec.city || '';
+            document.getElementById('province').value = rec.province || '';
+            document.getElementById('approvedBy').value = rec.approvedBy || '';
+            document.getElementById('circularNo').value = rec.circularNo || '';
+            document.getElementById('approvalDate').value = rec.approvalDate || '';
             const container = document.getElementById('landHoldingsContainer');
             container.innerHTML = '';
             if (rec.landHoldings?.length) {
@@ -1252,10 +1264,6 @@
                 });
             } else { addLandHolding(); }
             document.querySelector(`input[name="clupStatus"][value="${rec.clupStatus||'approved'}"]`).checked = true;
-            if (rec.city) document.getElementById('city').value = rec.city;
-            if (rec.approvedBy) document.getElementById('approvedBy').value = rec.approvedBy;
-            if (rec.circularNo) document.getElementById('circularNo').value = rec.circularNo;
-            if (rec.approvalDate) document.getElementById('approvalDate').value = rec.approvalDate;
             showSection('zoning');
         }
 
@@ -1370,6 +1378,7 @@
                     formattedDate: dateIssued ? formatOrdinalDate(dateIssued) : '',
                     requestedBy, amountPaid, orNo, orDate, remarks, clupStatus,
                     city: document.getElementById('city')?.value || 'Iloilo City',
+                    province: document.getElementById('province')?.value || '',
                     approvedBy: document.getElementById('approvedBy')?.value || 'DHSUD',
                     circularNo: document.getElementById('circularNo')?.value || '2022-002',
                     approvalDate: approvalDate,
