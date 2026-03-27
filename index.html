@@ -782,11 +782,11 @@
                 <p>Per record of this office, the city/municipality of ${escapeHtml(city)} has a total zoned agricultural land of <strong>${agriculturalLand}</strong> hectares of which <strong>${reclassified}</strong> hectares have been reclassified since <strong>${reclassYear}</strong>, as approved by the DHSUD/SP per DHSUD/SP Resolution No. <strong>${resolutionNo}</strong> dated <strong>${escapeHtml(resolutionDateFormatted)}</strong>.</p>
 
                 <p>2. <strong>${check2} WITH CLUP/ZO PENDING APPROVAL BY HLURB/SP</strong></p>
-                <p>THIS IS TO CERTIFY that the above-described property/ies lie/s is/are located within the area zoned for <strong>${escapeHtml(proposedUse)}</strong> use per Comprehensive Land Use Plan/Zoning Ordinance No. <strong>${escapeHtml(circularNo)}</strong> dated <strong>${escapeHtml(approvalDateFormatted)}</strong> submitted to HLURB/SP for approval on <strong>${escapeHtml(approvalDateFormatted)}</strong> and same remains pending to date.</p>
-                <p>THIS IS TO CERTIFY FURTHER that per record of this office-said city/municipality of <strong>${escapeHtml(city)}</strong> will have a total zoned agricultural land of <strong>${agriculturalLand}</strong> hectares.</p>
+                <p>THIS IS TO CERTIFY that the above-described property/ies lie/s is/are located within the area zoned for <strong>_________</strong> use per Comprehensive Land Use Plan/Zoning Ordinance No. <strong>${escapeHtml(circularNo)}</strong> dated <strong>${escapeHtml(approvalDateFormatted)}</strong> submitted to HLURB/SP for approval on <strong>${escapeHtml(approvalDateFormatted)}</strong> and same remains pending to date.</p>
+                <p>THIS IS TO CERTIFY FURTHER that per record of this office-said city/municipality of <strong>__________</strong> will have a total zoned agricultural land of <strong>${agriculturalLand}</strong> hectares.</p>
 
                 <p>3. <strong>${check3} WITHOUT CLUP/ZO</strong></p>
-                <p>THIS IS TO CERTIFY that the municipality of <strong>${escapeHtml(city)}</strong> has not submitted its Comprehensive Land Use Plan/ Zoning Ordinance to this Office.</p>
+                <p>THIS IS TO CERTIFY that the municipality of <strong>_________</strong> has not submitted its Comprehensive Land Use Plan/ Zoning Ordinance to this Office.</p>
             `;
 
             // Format Date Issued and O.R. Date as ordinal
@@ -849,8 +849,7 @@
                     </div>
 
                     <div style="margin-top: 0.5cm; display: flex; justify-content: space-between; font-size: 11pt;">
-                        <div><p style="margin: 0.1cm 0;"><strong>${escapeHtml(certNo)}</strong></p></div>
-                        <div style="text-align: right;">
+                            <p style="margin: 0.1cm 0;"><strong>${escapeHtml(certNo)}</strong></p>
                             <p style="margin: 0.1cm 0;"><strong>O.R. No. :</strong> ${escapeHtml(orNo)}</p>
                             <p style="margin: 0.1cm 0;"><strong>Amount Paid :</strong> P ${escapeHtml(amountPaid)}</p>
                             <p style="margin: 0.1cm 0;"><strong>Date :</strong> ${escapeHtml(footerDate)}</p>
