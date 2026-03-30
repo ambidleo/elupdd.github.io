@@ -292,7 +292,7 @@
                                 <tr><th>LGU/Province</th><th>Reviewer</th><th>Dates</th><th>Actions</th></tr>
                             </thead>
                             <tbody id="reviewTableBody"></tbody>
-                         </table>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -335,7 +335,7 @@
                 </div>
             </div>
 
-            <!-- Land Use Plans Section - UPDATED with your column structure -->
+            <!-- Land Use Plans Section -->
             <div id="plans" class="section" style="display: none;" role="region" aria-labelledby="plans-heading">
                 <h1 id="plans-heading" class="visually-hidden">Comprehensive Land Use Plans</h1>
                 <div class="data-section">
@@ -362,12 +362,12 @@
                                 <tr><th>LGU/Municipality</th><th>Province</th><th>Plan Period</th><th>Status</th><th>Date Approved (Latest)</th><th>Actions</th></tr>
                             </thead>
                             <tbody id="plansTableBody"></tbody>
-                         </table>
+                        </table>
                     </div>
                 </div>
             </div>
 
-            <!-- Site Zoning Certification Section -->
+            <!-- Site Zoning Certification Section with cascading auto-fill -->
             <div id="zoning" class="section" style="display: none;" role="region" aria-labelledby="zoning-heading">
                 <h1 id="zoning-heading" class="visually-hidden">Site Zoning Certification</h1>
                 <div class="cert-section">
@@ -401,15 +401,38 @@
                                 <label class="radio-option"><input type="radio" name="clupStatus" value="none"> Without CLUP/ZO</label>
                             </div>
                         </div>
+                        <!-- New cascading selects for approved CLUP -->
+                        <div id="clupCascadeDiv" style="margin-top: 1rem; padding: 1rem; background: #e8f0fe; border-radius: 8px; display: none;">
+                            <div class="form-grid" style="margin-bottom: 1rem;">
+                                <div class="form-group">
+                                    <label for="provinceSelect">Select Province</label>
+                                    <select id="provinceSelect" class="form-control" onchange="filterLguByProvince()">
+                                        <option value="">-- Choose Province --</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="lguSelect">Select LGU</label>
+                                    <select id="lguSelect" class="form-control" onchange="fillFromApprovedCLUP()" disabled>
+                                        <option value="">-- First select province --</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <small>Automatically fills City/Municipality, Province, Department Circular No., and Date of Approval from the approved CLUP record.</small>
+                        </div>
+
                         <div id="approvedDetails" style="margin-top:1rem; padding:1rem; background:#f8f4e8; border-radius:8px;">
                             <div class="form-grid">
                                 <div class="form-group"><label for="city">City/Municipality</label><input type="text" class="form-control" id="city"></div>
                                 <div class="form-group"><label for="province">Province</label><input type="text" class="form-control" id="province" placeholder="e.g., Iloilo, Aklan, etc."></div>
                                 <div class="form-group"><label for="approvedBy">Approved by</label><input type="text" class="form-control" id="approvedBy"></div>
-                                <div class="form-group"><label for="circularNo">Department Circular No.</label><input type="text" class="form-control" id="circularNo"></div>
+                                <div class="form-group"><label for="circularNo">Department Circular No.</label><input type="text" class="form-control" id="circularNo" placeholder="Auto-filled from CLUP resolutions"></div>
                                 <div class="form-group"><label for="approvalDate">Date of Approval</label><input type="date" class="form-control" id="approvalDate"></div>
                             </div>
+                            <div id="approvalDatesRef" style="margin-top: 0.5rem; font-size: 0.85rem; color: #555; display: none;">
+                                <strong>Approval dates:</strong> <span id="firstApprovalDateRef"></span> (first) | <span id="latestApprovalDateRef"></span> (latest)
+                            </div>
                         </div>
+
                         <div id="formMessages" role="alert" class="visually-hidden"></div>
                         <div style="display:flex; gap:1rem; margin-top:2rem; justify-content:center;">
                             <button type="submit" class="btn btn-success">💾 Save Certification</button>
@@ -500,6 +523,7 @@
                 localStorage.setItem('clupRecords', JSON.stringify(clupRecords));
                 renderClupTable();
                 updateClupChart();
+                refreshClupCascade();   // update cascading selects
                 return clupRecords;
             } catch (error) {
                 console.warn("Google Sheets CLUP unavailable, using localStorage", error);
@@ -507,6 +531,7 @@
                 clupRecords = local ? JSON.parse(local) : [];
                 renderClupTable();
                 updateClupChart();
+                refreshClupCascade();
                 return clupRecords;
             }
         }
@@ -537,6 +562,7 @@
                 clupRecords = stored;
                 renderClupTable();
                 updateClupChart();
+                refreshClupCascade();
                 return true;
             }
         }
@@ -643,6 +669,7 @@
                 localStorage.setItem('clupRecords', JSON.stringify(clupRecords));
                 renderClupTable();
                 updateClupChart();
+                refreshClupCascade();
                 closeModal();
                 alert('Updated successfully.');
             } else alert('Failed to update.');
@@ -657,6 +684,7 @@
                 localStorage.setItem('clupRecords', JSON.stringify(clupRecords));
                 renderClupTable();
                 updateClupChart();
+                refreshClupCascade();
                 alert('Deleted.');
             } else alert('Failed to delete.');
         }
@@ -703,6 +731,7 @@
                 localStorage.setItem('clupRecords', JSON.stringify(clupRecords));
                 renderClupTable();
                 updateClupChart();
+                refreshClupCascade();
                 closeModal();
                 alert('Added successfully.');
             } else alert('Failed to add.');
@@ -716,6 +745,113 @@
             a.download = 'clup_records_region6.json';
             a.click();
             alert('Exported.');
+        }
+
+        // ========== CASCADING SELECTS FOR APPROVED CLUP ==========
+        function populateProvinceSelect() {
+            const select = document.getElementById('provinceSelect');
+            if (!select) return;
+            select.innerHTML = '<option value="">-- Choose Province --</option>';
+            const provinces = new Set();
+            clupRecords.forEach(plan => {
+                if (plan.Status === 'Approved' && plan.Province) {
+                    provinces.add(plan.Province);
+                }
+            });
+            Array.from(provinces).sort().forEach(prov => {
+                const opt = document.createElement('option');
+                opt.value = prov;
+                opt.textContent = prov;
+                select.appendChild(opt);
+            });
+        }
+
+        function filterLguByProvince() {
+            const provinceSelect = document.getElementById('provinceSelect');
+            const lguSelect = document.getElementById('lguSelect');
+            const selectedProvince = provinceSelect.value;
+            lguSelect.innerHTML = '<option value="">-- Select LGU --</option>';
+            lguSelect.disabled = !selectedProvince;
+            if (!selectedProvince) return;
+
+            const lgus = clupRecords.filter(plan => plan.Status === 'Approved' && plan.Province === selectedProvince);
+            const unique = new Map();
+            lgus.forEach(plan => {
+                const key = `${plan.LGU}|${plan.Province}`;
+                if (!unique.has(key)) {
+                    unique.set(key, { lgu: plan.LGU, province: plan.Province, record: plan });
+                }
+            });
+            unique.forEach((val, key) => {
+                const opt = document.createElement('option');
+                opt.value = key;
+                opt.textContent = val.lgu;
+                opt.dataset.lgu = val.lgu;
+                opt.dataset.province = val.province;
+                opt.dataset.record = JSON.stringify(val.record);
+                lguSelect.appendChild(opt);
+            });
+        }
+
+        function fillFromApprovedCLUP() {
+            const lguSelect = document.getElementById('lguSelect');
+            const selectedOption = lguSelect.options[lguSelect.selectedIndex];
+            if (!selectedOption || !selectedOption.value) return;
+            const recordData = selectedOption.dataset.record;
+            if (!recordData) return;
+            const plan = JSON.parse(recordData);
+
+            document.getElementById('city').value = plan.LGU || '';
+            document.getElementById('province').value = plan.Province || '';
+
+            const firstRes = plan.First_Plan_Res || '';
+            const latestRes = plan.Latest_Plan_Res || '';
+            let circularNo = '';
+            if (firstRes && latestRes) circularNo = `${firstRes} | ${latestRes}`;
+            else if (firstRes) circularNo = firstRes;
+            else if (latestRes) circularNo = latestRes;
+            document.getElementById('circularNo').value = circularNo;
+
+            const latestDate = plan.Latest_Date_of_Approval ? plan.Latest_Date_of_Approval.split(' ')[0] : '';
+            document.getElementById('approvalDate').value = latestDate;
+
+            const firstDate = plan.First_Plan_Date_of_Approval ? plan.First_Plan_Date_of_Approval.split(' ')[0] : '';
+            document.getElementById('firstApprovalDateRef').textContent = firstDate || '—';
+            document.getElementById('latestApprovalDateRef').textContent = latestDate || '—';
+            document.getElementById('approvalDatesRef').style.display = 'block';
+        }
+
+        function toggleClupCascade() {
+            const approvedRadio = document.querySelector('input[name="clupStatus"][value="approved"]');
+            const cascadeDiv = document.getElementById('clupCascadeDiv');
+            if (approvedRadio && cascadeDiv) {
+                const show = approvedRadio.checked;
+                cascadeDiv.style.display = show ? 'block' : 'none';
+                if (show) {
+                    populateProvinceSelect();
+                    document.getElementById('lguSelect').innerHTML = '<option value="">-- First select province --</option>';
+                    document.getElementById('lguSelect').disabled = true;
+                } else {
+                    document.getElementById('approvalDatesRef').style.display = 'none';
+                }
+            }
+        }
+
+        function refreshClupCascade() {
+            if (document.getElementById('clupCascadeDiv') && document.getElementById('clupCascadeDiv').style.display !== 'none') {
+                populateProvinceSelect();
+                const lguSelect = document.getElementById('lguSelect');
+                lguSelect.innerHTML = '<option value="">-- First select province --</option>';
+                lguSelect.disabled = true;
+            }
+        }
+
+        // Attach event listeners to radios
+        function setupClupCascadeEvents() {
+            document.querySelectorAll('input[name="clupStatus"]').forEach(radio => {
+                radio.addEventListener('change', toggleClupCascade);
+            });
+            toggleClupCascade(); // initial state
         }
 
         // ========== REVIEW DATA (Dashboard) ==========
@@ -1062,6 +1198,7 @@
                     container.appendChild(row);
                 });
             } else addLandHolding();
+            toggleClupCascade(); // ensure cascading selects are visible if needed
             showSection('zoning');
         }
 
@@ -1098,6 +1235,7 @@
             document.getElementById('certificationNo').value = getNextCertificationNumber();
             document.getElementById('series').value = '2002';
             currentEditingZoningId = null;
+            toggleClupCascade(); // reset cascading visibility
         }
 
         function addLandHolding() {
@@ -1138,14 +1276,8 @@
             }
         }
 
-        function printBlankForm() {
-            // Simplified blank print (full implementation exists in original)
-            alert("Print function available in full version.");
-        }
-
-        function printZoningRecord(id) {
-            alert("Print function available in full version.");
-        }
+        function printBlankForm() { alert("Print function available in full version."); }
+        function printZoningRecord(id) { alert("Print function available in full version."); }
 
         // ========== MAP FUNCTIONS ==========
         let regionMap = null;
@@ -1370,6 +1502,7 @@
             fetchReviewRecords();
             fetchCertifications();
             fetchClupRecords();
+            setupClupCascadeEvents();
             document.getElementById('certificationNo').value = getNextCertificationNumber();
             if (document.getElementById('landHoldingsContainer').children.length === 0) addLandHolding();
         };
