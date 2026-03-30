@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/shpjs@3.4.3/dist/shp.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         /* ===== Full CSS (unchanged) ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -215,7 +216,6 @@
             .map-container { height: 350px; }
             .map-controls { flex-direction: column; align-items: stretch; }
         }
-        /* review card style */
         .review-card {
             background: var(--card-bg);
             border-radius: 15px;
@@ -233,6 +233,17 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
+        }
+        .chart-container {
+            background: #f9fafc;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        canvas#provinceChart {
+            max-height: 400px;
+            width: 100%;
         }
     </style>
 </head>
@@ -266,8 +277,6 @@
             <!-- Dashboard Section -->
             <div id="dashboard" class="section active" role="region" aria-labelledby="dashboard-heading">
                 <h1 id="dashboard-heading" class="visually-hidden">Dashboard - CLUP & PDPFP Review</h1>
-
-                <!-- CLUP and PDPFP REVIEW Section -->
                 <div class="review-card">
                     <div class="section-header">
                         <h3><span aria-hidden="true">📋</span> CLUP and PDPFP REVIEW</h3>
@@ -279,9 +288,7 @@
                     <div class="table-responsive">
                         <table id="reviewTable" aria-label="CLUP and PDPFP review records">
                             <caption class="visually-hidden">List of CLUP and PDPFP review entries</caption>
-                            <thead>
-                                <tr><th>LGU/Province</th><th>Reviewer</th><th>Dates</th><th>Actions</th></tr>
-                            </thead>
+                            <thead><tr><th>LGU/Province</th><th>Reviewer</th><th>Dates</th><th>Actions</th></tr></thead>
                             <tbody id="reviewTableBody"></tbody>
                         </table>
                     </div>
@@ -326,22 +333,26 @@
                 </div>
             </div>
 
-            <!-- Land Use Plans Section (unchanged) -->
+            <!-- Land Use Plans Section - UPDATED with Google Sheets integration and Chart -->
             <div id="plans" class="section" style="display: none;" role="region" aria-labelledby="plans-heading">
                 <h1 id="plans-heading" class="visually-hidden">Comprehensive Land Use Plans</h1>
                 <div class="data-section">
                     <div class="section-header">
                         <h3><span aria-hidden="true">📋</span> Comprehensive Land Use Plans (CLUP)</h3>
                         <div class="btn-group">
-                            <button class="btn btn-primary" onclick="openAddModal()" aria-label="Add new land use plan"><span aria-hidden="true">➕</span> Add New Plan</button>
-                            <button class="btn btn-success" onclick="exportData()" aria-label="Export data to JSON"><span aria-hidden="true">📥</span> Export Data</button>
-                            <button class="btn btn-map" onclick="showOnMap()" aria-label="View plans on map"><span aria-hidden="true">🗺️</span> View on Map</button>
+                            <button class="btn btn-primary" onclick="openAddClupModal()"><span aria-hidden="true">➕</span> Add New Plan</button>
+                            <button class="btn btn-success" onclick="exportClupData()"><span aria-hidden="true">📥</span> Export Data</button>
+                            <button class="btn btn-map" onclick="showOnMap()"><span aria-hidden="true">🗺️</span> View on Map</button>
                         </div>
                     </div>
+                    <!-- Bar Chart per Province -->
+                    <div class="chart-container">
+                        <canvas id="provinceChart" width="800" height="350" style="max-width:100%; height:auto;"></canvas>
+                    </div>
                     <div class="search-bar" role="search">
-                        <div class="search-box"><span aria-hidden="true">🔍</span><label for="planSearch" class="visually-hidden">Search plans</label><input type="text" id="planSearch" placeholder="Search by LGU, province, or status..." onkeyup="filterPlans()"></div>
-                        <div class="filter-group"><label for="provinceFilter" class="visually-hidden">Filter by province</label><select id="provinceFilter" onchange="filterPlans()" aria-label="Filter by province"><option value="">All Provinces</option><option value="Aklan">Aklan</option><option value="Antique">Antique</option><option value="Capiz">Capiz</option><option value="Guimaras">Guimaras</option><option value="Iloilo">Iloilo</option><option value="Negros Occidental">Negros Occidental</option></select></div>
-                        <div class="filter-group"><label for="statusFilter" class="visually-hidden">Filter by status</label><select id="statusFilter" onchange="filterPlans()" aria-label="Filter by status"><option value="">All Status</option><option value="Approved">Approved</option><option value="Pending">Pending</option><option value="For Review">For Review</option><option value="On Hold">On Hold</option></select></div>
+                        <div class="search-box"><span aria-hidden="true">🔍</span><label for="planSearch" class="visually-hidden">Search plans</label><input type="text" id="planSearch" placeholder="Search by LGU, province, or status..." onkeyup="filterClupTable()"></div>
+                        <div class="filter-group"><label for="provinceFilter" class="visually-hidden">Filter by province</label><select id="provinceFilter" onchange="filterClupTable()" aria-label="Filter by province"><option value="">All Provinces</option><option value="Aklan">Aklan</option><option value="Antique">Antique</option><option value="Capiz">Capiz</option><option value="Guimaras">Guimaras</option><option value="Iloilo">Iloilo</option><option value="Negros Occidental">Negros Occidental</option></select></div>
+                        <div class="filter-group"><label for="statusFilter" class="visually-hidden">Filter by status</label><select id="statusFilter" onchange="filterClupTable()" aria-label="Filter by status"><option value="">All Status</option><option value="Approved">Approved</option><option value="Pending">Pending</option><option value="For Review">For Review</option><option value="On Hold">On Hold</option></select></div>
                     </div>
                     <div class="table-responsive">
                         <table id="plansTable" aria-label="Land Use Plans">
@@ -353,7 +364,7 @@
                 </div>
             </div>
 
-            <!-- Site Zoning Certification Section (with added Province field) -->
+            <!-- Site Zoning Certification Section (unchanged) -->
             <div id="zoning" class="section" style="display: none;" role="region" aria-labelledby="zoning-heading">
                 <h1 id="zoning-heading" class="visually-hidden">Site Zoning Certification</h1>
                 <div class="cert-section">
@@ -450,62 +461,39 @@
         // ========== CONFIGURATION ==========
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyf7jh6ZfSY6fX3l2EsQRTv3B5--FpK7wFZvpZJ0OHgktlUmnXTOscbwNRdhWzlza6gWg/exec";
 
-        // ========== GLOBAL DATA ==========
-        let landUsePlans = [
-            { id:1, lgu:"Kalibo", province:"Aklan", planPeriod:"2020-2029", status:"Approved", dateSubmitted:"2020-03-15", dateApproved:"2020-08-20", remarks:"Tourism zones" },
-            { id:2, lgu:"San Jose", province:"Antique", planPeriod:"2021-2030", status:"For Review", dateSubmitted:"2021-06-10", dateApproved:"Pending", remarks:"Under review" },
-            { id:3, lgu:"Roxas City", province:"Capiz", planPeriod:"2022-2031", status:"Approved", dateSubmitted:"2022-02-20", dateApproved:"2022-07-15", remarks:"Coastal management" },
-            { id:4, lgu:"Jordan", province:"Guimaras", planPeriod:"2021-2030", status:"Approved", dateSubmitted:"2021-04-05", dateApproved:"2021-09-12", remarks:"Agricultural preservation" },
-            { id:5, lgu:"Iloilo City", province:"Iloilo", planPeriod:"2023-2032", status:"For Review", dateSubmitted:"2023-01-10", dateApproved:"Pending", remarks:"Urban renewal" },
-            { id:6, lgu:"Bacolod City", province:"Negros Occidental", planPeriod:"2022-2031", status:"Approved", dateSubmitted:"2022-05-18", dateApproved:"2022-11-22", remarks:"Mixed-use zones" }
-        ];
-        let projects = [
-            { id:1, name:"Boracay Rehabilitation", location:"Malay, Aklan", type:"Environmental", budget:250000000, status:"Ongoing", completion:75 },
-            { id:2, name:"Iloilo River Esplanade", location:"Iloilo City", type:"Urban Development", budget:180000000, status:"Ongoing", completion:60 },
-            { id:3, name:"Bacolod MassKara Park", location:"Bacolod City", type:"Tourism Infrastructure", budget:95000000, status:"Planning", completion:25 }
-        ];
-        let eiaRecords = [
-            { id:1, project:"Coastal Development", location:"Roxas City", type:"EIS", dateFiled:"2024-01-10", status:"Under Review" },
-            { id:2, project:"Highway Expansion", location:"Iloilo", type:"IEE", dateFiled:"2024-02-15", status:"Approved" }
-        ];
-        let zoningCertifications = [];
-        let certificationCounter = { lastCertNumber: 0, prefix: 'SZC-RVI', year: new Date().getFullYear().toString().slice(-2) };
-        let regionMap = null;
-        let mapInitialized = false;
-        let uploadedLayers = [];
-        let layerCounter = 0;
-        let currentEditingId = null;
+        // ========== CLUP DATA (Google Sheets + localStorage) ==========
+        let clupRecords = [];
+        let clupChart = null;
+        let currentEditingClupId = null;
 
-        // ========== REVIEW DATA ==========
-        let reviewRecords = [];
-        let currentReviewId = null;
-
-        async function fetchReviewRecords() {
+        async function fetchClupRecords() {
             try {
-                const response = await fetch(GOOGLE_SCRIPT_URL + '?action=get&data_type=review', { method: 'GET' });
+                const response = await fetch(GOOGLE_SCRIPT_URL + '?action=get&data_type=clup', { method: 'GET' });
                 const data = await response.json();
                 if (data && Array.isArray(data)) {
-                    reviewRecords = data;
+                    clupRecords = data;
                 } else {
-                    reviewRecords = [];
+                    clupRecords = [];
                 }
-                saveReviewToLocal();
-                renderReviewTable();
-                return reviewRecords;
+                saveClupToLocal();
+                renderClupTable();
+                updateClupChart();
+                return clupRecords;
             } catch (error) {
-                console.warn("Google Sheets unavailable, using localStorage", error);
-                const local = localStorage.getItem('clupPdpfpReviews');
-                reviewRecords = local ? JSON.parse(local) : [];
-                renderReviewTable();
-                return reviewRecords;
+                console.warn("Google Sheets CLUP unavailable, using localStorage", error);
+                const local = localStorage.getItem('clupRecords');
+                clupRecords = local ? JSON.parse(local) : [];
+                renderClupTable();
+                updateClupChart();
+                return clupRecords;
             }
         }
 
-        async function saveReviewToSheet(record, action) {
+        async function saveClupToSheet(record, action) {
             try {
                 const params = new URLSearchParams();
                 params.append('action', action);
-                params.append('data_type', 'review');
+                params.append('data_type', 'clup');
                 params.append('data', JSON.stringify(record));
                 const response = await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
@@ -516,131 +504,242 @@
                 const result = await response.json();
                 return result.success === true;
             } catch (error) {
-                console.warn("Google Sheets save failed, using localStorage", error);
-                let stored = JSON.parse(localStorage.getItem('clupPdpfpReviews') || '[]');
+                console.warn("Google Sheets CLUP save failed, using localStorage", error);
+                let stored = JSON.parse(localStorage.getItem('clupRecords') || '[]');
                 if (action === 'add') stored.push(record);
                 else if (action === 'update') {
                     const index = stored.findIndex(r => r.id == record.id);
                     if (index !== -1) stored[index] = record;
                 } else if (action === 'delete') stored = stored.filter(r => r.id != record.id);
-                localStorage.setItem('clupPdpfpReviews', JSON.stringify(stored));
-                reviewRecords = stored;
-                renderReviewTable();
+                localStorage.setItem('clupRecords', JSON.stringify(stored));
+                clupRecords = stored;
+                renderClupTable();
+                updateClupChart();
                 return true;
             }
         }
 
-        function saveReviewToLocal() {
-            localStorage.setItem('clupPdpfpReviews', JSON.stringify(reviewRecords));
+        function saveClupToLocal() {
+            localStorage.setItem('clupRecords', JSON.stringify(clupRecords));
         }
 
-        function renderReviewTable() {
-            const tbody = document.getElementById('reviewTableBody');
+        function renderClupTable() {
+            const tbody = document.getElementById('plansTableBody');
             if (!tbody) return;
             tbody.innerHTML = '';
-            reviewRecords.forEach(rec => {
+            const filtered = getFilteredClup();
+            filtered.forEach(plan => {
+                let cls = 'status-pending';
+                if (plan.status === 'Approved') cls = 'status-approved';
+                else if (plan.status === 'For Review') cls = 'status-review';
+                else if (plan.status === 'On Hold') cls = 'status-hold';
                 const row = tbody.insertRow();
                 row.innerHTML = `
-                    <td>${escapeHtml(rec.lgu)}</td>
-                    <td>${escapeHtml(rec.reviewer)}</td>
-                    <td>${escapeHtml(rec.dates)}</td>
-                    <td><div class="action-btns"><button class="action-btn edit" onclick="openReviewModal(${rec.id})">✏️ Edit</button><button class="action-btn delete" onclick="deleteReviewRecord(${rec.id})">🗑️ Delete</button></div></td>
+                    <td>${escapeHtml(plan.lgu)}</td>
+                    <td>${escapeHtml(plan.province)}</td>
+                    <td>${escapeHtml(plan.planPeriod)}</td>
+                    <td><span class="status-badge ${cls}">${escapeHtml(plan.status)}</span></td>
+                    <td>${formatDate(plan.dateSubmitted)}</td>
+                    <td>${plan.dateApproved === 'Pending' ? 'Pending' : formatDate(plan.dateApproved)}</td>
+                    <td><div class="action-btns"><button class="action-btn view" onclick="viewClupRecord(${plan.id})">👁️ View</button><button class="action-btn edit" onclick="editClupRecord(${plan.id})">✏️ Edit</button><button class="action-btn delete" onclick="deleteClupRecord(${plan.id})">🗑️ Delete</button></div></td>
                 `;
             });
         }
 
-        async function openReviewModal(id = null) {
-            currentReviewId = id;
-            if (id !== null) {
-                const rec = reviewRecords.find(r => r.id === id);
-                if (rec) {
-                    document.getElementById('modalTitle').textContent = 'Edit Review Entry';
-                    document.getElementById('modalBody').innerHTML = `
-                        <form onsubmit="saveReviewEntry(event)">
-                            <div class="form-grid">
-                                <div class="form-group full-width"><label>LGU/Province</label><input type="text" class="form-control" name="lgu" value="${escapeHtml(rec.lgu)}" required></div>
-                                <div class="form-group full-width"><label>Reviewer</label><input type="text" class="form-control" name="reviewer" value="${escapeHtml(rec.reviewer)}" required></div>
-                                <div class="form-group full-width"><label>Dates</label><input type="text" class="form-control" name="dates" value="${escapeHtml(rec.dates)}" required placeholder="e.g., 2024-03-15 or March 15, 2024"></div>
-                            </div>
-                            <div style="text-align:right; margin-top:1rem;"><button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button><button type="submit" class="btn btn-success">Save</button></div>
-                        </form>
-                    `;
+        function getFilteredClup() {
+            const term = document.getElementById('planSearch')?.value.toLowerCase() || '';
+            const prov = document.getElementById('provinceFilter')?.value || '';
+            const stat = document.getElementById('statusFilter')?.value || '';
+            return clupRecords.filter(p => 
+                (p.lgu.toLowerCase().includes(term) || p.province.toLowerCase().includes(term)) &&
+                (!prov || p.province === prov) && (!stat || p.status === stat)
+            );
+        }
+
+        function filterClupTable() {
+            renderClupTable();
+        }
+
+        function updateClupChart() {
+            const provinces = ['Aklan','Antique','Capiz','Guimaras','Iloilo','Negros Occidental'];
+            const counts = provinces.map(prov => clupRecords.filter(r => r.province === prov).length);
+            const ctx = document.getElementById('provinceChart').getContext('2d');
+            if (clupChart) clupChart.destroy();
+            clupChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: provinces,
+                    datasets: [{
+                        label: 'Number of CLUP Plans',
+                        data: counts,
+                        backgroundColor: '#2c6e8f',
+                        borderColor: '#1a4d5e',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'Count' } },
+                        x: { title: { display: true, text: 'Province' } }
+                    },
+                    plugins: { legend: { position: 'top' }, tooltip: { callbacks: { label: (ctx) => `${ctx.raw} plan(s)` } } }
                 }
-            } else {
-                document.getElementById('modalTitle').textContent = 'Add Review Entry';
-                document.getElementById('modalBody').innerHTML = `
-                    <form onsubmit="saveReviewEntry(event)">
-                        <div class="form-grid">
-                            <div class="form-group full-width"><label>LGU/Province</label><input type="text" class="form-control" name="lgu" required></div>
-                            <div class="form-group full-width"><label>Reviewer</label><input type="text" class="form-control" name="reviewer" required></div>
-                            <div class="form-group full-width"><label>Dates</label><input type="text" class="form-control" name="dates" required placeholder="e.g., 2024-03-15 or March 15, 2024"></div>
-                        </div>
-                        <div style="text-align:right; margin-top:1rem;"><button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button><button type="submit" class="btn btn-success">Save</button></div>
-                    </form>
-                `;
+            });
+        }
+
+        function viewClupRecord(id) {
+            const rec = clupRecords.find(r => r.id === id);
+            if (!rec) return;
+            let html = '<div class="form-grid">';
+            for (let [k, v] of Object.entries(rec)) {
+                if (k !== 'id') html += `<div class="form-group"><label>${k.replace(/([A-Z])/g, ' $1').replace(/^./, s=>s.toUpperCase())}</label><input type="text" class="form-control" value="${escapeHtml(String(v))}" readonly></div>`;
             }
+            html += '</div><div style="text-align:right;"><button class="btn btn-primary" onclick="closeModal()">Close</button></div>';
+            document.getElementById('modalTitle').textContent = 'View CLUP Record';
+            document.getElementById('modalBody').innerHTML = html;
             document.getElementById('dataModal').classList.add('active');
         }
 
-        async function saveReviewEntry(event) {
+        async function editClupRecord(id) {
+            const rec = clupRecords.find(r => r.id === id);
+            if (!rec) return;
+            currentEditingClupId = id;
+            const modal = document.getElementById('dataModal');
+            document.getElementById('modalTitle').textContent = 'Edit Land Use Plan';
+            document.getElementById('modalBody').innerHTML = `
+                <form onsubmit="saveClupEdit(event)">
+                    <div class="form-grid">
+                        <div class="form-group"><label>LGU/Municipality</label><input type="text" class="form-control" name="lgu" value="${escapeHtml(rec.lgu)}" required></div>
+                        <div class="form-group"><label>Province</label><select class="form-control" name="province" required>${generateProvinceOptions(rec.province)}</select></div>
+                        <div class="form-group"><label>Plan Period</label><input type="text" class="form-control" name="planPeriod" value="${escapeHtml(rec.planPeriod)}" required></div>
+                        <div class="form-group"><label>Status</label><select class="form-control" name="status">${generateStatusOptions(rec.status)}</select></div>
+                        <div class="form-group"><label>Date Submitted</label><input type="date" class="form-control" name="dateSubmitted" value="${rec.dateSubmitted}" required></div>
+                        <div class="form-group"><label>Date Approved</label><input type="date" class="form-control" name="dateApproved" value="${rec.dateApproved !== 'Pending' ? rec.dateApproved : ''}"></div>
+                        <div class="form-group full-width"><label>Remarks</label><textarea class="form-control" name="remarks" rows="3">${escapeHtml(rec.remarks || '')}</textarea></div>
+                    </div>
+                    <div style="text-align:right; margin-top:1rem;"><button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button><button type="submit" class="btn btn-success">Save Changes</button></div>
+                </form>
+            `;
+            modal.classList.add('active');
+        }
+
+        async function saveClupEdit(event) {
             event.preventDefault();
             const form = event.target;
-            const lgu = form.lgu.value.trim();
-            const reviewer = form.reviewer.value.trim();
-            const dates = form.dates.value.trim();
-            if (!lgu || !reviewer || !dates) {
-                alert('Please fill all fields.');
+            const updated = {
+                id: currentEditingClupId,
+                lgu: form.lgu.value.trim(),
+                province: form.province.value,
+                planPeriod: form.planPeriod.value.trim(),
+                status: form.status.value,
+                dateSubmitted: form.dateSubmitted.value,
+                dateApproved: form.dateApproved.value || 'Pending',
+                remarks: form.remarks.value.trim()
+            };
+            if (!updated.lgu || !updated.province || !updated.planPeriod || !updated.dateSubmitted) {
+                alert('Please fill required fields.');
                 return false;
             }
-            let success = false;
-            if (currentReviewId !== null) {
-                const updatedRec = { id: currentReviewId, lgu, reviewer, dates };
-                success = await saveReviewToSheet(updatedRec, 'update');
-                if (success) {
-                    const index = reviewRecords.findIndex(r => r.id === currentReviewId);
-                    if (index !== -1) reviewRecords[index] = updatedRec;
-                    saveReviewToLocal();
-                }
-            } else {
-                const newId = reviewRecords.length ? Math.max(...reviewRecords.map(r => r.id)) + 1 : 1;
-                const newRec = { id: newId, lgu, reviewer, dates };
-                success = await saveReviewToSheet(newRec, 'add');
-                if (success) {
-                    reviewRecords.push(newRec);
-                    saveReviewToLocal();
-                }
-            }
+            const success = await saveClupToSheet(updated, 'update');
             if (success) {
-                renderReviewTable();
+                const idx = clupRecords.findIndex(r => r.id === updated.id);
+                if (idx !== -1) clupRecords[idx] = updated;
+                saveClupToLocal();
+                renderClupTable();
+                updateClupChart();
                 closeModal();
-                alert('Saved successfully.');
+                alert('Updated successfully.');
             } else {
-                alert('Failed to save. Check network or try again later.');
+                alert('Failed to update.');
             }
             return false;
         }
 
-        async function deleteReviewRecord(id) {
-            if (confirm('Delete this review entry?')) {
-                const success = await saveReviewToSheet({ id }, 'delete');
-                if (success) {
-                    reviewRecords = reviewRecords.filter(r => r.id !== id);
-                    saveReviewToLocal();
-                    renderReviewTable();
-                    alert('Deleted.');
-                } else {
-                    alert('Failed to delete. Try again later.');
-                }
+        async function deleteClupRecord(id) {
+            if (!confirm('Delete this CLUP record?')) return;
+            const success = await saveClupToSheet({ id }, 'delete');
+            if (success) {
+                clupRecords = clupRecords.filter(r => r.id !== id);
+                saveClupToLocal();
+                renderClupTable();
+                updateClupChart();
+                alert('Deleted.');
+            } else {
+                alert('Failed to delete.');
             }
         }
 
-        function exportReviewData() {
-            const dataStr = JSON.stringify(reviewRecords, null, 2);
+        function openAddClupModal() {
+            currentEditingClupId = null;
+            const modal = document.getElementById('dataModal');
+            document.getElementById('modalTitle').textContent = 'Add New Land Use Plan';
+            document.getElementById('modalBody').innerHTML = `
+                <form onsubmit="saveNewClup(event)">
+                    <div class="form-grid">
+                        <div class="form-group"><label>LGU/Municipality</label><input type="text" class="form-control" name="lgu" required></div>
+                        <div class="form-group"><label>Province</label><select class="form-control" name="province" required>${generateProvinceOptions('')}</select></div>
+                        <div class="form-group"><label>Plan Period</label><input type="text" class="form-control" name="planPeriod" placeholder="2024-2033" required></div>
+                        <div class="form-group"><label>Status</label><select class="form-control" name="status">${generateStatusOptions('Pending')}</select></div>
+                        <div class="form-group"><label>Date Submitted</label><input type="date" class="form-control" name="dateSubmitted" required></div>
+                        <div class="form-group"><label>Date Approved</label><input type="date" class="form-control" name="dateApproved"></div>
+                        <div class="form-group full-width"><label>Remarks</label><textarea class="form-control" name="remarks" rows="3"></textarea></div>
+                    </div>
+                    <div style="text-align:right; margin-top:1rem;"><button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button><button type="submit" class="btn btn-success">Save Plan</button></div>
+                </form>
+            `;
+            modal.classList.add('active');
+        }
+
+        async function saveNewClup(event) {
+            event.preventDefault();
+            const form = event.target;
+            const newId = clupRecords.length ? Math.max(...clupRecords.map(r => r.id)) + 1 : 1;
+            const newRecord = {
+                id: newId,
+                lgu: form.lgu.value.trim(),
+                province: form.province.value,
+                planPeriod: form.planPeriod.value.trim(),
+                status: form.status.value,
+                dateSubmitted: form.dateSubmitted.value,
+                dateApproved: form.dateApproved.value || 'Pending',
+                remarks: form.remarks.value.trim()
+            };
+            if (!newRecord.lgu || !newRecord.province || !newRecord.planPeriod || !newRecord.dateSubmitted) {
+                alert('Please fill required fields.');
+                return false;
+            }
+            const success = await saveClupToSheet(newRecord, 'add');
+            if (success) {
+                clupRecords.push(newRecord);
+                saveClupToLocal();
+                renderClupTable();
+                updateClupChart();
+                closeModal();
+                alert('Added successfully.');
+            } else {
+                alert('Failed to add.');
+            }
+            return false;
+        }
+
+        function exportClupData() {
+            const dataStr = JSON.stringify(clupRecords, null, 2);
             const a = document.createElement('a');
             a.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
-            a.download = 'clup_pdpfp_reviews.json';
+            a.download = 'clup_records_region6.json';
             a.click();
-            alert('Exported');
+            alert('Exported.');
+        }
+
+        function generateProvinceOptions(selected) {
+            const provinces = ['Aklan','Antique','Capiz','Guimaras','Iloilo','Negros Occidental'];
+            return provinces.map(p => `<option value="${p}" ${p === selected ? 'selected' : ''}>${p}</option>`).join('');
+        }
+        function generateStatusOptions(selected) {
+            const statuses = ['Pending','For Review','Approved','On Hold'];
+            return statuses.map(s => `<option value="${s}" ${s === selected ? 'selected' : ''}>${s}</option>`).join('');
         }
 
         // ========== HELPER FUNCTIONS ==========
