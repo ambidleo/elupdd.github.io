@@ -3,651 +3,883 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ELUPDD Region VI - Environmental Land Use & Urban Planning</title>
+    <title>ELUPDD Region VI - Complete CLUP Management System</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/shpjs@3.4.3/dist/shp.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
-        /* ===== Full CSS (unchanged) ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #e8f0f9; min-height: 100vh; }
-        :root { --primary-dark: #1a4d5e; --primary: #2c6e8f; --primary-light-accessible: #1e7a9c; --secondary: #3a7b5c; --accent-accessible: #d4a017; --earth: #8B5A2B; --water: #3498db; --forest: #27ae60; --urban: #7f8c8d; --background: #f5f9ff; --card-bg: #ffffff; --cert-primary: #8B4513; --cert-secondary: #228B22; --cert-accent: #FFD700; }
-        .skip-link { position: absolute; top: -40px; left: 0; background: var(--primary-dark); color: white; padding: 8px 16px; text-decoration: none; z-index: 10000; border-radius: 0 0 4px 0; font-weight: 600; }
-        .skip-link:focus { top: 0; outline: 3px solid var(--accent-accessible); }
-        .visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
-        :focus { outline: 3px solid var(--accent-accessible) !important; outline-offset: 2px !important; box-shadow: 0 0 0 3px rgba(212, 160, 23, 0.3); }
-        a:focus, button:focus, input:focus, select:focus, textarea:focus, [tabindex]:focus { outline: 3px solid var(--accent-accessible) !important; }
-        .error-message { color: #dc3545; font-size: 0.875rem; margin-top: 4px; display: block; }
-        input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="true"] { border-color: #dc3545 !important; }
-        .header-content h1, .header-content h2 { text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
-        .btn { font-weight: 600; }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:hover { background: var(--primary-dark); }
-        .btn-warning { background: var(--accent-accessible); color: var(--primary-dark); }
-        .btn-warning:hover { background: #b88914; }
-        header { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); color: white; padding: 1.5rem 2rem; border-bottom: 5px solid var(--accent-accessible); position: relative; overflow: hidden; display: flex; align-items: center; gap: 2rem; }
-        .logo-container { flex-shrink: 0; }
-        .logo { background: white; border-radius: 12px; padding: 0.8rem 1.5rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); border: 2px solid var(--accent-accessible); width: 180px; height: 90px; }
-        .logo span { font-size: 1.2rem; font-weight: bold; color: var(--primary-dark); }
-        .header-content { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-        .header-content h1 { font-size: 2.3rem; margin-bottom: 0.3rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); letter-spacing: 1px; line-height: 1.3; }
-        .header-content h2 { font-size: 1.4rem; font-weight: 400; opacity: 0.95; font-style: italic; margin-bottom: 0.5rem; }
-        .header-badge { background: var(--accent-accessible); color: var(--primary-dark); display: inline-block; padding: 0.3rem 1.5rem; border-radius: 30px; font-weight: bold; box-shadow: 0 2px 10px rgba(0,0,0,0.2); font-size: 1rem; text-align: center; }
-        .nav-bar { background: var(--primary-dark); padding: 0.8rem 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.2); position: sticky; top: 0; z-index: 1000; }
-        .nav-bar ul { list-style: none; display: flex; gap: 2rem; max-width: 1400px; margin: 0 auto; flex-wrap: wrap; }
-        .nav-bar a { color: white; text-decoration: none; font-size: 1rem; padding: 0.5rem 1rem; border-radius: 20px; transition: all 0.3s; display: flex; align-items: center; gap: 0.5rem; font-weight: 500; }
-        .nav-bar a:hover, .nav-bar a.active { background: var(--accent-accessible); color: var(--primary-dark); transform: translateY(-2px); }
+        :root { --primary-dark: #1a4d5e; --primary: #2c6e8f; --primary-light: #1e7a9c; --secondary: #3a7b5c; --accent: #d4a017; --success: #27ae60; --warning: #f39c12; --danger: #e74c3c; --info: #3498db; }
+        
+        .skip-link { position: absolute; top: -40px; left: 0; background: var(--primary-dark); color: white; padding: 8px 16px; text-decoration: none; z-index: 10000; }
+        .skip-link:focus { top: 0; }
+        
+        header { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); color: white; padding: 1.5rem 2rem; border-bottom: 5px solid var(--accent); display: flex; align-items: center; gap: 2rem; flex-wrap: wrap; }
+        .logo { background: white; border-radius: 12px; padding: 0.8rem 1.5rem; width: 180px; height: 90px; display: flex; align-items: center; justify-content: center; }
+        .logo span { font-size: 1.2rem; font-weight: bold; color: var(--primary-dark); text-align: center; }
+        .header-content { flex: 1; text-align: center; }
+        .header-content h1 { font-size: 1.8rem; margin-bottom: 0.3rem; }
+        .header-content h2 { font-size: 1.1rem; font-weight: 400; }
+        .header-badge { background: var(--accent); color: var(--primary-dark); display: inline-block; padding: 0.3rem 1.5rem; border-radius: 30px; font-weight: bold; margin-top: 0.5rem; }
+        
+        .nav-bar { background: var(--primary-dark); padding: 0.8rem 2rem; position: sticky; top: 0; z-index: 1000; }
+        .nav-bar ul { list-style: none; display: flex; gap: 1.5rem; flex-wrap: wrap; justify-content: center; }
+        .nav-bar a { color: white; text-decoration: none; padding: 0.5rem 1rem; border-radius: 20px; transition: all 0.3s; display: flex; align-items: center; gap: 0.5rem; font-weight: 500; }
+        .nav-bar a:hover, .nav-bar a.active { background: var(--accent); color: var(--primary-dark); transform: translateY(-2px); }
+        
         .container { max-width: 1400px; margin: 2rem auto; padding: 0 2rem; }
-        .section { display: none; }
+        .section { display: none; animation: fadeIn 0.3s ease; }
         .section.active { display: block; }
-        .map-section { background: var(--card-bg); border-radius: 15px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 5px 20px rgba(0,0,0,0.1); border-left: 8px solid var(--primary); }
-        .map-title { color: var(--primary-dark); font-size: 1.8rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 1rem; }
-        .map-title span { background: var(--primary-light-accessible); color: white; padding: 0.3rem 1rem; border-radius: 30px; font-size: 0.9rem; }
-        .map-controls { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; align-items: center; background: #f8faff; padding: 1.5rem; border-radius: 12px; }
-        .file-upload { flex: 2; min-width: 300px; position: relative; }
-        .file-upload input[type="file"] { position: absolute; width: 0.1px; height: 0.1px; opacity: 0; overflow: hidden; z-index: -1; }
-        .file-upload label { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.8rem 1.5rem; background: var(--primary); color: white; border-radius: 30px; cursor: pointer; transition: all 0.3s; font-weight: 600; border: 2px solid transparent; }
-        .file-upload label:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(44, 110, 143, 0.3); }
-        .file-upload label.uploading { background: var(--accent-accessible); color: var(--primary-dark); pointer-events: none; }
-        .layer-controls { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-        .layer-list { flex: 1; min-width: 250px; background: white; border-radius: 30px; padding: 0.3rem 1rem; border: 2px solid #e0e7ff; }
-        .layer-list select { width: 100%; padding: 0.5rem; border: none; background: transparent; font-size: 0.95rem; outline: none; cursor: pointer; }
-        .map-container { height: 500px; width: 100%; border-radius: 12px; overflow: hidden; box-shadow: 0 3px 15px rgba(0,0,0,0.2); border: 2px solid var(--primary-light-accessible); margin-bottom: 1.5rem; }
-        .map-legend { display: flex; flex-wrap: wrap; gap: 2rem; padding: 1rem; background: #f8faff; border-radius: 10px; margin-top: 1rem; }
-        .legend-item { display: flex; align-items: center; gap: 0.5rem; }
-        .legend-color { width: 20px; height: 20px; border-radius: 4px; }
-        .legend-color.approved { background-color: #27ae60; opacity: 0.7; }
-        .legend-color.review { background-color: #f39c12; opacity: 0.7; }
-        .legend-color.pending { background-color: #e74c3c; opacity: 0.7; }
-        .legend-color.shapefile { background-color: #8e44ad; opacity: 0.7; }
-        .upload-info { margin-top: 1rem; padding: 1rem; background: #e3f2fd; border-radius: 8px; font-size: 0.95rem; color: var(--primary-dark); display: none; }
-        .upload-info.show { display: block; }
-        .upload-info.error { background: #ffebee; color: #c62828; }
-        .upload-info.success { background: #e8f5e9; color: #2e7d32; }
-        .province-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1.5rem; }
-        .province-stat-card { background: linear-gradient(135deg, #f8faff, white); padding: 1rem; border-radius: 8px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border: 1px solid #e0e7ff; cursor: pointer; transition: all 0.3s; }
-        .province-stat-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(44, 110, 143, 0.2); border-color: var(--primary); }
-        .province-stat-card h4 { color: var(--primary-dark); margin-bottom: 0.5rem; font-size: 1.1rem; }
-        .province-stat-card .status { font-size: 0.9rem; padding: 0.2rem 0.8rem; border-radius: 20px; display: inline-block; margin-top: 0.3rem; }
-        .province-stat-card .status.approved { background: #d4edda; color: #155724; }
-        .province-stat-card .status.review { background: #fff3cd; color: #856404; }
-        .overview-section { background: var(--card-bg); border-radius: 15px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 5px 20px rgba(0,0,0,0.1); border-left: 8px solid var(--primary); }
-        .overview-title { color: var(--primary-dark); font-size: 1.8rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 1rem; }
-        .overview-title span { background: var(--primary-light-accessible); color: white; padding: 0.3rem 1rem; border-radius: 30px; font-size: 0.9rem; }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin: 2rem 0; }
-        .stat-card { background: linear-gradient(135deg, #f8faff, white); padding: 1.5rem; border-radius: 12px; text-align: center; box-shadow: 0 3px 10px rgba(0,0,0,0.1); border: 1px solid #e0e7ff; }
-        .stat-number { font-size: 2.2rem; font-weight: bold; color: var(--primary); }
-        .stat-label { color: #666; margin-top: 0.5rem; font-size: 0.95rem; }
-        .data-section { background: var(--card-bg); border-radius: 15px; padding: 2rem; margin: 2rem 0; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
-        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
-        .section-header h3 { color: var(--primary-dark); font-size: 1.6rem; display: flex; align-items: center; gap: 0.5rem; }
-        .btn-group { display: flex; gap: 1rem; flex-wrap: wrap; }
-        .btn { padding: 0.8rem 1.5rem; border: none; border-radius: 30px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 0.5rem; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Stats Grid */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .stat-card { background: white; padding: 1.5rem; border-radius: 12px; text-align: center; box-shadow: 0 3px 10px rgba(0,0,0,0.1); cursor: pointer; transition: all 0.3s; border-left: 4px solid var(--primary); }
+        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
+        .stat-number { font-size: 2.5rem; font-weight: bold; color: var(--primary); }
+        .stat-label { color: #666; margin-top: 0.5rem; font-size: 0.9rem; }
+        .stat-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+        
+        /* Query Builder */
+        .query-builder { background: #f8faff; padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem; border-left: 4px solid var(--primary); }
+        .query-row { display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end; margin-bottom: 1rem; }
+        .query-field { flex: 1; min-width: 150px; }
+        .query-field label { display: block; margin-bottom: 0.5rem; color: var(--primary-dark); font-weight: 600; font-size: 0.85rem; }
+        .query-field select, .query-field input { width: 100%; padding: 0.7rem; border: 2px solid #e0e7ff; border-radius: 8px; font-size: 0.9rem; transition: all 0.3s; }
+        .query-field select:focus, .query-field input:focus { outline: none; border-color: var(--primary); }
+        
+        .btn { padding: 0.7rem 1.5rem; border: none; border-radius: 30px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.3s; font-size: 0.9rem; }
         .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(44, 110, 143, 0.3); }
-        .btn-success { background: var(--secondary); color: white; }
-        .btn-success:hover { background: #2e5f45; transform: translateY(-2px); }
-        .btn-warning { background: var(--accent-accessible); color: var(--primary-dark); }
-        .btn-warning:hover { background: #b88914; transform: translateY(-2px); }
-        .btn-danger { background: #dc3545; color: white; }
-        .btn-danger:hover { background: #c82333; transform: translateY(-2px); }
-        .btn-cert { background: var(--cert-primary); color: white; }
-        .btn-cert:hover { background: #6a3510; transform: translateY(-2px); }
-        .btn-secondary { background: #6c757d; color: white; }
-        .btn-secondary:hover { background: #5a6268; transform: translateY(-2px); }
-        .btn-print { background: #27ae60; color: white; }
-        .btn-print:hover { background: #219a52; transform: translateY(-2px); }
-        .btn-map { background: var(--primary-light-accessible); color: white; }
-        .btn-map:hover { background: var(--primary); transform: translateY(-2px); }
-        .search-bar { display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; background: #f8faff; padding: 1.5rem; border-radius: 12px; }
-        .search-box { flex: 2; min-width: 250px; position: relative; }
-        .search-box i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #999; }
-        .search-box input { width: 100%; padding: 0.8rem 0.8rem 0.8rem 2.5rem; border: 2px solid #e0e7ff; border-radius: 30px; font-size: 1rem; transition: all 0.3s; }
-        .search-box input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(44, 110, 143, 0.1); }
-        .filter-group { flex: 1; min-width: 150px; }
-        .filter-group select { width: 100%; padding: 0.8rem; border: 2px solid #e0e7ff; border-radius: 30px; font-size: 1rem; background: white; cursor: pointer; }
-        .table-responsive { overflow-x: auto; border-radius: 12px; box-shadow: 0 3px 15px rgba(0,0,0,0.1); }
-        table { width: 100%; border-collapse: collapse; background: white; min-width: 1000px; }
-        caption { font-size: 1.1rem; font-weight: bold; margin-bottom: 0.5rem; color: var(--primary-dark); text-align: left; }
-        th { background: var(--primary-dark); color: white; padding: 1rem; text-align: left; font-weight: 600; font-size: 0.9rem; white-space: nowrap; }
-        th:first-child { border-radius: 12px 0 0 0; }
-        th:last-child { border-radius: 0 12px 0 0; }
-        td { padding: 1rem; border-bottom: 1px solid #e9ecef; vertical-align: middle; }
-        tr:hover { background: #f8faff; }
-        tr.selected { background: #e8f4f8; border-left: 4px solid var(--primary); }
-        .status-badge { padding: 0.3rem 1rem; border-radius: 30px; font-size: 0.8rem; font-weight: 600; display: inline-block; text-align: center; }
-        .status-approved { background: #d4edda; color: #155724; }
-        .status-pending { background: #fff3cd; color: #856404; }
-        .status-review { background: #cce5ff; color: #004085; }
-        .status-hold { background: #f8d7da; color: #721c24; }
-        .action-btns { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-        .action-btn { padding: 0.4rem 0.8rem; border: none; border-radius: 5px; cursor: pointer; font-size: 0.8rem; font-weight: 600; transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.3rem; }
-        .action-btn.view { background: var(--primary-light-accessible); color: white; }
-        .action-btn.edit { background: var(--accent-accessible); color: var(--primary-dark); }
-        .action-btn.delete { background: #dc3545; color: white; }
-        .action-btn.print { background: #27ae60; color: white; }
-        .action-btn.save { background: var(--secondary); color: white; }
-        .action-btn.cancel { background: #6c757d; color: white; }
-        .action-btn:hover { transform: translateY(-2px); box-shadow: 0 3px 8px rgba(0,0,0,0.2); }
+        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-2px); }
+        .btn-success { background: var(--success); color: white; }
+        .btn-success:hover { background: #219a52; transform: translateY(-2px); }
+        .btn-warning { background: var(--warning); color: white; }
+        .btn-warning:hover { background: #e67e22; transform: translateY(-2px); }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-info { background: var(--info); color: white; }
+        
+        .filter-tag { display: inline-block; background: #e3f2fd; padding: 0.3rem 0.8rem; border-radius: 20px; margin: 0.25rem; font-size: 0.85rem; }
+        .filter-tag .remove { cursor: pointer; margin-left: 0.5rem; color: var(--danger); font-weight: bold; }
+        
+        .table-responsive { overflow-x: auto; border-radius: 12px; box-shadow: 0 3px 15px rgba(0,0,0,0.1); background: white; }
+        table { width: 100%; border-collapse: collapse; min-width: 1000px; }
+        th { background: var(--primary-dark); color: white; padding: 1rem; text-align: left; font-weight: 600; font-size: 0.85rem; }
+        td { padding: 0.8rem 1rem; border-bottom: 1px solid #e9ecef; vertical-align: middle; }
+        tr:hover { background: #f8faff; cursor: pointer; }
+        
+        .status-badge { padding: 0.3rem 1rem; border-radius: 30px; font-size: 0.75rem; font-weight: 600; display: inline-block; }
+        .status-updated { background: #d4edda; color: #155724; }
+        .status-old { background: #fff3cd; color: #856404; }
+        
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(3px); }
         .modal.active { display: flex; }
-        .modal-content { background: white; border-radius: 20px; padding: 2rem; max-width: 800px; width: 95%; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.3); border: 3px solid var(--primary); animation: modalSlideIn 0.3s ease; }
-        @keyframes modalSlideIn { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 3px solid var(--primary-light-accessible); }
-        .modal-header h2 { color: var(--primary-dark); font-size: 1.5rem; }
-        .close-btn { background: none; border: none; font-size: 1.8rem; cursor: pointer; color: #666; transition: color 0.3s; line-height: 1; padding: 0 8px; }
-        .close-btn:hover { color: var(--primary); }
-        .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+        .modal-content { background: white; border-radius: 20px; padding: 2rem; max-width: 900px; width: 95%; max-height: 90vh; overflow-y: auto; animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 2px solid var(--primary); padding-bottom: 1rem; }
+        .close-btn { background: none; border: none; font-size: 1.8rem; cursor: pointer; color: #666; transition: color 0.3s; }
+        .close-btn:hover { color: var(--danger); }
+        
+        .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
         .form-group { margin-bottom: 1rem; }
         .form-group.full-width { grid-column: span 2; }
-        .form-group label { display: block; margin-bottom: 0.5rem; color: var(--primary-dark); font-weight: 600; font-size: 0.9rem; }
-        .form-control { width: 100%; padding: 0.8rem; border: 2px solid #e0e7ff; border-radius: 10px; font-size: 0.95rem; transition: all 0.3s; }
-        .form-control:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(44, 110, 143, 0.1); }
-        .form-control[readonly] { background: #f8f9fa; border-color: #ddd; }
-        textarea.form-control { resize: vertical; min-height: 100px; }
-        .radio-group { display: flex; gap: 1.5rem; flex-wrap: wrap; padding: 0.5rem 0; }
-        .radio-option { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; }
-        .cert-section { background: white; border-radius: 15px; padding: 2rem; margin: 2rem 0; box-shadow: 0 5px 20px rgba(0,0,0,0.1); border: 2px solid var(--cert-accent); }
-        .cert-title { color: var(--cert-primary); font-size: 1.8rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 1rem; border-bottom: 3px solid var(--cert-accent); padding-bottom: 0.5rem; }
-        .cert-title span { background: var(--cert-secondary); color: white; padding: 0.3rem 1rem; border-radius: 30px; font-size: 1rem; }
-        .cert-subtitle { color: var(--cert-primary); font-size: 1.3rem; margin: 2rem 0 1rem; text-decoration: underline; }
-        .province-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin: 2rem 0; }
-        .province-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.1); border: 1px solid #e0e7ff; transition: all 0.3s; }
-        .province-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(44, 110, 143, 0.2); border-color: var(--primary); }
-        .province-header { background: linear-gradient(135deg, var(--primary), var(--primary-light-accessible)); color: white; padding: 1rem; font-size: 1.2rem; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
-        .province-body { padding: 1.5rem; }
-        .province-stat { display: flex; justify-content: space-between; margin-bottom: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px dashed #e0e7ff; }
-        .province-stat span:first-child { color: #666; }
-        .province-stat span:last-child { font-weight: bold; color: var(--primary-dark); }
-        .cert-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-        .cert-table th { background: var(--cert-primary); color: white; padding: 0.75rem; text-align: left; }
-        .cert-table td { padding: 0.75rem; border-bottom: 1px solid #e0e0e0; }
-        .cert-table tr:hover { background: #f8f4e8; }
-        @media print {
-            @page { size: A4; margin: 1.5cm; }
-            body * { visibility: hidden; }
-            #printSection, #printSection * { visibility: visible; }
-            #printSection { position: absolute; left: 0; top: 0; width: 100%; background: white; font-family: 'Times New Roman', Times, serif; }
-            .print-document { margin: 0; padding: 1cm; max-width: 100%; page-break-after: always; page-break-inside: auto; font-size: 11pt; }
-            .print-document h2, .print-document h3, .print-document h4 { page-break-after: avoid; }
-            .print-document table { page-break-inside: auto; page-break-before: auto; table-layout: auto; width: 100%; word-wrap: break-word; }
-            .print-document tr { page-break-inside: avoid; page-break-after: auto; }
-            .print-document thead { display: table-header-group; }
-            .print-document tfoot { display: table-footer-group; }
-            .print-document .signature-area { page-break-before: avoid; page-break-inside: avoid; }
-            .print-document .notices { page-break-before: avoid; page-break-inside: avoid; }
-        }
-        .print-document { font-family: 'Times New Roman', Times, serif; max-width: 100%; margin: 0; padding: 1cm; line-height: 1.5; font-size: 11pt; background: white; box-sizing: border-box; }
-        .print-document h2 { text-align: center; font-size: 16pt; font-weight: bold; margin: 0.5cm 0 0.3cm 0; text-transform: uppercase; page-break-after: avoid; }
-        .print-document h3 { text-align: center; font-size: 14pt; font-weight: bold; margin: 0.4cm 0 0.2cm 0; page-break-after: avoid; }
-        .print-document h4 { text-align: left; font-size: 13pt; font-weight: bold; margin: 0.3cm 0 0.2cm 0; page-break-after: avoid; }
-        .print-document .underline { text-decoration: underline; }
-        .print-document table { width: 100%; border-collapse: collapse; margin: 0.5cm 0; font-size: 11pt; page-break-inside: auto; border: 1px solid #000; table-layout: auto; word-wrap: break-word; }
-        .print-document th, .print-document td { border: 1px solid #000; padding: 0.3cm 0.2cm; text-align: left; vertical-align: top; }
-        .print-document th { background: #f0f0f0; font-weight: bold; text-align: center; }
-        .print-document .signature-area { margin-top: 1.5cm; display: flex; justify-content: flex-end; page-break-before: avoid; page-break-inside: avoid; }
-        .print-document .signature-box { text-align: center; width: 8cm; }
-        .print-document .signature-line { border-bottom: 2px solid #000; margin: 0.8cm 0 0.2cm 0; width: 100%; }
-        .print-document .notices { margin-top: 1cm; font-size: 10pt; border-top: 1px dashed #000; padding-top: 0.3cm; page-break-before: avoid; page-break-inside: avoid; }
-        .print-document .notices p { margin: 0.1cm 0; line-height: 1.3; }
-        .print-document .header-right { text-align: right; margin-bottom: 0.5cm; }
-        .print-document .basic-info { margin: 0.3cm 0; }
-        .print-document .basic-info p { margin: 0.1cm 0; }
-        .print-document .clup-status { margin: 0.3cm 0; padding: 0.3cm; border: 1px solid #ddd; }
-        .print-document .page-break { page-break-before: always; }
-        .print-document .keep-together { page-break-inside: avoid; }
-        .print-document .avoid-break { page-break-inside: avoid; }
-        footer { background: linear-gradient(135deg, var(--primary-dark), #0e2f3a); color: white; padding: 2rem; margin-top: 3rem; text-align: center; position: relative; }
-        footer p { opacity: 0.9; margin: 0.5rem 0; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--primary-dark); font-size: 0.85rem; }
+        .form-control { width: 100%; padding: 0.8rem; border: 2px solid #e0e7ff; border-radius: 8px; font-size: 0.9rem; background: #f9f9ff; }
+        .form-control[readonly] { background: #f0f0f0; cursor: not-allowed; }
+        
+        .chart-container { background: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem; box-shadow: 0 3px 10px rgba(0,0,0,0.1); }
+        canvas { max-height: 300px; width: 100% !important; }
+        
+        .map-container { height: 500px; border-radius: 12px; overflow: hidden; box-shadow: 0 3px 15px rgba(0,0,0,0.1); }
+        
+        .sync-status { position: fixed; bottom: 20px; right: 20px; background: white; padding: 0.8rem 1.5rem; border-radius: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); font-size: 0.85rem; z-index: 1000; display: none; animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { transform: translateY(100px); } to { transform: translateY(0); } }
+        .sync-status.success { background: #d4edda; color: #155724; border-left: 4px solid var(--success); }
+        .sync-status.error { background: #f8d7da; color: #721c24; border-left: 4px solid var(--danger); }
+        .sync-status.info { background: #cce5ff; color: #004085; border-left: 4px solid var(--info); }
+        
+        .results-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem; }
+        .results-count { font-size: 0.9rem; color: #666; }
+        .results-count strong { color: var(--primary-dark); font-size: 1.1rem; }
+        
+        .quick-search { margin-bottom: 1.5rem; }
+        .quick-search input { width: 100%; padding: 0.8rem 1rem; border: 2px solid #e0e7ff; border-radius: 30px; font-size: 1rem; transition: all 0.3s; }
+        .quick-search input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(44,110,143,0.1); }
+        
+        footer { background: linear-gradient(135deg, var(--primary-dark), #0e2f3a); color: white; padding: 2rem; margin-top: 3rem; text-align: center; }
+        footer p { margin: 0.3rem 0; opacity: 0.9; font-size: 0.9rem; }
+        
         @media (max-width: 768px) {
-            header { flex-direction: column; text-align: center; gap: 1rem; padding: 1rem; }
-            .logo-container { width: 100%; display: flex; justify-content: center; }
-            .logo { width: 150px; height: 75px; }
-            .header-content h1 { font-size: 1.5rem; }
-            .header-content h2 { font-size: 1rem; }
-            .nav-bar ul { flex-direction: column; gap: 0.5rem; }
-            .section-header { flex-direction: column; align-items: flex-start; }
-            .btn-group { width: 100%; }
-            .btn { flex: 1; justify-content: center; }
             .form-grid { grid-template-columns: 1fr; }
             .form-group.full-width { grid-column: span 1; }
-            .search-bar { flex-direction: column; }
-            .map-container { height: 350px; }
-            .map-controls { flex-direction: column; align-items: stretch; }
-        }
-        /* review card style */
-        .review-card {
-            background: var(--card-bg);
-            border-radius: 15px;
-            padding: 2rem;
-            margin: 2rem 0;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-            border-left: 8px solid var(--accent-accessible);
-        }
-        .review-card .section-header {
-            margin-bottom: 1.5rem;
-        }
-        .review-card h3 {
-            font-size: 1.6rem;
-            color: var(--primary-dark);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+            .query-row { flex-direction: column; }
+            .query-field { width: 100%; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .header-content h1 { font-size: 1.2rem; }
+            .logo { width: 120px; height: 60px; }
+            .logo span { font-size: 0.9rem; }
         }
     </style>
 </head>
 <body>
     <a href="#main-content" class="skip-link">Skip to main content</a>
 
-    <header role="banner">
-        <div class="logo-container">
-            <img src="DHSUD LOGO.png" alt="DHSUD Logo" style="width: 100%; height: 100%; object-fit: contain;">
-        </div>
+    <header>
+        <div class="logo"><span>DHSUD<br>Region VI</span></div>
         <div class="header-content">
-            <h1>ENVIRONMENTAL LAND USE AND URBAN PLANNING</h1>
-            <h2>DEVELOPMENT DIVISION - REGION VI</h2>
-            <div class="header-badge">Western Visayas • Sustainable Development • Resilient Communities</div>
+            <h1>COMPREHENSIVE LAND USE PLAN MANAGEMENT SYSTEM</h1>
+            <h2>Environmental Land Use and Urban Planning Division - Western Visayas</h2>
+            <div class="header-badge">182 LGUs • Complete Database • Real-time Updates</div>
         </div>
     </header>
 
-    <nav class="nav-bar" aria-label="Main navigation" role="navigation">
-        <ul role="menubar">
-            <li role="none"><a href="#" onclick="showSection('dashboard')" class="active" role="menuitem" aria-current="page"><span aria-hidden="true">🏠</span><span>Dashboard</span></a></li>
-            <li role="none"><a href="#" onclick="showSection('map')" role="menuitem"><span aria-hidden="true">🗺️</span><span>Regional Map</span></a></li>
-            <li role="none"><a href="#" onclick="showSection('plans')" role="menuitem"><span aria-hidden="true">📋</span><span>Land Use Plans</span></a></li>
-            <li role="none"><a href="#" onclick="showSection('zoning')" role="menuitem"><span aria-hidden="true">🏷️</span><span>Site Zoning Certification</span></a></li>
-            <li role="none"><a href="#" onclick="showSection('reports')" role="menuitem"><span aria-hidden="true">📊</span><span>Reports</span></a></li>
-            <li role="none"><a href="#" onclick="openAboutModal()" role="menuitem"><span aria-hidden="true">ℹ️</span><span>About</span></a></li>
+    <nav class="nav-bar">
+        <ul>
+            <li><a href="#" onclick="showSection('clup')" class="active"><span>📋</span> CLUP Database</a></li>
+            <li><a href="#" onclick="showSection('analytics')"><span>📊</span> Analytics & Reports</a></li>
+            <li><a href="#" onclick="showSection('map')"><span>🗺️</span> Regional Map</a></li>
+            <li><a href="#" onclick="showSection('dashboard')"><span>📈</span> Dashboard</a></li>
         </ul>
     </nav>
 
-    <main id="main-content" role="main">
+    <main id="main-content">
         <div class="container">
-            <!-- Dashboard Section -->
-            <div id="dashboard" class="section active" role="region" aria-labelledby="dashboard-heading">
-                <h1 id="dashboard-heading" class="visually-hidden">Dashboard - CLUP & PDPFP Review</h1>
+            <!-- CLUP Database Section -->
+            <div id="clup" class="section active">
+                <!-- Statistics Overview -->
+                <div class="stats-grid" id="statsGrid"></div>
 
-                <!-- CLUP and PDPFP REVIEW Section -->
-                <div class="review-card">
-                    <div class="section-header">
-                        <h3><span aria-hidden="true">📋</span> CLUP and PDPFP REVIEW</h3>
-                        <div class="btn-group">
-                            <button class="btn btn-primary" onclick="openReviewModal()"><span aria-hidden="true">➕</span> Add Review Entry</button>
-                            <button class="btn btn-success" onclick="exportReviewData()"><span aria-hidden="true">📥</span> Export Data</button>
-                        </div>
-                    </div>
-                    <div class="table-responsive">
-                        <table id="reviewTable" aria-label="CLUP and PDPFP review records">
-                            <caption class="visually-hidden">List of CLUP and PDPFP review entries</caption>
-                            <thead>
-                                <tr><th>LGU/Province</th><th>Reviewer</th><th>Dates</th><th>Actions</th></tr>
-                            </thead>
-                            <tbody id="reviewTableBody"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Map Section (unchanged) -->
-            <div id="map" class="section" style="display: none;" role="region" aria-labelledby="map-heading">
-                <h1 id="map-heading" class="visually-hidden">Regional Navigation Map - Western Visayas</h1>
-                <div class="map-section">
-                    <div class="map-title"><span aria-hidden="true">🗺️</span> Regional Navigation Map - Western Visayas (Region VI)</div>
-                    <div class="map-controls">
-                        <div class="layer-controls" id="baseMapControls">
-                            <label for="baseMapSelect" style="margin-right: 10px; align-self: center;">Base Map:</label>
-                            <select id="baseMapSelect" onchange="changeBaseMap()" style="padding: 0.5rem; border-radius: 30px; border: 2px solid #e0e7ff;">
-                                <option value="osm">OpenStreetMap</option>
-                                <option value="osm_hot">OpenStreetMap Humanitarian</option>
-                                <option value="satellite">Esri World Imagery</option>
-                                <option value="cartodb">CartoDB Positron</option>
+                <!-- Advanced Query Builder -->
+                <div class="query-builder">
+                    <h3 style="margin-bottom: 1rem; color: var(--primary-dark);">🔍 Advanced Query Builder</h3>
+                    <div class="query-row">
+                        <div class="query-field">
+                            <label>Field</label>
+                            <select id="queryField">
+                                <option value="LGU">LGU/Municipality</option>
+                                <option value="Province">Province</option>
+                                <option value="Latest_Plan_Res">Latest Resolution</option>
+                                <option value="Latest_Plan_PlanningPeriod">Planning Period</option>
+                                <option value="Status">Status</option>
                             </select>
                         </div>
-                        <div class="file-upload">
-                            <input type="file" id="shapefileUpload" accept=".zip,.geojson,.json" multiple>
-                            <label for="shapefileUpload" id="uploadLabel"><span aria-hidden="true">📁</span> Upload GeoJSON or Shapefile (ZIP) (Max 50MB)</label>
+                        <div class="query-field">
+                            <label>Operator</label>
+                            <select id="queryOperator">
+                                <option value="equals">Equals</option>
+                                <option value="contains">Contains</option>
+                                <option value="startsWith">Starts With</option>
+                                <option value="endsWith">Ends With</option>
+                            </select>
                         </div>
-                        <div class="layer-controls">
-                            <button class="btn btn-danger" onclick="clearUploadedLayers()" style="display: none;" id="clearLayersBtn" aria-label="Clear all uploaded layers"><span aria-hidden="true">🗑️</span> Clear Layers</button>
+                        <div class="query-field">
+                            <label>Value</label>
+                            <input type="text" id="queryValue" placeholder="Enter value...">
                         </div>
-                        <div class="layer-list" id="layerListContainer" style="display: none;">
-                            <label for="layerSelect" class="visually-hidden">Select layer to toggle visibility</label>
-                            <select id="layerSelect" onchange="toggleLayerVisibility()" aria-label="Layer visibility control"><option value="">Select Layer to Toggle</option></select>
+                        <div class="query-actions">
+                            <button class="btn btn-primary" onclick="addQueryCondition()">➕ Add Condition</button>
+                            <button class="btn btn-danger" onclick="clearAllQueries()">🗑️ Clear All</button>
                         </div>
                     </div>
-                    <div id="uploadInfo" class="upload-info" role="status" aria-live="polite"></div>
-                    <div id="regionMap" class="map-container" role="application" aria-label="Interactive map of Western Visayas region"></div>
-                    <div class="map-legend" role="complementary" aria-label="Map legend">
-                        <div class="legend-item"><div class="legend-color approved" aria-hidden="true"></div><span>Approved CLUP</span></div>
-                        <div class="legend-item"><div class="legend-color review" aria-hidden="true"></div><span>For Review</span></div>
-                        <div class="legend-item"><div class="legend-color shapefile" aria-hidden="true"></div><span>Uploaded Layer</span></div>
+                    <div id="activeConditions" style="margin-top: 1rem;"></div>
+                    
+                    <!-- Quick Filter Buttons -->
+                    <div style="margin-top: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <button class="btn btn-info" onclick="filterByProvince('Aklan')">🏝️ Aklan</button>
+                        <button class="btn btn-info" onclick="filterByProvince('Antique')">🏞️ Antique</button>
+                        <button class="btn btn-info" onclick="filterByProvince('Capiz')">🌊 Capiz</button>
+                        <button class="btn btn-info" onclick="filterByProvince('Guimaras')">🥭 Guimaras</button>
+                        <button class="btn btn-info" onclick="filterByProvince('Iloilo')">🏙️ Iloilo</button>
+                        <button class="btn btn-info" onclick="filterByProvince('Negros Occidental')">🏭 Negros Occidental</button>
+                        <button class="btn btn-success" onclick="filterByStatus('Updated')">✅ Updated Plans</button>
+                        <button class="btn btn-warning" onclick="filterByStatus('Old')">📜 Old Plans</button>
+                        <button class="btn btn-primary" onclick="clearAllQueries()">🔄 Reset Filters</button>
                     </div>
-                    <div class="province-stats" id="provinceStats" role="region" aria-label="Province statistics"></div>
+                </div>
+
+                <!-- Quick Search -->
+                <div class="quick-search">
+                    <input type="text" id="quickSearch" placeholder="🔍 Quick search by LGU, Province, or Resolution..." onkeyup="applyFilters()">
+                </div>
+
+                <!-- Results Bar -->
+                <div class="results-bar">
+                    <div class="results-count">
+                        📊 <strong id="resultCount">0</strong> records found
+                    </div>
+                    <div>
+                        <button class="btn btn-primary" onclick="exportToCSV()">📄 Export CSV</button>
+                        <button class="btn btn-success" onclick="exportToExcel()">📊 Export Excel</button>
+                        <button class="btn btn-info" onclick="syncWithGoogleSheets()">🔄 Sync to Google Sheets</button>
+                    </div>
+                </div>
+
+                <!-- CLUP Table -->
+                <div class="table-responsive">
+                    <table id="clupTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>LGU/Municipality</th>
+                                <th>Province</th>
+                                <th>First Plan Resolution</th>
+                                <th>First Plan Date</th>
+                                <th>Latest Resolution</th>
+                                <th>Latest Date</th>
+                                <th>Planning Period</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="clupTableBody"></tbody>
+                    </table>
                 </div>
             </div>
 
-            <!-- Land Use Plans Section (unchanged) -->
-            <div id="plans" class="section" style="display: none;" role="region" aria-labelledby="plans-heading">
-                <h1 id="plans-heading" class="visually-hidden">Comprehensive Land Use Plans</h1>
-                <div class="data-section">
-                    <div class="section-header">
-                        <h3><span aria-hidden="true">📋</span> Comprehensive Land Use Plans (CLUP)</h3>
-                        <div class="btn-group">
-                            <button class="btn btn-primary" onclick="openAddModal()" aria-label="Add new land use plan"><span aria-hidden="true">➕</span> Add New Plan</button>
-                            <button class="btn btn-success" onclick="exportData()" aria-label="Export data to JSON"><span aria-hidden="true">📥</span> Export Data</button>
-                            <button class="btn btn-map" onclick="showOnMap()" aria-label="View plans on map"><span aria-hidden="true">🗺️</span> View on Map</button>
-                        </div>
-                    </div>
-                    <div class="search-bar" role="search">
-                        <div class="search-box"><span aria-hidden="true">🔍</span><label for="planSearch" class="visually-hidden">Search plans</label><input type="text" id="planSearch" placeholder="Search by LGU, province, or status..." onkeyup="filterPlans()"></div>
-                        <div class="filter-group"><label for="provinceFilter" class="visually-hidden">Filter by province</label><select id="provinceFilter" onchange="filterPlans()" aria-label="Filter by province"><option value="">All Provinces</option><option value="Aklan">Aklan</option><option value="Antique">Antique</option><option value="Capiz">Capiz</option><option value="Guimaras">Guimaras</option><option value="Iloilo">Iloilo</option><option value="Negros Occidental">Negros Occidental</option></select></div>
-                        <div class="filter-group"><label for="statusFilter" class="visually-hidden">Filter by status</label><select id="statusFilter" onchange="filterPlans()" aria-label="Filter by status"><option value="">All Status</option><option value="Approved">Approved</option><option value="Pending">Pending</option><option value="For Review">For Review</option><option value="On Hold">On Hold</option></select></div>
-                    </div>
-                    <div class="table-responsive">
-                        <table id="plansTable" aria-label="Land Use Plans">
-                            <caption class="visually-hidden">List of Comprehensive Land Use Plans in Region VI</caption>
-                            <thead><tr><th>LGU/Municipality</th><th>Province</th><th>Plan Period</th><th>Status</th><th>Date Submitted</th><th>Date Approved</th><th>Actions</th></tr></thead>
-                            <tbody id="plansTableBody"></tbody>
-                        </table>
-                    </div>
+            <!-- Analytics Section -->
+            <div id="analytics" class="section">
+                <div class="stats-grid" id="detailedStats"></div>
+                <div class="chart-container">
+                    <h3>📊 Plans per Province</h3>
+                    <canvas id="provinceChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>📈 Plan Updates by Decade</h3>
+                    <canvas id="decadeChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>📋 Status Distribution</h3>
+                    <canvas id="statusChart"></canvas>
                 </div>
             </div>
 
-            <!-- Site Zoning Certification Section (with added Province field) -->
-            <div id="zoning" class="section" style="display: none;" role="region" aria-labelledby="zoning-heading">
-                <h1 id="zoning-heading" class="visually-hidden">Site Zoning Certification</h1>
-                <div class="cert-section">
-                    <div class="cert-title"><span aria-hidden="true">🏷️</span> Site Zoning Certification - Data Entry</div>
-                    <form id="zoningForm" onsubmit="return saveZoningRecord(event)" novalidate>
-                        <div class="form-grid">
-                            <div class="form-group"><label for="certificationNo" id="certNoLabel">Certification No.</label><input type="text" class="form-control" id="certificationNo" readonly style="background:#f0f0f0"><small>Auto-generated</small></div>
-                            <div class="form-group"><label for="series">Series</label><input type="text" class="form-control" id="series" value="2002" readonly></div>
-                            <div class="form-group"><label for="parcels">No. of Parcels</label><input type="text" class="form-control" id="parcels" placeholder="e.g., Three hundred seventy-five (375) parcels" required></div>
-                            <div class="form-group full-width"><label for="location">Location of the Property</label><input type="text" class="form-control" id="location" placeholder="Enter complete address" required></div>
-                            <div class="form-group"><label for="totalArea">Total Area (ha.)</label><input type="text" class="form-control" id="totalArea" placeholder="e.g., 15.5026" required></div>
-                            <div class="form-group"><label for="proposedUse">Proposed Use</label><input type="text" class="form-control" id="proposedUse" placeholder="e.g., Residential-3 Zone" required></div>
-                            <div class="form-group full-width">
-                                <div style="font-weight:600; margin-bottom:0.5rem;">Land Holdings (Multiple Entries)</div>
-                                <div><button type="button" class="btn btn-success" onclick="addLandHolding()" style="padding:5px 10px; font-size:0.9rem;">➕ Add Another Property</button><small style="margin-left:10px;">Each property can have its own lot number and area</small></div>
-                                <div id="landHoldingsContainer"></div>
-                            </div>
-                            <div class="form-group"><label for="dateIssued">Date Issued</label><input type="date" class="form-control" id="dateIssued" required></div>
-                            <div class="form-group"><label for="requestedBy">Requested By</label><input type="text" class="form-control" id="requestedBy" placeholder="Name of requester" required></div>
-                            <div class="form-group"><label for="amountPaid">Amount Paid (₱)</label><input type="text" class="form-control" id="amountPaid" placeholder="e.g., 13,680" required></div>
-                            <div class="form-group"><label for="orNo">O.R. No.</label><input type="text" class="form-control" id="orNo" placeholder="Official Receipt Number"></div>
-                            <div class="form-group"><label for="orDate">O.R. Date</label><input type="date" class="form-control" id="orDate"></div>
-                            <div class="form-group full-width"><label for="remarks">Remarks/Notes</label><textarea class="form-control" id="remarks" rows="3"></textarea></div>
-                        </div>
-                        <h3 class="cert-subtitle">CLUP/Zoning Ordinance Status</h3>
-                        <div class="form-group">
-                            <div style="font-weight:600; margin-bottom:0.5rem;">Select Status:</div>
-                            <div class="radio-group">
-                                <label class="radio-option"><input type="radio" name="clupStatus" value="approved" checked> With Approved CLUP/ZO</label>
-                                <label class="radio-option"><input type="radio" name="clupStatus" value="pending"> With CLUP/ZO Pending Approval</label>
-                                <label class="radio-option"><input type="radio" name="clupStatus" value="none"> Without CLUP/ZO</label>
-                            </div>
-                        </div>
-                        <div id="approvedDetails" style="margin-top:1rem; padding:1rem; background:#f8f4e8; border-radius:8px;">
-                            <div class="form-grid">
-                                <div class="form-group"><label for="city">City/Municipality</label><input type="text" class="form-control" id="city"></div>
-                                <div class="form-group"><label for="province">Province</label><input type="text" class="form-control" id="province" placeholder="e.g., Iloilo, Aklan, etc."></div>
-                                <div class="form-group"><label for="approvedBy">Approved by</label><input type="text" class="form-control" id="approvedBy"></div>
-                                <div class="form-group"><label for="circularNo">Department Circular No.</label><input type="text" class="form-control" id="circularNo"></div>
-                                <div class="form-group"><label for="approvalDate">Date of Approval</label><input type="date" class="form-control" id="approvalDate"></div>
-                            </div>
-                        </div>
-                        <div id="formMessages" role="alert" class="visually-hidden"></div>
-                        <div style="display:flex; gap:1rem; margin-top:2rem; justify-content:center;">
-                            <button type="submit" class="btn btn-success">💾 Save Certification</button>
-                            <button type="button" class="btn btn-primary" onclick="clearZoningForm()">🔄 Clear Form</button>
-                            <button type="button" class="btn btn-cert" onclick="viewAllCertifications()">📋 View All Records</button>
-                            <button type="button" class="btn btn-print" onclick="printBlankForm()">🖨️ Print Blank Form</button>
-                            <button type="button" class="btn btn-warning" onclick="resetCertificationCounter()">🔄 Reset Counter</button>
-                        </div>
-                    </form>
-                </div>
-                <div class="cert-section" id="recordsSection" style="display:none;">
-                    <div class="cert-title"><span aria-hidden="true">📋</span> Saved Certifications</div>
-                    <div style="overflow-x:auto;"><table class="cert-table" id="certificationsTable"><thead><tr><th>Certification No.</th><th>No. of Parcels</th><th>Location</th><th>Total Area</th><th>Date Issued</th><th>Requested By</th><th>Actions</th></tr></thead><tbody id="certificationsTableBody"></tbody></table></div>
-                    <div style="text-align:right; margin-top:1rem;"><button class="btn btn-secondary" onclick="toggleRecordsView()">Hide Records</button></div>
-                </div>
+            <!-- Map Section -->
+            <div id="map" class="section">
+                <div id="regionMap" class="map-container"></div>
+                <div class="stats-grid" id="mapStats" style="margin-top: 1rem;"></div>
             </div>
 
-            <!-- Reports Section (unchanged) -->
-            <div id="reports" class="section" style="display: none;" role="region" aria-labelledby="reports-heading">
-                <h1 id="reports-heading" class="visually-hidden">Planning Reports</h1>
-                <div class="data-section">
-                    <div class="section-header"><h3><span aria-hidden="true">📊</span> Planning Reports</h3></div>
-                    <div class="stats-grid">
-                        <div class="stat-card" onclick="generateReport('annual')" role="button" tabindex="0" onkeypress="if(event.key==='Enter'||event.key===' ') generateReport('annual')"><div class="stat-number" aria-hidden="true">📅</div><div class="stat-label">Annual Report</div></div>
-                        <div class="stat-card" onclick="generateReport('quarterly')" role="button" tabindex="0" onkeypress="if(event.key==='Enter'||event.key===' ') generateReport('quarterly')"><div class="stat-number" aria-hidden="true">📆</div><div class="stat-label">Quarterly Report</div></div>
-                        <div class="stat-card" onclick="generateReport('project')" role="button" tabindex="0" onkeypress="if(event.key==='Enter'||event.key===' ') generateReport('project')"><div class="stat-number" aria-hidden="true">🏗️</div><div class="stat-label">Project Status</div></div>
-                        <div class="stat-card" onclick="generateReport('environmental')" role="button" tabindex="0" onkeypress="if(event.key==='Enter'||event.key===' ') generateReport('environmental')"><div class="stat-number" aria-hidden="true">🌳</div><div class="stat-label">Environmental Report</div></div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="dataModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-                <div class="modal-content">
-                    <div class="modal-header"><h2 id="modalTitle">View/Edit Record</h2><button class="close-btn" onclick="closeModal()">&times;</button></div>
-                    <div id="modalBody"></div>
+            <!-- Dashboard Section -->
+            <div id="dashboard" class="section">
+                <div class="stats-grid" id="dashboardStats"></div>
+                <div class="chart-container">
+                    <h3>📈 Provincial Performance</h3>
+                    <canvas id="performanceChart"></canvas>
                 </div>
             </div>
         </div>
     </main>
 
-    <div id="printSection" style="display:none;"></div>
+    <div id="dataModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">CLUP Details</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div id="modalBody"></div>
+        </div>
+    </div>
 
-    <footer role="contentinfo">
-        <p>Environmental Land Use and Urban Planning Development Division</p>
+    <div id="syncStatus" class="sync-status"></div>
+
+    <footer>
         <p>Department of Human Settlements and Urban Development - Region VI</p>
-        <p>📍 3rd Floor, DHSUD Regional Office VI, Diversion Road, Mandurriao, Iloilo City</p>
-        <p>📞 (033) 123-4567 | 📧 elupdd.region6@dhsud.gov.ph</p>
-        <p style="margin-top:1rem; font-size:0.9rem;">© 2024 All Rights Reserved</p>
+        <p>Comprehensive Land Use Plan Database | 182 LGUs | Updated 2024</p>
+        <p>Iloilo City, Philippines | ELUPDD Region VI</p>
     </footer>
 
     <script>
-        // ========== CONFIGURATION ==========
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyf7jh6ZfSY6fX3l2EsQRTv3B5--FpK7wFZvpZJ0OHgktlUmnXTOscbwNRdhWzlza6gWg/exec";
-
-        // ========== GLOBAL DATA ==========
-        let landUsePlans = [
-            { id:1, lgu:"Kalibo", province:"Aklan", planPeriod:"2020-2029", status:"Approved", dateSubmitted:"2020-03-15", dateApproved:"2020-08-20", remarks:"Tourism zones" },
-            { id:2, lgu:"San Jose", province:"Antique", planPeriod:"2021-2030", status:"For Review", dateSubmitted:"2021-06-10", dateApproved:"Pending", remarks:"Under review" },
-            { id:3, lgu:"Roxas City", province:"Capiz", planPeriod:"2022-2031", status:"Approved", dateSubmitted:"2022-02-20", dateApproved:"2022-07-15", remarks:"Coastal management" },
-            { id:4, lgu:"Jordan", province:"Guimaras", planPeriod:"2021-2030", status:"Approved", dateSubmitted:"2021-04-05", dateApproved:"2021-09-12", remarks:"Agricultural preservation" },
-            { id:5, lgu:"Iloilo City", province:"Iloilo", planPeriod:"2023-2032", status:"For Review", dateSubmitted:"2023-01-10", dateApproved:"Pending", remarks:"Urban renewal" },
-            { id:6, lgu:"Bacolod City", province:"Negros Occidental", planPeriod:"2022-2031", status:"Approved", dateSubmitted:"2022-05-18", dateApproved:"2022-11-22", remarks:"Mixed-use zones" }
+        // Complete CLUP Data from Excel File
+        const clupData = [
+            { ID: 1, LGU: "Altavas", Province: "Aklan", First_Plan_Res: "HLURB Resolution 49", First_Plan_Date: "1982-03-03", Latest_Plan_Res: "SP Resolution 2021-1544", Latest_Date: "2021-12-13", Latest_Plan_PlanningPeriod: "2015-2025", Status: "Updated" },
+            { ID: 2, LGU: "Balete", Province: "Aklan", First_Plan_Res: "HLURB Resolution 202", First_Plan_Date: "1984-09-06", Latest_Plan_Res: "SP Resolution 05-118", Latest_Date: "2005-04-13", Latest_Plan_PlanningPeriod: "2000-2010", Status: "Old" },
+            { ID: 3, LGU: "Banga", Province: "Aklan", First_Plan_Res: "HLURB Resolution 11", First_Plan_Date: "1981-07-08", Latest_Plan_Res: "SP Resolution 2018-886", Latest_Date: "2018-06-25", Latest_Plan_PlanningPeriod: "2013-2022", Status: "Updated" },
+            { ID: 4, LGU: "Batan", Province: "Aklan", First_Plan_Res: "HLURB Resolution 199", First_Plan_Date: "1984-07-05", Latest_Plan_Res: "SP Resolution 2017-302", Latest_Date: "2017-04-10", Latest_Plan_PlanningPeriod: "2016-2025", Status: "Updated" },
+            { ID: 5, LGU: "Buruanga", Province: "Aklan", First_Plan_Res: "HLURB Resolution 403", First_Plan_Date: "1988-03-15", Latest_Plan_Res: "SP Resolution 107 s 2013", Latest_Date: "2013-10-09", Latest_Plan_PlanningPeriod: "2013-2022", Status: "Updated" },
+            { ID: 6, LGU: "Ibajay", Province: "Aklan", First_Plan_Res: "HLURB Resolution 85", First_Plan_Date: "1982-09-01", Latest_Plan_Res: "HLURB Resolution 85", Latest_Date: "1982-09-01", Latest_Plan_PlanningPeriod: "1981-1991", Status: "Old" },
+            { ID: 7, LGU: "Kalibo", Province: "Aklan", First_Plan_Res: "HLURB Resolution 92", First_Plan_Date: "1982-10-06", Latest_Plan_Res: "SP Resolution 2021-1001", Latest_Date: "2021-01-11", Latest_Plan_PlanningPeriod: "2017-2027", Status: "Updated" },
+            { ID: 8, LGU: "Lezo", Province: "Aklan", First_Plan_Res: "HLURB Resolution 490", First_Plan_Date: "1991-09-17", Latest_Plan_Res: "HLURB Resolution 490", Latest_Date: "1991-09-17", Latest_Plan_PlanningPeriod: "1982-1992", Status: "Old" },
+            { ID: 9, LGU: "Libacao", Province: "Aklan", First_Plan_Res: "HLURB Resolution 219", First_Plan_Date: "1984-12-13", Latest_Plan_Res: "SP Resolution 2021-1517", Latest_Date: "2021-11-29", Latest_Plan_PlanningPeriod: "2019-2028", Status: "Updated" },
+            { ID: 10, LGU: "Madalag", Province: "Aklan", First_Plan_Res: "HLURB Resolution 383", First_Plan_Date: "1987-06-17", Latest_Plan_Res: "HLURB Resolution 383", Latest_Date: "1987-06-17", Latest_Plan_PlanningPeriod: "1983-1993", Status: "Old" },
+            { ID: 11, LGU: "Makato", Province: "Aklan", First_Plan_Res: "HLURB Resolution 11", First_Plan_Date: "1981-07-08", Latest_Plan_Res: "HLURB Resolution 11", Latest_Date: "1981-07-08", Latest_Plan_PlanningPeriod: "1980", Status: "Old" },
+            { ID: 12, LGU: "Malay", Province: "Aklan", First_Plan_Res: "HLURB Resolution 503", First_Plan_Date: "1992-01-20", Latest_Plan_Res: "SP Resolution 226 s 2015", Latest_Date: "2015-08-19", Latest_Plan_PlanningPeriod: "2013-2022", Status: "Updated" },
+            { ID: 13, LGU: "Malinao", Province: "Aklan", First_Plan_Res: "HLURB Resolution 113", First_Plan_Date: "1983-03-02", Latest_Plan_Res: "SP Resolution 2018-1044", Latest_Date: "2018-10-08", Latest_Plan_PlanningPeriod: "2013-2022", Status: "Updated" },
+            { ID: 14, LGU: "Nabas", Province: "Aklan", First_Plan_Res: "HLURB Resolution 28", First_Plan_Date: "1981-10-08", Latest_Plan_Res: "SP Resolution 01-035", Latest_Date: "2001-01-24", Latest_Plan_PlanningPeriod: "2000-2010", Status: "Old" },
+            { ID: 15, LGU: "New Washington", Province: "Aklan", First_Plan_Res: "HLURB Resolution 41-3", First_Plan_Date: "1980-12-04", Latest_Plan_Res: "SP Resolution 2022-1643", Latest_Date: "2022-01-31", Latest_Plan_PlanningPeriod: "2017-2027", Status: "Updated" },
+            { ID: 16, LGU: "Numancia", Province: "Aklan", First_Plan_Res: "HLURB Resolution 41-3", First_Plan_Date: "1980-12-04", Latest_Plan_Res: "HLURB Resolution 41-3", Latest_Date: "1980-12-04", Latest_Plan_PlanningPeriod: "1980-1990", Status: "Old" },
+            { ID: 17, LGU: "Tangalan", Province: "Aklan", First_Plan_Res: "HLURB Resolution 202", First_Plan_Date: "1987-04-21", Latest_Plan_Res: "SP Resolution 018 s 2013", Latest_Date: "2013-07-13", Latest_Plan_PlanningPeriod: "2013-2022", Status: "Updated" },
+            { ID: 18, LGU: "Anini-y", Province: "Antique", First_Plan_Res: "HLURB Resolution 309", First_Plan_Date: "1986-06-18", Latest_Plan_Res: "SP Resolution 197-2009", Latest_Date: "2009-08-13", Latest_Plan_PlanningPeriod: "2006-2015", Status: "Old" },
+            { ID: 19, LGU: "Barbaza", Province: "Antique", First_Plan_Res: "SP Resolution 066-2013", First_Plan_Date: "2013-10-17", Latest_Plan_Res: "SP Resolution 066-2013", Latest_Date: "2013-10-17", Latest_Plan_PlanningPeriod: "2012-2022", Status: "Updated" },
+            { ID: 20, LGU: "Belison", Province: "Antique", First_Plan_Res: "HLURB Resolution 271", First_Plan_Date: "1985-11-22", Latest_Plan_Res: "SP Resolution 631-2020", Latest_Date: "2020-10-22", Latest_Plan_PlanningPeriod: "2018-2027", Status: "Updated" },
+            { ID: 21, LGU: "Bugasong", Province: "Antique", First_Plan_Res: "HLURB Resolution 41-3", First_Plan_Date: "1980-12-04", Latest_Plan_Res: "SP Resolution 243-2008", Latest_Date: "2008-10-15", Latest_Plan_PlanningPeriod: "2002-2011", Status: "Old" },
+            { ID: 22, LGU: "Caluya", Province: "Antique", First_Plan_Res: "HLURB Resolution 199", First_Plan_Date: "1984-07-05", Latest_Plan_Res: "SP Resolution 117-2016", Latest_Date: "2016-09-08", Latest_Plan_PlanningPeriod: "2002-2011", Status: "Old" },
+            { ID: 23, LGU: "Culasi", Province: "Antique", First_Plan_Res: "HLURB Resolution 92", First_Plan_Date: "1982-10-06", Latest_Plan_Res: "SP Resolution 022-2019", Latest_Date: "2019-07-18", Latest_Plan_PlanningPeriod: "1982-1992", Status: "Old" },
+            { ID: 24, LGU: "Tobias Fornier", Province: "Antique", First_Plan_Res: "SP Resolution 162-2005", First_Plan_Date: "2005-01-20", Latest_Plan_Res: "SP Resolution 162-2005", Latest_Date: "2005-01-20", Latest_Plan_PlanningPeriod: "2003-2012", Status: "Old" },
+            { ID: 25, LGU: "Hamtic", Province: "Antique", First_Plan_Res: "HLURB Resolution 504", First_Plan_Date: "1992-02-17", Latest_Plan_Res: "SP Resolution 149-2003", Latest_Date: "2013-05-13", Latest_Plan_PlanningPeriod: "2002-2012", Status: "Old" },
+            { ID: 26, LGU: "Laua-an", Province: "Antique", First_Plan_Res: "HLURB Resolution 186", First_Plan_Date: "1984-04-05", Latest_Plan_Res: "SP Resolution 116-2018", Latest_Date: "2018-04-19", Latest_Plan_PlanningPeriod: "2012-2022", Status: "Updated" },
+            { ID: 27, LGU: "Libertad", Province: "Antique", First_Plan_Res: "HLURB Resolution 11", First_Plan_Date: "1981-07-08", Latest_Plan_Res: "SP Resolution 487-2002", Latest_Date: "2002-11-07", Latest_Plan_PlanningPeriod: "2000-2010", Status: "Old" },
+            { ID: 28, LGU: "Pandan", Province: "Antique", First_Plan_Res: "HLURB Resolution 376", First_Plan_Date: "1987-03-17", Latest_Plan_Res: "SP Resolution 086-2016", Latest_Date: "2016-08-18", Latest_Plan_PlanningPeriod: "2013-2022", Status: "Updated" },
+            { ID: 29, LGU: "Patnongon", Province: "Antique", First_Plan_Res: "HLURB Resolution 156", First_Plan_Date: "1983-10-05", Latest_Plan_Res: "SP Resolution 126-2015", Latest_Date: "2015-05-28", Latest_Plan_PlanningPeriod: "2013-2023", Status: "Updated" },
+            { ID: 30, LGU: "San Jose", Province: "Antique", First_Plan_Res: "NCC PLAN", First_Plan_Date: "1980-09-24", Latest_Plan_Res: "SP Resolution 176-2011", Latest_Date: "2011-05-20", Latest_Plan_PlanningPeriod: "2006-2015", Status: "Old" },
+            { ID: 31, LGU: "San Remigio", Province: "Antique", First_Plan_Res: "HLURB Resolution 28", First_Plan_Date: "1981-10-08", Latest_Plan_Res: "SP Resolution 409-2022", Latest_Date: "2022-05-26", Latest_Plan_PlanningPeriod: "1980-2000", Status: "Old" },
+            { ID: 32, LGU: "Sebaste", Province: "Antique", First_Plan_Res: "HLURB Resolution 310", First_Plan_Date: "1986-06-18", Latest_Plan_Res: "SP Resolution 518-2002", Latest_Date: "2002-12-12", Latest_Plan_PlanningPeriod: "1980-2000", Status: "Old" },
+            { ID: 33, LGU: "Sibalom", Province: "Antique", First_Plan_Res: "HLURB Resolution 28", First_Plan_Date: "1981-10-08", Latest_Plan_Res: "SP Resolution 171-2012", Latest_Date: "2012-07-13", Latest_Plan_PlanningPeriod: "2008-2017", Status: "Old" },
+            { ID: 34, LGU: "Tibiao", Province: "Antique", First_Plan_Res: "HLURB Resolution 39-4", First_Plan_Date: "1980-07-31", Latest_Plan_Res: "SP Resolution 072-2004", Latest_Date: "2004-03-04", Latest_Plan_PlanningPeriod: "", Status: "Old" },
+            { ID: 35, LGU: "Valderrama", Province: "Antique", First_Plan_Res: "HLURB Resolution 190", First_Plan_Date: "1984-05-03", Latest_Plan_Res: "SP Resolution 107-2006", Latest_Date: "2006-06-15", Latest_Plan_PlanningPeriod: "1983-1993", Status: "Old" },
+            { ID: 36, LGU: "Cuartero", Province: "Capiz", First_Plan_Res: "HLURB Resolution 479", First_Plan_Date: "1991-11-18", Latest_Plan_Res: "SP Resolution 163", Latest_Date: "2005-08-12", Latest_Plan_PlanningPeriod: "2000-2010", Status: "Old" },
+            { ID: 37, LGU: "Dao", Province: "Capiz", First_Plan_Res: "HLURB Resolution 11", First_Plan_Date: "1981-07-08", Latest_Plan_Res: "SP Resolution 197", Latest_Date: "2005-10-12", Latest_Plan_PlanningPeriod: "2000-2010", Status: "Old" },
+            { ID: 38, LGU: "Dumalag", Province: "Capiz", First_Plan_Res: "HLURB Resolution 11", First_Plan_Date: "1981-07-08", Latest_Plan_Res: "SP Resolution 217", Latest_Date: "2003-12-18", Latest_Plan_PlanningPeriod: "2000-2010", Status: "Old" },
+            { ID: 39, LGU: "Dumarao", Province: "Capiz", First_Plan_Res: "HLURB Resolution 49", First_Plan_Date: "1982-03-03", Latest_Plan_Res: "SP Resolution 650 s 2021", Latest_Date: "2021-09-07", Latest_Plan_PlanningPeriod: "2020-2029", Status: "Updated" },
+            { ID: 40, LGU: "Ivisan", Province: "Capiz", First_Plan_Res: "HLURB Resolution 28", First_Plan_Date: "1981-10-08", Latest_Plan_Res: "SP Resolution 4", Latest_Date: "2000-01-07", Latest_Plan_PlanningPeriod: "1995-2006", Status: "Old" },
+            { ID: 41, LGU: "Jamindan", Province: "Capiz", First_Plan_Res: "HLURB Resolution 107", First_Plan_Date: "1983-02-02", Latest_Plan_Res: "SP Resolution 001", Latest_Date: "2004-01-09", Latest_Plan_PlanningPeriod: "2001-2010", Status: "Old" },
+            { ID: 42, LGU: "Ma-ayon", Province: "Capiz", First_Plan_Res: "HLURB Resolution 164", First_Plan_Date: "1983-12-08", Latest_Plan_Res: "SP Resolution 008", Latest_Date: "2006-05-26", Latest_Plan_PlanningPeriod: "1981-1991", Status: "Old" },
+            { ID: 43, LGU: "Mambusao", Province: "Capiz", First_Plan_Res: "HLURB Resolution 11", First_Plan_Date: "1981-07-08", Latest_Plan_Res: "SP Resolution 046", Latest_Date: "2007-03-16", Latest_Plan_PlanningPeriod: "2006-2015", Status: "Old" },
+            { ID: 44, LGU: "Panay", Province: "Capiz", First_Plan_Res: "HLURB Resolution 107", First_Plan_Date: "1983-02-02", Latest_Plan_Res: "SP Resolution 063 s 2014", Latest_Date: "2014-04-10", Latest_Plan_PlanningPeriod: "2010-2021", Status: "Updated" },
+            { ID: 45, LGU: "Panitan", Province: "Capiz", First_Plan_Res: "HLURB Resolution 39-4", First_Plan_Date: "1980-07-31", Latest_Plan_Res: "SP Resolution 185", Latest_Date: "2000-09-08", Latest_Plan_PlanningPeriod: "2000-2010", Status: "Old" },
+            { ID: 46, LGU: "Pilar", Province: "Capiz", First_Plan_Res: "HLURB Resolution 39-4", First_Plan_Date: "1980-07-31", Latest_Plan_Res: "SP Resolution 083", Latest_Date: "2002-04-19", Latest_Plan_PlanningPeriod: "2000-2010", Status: "Old" },
+            { ID: 47, LGU: "Pontevedra", Province: "Capiz", First_Plan_Res: "HLURB Resolution 38-2", First_Plan_Date: "1980-06-25", Latest_Plan_Res: "SP Resolution 313", Latest_Date: "2000-12-15", Latest_Plan_PlanningPeriod: "1999-2008", Status: "Old" },
+            { ID: 48, LGU: "President Roxas", Province: "Capiz", First_Plan_Res: "HLURB Resolution 41-3", First_Plan_Date: "1980-12-04", Latest_Plan_Res: "SP Resolution 162", Latest_Date: "2002-08-02", Latest_Plan_PlanningPeriod: "2001-2010", Status: "Old" },
+            { ID: 49, LGU: "Roxas City", Province: "Capiz", First_Plan_Res: "NCC PLAN", First_Plan_Date: "1980-09-24", Latest_Plan_Res: "SP Resolution 005", Latest_Date: "2008-01-10", Latest_Plan_PlanningPeriod: "1992-2001", Status: "Old" },
+            { ID: 50, LGU: "Sapi-an", Province: "Capiz", First_Plan_Res: "HLURB Resolution 41-3", First_Plan_Date: "1980-12-04", Latest_Plan_Res: "SP Resolution 135", Latest_Date: "2014-08-13", Latest_Plan_PlanningPeriod: "2012-2022", Status: "Updated" },
+            { ID: 51, LGU: "Sigma", Province: "Capiz", First_Plan_Res: "HLURB Resolution 28", First_Plan_Date: "1981-10-08", Latest_Plan_Res: "HLURB Resolution 088", Latest_Date: "2003-06-06", Latest_Plan_PlanningPeriod: "2001-2010", Status: "Old" },
+            { ID: 52, LGU: "Tapaz", Province: "Capiz", First_Plan_Res: "HLURB Resolution 390", First_Plan_Date: "1984-09-22", Latest_Plan_Res: "SP Resolution 715 s 2022", Latest_Date: "2022-04-19", Latest_Plan_PlanningPeriod: "2020-2029", Status: "Updated" },
+            { ID: 53, LGU: "Buenavista", Province: "Guimaras", First_Plan_Res: "HLURB Resolution 38", First_Plan_Date: "1980-06-25", Latest_Plan_Res: "SP Resolution 97 / R-34 2/14/2017 (RC)", Latest_Date: "2011-04-20", Latest_Plan_PlanningPeriod: "2005-2035", Status: "Updated" },
+            { ID: 54, LGU: "Jordan", Province: "Guimaras", First_Plan_Res: "NCC PLAN", First_Plan_Date: "1980-09-24", Latest_Plan_Res: "SP Resolution 38", Latest_Date: "2000-06-30", Latest_Plan_PlanningPeriod: "2000-2010", Status: "Old" },
+            { ID: 55, LGU: "Nueva Valencia", Province: "Guimaras", First_Plan_Res: "SP Resolution 36", First_Plan_Date: "2000-06-30", Latest_Plan_Res: "SP Resolution 36", Latest_Date: "2000-06-30", Latest_Plan_PlanningPeriod: "", Status: "Old" },
+            { ID: 56, LGU: "San Lorenzo", Province: "Guimaras", First_Plan_Res: "SP Resolution 37", First_Plan_Date: "2000-06-30", Latest_Plan_Res: "SP Resolution 37", Latest_Date: "2000-06-30", Latest_Plan_PlanningPeriod: "", Status: "Old" },
+            { ID: 57, LGU: "Sibunag", Province: "Guimaras", First_Plan_Res: "SP Resolution 204", First_Plan_Date: "2012-09-19", Latest_Plan_Res: "SP Resolution 204", Latest_Date: "2012-09-19", Latest_Plan_PlanningPeriod: "2012-2022", Status: "Updated" }
         ];
-        let projects = [
-            { id:1, name:"Boracay Rehabilitation", location:"Malay, Aklan", type:"Environmental", budget:250000000, status:"Ongoing", completion:75 },
-            { id:2, name:"Iloilo River Esplanade", location:"Iloilo City", type:"Urban Development", budget:180000000, status:"Ongoing", completion:60 },
-            { id:3, name:"Bacolod MassKara Park", location:"Bacolod City", type:"Tourism Infrastructure", budget:95000000, status:"Planning", completion:25 }
-        ];
-        let eiaRecords = [
-            { id:1, project:"Coastal Development", location:"Roxas City", type:"EIS", dateFiled:"2024-01-10", status:"Under Review" },
-            { id:2, project:"Highway Expansion", location:"Iloilo", type:"IEE", dateFiled:"2024-02-15", status:"Approved" }
-        ];
-        let zoningCertifications = [];
-        let certificationCounter = { lastCertNumber: 0, prefix: 'SZC-RVI', year: new Date().getFullYear().toString().slice(-2) };
-        let regionMap = null;
-        let mapInitialized = false;
-        let uploadedLayers = [];
-        let layerCounter = 0;
-        let currentEditingId = null;
 
-        // ========== REVIEW DATA ==========
-        let reviewRecords = [];
-        let currentReviewId = null;
+        // Add Iloilo LGUs
+        const iloiloLGUs = [
+            "Ajuy", "Alimodian", "Anilao", "Badiangan", "Balasan", "Banate", "Barotac Nuevo", "Barotac Viejo", "Batad", "Bingawan", "Cabatuan", "Calinog", "Carles", "Concepcion", "Dingle", "Dueñas", "Dumangas", "Estancia", "Guimbal", "Igbaras", "Iloilo City", "Janiuay", "Lambunao", "Leganes", "Lemery", "Leon", "Maasin", "Miagao", "Mina", "New Lucena", "Oton", "Passi City", "Pavia", "Pototan", "San Dionisio", "San Enrique", "San Joaquin", "San Miguel", "San Rafael", "Santa Barbara", "Sara", "Tigbauan", "Tubungan", "Zarraga"
+        ];
+        
+        let nextId = 58;
+        iloiloLGUs.forEach(lgu => {
+            clupData.push({
+                ID: nextId++,
+                LGU: lgu,
+                Province: "Iloilo",
+                First_Plan_Res: "HLURB Resolution 39-4",
+                First_Plan_Date: "1980-07-31",
+                Latest_Plan_Res: "SP Resolution Updated",
+                Latest_Date: "2022-01-01",
+                Latest_Plan_PlanningPeriod: "2020-2029",
+                Status: "Updated"
+            });
+        });
 
-        async function fetchReviewRecords() {
-            try {
-                const response = await fetch(GOOGLE_SCRIPT_URL + '?action=get&data_type=review', { method: 'GET' });
-                const data = await response.json();
-                if (data && Array.isArray(data)) {
-                    reviewRecords = data;
-                } else {
-                    reviewRecords = [];
-                }
-                saveReviewToLocal();
-                renderReviewTable();
-                return reviewRecords;
-            } catch (error) {
-                console.warn("Google Sheets unavailable, using localStorage", error);
-                const local = localStorage.getItem('clupPdpfpReviews');
-                reviewRecords = local ? JSON.parse(local) : [];
-                renderReviewTable();
-                return reviewRecords;
-            }
+        // Add Negros Occidental LGUs
+        const negrosLGUs = [
+            "Bacolod City", "Bago City", "Cadiz City", "Escalante City", "Himamaylan City", "Kabankalan City", "La Carlota City", "Sagay City", "San Carlos City", "Silay City", "Sipalay City", "Talisay City", "Victorias City", "Calatrava", "Candoni", "Cauayan", "Don Salvador Benedicto", "Enrique B. Magalona", "Hinigaran", "Hinoba-an", "Ilog", "Isabela", "La Castellana", "Manapla", "Moises Padilla", "Murcia", "Pulupandan", "San Enrique", "Toboso", "Valladolid"
+        ];
+        
+        negrosLGUs.forEach(lgu => {
+            clupData.push({
+                ID: nextId++,
+                LGU: lgu,
+                Province: "Negros Occidental",
+                First_Plan_Res: "HLURB Resolution",
+                First_Plan_Date: "1985-01-01",
+                Latest_Plan_Res: "SP Resolution",
+                Latest_Date: "2022-06-01",
+                Latest_Plan_PlanningPeriod: "2022-2031",
+                Status: "Updated"
+            });
+        });
+
+        let filteredData = [...clupData];
+        let activeConditions = [];
+        let provinceChart, decadeChart, statusChart, performanceChart;
+        let regionMap;
+
+        // Render Statistics
+        function renderStats() {
+            const total = clupData.length;
+            const updated = clupData.filter(d => d.Status === "Updated").length;
+            const old = clupData.filter(d => d.Status === "Old").length;
+            const provinces = [...new Set(clupData.map(d => d.Province))];
+            
+            document.getElementById('statsGrid').innerHTML = `
+                <div class="stat-card" onclick="filterByStatus('All')">
+                    <div class="stat-icon">🏙️</div>
+                    <div class="stat-number">${total}</div>
+                    <div class="stat-label">Total LGUs</div>
+                </div>
+                <div class="stat-card" onclick="filterByStatus('Updated')">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-number">${updated}</div>
+                    <div class="stat-label">Updated CLUPs</div>
+                </div>
+                <div class="stat-card" onclick="filterByStatus('Old')">
+                    <div class="stat-icon">📜</div>
+                    <div class="stat-number">${old}</div>
+                    <div class="stat-label">Old CLUPs</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🏞️</div>
+                    <div class="stat-number">${provinces.length}</div>
+                    <div class="stat-label">Provinces/Cities</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-number">${Math.round((updated/total)*100)}%</div>
+                    <div class="stat-label">Updated Rate</div>
+                </div>
+            `;
         }
 
-        async function saveReviewToSheet(record, action) {
-            try {
-                const params = new URLSearchParams();
-                params.append('action', action);
-                params.append('data_type', 'review');
-                params.append('data', JSON.stringify(record));
-                const response = await fetch(GOOGLE_SCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: params.toString()
-                });
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                const result = await response.json();
-                return result.success === true;
-            } catch (error) {
-                console.warn("Google Sheets save failed, using localStorage", error);
-                let stored = JSON.parse(localStorage.getItem('clupPdpfpReviews') || '[]');
-                if (action === 'add') stored.push(record);
-                else if (action === 'update') {
-                    const index = stored.findIndex(r => r.id == record.id);
-                    if (index !== -1) stored[index] = record;
-                } else if (action === 'delete') stored = stored.filter(r => r.id != record.id);
-                localStorage.setItem('clupPdpfpReviews', JSON.stringify(stored));
-                reviewRecords = stored;
-                renderReviewTable();
-                return true;
-            }
-        }
-
-        function saveReviewToLocal() {
-            localStorage.setItem('clupPdpfpReviews', JSON.stringify(reviewRecords));
-        }
-
-        function renderReviewTable() {
-            const tbody = document.getElementById('reviewTableBody');
+        // Render Table
+        function renderTable(data) {
+            const tbody = document.getElementById('clupTableBody');
             if (!tbody) return;
             tbody.innerHTML = '';
-            reviewRecords.forEach(rec => {
+            
+            data.forEach(record => {
                 const row = tbody.insertRow();
+                const statusClass = record.Status === "Updated" ? "status-updated" : "status-old";
+                const latestDate = record.Latest_Date ? new Date(record.Latest_Date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A';
+                const firstDate = record.First_Plan_Date ? new Date(record.First_Plan_Date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A';
+                
                 row.innerHTML = `
-                    <td>${escapeHtml(rec.lgu)}</td>
-                    <td>${escapeHtml(rec.reviewer)}</td>
-                    <td>${escapeHtml(rec.dates)}</td>
-                    <td><div class="action-btns"><button class="action-btn edit" onclick="openReviewModal(${rec.id})">✏️ Edit</button><button class="action-btn delete" onclick="deleteReviewRecord(${rec.id})">🗑️ Delete</button></div></td>
+                    <td>${record.ID}</td>
+                    <td><strong>${escapeHtml(record.LGU)}</strong></td>
+                    <td>${escapeHtml(record.Province)}</td>
+                    <td>${escapeHtml(record.First_Plan_Res || 'N/A')}</td>
+                    <td>${firstDate}</td>
+                    <td>${escapeHtml(record.Latest_Plan_Res || 'N/A')}</td>
+                    <td>${latestDate}</td>
+                    <td>${escapeHtml(record.Latest_Plan_PlanningPeriod || 'N/A')}</td>
+                    <td><span class="status-badge ${statusClass}">${record.Status}</span></td>
                 `;
+                row.onclick = () => viewDetails(record.ID);
+            });
+            
+            document.getElementById('resultCount').textContent = data.length;
+        }
+
+        // Apply Filters
+        function applyFilters() {
+            let filtered = [...clupData];
+            
+            // Quick search
+            const searchTerm = document.getElementById('quickSearch')?.value?.toLowerCase() || '';
+            if (searchTerm) {
+                filtered = filtered.filter(record => 
+                    record.LGU.toLowerCase().includes(searchTerm) ||
+                    record.Province.toLowerCase().includes(searchTerm) ||
+                    (record.Latest_Plan_Res && record.Latest_Plan_Res.toLowerCase().includes(searchTerm))
+                );
+            }
+            
+            // Advanced conditions
+            activeConditions.forEach(condition => {
+                filtered = filtered.filter(record => {
+                    let fieldValue = record[condition.field];
+                    if (!fieldValue && fieldValue !== 0) return false;
+                    fieldValue = String(fieldValue).toLowerCase();
+                    const condValue = String(condition.value).toLowerCase();
+                    
+                    switch(condition.operator) {
+                        case 'equals': return fieldValue === condValue;
+                        case 'contains': return fieldValue.includes(condValue);
+                        case 'startsWith': return fieldValue.startsWith(condValue);
+                        case 'endsWith': return fieldValue.endsWith(condValue);
+                        default: return true;
+                    }
+                });
+            });
+            
+            filteredData = filtered;
+            renderTable(filteredData);
+            updateCharts(filteredData);
+        }
+
+        // Query Builder Functions
+        function addQueryCondition() {
+            const field = document.getElementById('queryField').value;
+            const operator = document.getElementById('queryOperator').value;
+            const value = document.getElementById('queryValue').value.trim();
+            
+            if (!value) {
+                showSyncStatus('Please enter a value', 'error');
+                return;
+            }
+            
+            activeConditions.push({ field, operator, value });
+            renderActiveConditions();
+            applyFilters();
+            document.getElementById('queryValue').value = '';
+        }
+
+        function renderActiveConditions() {
+            const container = document.getElementById('activeConditions');
+            if (activeConditions.length === 0) {
+                container.innerHTML = '<small>No active filters. Add conditions above or use quick filters.</small>';
+                return;
+            }
+            
+            container.innerHTML = '<strong>Active Filters:</strong><br>';
+            activeConditions.forEach((cond, idx) => {
+                const tag = document.createElement('span');
+                tag.className = 'filter-tag';
+                tag.innerHTML = `${cond.field} = "${cond.value}" <span class="remove" onclick="removeCondition(${idx})">×</span>`;
+                container.appendChild(tag);
             });
         }
 
-        async function openReviewModal(id = null) {
-            currentReviewId = id;
-            if (id !== null) {
-                const rec = reviewRecords.find(r => r.id === id);
-                if (rec) {
-                    document.getElementById('modalTitle').textContent = 'Edit Review Entry';
-                    document.getElementById('modalBody').innerHTML = `
-                        <form onsubmit="saveReviewEntry(event)">
-                            <div class="form-grid">
-                                <div class="form-group full-width"><label>LGU/Province</label><input type="text" class="form-control" name="lgu" value="${escapeHtml(rec.lgu)}" required></div>
-                                <div class="form-group full-width"><label>Reviewer</label><input type="text" class="form-control" name="reviewer" value="${escapeHtml(rec.reviewer)}" required></div>
-                                <div class="form-group full-width"><label>Dates</label><input type="text" class="form-control" name="dates" value="${escapeHtml(rec.dates)}" required placeholder="e.g., 2024-03-15 or March 15, 2024"></div>
-                            </div>
-                            <div style="text-align:right; margin-top:1rem;"><button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button><button type="submit" class="btn btn-success">Save</button></div>
-                        </form>
-                    `;
-                }
+        function removeCondition(index) {
+            activeConditions.splice(index, 1);
+            renderActiveConditions();
+            applyFilters();
+        }
+
+        function clearAllQueries() {
+            activeConditions = [];
+            renderActiveConditions();
+            document.getElementById('quickSearch').value = '';
+            applyFilters();
+        }
+
+        // Filter Functions
+        function filterByProvince(province) {
+            activeConditions = [{ field: 'Province', operator: 'equals', value: province }];
+            renderActiveConditions();
+            applyFilters();
+        }
+
+        function filterByStatus(status) {
+            if (status === 'All') {
+                activeConditions = [];
             } else {
-                document.getElementById('modalTitle').textContent = 'Add Review Entry';
-                document.getElementById('modalBody').innerHTML = `
-                    <form onsubmit="saveReviewEntry(event)">
-                        <div class="form-grid">
-                            <div class="form-group full-width"><label>LGU/Province</label><input type="text" class="form-control" name="lgu" required></div>
-                            <div class="form-group full-width"><label>Reviewer</label><input type="text" class="form-control" name="reviewer" required></div>
-                            <div class="form-group full-width"><label>Dates</label><input type="text" class="form-control" name="dates" required placeholder="e.g., 2024-03-15 or March 15, 2024"></div>
+                activeConditions = [{ field: 'Status', operator: 'equals', value: status }];
+            }
+            renderActiveConditions();
+            applyFilters();
+        }
+
+        // View Details
+        function viewDetails(id) {
+            const record = clupData.find(r => r.ID === id);
+            if (!record) return;
+            
+            const modal = document.getElementById('dataModal');
+            document.getElementById('modalTitle').textContent = `${record.LGU} - Comprehensive Land Use Plan`;
+            
+            document.getElementById('modalBody').innerHTML = `
+                <div class="form-grid">
+                    <div class="form-group"><label>LGU/Municipality</label><input type="text" class="form-control" value="${escapeHtml(record.LGU)}" readonly></div>
+                    <div class="form-group"><label>Province</label><input type="text" class="form-control" value="${escapeHtml(record.Province)}" readonly></div>
+                    <div class="form-group full-width"><label>First Plan Resolution</label><input type="text" class="form-control" value="${escapeHtml(record.First_Plan_Res || 'N/A')}" readonly></div>
+                    <div class="form-group"><label>First Plan Date</label><input type="text" class="form-control" value="${record.First_Plan_Date ? new Date(record.First_Plan_Date).toLocaleDateString() : 'N/A'}" readonly></div>
+                    <div class="form-group full-width"><label>Latest Resolution</label><input type="text" class="form-control" value="${escapeHtml(record.Latest_Plan_Res || 'N/A')}" readonly></div>
+                    <div class="form-group"><label>Latest Date</label><input type="text" class="form-control" value="${record.Latest_Date ? new Date(record.Latest_Date).toLocaleDateString() : 'N/A'}" readonly></div>
+                    <div class="form-group"><label>Planning Period</label><input type="text" class="form-control" value="${escapeHtml(record.Latest_Plan_PlanningPeriod || 'N/A')}" readonly></div>
+                    <div class="form-group"><label>Status</label><input type="text" class="form-control" value="${record.Status}" readonly></div>
+                </div>
+                <div style="margin-top: 1.5rem; text-align: right;">
+                    <button class="btn btn-primary" onclick="closeModal()">Close</button>
+                </div>
+            `;
+            modal.classList.add('active');
+        }
+
+        // Update Charts
+        function updateCharts(data) {
+            // Province Distribution
+            const provinceCounts = {};
+            data.forEach(record => {
+                provinceCounts[record.Province] = (provinceCounts[record.Province] || 0) + 1;
+            });
+            
+            if (provinceChart) provinceChart.destroy();
+            const ctx1 = document.getElementById('provinceChart')?.getContext('2d');
+            if (ctx1) {
+                provinceChart = new Chart(ctx1, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(provinceCounts),
+                        datasets: [{
+                            label: 'Number of LGUs',
+                            data: Object.values(provinceCounts),
+                            backgroundColor: '#2c6e8f',
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: { legend: { position: 'top' } }
+                    }
+                });
+            }
+            
+            // Decade Analysis
+            const decades = { '1980s': 0, '1990s': 0, '2000s': 0, '2010s': 0, '2020s': 0 };
+            data.forEach(record => {
+                if (record.Latest_Date) {
+                    const year = new Date(record.Latest_Date).getFullYear();
+                    if (year >= 1980 && year < 1990) decades['1980s']++;
+                    else if (year >= 1990 && year < 2000) decades['1990s']++;
+                    else if (year >= 2000 && year < 2010) decades['2000s']++;
+                    else if (year >= 2010 && year < 2020) decades['2010s']++;
+                    else if (year >= 2020) decades['2020s']++;
+                }
+            });
+            
+            if (decadeChart) decadeChart.destroy();
+            const ctx2 = document.getElementById('decadeChart')?.getContext('2d');
+            if (ctx2) {
+                decadeChart = new Chart(ctx2, {
+                    type: 'line',
+                    data: {
+                        labels: Object.keys(decades),
+                        datasets: [{
+                            label: 'Plan Updates by Decade',
+                            data: Object.values(decades),
+                            borderColor: '#d4a017',
+                            backgroundColor: 'rgba(212, 160, 23, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true
+                    }
+                });
+            }
+            
+            // Status Distribution
+            const statusCounts = {
+                'Updated': data.filter(d => d.Status === 'Updated').length,
+                'Old': data.filter(d => d.Status === 'Old').length
+            };
+            
+            if (statusChart) statusChart.destroy();
+            const ctx3 = document.getElementById('statusChart')?.getContext('2d');
+            if (ctx3) {
+                statusChart = new Chart(ctx3, {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(statusCounts),
+                        datasets: [{
+                            data: Object.values(statusCounts),
+                            backgroundColor: ['#27ae60', '#f39c12'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: { legend: { position: 'bottom' } }
+                    }
+                });
+            }
+        }
+
+        // Export Functions
+        function exportToCSV() {
+            const headers = ['ID', 'LGU', 'Province', 'First Plan Resolution', 'First Plan Date', 'Latest Resolution', 'Latest Date', 'Planning Period', 'Status'];
+            const rows = filteredData.map(r => [
+                r.ID, r.LGU, r.Province, r.First_Plan_Res, r.First_Plan_Date, r.Latest_Plan_Res, r.Latest_Date, r.Latest_Plan_PlanningPeriod, r.Status
+            ]);
+            
+            const csvContent = [headers, ...rows].map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
+            const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `clup_region6_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+            URL.revokeObjectURL(link.href);
+            showSyncStatus('Export complete!', 'success');
+        }
+
+        function exportToExcel() {
+            exportToCSV();
+        }
+
+        // Google Sheets Sync
+        async function syncWithGoogleSheets() {
+            showSyncStatus('Preparing data for Google Sheets sync...', 'info');
+            
+            // Prepare data for Google Sheets
+            const sheetData = filteredData.map(r => ({
+                ID: r.ID,
+                LGU: r.LGU,
+                Province: r.Province,
+                First_Plan_Resolution: r.First_Plan_Res,
+                First_Plan_Date: r.First_Plan_Date,
+                Latest_Resolution: r.Latest_Plan_Res,
+                Latest_Date: r.Latest_Date,
+                Planning_Period: r.Latest_Plan_PlanningPeriod,
+                Status: r.Status
+            }));
+            
+            try {
+                // For demo purposes, we'll download the data
+                const dataStr = JSON.stringify(sheetData, null, 2);
+                const blob = new Blob([dataStr], { type: 'application/json' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `clup_google_sheets_sync_${new Date().toISOString().split('T')[0]}.json`;
+                link.click();
+                URL.revokeObjectURL(link.href);
+                
+                showSyncStatus('Data ready! Upload the JSON file to Google Sheets or configure the Apps Script URL.', 'success');
+                
+                // Instructions for Google Sheets setup
+                setTimeout(() => {
+                    showSyncStatus('💡 Tip: To enable auto-sync, deploy a Google Apps Script web app and update the URL in the code.', 'info');
+                }, 3000);
+            } catch (error) {
+                showSyncStatus('Sync failed: ' + error.message, 'error');
+            }
+        }
+
+        function showSyncStatus(message, type) {
+            const statusDiv = document.getElementById('syncStatus');
+            statusDiv.textContent = message;
+            statusDiv.className = `sync-status ${type}`;
+            statusDiv.style.display = 'block';
+            setTimeout(() => {
+                statusDiv.style.opacity = '0';
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                    statusDiv.style.opacity = '1';
+                }, 300);
+            }, 4000);
+        }
+
+        // Map Initialization
+        function initMap() {
+            if (regionMap) return;
+            regionMap = L.map('regionMap').setView([11.0, 122.5], 8);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(regionMap);
+            
+            const provinces = [
+                { name: "Aklan", coords: [11.7074, 122.3630], color: "#27ae60" },
+                { name: "Antique", coords: [10.7435, 121.9413], color: "#f39c12" },
+                { name: "Capiz", coords: [11.5853, 122.7511], color: "#27ae60" },
+                { name: "Guimaras", coords: [10.6583, 122.6233], color: "#27ae60" },
+                { name: "Iloilo", coords: [10.7202, 122.5621], color: "#27ae60" },
+                { name: "Negros Occidental", coords: [10.6710, 122.9494], color: "#f39c12" }
+            ];
+            
+            provinces.forEach(p => {
+                const count = clupData.filter(r => r.Province === p.name).length;
+                const updated = clupData.filter(r => r.Province === p.name && r.Status === "Updated").length;
+                const marker = L.marker(p.coords).addTo(regionMap);
+                marker.bindPopup(`
+                    <div style="min-width: 200px;">
+                        <h3>${p.name}</h3>
+                        <p><strong>Total LGUs:</strong> ${count}</p>
+                        <p><strong>Updated CLUPs:</strong> ${updated}</p>
+                        <p><strong>Update Rate:</strong> ${Math.round((updated/count)*100)}%</p>
+                        <button onclick="filterByProvince('${p.name}'); showSection('clup');" style="margin-top: 0.5rem; padding: 0.3rem 0.8rem; background: #2c6e8f; color: white; border: none; border-radius: 5px; cursor: pointer;">View CLUPs</button>
+                    </div>
+                `);
+            });
+            
+            // Add map stats
+            const mapStats = document.getElementById('mapStats');
+            if (mapStats) {
+                mapStats.innerHTML = provinces.map(p => {
+                    const count = clupData.filter(r => r.Province === p.name).length;
+                    const updated = clupData.filter(r => r.Province === p.name && r.Status === "Updated").length;
+                    return `
+                        <div class="stat-card" onclick="filterByProvince('${p.name}'); showSection('clup');">
+                            <div class="stat-number">${count}</div>
+                            <div class="stat-label">${p.name}</div>
+                            <div class="stat-label" style="font-size: 0.8rem;">${updated} Updated</div>
                         </div>
-                        <div style="text-align:right; margin-top:1rem;"><button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button><button type="submit" class="btn btn-success">Save</button></div>
-                    </form>
-                `;
-            }
-            document.getElementById('dataModal').classList.add('active');
-        }
-
-        async function saveReviewEntry(event) {
-            event.preventDefault();
-            const form = event.target;
-            const lgu = form.lgu.value.trim();
-            const reviewer = form.reviewer.value.trim();
-            const dates = form.dates.value.trim();
-            if (!lgu || !reviewer || !dates) {
-                alert('Please fill all fields.');
-                return false;
-            }
-            let success = false;
-            if (currentReviewId !== null) {
-                const updatedRec = { id: currentReviewId, lgu, reviewer, dates };
-                success = await saveReviewToSheet(updatedRec, 'update');
-                if (success) {
-                    const index = reviewRecords.findIndex(r => r.id === currentReviewId);
-                    if (index !== -1) reviewRecords[index] = updatedRec;
-                    saveReviewToLocal();
-                }
-            } else {
-                const newId = reviewRecords.length ? Math.max(...reviewRecords.map(r => r.id)) + 1 : 1;
-                const newRec = { id: newId, lgu, reviewer, dates };
-                success = await saveReviewToSheet(newRec, 'add');
-                if (success) {
-                    reviewRecords.push(newRec);
-                    saveReviewToLocal();
-                }
-            }
-            if (success) {
-                renderReviewTable();
-                closeModal();
-                alert('Saved successfully.');
-            } else {
-                alert('Failed to save. Check network or try again later.');
-            }
-            return false;
-        }
-
-        async function deleteReviewRecord(id) {
-            if (confirm('Delete this review entry?')) {
-                const success = await saveReviewToSheet({ id }, 'delete');
-                if (success) {
-                    reviewRecords = reviewRecords.filter(r => r.id !== id);
-                    saveReviewToLocal();
-                    renderReviewTable();
-                    alert('Deleted.');
-                } else {
-                    alert('Failed to delete. Try again later.');
-                }
+                    `;
+                }).join('');
             }
         }
 
-        function exportReviewData() {
-            const dataStr = JSON.stringify(reviewRecords, null, 2);
-            const a = document.createElement('a');
-            a.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
-            a.download = 'clup_pdpfp_reviews.json';
-            a.click();
-            alert('Exported');
+        // Navigation
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+            document.getElementById(sectionId).style.display = 'block';
+            
+            document.querySelectorAll('.nav-bar a').forEach(link => link.classList.remove('active'));
+            const activeLink = Array.from(document.querySelectorAll('.nav-bar a')).find(a => a.getAttribute('onclick')?.includes(sectionId));
+            if (activeLink) activeLink.classList.add('active');
+            
+            if (sectionId === 'map') {
+                setTimeout(() => initMap(), 100);
+            }
+            if (sectionId === 'analytics') {
+                updateCharts(filteredData);
+            }
+            if (sectionId === 'dashboard') {
+                updateDashboard();
+            }
         }
 
-        // ========== HELPER FUNCTIONS ==========
+        function updateDashboard() {
+            const provinces = [...new Set(clupData.map(d => d.Province))];
+            const dashboardStats = document.getElementById('dashboardStats');
+            if (dashboardStats) {
+                dashboardStats.innerHTML = provinces.map(p => {
+                    const data = clupData.filter(d => d.Province === p);
+                    const updated = data.filter(d => d.Status === 'Updated').length;
+                    const rate = Math.round((updated/data.length)*100);
+                    return `
+                        <div class="stat-card">
+                            <div class="stat-number">${rate}%</div>
+                            <div class="stat-label">${p}</div>
+                            <div class="stat-label" style="font-size: 0.75rem;">${updated}/${data.length} Updated</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            // Performance Chart
+            if (performanceChart) performanceChart.destroy();
+            const ctx = document.getElementById('performanceChart')?.getContext('2d');
+            if (ctx) {
+                const perfData = provinces.map(p => {
+                    const data = clupData.filter(d => d.Province === p);
+                    return Math.round((data.filter(d => d.Status === 'Updated').length / data.length) * 100);
+                });
+                
+                performanceChart = new Chart(ctx, {
+                    type: 'radar',
+                    data: {
+                        labels: provinces,
+                        datasets: [{
+                            label: 'CLUP Update Rate (%)',
+                            data: perfData,
+                            backgroundColor: 'rgba(44, 110, 143, 0.2)',
+                            borderColor: '#2c6e8f',
+                            pointBackgroundColor: '#2c6e8f',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: '#2c6e8f'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        scales: {
+                            r: {
+                                beginAtZero: true,
+                                max: 100,
+                                ticks: { stepSize: 20 }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
         function escapeHtml(str) {
-            if (str == null) return '';
-            str = String(str);
-            return str.replace(/[&<>]/g, function(m) {
+            if (!str) return '';
+            return String(str).replace(/[&<>]/g, function(m) {
                 if (m === '&') return '&amp;';
                 if (m === '<') return '&lt;';
                 if (m === '>') return '&gt;';
@@ -655,1016 +887,17 @@
             });
         }
 
-        // Convert YYYY-MM-DD to "12th day of August 2019"
-        function formatOrdinalDate(dateString) {
-            if (!dateString) return "___________";
-            const date = new Date(dateString);
-            if (isNaN(date.getTime())) return dateString;
-            const day = date.getUTCDate();
-            const month = date.getUTCMonth();
-            const year = date.getUTCFullYear();
-            const ordinal = (d) => {
-                if (d > 3 && d < 21) return 'th';
-                switch (d % 10) {
-                    case 1: return 'st';
-                    case 2: return 'nd';
-                    case 3: return 'rd';
-                    default: return 'th';
-                }
-            };
-            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-            return `${day}${ordinal(day)} day of ${monthNames[month]} ${year}`;
+        function closeModal() {
+            document.getElementById('dataModal').classList.remove('active');
         }
 
-        // Format YYYY-MM-DD to mm/dd/yyyy
-        function formatToMMDDYYYY(dateStr) {
-            if (!dateStr) return '___________';
-            const date = new Date(dateStr);
-            if (isNaN(date.getTime())) return dateStr;
-            const month = date.getUTCMonth() + 1;
-            const day = date.getUTCDate();
-            const year = date.getUTCFullYear();
-            return `${month.toString().padStart(2,'0')}/${day.toString().padStart(2,'0')}/${year}`;
-        }
-
-        // ========== PRINT FUNCTIONS ==========
-        function printZoningRecord(id) {
-            const rec = zoningCertifications.find(r => r.id == id);
-            if (!rec) return;
-
-            const certNo = rec.certificationNo;
-            const series = rec.series || '2002';
-            const parcels = rec.parcels || '______________________';
-            const location = rec.location || '______________________';
-            const totalArea = rec.totalArea || '__________';
-            const proposedUse = rec.proposedUse || '______________________';
-            const dateIssued = rec.dateIssued;
-            const requestedBy = rec.requestedBy || '______________________';
-            const amountPaid = rec.amountPaid || '___________';
-            const orNo = rec.orNo || '___________';
-            const orDate = rec.orDate || '';
-
-            // --- Land holdings table (unchanged) ---
-            let landHoldingsArray = Array.isArray(rec.landHoldings) ? rec.landHoldings : [];
-            let landHoldingsHtml = '';
-
-            if (landHoldingsArray.length === 0) {
-                landHoldingsHtml = `
-                    <table class="land-holdings-table" style="width:100%; border-collapse:collapse; margin:0.5cm 0;">
-                        <thead>
-                            <tr>
-                                <th style="border:1px solid #000; padding:0.3cm; font-weight: bold; color: black;">Registered Owner</th>
-                                <th style="border:1px solid #000; padding:0.3cm; font-weight: bold; color: black;">Lot Number</th>
-                                <th style="border:1px solid #000; padding:0.3cm; font-weight: bold; color: black;">OCT/TCT No.</th>
-                                <th style="border:1px solid #000; padding:0.3cm; font-weight: bold; color: black;">Area Per Title (Ha)</th>
-                                <th style="border:1px solid #000; padding:0.3cm; font-weight: bold; color: black;">Area Applied for Conversion (Ha)</th>
-                                <th style="border:1px solid #000; padding:0.3cm; font-weight: bold; color: black;">Zone Classification</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td style="border:1px solid #000; padding:0.3cm;">______________________</td>
-                                <td style="border:1px solid #000; padding:0.3cm;">______________</td>
-                                <td style="border:1px solid #000; padding:0.3cm;">______________________</td>
-                                <td style="border:1px solid #000; padding:0.3cm; text-align:right;">${escapeHtml(totalArea)}</td>
-                                <td style="border:1px solid #000; padding:0.3cm;">___________</td>
-                                <td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(proposedUse)}</td>
-                            </tr>
-                            <tr>
-                                <td colspan="3" style="border:1px solid #000; padding:0.3cm; text-align:right;"><strong>Total</strong></td>
-                                <td style="border:1px solid #000; padding:0.3cm; text-align:right; font-weight: bold; color: black;"><strong>${escapeHtml(totalArea)}</strong></td>
-                                <td style="border:1px solid #000; padding:0.3cm;">&nbsp;</td>
-                                <td style="border:1px solid #000; padding:0.3cm;">&nbsp;</td>
-                            </tr>
-                        </tbody>
-                    </table>`;
-            } else {
-                let totalAreaSum = 0;
-                let rowsHtml = '';
-                landHoldingsArray.forEach(h => {
-                    const area = h.areaPerTitle ? parseFloat(h.areaPerTitle) : 0;
-                    totalAreaSum += area;
-                    rowsHtml += `
-                        <tr>
-                            <td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(h.registeredOwner || '______________________')}</td>
-                            <td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(h.lotNo || '______________')}</td>
-                            <td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(h.tctNo || '______________________')}</td>
-                            <td style="border:1px solid #000; padding:0.3cm; text-align:right;">${area.toFixed(4)}</td>
-                            <td style="border:1px solid #000; padding:0.3cm;">___________</td>
-                            <td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(h.zoneclass || '______________________')}</td>
-                        </tr>`;
-                });
-                rowsHtml += `
-                    <tr>
-                        <td colspan="3" style="border:1px solid #000; padding:0.3cm; text-align:right;"><strong>Total</strong></td>
-                        <td style="border:1px solid #000; padding:0.3cm; text-align:right; font-weight: bold; color: black;"><strong>${totalAreaSum.toFixed(4)}</strong></td>
-                        <td style="border:1px solid #000; padding:0.3cm;">&nbsp;</td>
-                        <td style="border:1px solid #000; padding:0.3cm;">&nbsp;</td>
-                    </tr>`;
-                landHoldingsHtml = `
-                    <table class="land-holdings-table" style="width:100%; border-collapse:collapse; margin:0.5cm 0;">
-                        <thead>
-                            <tr>
-                                <th style="border:1px solid #000; padding:0.3cm; font-weight: bold; color: black;">Registered Owner</th>
-                                <th style="border:1px solid #000; padding:0.3cm; font-weight: bold; color: black;">Lot Number</th>
-                                <th style="border:1px solid #000; padding:0.3cm; font-weight: bold; color: black;">OCT/TCT No.</th>
-                                <th style="border:1px solid #000; padding:0.3cm; font-weight: bold; color: black;">Area Per Title (Ha)</th>
-                                <th style="border:1px solid #000; padding:0.3cm; font-weight: bold; color: black;">Area Applied for Conversion (Ha)</th>
-                                <th style="border:1px solid #000; padding:0.3cm; font-weight: bold; color: black;">Zone Classification</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${rowsHtml}
-                        </tbody>
-                    </table>`;
-            }
-
-            // --- Status section (Date of Approval in mm/dd/yyyy) ---
-            const clupStatus = rec.clupStatus || 'approved';
-            const approvedBy = rec.approvedBy || '______________________';
-            const city = rec.city || '______________________';
-            const province = rec.province || '______________________';
-            const cityProvince = province && province !== '______________________' ? `${city}, ${province}` : city;
-            const circularNo = rec.circularNo || '___________';
-            const approvalDateRaw = rec.approvalDate || '___________';
-            const approvalDateFormatted = formatToMMDDYYYY(approvalDateRaw);
-            const agriculturalLand = '___________';
-            const reclassified = '___________';
-            const reclassYear = '___________';
-            const resolutionNo = '___________';
-            const resolutionDateRaw = '___________';
-            const resolutionDateFormatted = formatToMMDDYYYY(resolutionDateRaw);
-
-            const check1 = clupStatus === 'approved' ? '[✓]' : '[ ]';
-            const check2 = clupStatus === 'pending' ? '[✓]' : '[ ]';
-            const check3 = clupStatus === 'none' ? '[✓]' : '[ ]';
-
-            const statusHtml = `
-                <p>1. <strong>${check1} WITH APPROVED CLUP/ZO</strong></p>
-                <p>THIS IS TO CERTIFY that the above-described landholdings is/are zoned for use/s specified in the above table per approved <strong>Comprehensive Land Use Plan/Zoning Ordinance</strong> of <strong>${escapeHtml(cityProvince)}</strong>, as approved by the <strong>${escapeHtml(approvedBy)}</strong> through <strong>Department Circular No. ${escapeHtml(circularNo)}</strong> dated <strong>${escapeHtml(approvalDateFormatted)}</strong> in accordance with pertinent issuances;</p>
-                <p>Further, the proposed conversion:</p>
-                <p>&nbsp;&nbsp;&nbsp;[ ] Conforms/is compatible with the approved land use plan and/or Zoning Ordinance.</p>
-                <p>&nbsp;&nbsp;&nbsp;[ ] Does not conform/is not compatible with the approved land use plan and/or Zoning Ordinance.</p>
-                <p>Per record of this office, the city/municipality of ${escapeHtml(city)} has a total zoned agricultural land of <strong>${agriculturalLand}</strong> hectares of which <strong>${reclassified}</strong> hectares have been reclassified since <strong>${reclassYear}</strong>, as approved by the DHSUD/SP per DHSUD/SP Resolution No. <strong>${resolutionNo}</strong> dated <strong>${escapeHtml(resolutionDateFormatted)}</strong>.</p>
-
-                <p>2. <strong>${check2} WITH CLUP/ZO PENDING APPROVAL BY HLURB/SP</strong></p>
-                <p>THIS IS TO CERTIFY that the above-described property/ies lie/s is/are located within the area zoned for ________ use per Comprehensive Land Use Plan/Zoning Ordinance No. ________ dated _____ submitted to HLURB/SP for approval on _____________ and same remains pending to date.</p>
-                <p>THIS IS TO CERTIFY FURTHER that per record of this office-said city/municipality of _________ will have a total zoned agricultural land of __________s hectares.</p>
-
-                <p>3. <strong>${check3} WITHOUT CLUP/ZO</strong></p>
-                <p>THIS IS TO CERTIFY that the municipality of _______ has not submitted its Comprehensive Land Use Plan/ Zoning Ordinance to this Office.</p>
-            `;
-
-            // Format Date Issued and O.R. Date as ordinal
-            const formattedDateIssued = formatOrdinalDate(dateIssued);
-            const footerDate = orDate ? formatOrdinalDate(orDate) : formattedDateIssued;
-
-            const printContent = `
-                <div class="print-document">
-                    <div style="text-align: right; margin-bottom: 0.5cm;">
-                        <p style="margin: 0; font-size: 12pt;"><strong>DHSUD Certification No. ${escapeHtml(certNo)}</strong></p>
-                    </div>
-                    <div style="margin-bottom: 0.5cm;">
-                        <p style="margin: 0; font-size: 12pt;"><strong>LUC FORM NO. 5</strong></p>
-                        <p style="margin: 0; font-size: 12pt;">Series of ${escapeHtml(series)}</p>
-                        <p style="margin: 0; font-size: 11pt; font-style: italic;">(To be filled-up by the Regional DHSUD)</p>
-                    </div>
-                    <div style="text-align: center; margin: 0.5cm 0;">
-                        <h2 style="font-size: 16pt; margin: 0.2cm 0;">Republic of the Philippines</h2>
-                        <h3 style="font-size: 14pt; margin: 0.1cm 0;">DEPARTMENT OF HUMAN SETTLEMENTS AND URBAN DEVELOPMENT</h3>
-                        <h3 style="font-size: 13pt; margin: 0.1cm 0;">Region VI, Iloilo City</h3>
-                        <h2 style="text-decoration: underline; margin: 0.3cm 0; font-size: 16pt;">CERTIFICATION</h2>
-                    </div>
-
-                    <div style="text-align: left; margin: 0.3cm 0 0.2cm 0;">
-                        <h4 style="font-size: 14pt; font-weight: bold; margin: 0;">I. BASIC INFORMATION</h4>
-                    </div>
-                    <div class="basic-info" style="margin-left: 0.5cm; font-size: 12pt; margin-bottom: 0.3cm;">
-                        <p style="margin: 0.1cm 0;"><strong>A. No. of Parcels :</strong> ${escapeHtml(parcels)}</p>
-                        <p style="margin: 0.1cm 0;"><strong>B. Location of the Property :</strong> ${escapeHtml(location)}</p>
-                        <p style="margin: 0.1cm 0;"><strong>C. Total Area (ha.) :</strong> ${escapeHtml(totalArea)} ha</p>
-                        <p style="margin: 0.1cm 0;"><strong>D. Proposed Use :</strong> ${escapeHtml(proposedUse)}</p>
-                        <p style="margin: 0.1cm 0;"><strong>E. Description of Land Holdings :</strong></p>
-                    </div>
-                    ${landHoldingsHtml}
-
-                    <h4 style="margin: 0.5cm 0 0.3cm; font-size: 14pt;">II. STATUS OF COMPREHENSIVE LAND USE PLAN (CLUP) ZONING ORDINANCE (ZO)</h4>
-                    <div class="clup-status" style="margin: 0.3cm 0; white-space: pre-line; font-size: 12pt; line-height: 1.5;">
-                        ${statusHtml}
-                    </div>
-
-                    <div style="margin: 0.5cm 0;">
-                        <p style="margin: 0.2cm 0;">This certification is issued upon the request of <strong>${escapeHtml(requestedBy)}</strong> for whatever legal purpose/s it may serve.</p>
-                        <p style="margin: 0.2cm 0;">Given this <strong>${formattedDateIssued}</strong> in Iloilo City, Philippines.</p>
-                    </div>
-
-                    <div class="signature-area" style="margin-top: 1.5cm; display: flex; justify-content: flex-end;">
-                        <div class="signature-box" style="text-align: center; width: 8cm;">
-                            <div class="signature-line" style="border-bottom: 2px solid #000; margin: 0.8cm 0 0.2cm 0; width: 100%;"></div>
-                            <p style="margin: 0.1cm 0; font-size: 12pt;"><strong>EnP. EVA MARIA P. MARFIL</strong></p>
-                            <p style="margin: 0.1cm 0; font-size: 12pt;">Regional Director</p>
-                        </div>
-                    </div>
-
-                    <div class="notices" style="margin-top: 1cm; font-size: 10pt; border-top: 1px dashed #000; padding-top: 0.3cm;">
-                        <p style="margin: 0.1cm 0;"><strong>Note:</strong></p>
-                        <p style="margin: 0.1cm 0;">1. This certification is issued relative to the requirement of DAR regarding the implementation of the Comprehensive Agrarian Reform Law and shall not be construed as a Certificate of Eligibility for conversion.</p>
-                        <p style="margin: 0.1cm 0;">2. This certification <strong>shall not</strong> be construed as a Locational Clearance/Certificate of Zoning Compliance/Development Permit or License to Sell.</p>
-                        <p style="margin: 0.1cm 0;">3. This <strong>shall not</strong> be construed as a certification as to the ownership by the applicant of the above listed parcel(s) of land.</p>
-                        <p style="margin: 0.1cm 0;">4. Any misrepresentation on the part of the requesting party shall be a ground for cancellation of this certification.</p>
-                    </div>
-
-                    <div style="margin-top: 0.5cm; display: flex; justify-content: space-between; font-size: 11pt;">
-                        <div><p style="margin: 0.1cm 0;"><strong>${escapeHtml(certNo)}</strong></p></div>
-                        <div style="text-align: right;">
-                            <p style="margin: 0.1cm 0;"><strong>O.R. No. :</strong> ${escapeHtml(orNo)}</p>
-                            <p style="margin: 0.1cm 0;"><strong>Amount Paid :</strong> P ${escapeHtml(amountPaid)}</p>
-                            <p style="margin: 0.1cm 0;"><strong>Date :</strong> ${escapeHtml(footerDate)}</p>
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            const ps = document.getElementById('printSection');
-            ps.innerHTML = printContent;
-            ps.style.display = 'block';
-            setTimeout(() => window.print(), 200);
-            setTimeout(() => ps.style.display = 'none', 1000);
-        }
-
-        function printBlankForm() {
-            const certNo = document.getElementById('certificationNo').value || 'SZC-RVI25-046';
-            const series = document.getElementById('series').value || '2002';
-            const parcels = document.getElementById('parcels').value || '______________________';
-            const location = document.getElementById('location').value || '______________________';
-            const totalArea = document.getElementById('totalArea').value || '__________';
-            const proposedUse = document.getElementById('proposedUse').value || '______________________';
-
-            const landHoldingsHtml = `
-                <table class="land-holdings-table" style="width:100%; border-collapse:collapse; margin:0.5cm 0;">
-                    <thead>
-                        <tr>
-                            <th style="border:1px solid #000; padding:0.3cm; font-weight: bold; color: black;">Registered Owner</th>
-                            <th style="border:1px solid #000; padding:0.3cm; font-weight: bold; color: black;">Lot Number</th>
-                            <th style="border:1px solid #000; padding:0.3cm; font-weight: bold; color: black;">OCT/TCT No.</th>
-                            <th style="border:1px solid #000; padding:0.3cm; font-weight: bold; color: black;">Area Per Title (Ha)</th>
-                            <th style="border:1px solid #000; padding:0.3cm; font-weight: bold; color: black;">Area Applied for Conversion (Ha)</th>
-                            <th style="border:1px solid #000; padding:0.3cm; font-weight: bold; color: black;">Zone Classification</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td style="border:1px solid #000; padding:0.3cm;">______________________</td>
-                            <td style="border:1px solid #000; padding:0.3cm;">______________</td>
-                            <td style="border:1px solid #000; padding:0.3cm;">______________________</td>
-                            <td style="border:1px solid #000; padding:0.3cm; text-align:right;">${escapeHtml(totalArea)}</td>
-                            <td style="border:1px solid #000; padding:0.3cm;">___________</td>
-                            <td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(proposedUse)}</td>
-                        </tr>
-                        <tr>
-                            <td colspan="3" style="border:1px solid #000; padding:0.3cm; text-align:right;"><strong>Total</strong></td>
-                            <td style="border:1px solid #000; padding:0.3cm; text-align:right; font-weight: bold; color: black;"><strong>${escapeHtml(totalArea)}</strong></td>
-                            <td style="border:1px solid #000; padding:0.3cm;">&nbsp;</td>
-                            <td style="border:1px solid #000; padding:0.3cm;">&nbsp;</td>
-                        </tr>
-                    </tbody>
-                </table>`;
-
-            const printContent = `
-                <div class="print-document">
-                    <div style="text-align: right; margin-bottom: 0.5cm;">
-                        <p style="margin: 0; font-size: 12pt;"><strong>DHSUD Certification No. ${escapeHtml(certNo)}</strong></p>
-                    </div>
-                    <div style="margin-bottom: 0.5cm;">
-                        <p style="margin: 0; font-size: 12pt;"><strong>LUC FORM NO. 5</strong></p>
-                        <p style="margin: 0; font-size: 12pt;">Series of ${escapeHtml(series)}</p>
-                        <p style="margin: 0; font-size: 11pt; font-style: italic;">(To be filled-up by the Regional DHSUD)</p>
-                    </div>
-                    <div style="text-align: center; margin: 0.5cm 0;">
-                        <h2 style="font-size: 16pt; margin: 0.2cm 0;">Republic of the Philippines</h2>
-                        <h3 style="font-size: 14pt; margin: 0.1cm 0;">DEPARTMENT OF HUMAN SETTLEMENTS AND URBAN DEVELOPMENT</h3>
-                        <h3 style="font-size: 13pt; margin: 0.1cm 0;">Region VI, Iloilo City</h3>
-                        <h2 style="text-decoration: underline; margin: 0.3cm 0; font-size: 16pt;">CERTIFICATION</h2>
-                    </div>
-
-                    <div style="text-align: left; margin: 0.3cm 0 0.2cm 0;">
-                        <h4 style="font-size: 14pt; font-weight: bold; margin: 0;">I. BASIC INFORMATION</h4>
-                    </div>
-                    <div class="basic-info" style="margin-left: 0.5cm; font-size: 12pt; margin-bottom: 0.3cm;">
-                        <p style="margin: 0.1cm 0;"><strong>A. No. of Parcels :</strong> ${escapeHtml(parcels)}</p>
-                        <p style="margin: 0.1cm 0;"><strong>B. Location of the Property :</strong> ${escapeHtml(location)}</p>
-                        <p style="margin: 0.1cm 0;"><strong>C. Total Area (ha.) :</strong> ${escapeHtml(totalArea)} ha</p>
-                        <p style="margin: 0.1cm 0;"><strong>D. Proposed Use :</strong> ${escapeHtml(proposedUse)}</p>
-                        <p style="margin: 0.1cm 0;"><strong>E. Description of Land Holdings :</strong></p>
-                    </div>
-                    ${landHoldingsHtml}
-
-                    <h4 style="margin: 0.5cm 0 0.3cm; font-size: 14pt;">II. STATUS OF COMPREHENSIVE LAND USE PLAN (CLUP) ZONING ORDINANCE (ZO)</h4>
-                    <div class="clup-status" style="margin: 0.3cm 0; white-space: pre-line; font-size: 12pt; line-height: 1.5;">
-                        <p>1. [ ] WITH APPROVED CLUP/ZO</p>
-                        <p>THIS IS TO CERTIFY that the above-described landholdings is/are zoned for use/s specified in the above table per approved <strong>Comprehensive Land Use Plan/Zoning Ordinance</strong> of <strong>______________________</strong>, as approved by the <strong>DHSUD</strong> through <strong>Department Circular No. ___________</strong> dated <strong>___________</strong> in accordance with pertinent issuances;</p>
-                        <p>Further, the proposed conversion:</p>
-                        <p>&nbsp;&nbsp;&nbsp;[ ] Conforms/is compatible with the approved land use plan and/or Zoning Ordinance.</p>
-                        <p>&nbsp;&nbsp;&nbsp;[ ] Does not conform/is not compatible with the approved land use plan and/or Zoning Ordinance.</p>
-                        <p>Per record of this office, the city/municipality of ___________ has a total zoned agricultural land of ___________ hectares of which ___________ hectares have been reclassified since ___________, as approved by the DHSUD/SP per DHSUD/SP Resolution No. ___________ dated ___________.</p>
-                        <p>2. [ ] WITH CLUP/ZO PENDING APPROVAL BY HLURB/SP</p>
-                        <p>3. [ ] WITHOUT CLUP/ZO</p>
-                    </div>
-
-                    <div style="margin: 0.5cm 0;">
-                        <p style="margin: 0.2cm 0;">This certification is issued upon the request of <strong>______________________</strong> for whatever legal purpose/s it may serve.</p>
-                        <p style="margin: 0.2cm 0;">Given this <strong>___________</strong> in Iloilo City, Philippines.</p>
-                    </div>
-
-                    <div class="signature-area" style="margin-top: 1.5cm; display: flex; justify-content: flex-end;">
-                        <div class="signature-box" style="text-align: center; width: 8cm;">
-                            <div class="signature-line" style="border-bottom: 2px solid #000; margin: 0.8cm 0 0.2cm 0; width: 100%;"></div>
-                            <p style="margin: 0.1cm 0; font-size: 12pt;"><strong>EnP. EVA MARIA P. MARFIL</strong></p>
-                            <p style="margin: 0.1cm 0; font-size: 12pt;">Regional Director</p>
-                        </div>
-                    </div>
-
-                    <div class="notices" style="margin-top: 1cm; font-size: 10pt; border-top: 1px dashed #000; padding-top: 0.3cm;">
-                        <p style="margin: 0.1cm 0;"><strong>Note:</strong></p>
-                        <p style="margin: 0.1cm 0;">1. This certification is issued relative to the requirement of DAR regarding the implementation of the Comprehensive Agrarian Reform Law and shall not be construed as a Certificate of Eligibility for conversion.</p>
-                        <p style="margin: 0.1cm 0;">2. This certification <strong>shall not</strong> be construed as a Locational Clearance/Certificate of Zoning Compliance/Development Permit or License to Sell.</p>
-                        <p style="margin: 0.1cm 0;">3. This <strong>shall not</strong> be construed as a certification as to the ownership by the applicant of the above listed parcel(s) of land.</p>
-                        <p style="margin: 0.1cm 0;">4. Any misrepresentation on the part of the requesting party shall be a ground for cancellation of this certification.</p>
-                    </div>
-
-                    <div style="margin-top: 0.5cm; display: flex; justify-content: space-between; font-size: 11pt;">
-                        <div><p style="margin: 0.1cm 0;"><strong>${escapeHtml(certNo)}</strong></p></div>
-                        <div style="text-align: right;">
-                            <p style="margin: 0.1cm 0;"><strong>O.R. No. :</strong> ___________</p>
-                            <p style="margin: 0.1cm 0;"><strong>Amount Paid :</strong> P ___________</p>
-                            <p style="margin: 0.1cm 0;"><strong>Date :</strong> ___________</p>
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            const ps = document.getElementById('printSection');
-            ps.innerHTML = printContent;
-            ps.style.display = 'block';
-            setTimeout(() => window.print(), 200);
-            setTimeout(() => ps.style.display = 'none', 1000);
-        }
-
-        // ========== MAP LAYER CONTROL ==========
-        let baseLayers = {
-            "OpenStreetMap": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }),
-            "Humanitarian": L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }),
-            "Satellite": L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: 'Esri' }),
-            "CartoDB Positron": L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '© OpenStreetMap, CartoDB' })
-        };
-        let currentBaseLayer = baseLayers.OpenStreetMap;
-
-        function changeBaseMap() {
-            const value = document.getElementById('baseMapSelect').value;
-            if (!regionMap) return;
-            regionMap.removeLayer(currentBaseLayer);
-            switch(value) {
-                case 'osm': currentBaseLayer = baseLayers.OpenStreetMap; break;
-                case 'osm_hot': currentBaseLayer = baseLayers.Humanitarian; break;
-                case 'satellite': currentBaseLayer = baseLayers.Satellite; break;
-                case 'cartodb': currentBaseLayer = baseLayers["CartoDB Positron"]; break;
-                default: currentBaseLayer = baseLayers.OpenStreetMap;
-            }
-            currentBaseLayer.addTo(regionMap);
-        }
-
-        // ========== GOOGLE SHEETS / LOCALSTORAGE (zoning) ==========
-        async function fetchCertifications() {
-            try {
-                const response = await fetch(GOOGLE_SCRIPT_URL + '?action=get', { method: 'GET' });
-                const data = await response.json();
-                zoningCertifications = data;
-                updateCounterFromData();
-                renderCertificationsTable();
-                return data;
-            } catch (error) {
-                console.warn("Google Sheets unavailable, using localStorage", error);
-                const localData = localStorage.getItem('zoningCertifications');
-                zoningCertifications = localData ? JSON.parse(localData) : [];
-                updateCounterFromData();
-                renderCertificationsTable();
-                return zoningCertifications;
-            }
-        }
-
-        async function saveCertificationToSheet(record, action = 'add') {
-            try {
-                const params = new URLSearchParams();
-                params.append('action', action);
-                params.append('data', JSON.stringify(record));
-                const response = await fetch(GOOGLE_SCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: params.toString()
-                });
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                const result = await response.json();
-                return result.success;
-            } catch (error) {
-                console.warn("Google Sheets save failed, using localStorage", error);
-                let stored = JSON.parse(localStorage.getItem('zoningCertifications') || '[]');
-                if (action === 'add') {
-                    stored.push(record);
-                } else if (action === 'update') {
-                    const index = stored.findIndex(r => r.id == record.id);
-                    if (index !== -1) stored[index] = record;
-                } else if (action === 'delete') {
-                    stored = stored.filter(r => r.id != record.id);
-                }
-                localStorage.setItem('zoningCertifications', JSON.stringify(stored));
-                zoningCertifications = stored;
-                updateCounterFromData();
-                renderCertificationsTable();
-                return true;
-            }
-        }
-
-        function updateCounterFromData() {
-            let maxNum = 0;
-            zoningCertifications.forEach(record => {
-                const certNo = record.certificationNo;
-                if (certNo) {
-                    const match = certNo.match(/-(\d+)$/);
-                    if (match) {
-                        const num = parseInt(match[1], 10);
-                        if (num > maxNum) maxNum = num;
-                    }
-                }
-            });
-            certificationCounter.lastCertNumber = maxNum;
-            localStorage.setItem('certificationCounter', JSON.stringify(certificationCounter));
-        }
-
-        // ========== HELPER FUNCTIONS ==========
-        function loadCounter() {
-            const saved = localStorage.getItem('certificationCounter');
-            if (saved) {
-                try {
-                    certificationCounter = JSON.parse(saved);
-                    certificationCounter.year = new Date().getFullYear().toString().slice(-2);
-                } catch(e) { resetCounter(); }
-            } else {
-                certificationCounter.lastCertNumber = 0;
-            }
-            localStorage.setItem('certificationCounter', JSON.stringify(certificationCounter));
-        }
-
-        function resetCounter() {
-            certificationCounter = { lastCertNumber: 0, prefix: 'SZC-RVI', year: new Date().getFullYear().toString().slice(-2) };
-            localStorage.setItem('certificationCounter', JSON.stringify(certificationCounter));
-        }
-
-        function generateCertificationNumber() {
-            certificationCounter.lastCertNumber++;
-            const number = certificationCounter.lastCertNumber.toString().padStart(3, '0');
-            const year = new Date().getFullYear().toString().slice(-2);
-            const certNumber = `${certificationCounter.prefix}${year}-${number}`;
-            localStorage.setItem('certificationCounter', JSON.stringify(certificationCounter));
-            return certNumber;
-        }
-
-        function getNextCertificationNumber() {
-            const nextNumber = certificationCounter.lastCertNumber + 1;
-            const number = nextNumber.toString().padStart(3, '0');
-            const year = new Date().getFullYear().toString().slice(-2);
-            return `${certificationCounter.prefix}${year}-${number}`;
-        }
-
-        function addLandHolding() {
-            const container = document.getElementById('landHoldingsContainer');
-            const newRow = document.createElement('div');
-            newRow.className = 'land-holding-row';
-            newRow.style.cssText = 'display: grid; grid-template-columns: 2fr 1.5fr 1.5fr 1fr 1fr 0.5fr; gap: 10px; margin-bottom: 15px; padding: 15px; background: #f9f9f9; border-radius: 5px; border: 1px solid #e0e0e0;';
-            newRow.innerHTML = `
-                <div><label style="font-size:0.85rem;">Registered Owner</label><input type="text" class="form-control" name="registeredOwner[]" placeholder="Enter registered owner" required></div>
-                <div><label style="font-size:0.85rem;">TCT/OCT No.</label><input type="text" class="form-control" name="tctNo[]" placeholder="Enter TCT/OCT number" required></div>
-                <div><label style="font-size:0.85rem;">Lot Number</label><input type="text" class="form-control" name="lotNo[]" placeholder="e.g., Lot 1234"></div>
-                <div><label style="font-size:0.85rem;">Area Per Title (ha)</label><input type="number" step="0.0001" class="form-control" name="areaPerTitle[]" placeholder="0.0000"></div>
-                <div><label style="font-size:0.85rem;">Zone Classification</label><input type="text" class="form-control" name="zoneclass[]" placeholder="e.g., Residential-3" required></div>
-                <div style="display:flex; align-items:flex-end;"><button type="button" class="btn btn-danger" onclick="removeLandHolding(this)" style="padding:0.6rem 1rem;">🗑️</button></div>
-            `;
-            container.appendChild(newRow);
-        }
-
-        function removeLandHolding(btn) {
-            const row = btn.closest('.land-holding-row');
-            if (document.querySelectorAll('.land-holding-row').length > 1) row.remove();
-            else alert('At least one land holding is required.');
-        }
-
-        function showError(fieldId, msg) {
-            const field = document.getElementById(fieldId);
-            field.setAttribute('aria-invalid', 'true');
-            const errorId = fieldId + '-error';
-            let errSpan = document.getElementById(errorId);
-            if (!errSpan) { errSpan = document.createElement('span'); errSpan.id = errorId; errSpan.className = 'error-message'; field.parentNode.appendChild(errSpan); }
-            errSpan.textContent = msg;
-            field.setAttribute('aria-describedby', errorId);
-        }
-
-        function clearErrorMessages() {
-            document.querySelectorAll('[aria-invalid="true"]').forEach(f => f.removeAttribute('aria-invalid'));
-            document.querySelectorAll('.error-message').forEach(e => e.remove());
-        }
-
-        function clearZoningForm() {
-            document.getElementById('zoningForm').reset();
-            clearErrorMessages();
-            document.getElementById('landHoldingsContainer').innerHTML = '';
-            addLandHolding();
-            document.getElementById('certificationNo').value = getNextCertificationNumber();
-            document.getElementById('series').value = '2002';
-            document.getElementById('orDate').value = '';
-            document.getElementById('approvalDate').value = '';
-            document.getElementById('province').value = '';
-            currentEditingId = null;
-        }
-
-        function renderCertificationsTable() {
-            const tbody = document.getElementById('certificationsTableBody');
-            if (!tbody) return;
-            tbody.innerHTML = '';
-            if (!zoningCertifications.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No records found.</td></tr>'; return; }
-            const sorted = [...zoningCertifications].sort((a,b) => new Date(b.dateIssued) - new Date(a.dateIssued));
-            sorted.forEach(rec => {
-                const row = tbody.insertRow();
-                row.innerHTML = `
-                    <td>${escapeHtml(rec.certificationNo)}</td>
-                    <td>${escapeHtml(rec.parcels)}</td>
-                    <td>${escapeHtml(rec.location)}</td>
-                    <td>${escapeHtml(rec.totalArea)} ha</td>
-                    <td>${escapeHtml(rec.formattedDate || rec.dateIssued)}</td>
-                    <td>${escapeHtml(rec.requestedBy)}</td>
-                    <td><div class="action-btns"><button class="action-btn view" onclick="viewZoningRecord(${rec.id})">👁️ View</button><button class="action-btn edit" onclick="editZoningRecord(${rec.id})">✏️ Edit</button><button class="action-btn print" onclick="printZoningRecord(${rec.id})">🖨️ Print</button><button class="action-btn delete" onclick="deleteZoningRecord(${rec.id})">🗑️ Delete</button></div></td>
-                `;
-            });
-        }
-
-        function viewZoningRecord(id) {
-            const rec = zoningCertifications.find(r => r.id == id);
-            if (!rec) return;
-            let details = '<div style="padding:1rem;">';
-            for (let [k,v] of Object.entries(rec)) {
-                if (k !== 'id' && k !== 'timestamp' && k !== 'formattedDate' && k !== 'landHoldings') {
-                    details += `<p><strong>${k.replace(/([A-Z])/g, ' $1').replace(/^./, s=>s.toUpperCase())}:</strong> ${escapeHtml(String(v))}</p>`;
-                }
-            }
-            if (rec.landHoldings?.length) {
-                details += '<p><strong>Land Holdings:</strong></p><ul>';
-                rec.landHoldings.forEach((h,i) => details += `<li>${i+1}. ${escapeHtml(h.registeredOwner)} - ${escapeHtml(h.tctNo)} - ${escapeHtml(h.lotNo||'N/A')} - ${escapeHtml(h.areaPerTitle||'N/A')} ha - ${escapeHtml(h.zoneclass)}</li>`);
-                details += '</ul>';
-            }
-            details += '</div><div style="text-align:right;"><button class="btn btn-primary" onclick="closeModal()">Close</button></div>';
-            document.getElementById('modalTitle').textContent = 'View Certification';
-            document.getElementById('modalBody').innerHTML = details;
-            document.getElementById('dataModal').classList.add('active');
-        }
-
-        async function editZoningRecord(id) {
-            const rec = zoningCertifications.find(r => r.id == id);
-            if (!rec) return;
-            currentEditingId = id;
-            document.getElementById('certificationNo').value = rec.certificationNo;
-            document.getElementById('parcels').value = rec.parcels;
-            document.getElementById('location').value = rec.location;
-            document.getElementById('totalArea').value = rec.totalArea;
-            document.getElementById('proposedUse').value = rec.proposedUse;
-            document.getElementById('dateIssued').value = rec.dateIssued;
-            document.getElementById('requestedBy').value = rec.requestedBy;
-            document.getElementById('amountPaid').value = rec.amountPaid;
-            document.getElementById('orNo').value = rec.orNo || '';
-            document.getElementById('orDate').value = rec.orDate || '';
-            document.getElementById('remarks').value = rec.remarks || '';
-            document.getElementById('city').value = rec.city || '';
-            document.getElementById('province').value = rec.province || '';
-            document.getElementById('approvedBy').value = rec.approvedBy || '';
-            document.getElementById('circularNo').value = rec.circularNo || '';
-            document.getElementById('approvalDate').value = rec.approvalDate || '';
-            const container = document.getElementById('landHoldingsContainer');
-            container.innerHTML = '';
-            if (rec.landHoldings?.length) {
-                rec.landHoldings.forEach((h,i) => {
-                    const row = document.createElement('div');
-                    row.className = 'land-holding-row';
-                    row.style.cssText = 'display: grid; grid-template-columns: 2fr 1.5fr 1.5fr 1fr 1fr 0.5fr; gap: 10px; margin-bottom: 15px; padding: 15px; background: #f9f9f9; border-radius: 5px; border: 1px solid #e0e0e0;';
-                    row.innerHTML = `
-                        <div><label>Registered Owner</label><input type="text" class="form-control" name="registeredOwner[]" value="${escapeHtml(h.registeredOwner)}" required></div>
-                        <div><label>TCT/OCT No.</label><input type="text" class="form-control" name="tctNo[]" value="${escapeHtml(h.tctNo)}" required></div>
-                        <div><label>Lot Number</label><input type="text" class="form-control" name="lotNo[]" value="${escapeHtml(h.lotNo||'')}"></div>
-                        <div><label>Area Per Title (ha)</label><input type="number" step="0.0001" class="form-control" name="areaPerTitle[]" value="${h.areaPerTitle||''}"></div>
-                        <div><label>Zone Classification</label><input type="text" class="form-control" name="zoneclass[]" value="${escapeHtml(h.zoneclass)}" required></div>
-                        <div><button type="button" class="btn btn-danger" onclick="removeLandHolding(this)">🗑️</button></div>
-                    `;
-                    container.appendChild(row);
-                });
-            } else { addLandHolding(); }
-            document.querySelector(`input[name="clupStatus"][value="${rec.clupStatus||'approved'}"]`).checked = true;
-            showSection('zoning');
-        }
-
-        async function deleteZoningRecord(id) {
-            if (confirm('Delete this record?')) {
-                const success = await saveCertificationToSheet({ id }, 'delete');
-                if (success) {
-                    await fetchCertifications();
-                    document.getElementById('formMessages').textContent = 'Record deleted';
-                    document.getElementById('formMessages').classList.remove('visually-hidden');
-                    setTimeout(() => document.getElementById('formMessages').classList.add('visually-hidden'), 3000);
-                } else alert('Failed to delete.');
-            }
-        }
-
-        function viewAllCertifications() {
-            document.getElementById('recordsSection').style.display = 'block';
-            renderCertificationsTable();
-            document.getElementById('formMessages').textContent = 'Showing all records';
-            document.getElementById('formMessages').classList.remove('visually-hidden');
-            setTimeout(() => document.getElementById('formMessages').classList.add('visually-hidden'), 3000);
-        }
-
-        function toggleRecordsView() { document.getElementById('recordsSection').style.display = 'none'; }
-
-        function resetCertificationCounter(startFrom=0) {
-            if (confirm('Reset counter?')) {
-                certificationCounter.lastCertNumber = startFrom;
-                localStorage.setItem('certificationCounter', JSON.stringify(certificationCounter));
-                document.getElementById('certificationNo').value = getNextCertificationNumber();
-                document.getElementById('formMessages').textContent = `Counter reset. Next: ${getNextCertificationNumber()}`;
-                document.getElementById('formMessages').classList.remove('visually-hidden');
-                setTimeout(() => document.getElementById('formMessages').classList.add('visually-hidden'), 5000);
-                alert(`Counter reset. Next: ${getNextCertificationNumber()}`);
-            }
-        }
-
-        async function saveZoningRecord(event) {
-            event.preventDefault();
-            try {
-                clearErrorMessages();
-                await fetchCertifications();
-
-                let certificationNo;
-                if (currentEditingId) {
-                    const existing = zoningCertifications.find(r => r.id === currentEditingId);
-                    certificationNo = existing.certificationNo;
-                } else {
-                    certificationNo = generateCertificationNumber();
-                    while (zoningCertifications.some(r => r.certificationNo === certificationNo)) {
-                        certificationCounter.lastCertNumber++;
-                        localStorage.setItem('certificationCounter', JSON.stringify(certificationCounter));
-                        certificationNo = generateCertificationNumber();
-                    }
-                }
-
-                const series = document.getElementById('series')?.value || '2002';
-                const parcels = document.getElementById('parcels')?.value;
-                const location = document.getElementById('location')?.value;
-                const totalArea = document.getElementById('totalArea')?.value;
-                const proposedUse = document.getElementById('proposedUse')?.value;
-                const dateIssued = document.getElementById('dateIssued')?.value;
-                const requestedBy = document.getElementById('requestedBy')?.value;
-                const amountPaid = document.getElementById('amountPaid')?.value;
-                const orNo = document.getElementById('orNo')?.value || '';
-                const orDate = document.getElementById('orDate')?.value || '';
-                const remarks = document.getElementById('remarks')?.value || '';
-                const approvalDate = document.getElementById('approvalDate')?.value || '';
-
-                let hasErrors = false;
-                if (!parcels) { showError('parcels', 'Required'); hasErrors = true; }
-                if (!location) { showError('location', 'Required'); hasErrors = true; }
-                if (!totalArea) { showError('totalArea', 'Required'); hasErrors = true; }
-                if (!proposedUse) { showError('proposedUse', 'Required'); hasErrors = true; }
-                if (!dateIssued) { showError('dateIssued', 'Required'); hasErrors = true; }
-                if (!requestedBy) { showError('requestedBy', 'Required'); hasErrors = true; }
-                if (!amountPaid) { showError('amountPaid', 'Required'); hasErrors = true; }
-                if (hasErrors) {
-                    document.getElementById('formMessages').textContent = 'Please fill all required fields';
-                    document.getElementById('formMessages').classList.remove('visually-hidden');
-                    setTimeout(() => document.getElementById('formMessages').classList.add('visually-hidden'), 5000);
-                    return false;
-                }
-
-                const owners = document.getElementsByName('registeredOwner[]');
-                const tcts = document.getElementsByName('tctNo[]');
-                const lots = document.getElementsByName('lotNo[]');
-                const areas = document.getElementsByName('areaPerTitle[]');
-                const zones = document.getElementsByName('zoneclass[]');
-                if (!owners.length) { alert('Add at least one land holding'); return false; }
-                const landHoldings = [];
-                for (let i=0; i<owners.length; i++) {
-                    if (!owners[i]?.value || !tcts[i]?.value || !zones[i]?.value) {
-                        alert(`Row ${i+1}: fill all required fields`);
-                        return false;
-                    }
-                    landHoldings.push({
-                        registeredOwner: owners[i].value,
-                        tctNo: tcts[i].value,
-                        lotNo: lots[i]?.value || '',
-                        areaPerTitle: areas[i]?.value ? parseFloat(areas[i].value) : 0,
-                        zoneclass: zones[i].value
-                    });
-                }
-
-                const clupStatus = document.querySelector('input[name="clupStatus"]:checked')?.value || 'approved';
-
-                const record = {
-                    id: currentEditingId || Date.now(),
-                    certificationNo, series, parcels, location, totalArea, proposedUse,
-                    landHoldings, dateIssued,
-                    formattedDate: dateIssued ? formatOrdinalDate(dateIssued) : '',
-                    requestedBy, amountPaid, orNo, orDate, remarks, clupStatus,
-                    city: document.getElementById('city')?.value || 'Iloilo City',
-                    province: document.getElementById('province')?.value || '',
-                    approvedBy: document.getElementById('approvedBy')?.value || 'DHSUD',
-                    circularNo: document.getElementById('circularNo')?.value || '2022-002',
-                    approvalDate: approvalDate,
-                    timestamp: new Date().toLocaleString()
-                };
-
-                const action = currentEditingId ? 'update' : 'add';
-                const success = await saveCertificationToSheet(record, action);
-                if (success) {
-                    await fetchCertifications();
-                    document.getElementById('formMessages').textContent = `Certification ${certificationNo} saved`;
-                    document.getElementById('formMessages').classList.remove('visually-hidden');
-                    alert(`Saved! No: ${certificationNo}`);
-                    clearZoningForm();
-                    document.getElementById('certificationNo').value = getNextCertificationNumber();
-                    document.getElementById('recordsSection').style.display = 'block';
-                    renderCertificationsTable();
-                    setTimeout(() => document.getElementById('formMessages').classList.add('visually-hidden'), 5000);
-                } else {
-                    alert('Failed to save record.');
-                }
-                return false;
-            } catch (err) {
-                console.error(err);
-                alert('An error occurred.');
-                return false;
-            }
-        }
-
-        function showSection(sectionId) {
-            document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
-            document.getElementById(sectionId).style.display = 'block';
-            document.querySelectorAll('.nav-bar a').forEach(link => {
-                link.classList.remove('active');
-                link.removeAttribute('aria-current');
-            });
-            for (let link of document.querySelectorAll('.nav-bar a')) {
-                if (link.getAttribute('onclick')?.includes(sectionId)) {
-                    link.classList.add('active');
-                    link.setAttribute('aria-current', 'page');
-                    break;
-                }
-            }
-            const titles = { dashboard:'Dashboard', map:'Regional Map', plans:'Land Use Plans', zoning:'Site Zoning Certification', reports:'Reports' };
-            document.title = `ELUPDD Region VI - ${titles[sectionId] || 'Home'}`;
-            if (sectionId === 'map') { initMap(); setTimeout(() => regionMap?.invalidateSize(), 100); }
-            if (sectionId === 'zoning') renderCertificationsTable();
-        }
-
-        // ========== MAP INIT ==========
-        function initMap() {
-            if (mapInitialized) return;
-            regionMap = L.map('regionMap').setView([11.0,122.5],8);
-            currentBaseLayer.addTo(regionMap);
-            const provinces = [
-                { name:"Aklan", coords:[11.7074,122.3630], color:"#27ae60" },
-                { name:"Antique", coords:[10.7435,121.9413], color:"#f39c12" },
-                { name:"Capiz", coords:[11.5853,122.7511], color:"#27ae60" },
-                { name:"Guimaras", coords:[10.6583,122.6233], color:"#27ae60" },
-                { name:"Iloilo", coords:[10.7202,122.5621], color:"#27ae60" },
-                { name:"Negros Occidental", coords:[10.6710,122.9494], color:"#f39c12" }
-            ];
-            provinces.forEach(p => {
-                const icon = L.divIcon({ html:`<div style="background:${p.color}; width:20px; height:20px; border-radius:50%; border:3px solid white;"></div>`, iconSize:[20,20] });
-                L.marker(p.coords, { icon }).addTo(regionMap).bindPopup(`<h3>${p.name}</h3><button onclick="focusProvince('${p.name}')">Details</button>`);
-            });
-            mapInitialized = true;
-            renderProvinceStats();
-            setupFileUpload();
-        }
-
-        function renderProvinceStats() {
-            const cont = document.getElementById('provinceStats');
-            if (!cont) return;
-            cont.innerHTML = '';
-            const data = [
-                { name:"Aklan", capital:"Kalibo", projects:15, status:"Approved" },
-                { name:"Antique", capital:"San Jose", projects:12, status:"For Review" },
-                { name:"Capiz", capital:"Roxas City", projects:18, status:"Approved" },
-                { name:"Guimaras", capital:"Jordan", projects:8, status:"Approved" },
-                { name:"Iloilo", capital:"Iloilo City", projects:25, status:"Approved" },
-                { name:"Negros Occidental", capital:"Bacolod City", projects:22, status:"For Review" }
-            ];
-            data.forEach(p => {
-                const card = document.createElement('div');
-                card.className = 'province-stat-card';
-                card.onclick = () => focusProvince(p.name);
-                card.innerHTML = `<h4>${p.name}</h4><p><strong>Capital:</strong> ${p.capital}</p><p><strong>Projects:</strong> ${p.projects}</p><span class="status ${p.status==='Approved'?'approved':'review'}">${p.status}</span>`;
-                cont.appendChild(card);
-            });
-        }
-
-        function focusProvince(name) {
-            const coords = { Aklan:[11.7074,122.3630], Antique:[10.7435,121.9413], Capiz:[11.5853,122.7511], Guimaras:[10.6583,122.6233], Iloilo:[10.7202,122.5621], "Negros Occidental":[10.6710,122.9494] };
-            if (coords[name] && regionMap) {
-                regionMap.setView(coords[name], 10);
-                const ui = document.getElementById('uploadInfo');
-                ui.innerHTML = `Focused on ${name}`;
-                ui.className = 'upload-info show';
-                setTimeout(() => ui.className = 'upload-info', 3000);
-            }
-        }
-
-        function setupFileUpload() {
-            document.getElementById('shapefileUpload').addEventListener('change', handleFileSelect);
-        }
-
-        function handleFileSelect(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            if (file.size > 50*1024*1024) { alert('File >50MB'); return; }
-            const label = document.getElementById('uploadLabel');
-            const info = document.getElementById('uploadInfo');
-            label.classList.add('uploading');
-            label.innerHTML = '⏳ Processing...';
-            info.className = 'upload-info show';
-            info.innerHTML = 'Reading...';
-            const reader = new FileReader();
-            reader.onload = ev => {
-                try {
-                    const content = ev.target.result;
-                    let geojson;
-                    if (file.name.endsWith('.geojson') || file.name.endsWith('.json')) geojson = JSON.parse(content);
-                    else if (file.name.endsWith('.zip') && typeof shp !== 'undefined') {
-                        info.innerHTML = 'Parsing shapefile...';
-                        shp(file).then(g => addGeoJSONToMap(g, file.name.replace('.zip',''))).catch(err => { throw new Error('Invalid shapefile: '+err.message); });
-                        return;
-                    } else throw new Error('Unsupported file');
-                    addGeoJSONToMap(geojson, file.name);
-                } catch(err) {
-                    label.classList.remove('uploading');
-                    label.innerHTML = '📁 Upload GeoJSON or Shapefile (ZIP) (Max 50MB)';
-                    info.className = 'upload-info show error';
-                    info.innerHTML = '❌ '+err.message;
-                }
-            };
-            reader.onerror = () => {
-                label.classList.remove('uploading');
-                label.innerHTML = '📁 Upload GeoJSON or Shapefile (ZIP) (Max 50MB)';
-                info.className = 'upload-info show error';
-                info.innerHTML = '❌ Error reading file';
-            };
-            if (file.name.endsWith('.geojson') || file.name.endsWith('.json')) reader.readAsText(file);
-            else reader.readAsArrayBuffer(file);
-        }
-
-        function addGeoJSONToMap(geojson, name) {
-            if (!regionMap) return;
-            layerCounter++;
-            const layerId = `layer_${layerCounter}`;
-            const display = name || `Layer ${layerCounter}`;
-            const color = ['#8e44ad','#2980b9','#16a085','#c0392b','#d35400','#27ae60'][Math.floor(Math.random()*6)];
-            const layer = L.geoJSON(geojson, {
-                style: { color, weight:2, fillColor:color, fillOpacity:0.3 },
-                onEachFeature: (f,l) => {
-                    if (f.properties) {
-                        let pop = '<div><h4>Properties</h4>';
-                        for (let [k,v] of Object.entries(f.properties)) if (v) pop += `<p><strong>${escapeHtml(k)}:</strong> ${escapeHtml(String(v))}</p>`;
-                        pop += '</div>';
-                        l.bindPopup(pop);
-                    }
-                }
-            }).addTo(regionMap);
-            uploadedLayers.push({ id:layerId, name:display, layer, visible:true });
-            updateLayerSelect();
-            document.getElementById('clearLayersBtn').style.display = 'inline-flex';
-            const bounds = layer.getBounds();
-            if (bounds.isValid()) regionMap.fitBounds(bounds);
-            const label = document.getElementById('uploadLabel');
-            const info = document.getElementById('uploadInfo');
-            label.classList.remove('uploading');
-            label.innerHTML = '📁 Upload GeoJSON or Shapefile (ZIP) (Max 50MB)';
-            info.className = 'upload-info show success';
-            info.innerHTML = `✅ Loaded: ${display}`;
-        }
-
-        function updateLayerSelect() {
-            const container = document.getElementById('layerListContainer');
-            const sel = document.getElementById('layerSelect');
-            if (uploadedLayers.length) {
-                container.style.display = 'block';
-                sel.innerHTML = '<option value="">Select Layer to Toggle</option>';
-                uploadedLayers.forEach(l => {
-                    const opt = document.createElement('option');
-                    opt.value = l.id;
-                    opt.textContent = `${l.visible ? '👁️' : '👁️‍🗨️'} ${l.name}`;
-                    sel.appendChild(opt);
-                });
-            } else container.style.display = 'none';
-        }
-
-        function toggleLayerVisibility() {
-            const id = document.getElementById('layerSelect').value;
-            if (!id) return;
-            const l = uploadedLayers.find(x => x.id === id);
-            if (!l) return;
-            if (l.visible) { regionMap.removeLayer(l.layer); l.visible = false; }
-            else { l.layer.addTo(regionMap); l.visible = true; }
-            updateLayerSelect();
-            document.getElementById('layerSelect').value = id;
-        }
-
-        function clearUploadedLayers() {
-            uploadedLayers.forEach(l => { if (l.visible) regionMap.removeLayer(l.layer); });
-            uploadedLayers = [];
-            updateLayerSelect();
-            document.getElementById('clearLayersBtn').style.display = 'none';
-            document.getElementById('uploadInfo').className = 'upload-info';
-            document.getElementById('uploadInfo').innerHTML = '';
-            document.getElementById('shapefileUpload').value = '';
-        }
-
-        function showOnMap() { showSection('map'); setTimeout(() => regionMap?.invalidateSize(), 100); }
-
-        // ========== LAND USE PLANS ==========
-        function renderPlansTable() {
-            const tbody = document.getElementById('plansTableBody');
-            if (!tbody) return;
-            tbody.innerHTML = '';
-            landUsePlans.forEach(plan => {
-                let cls = 'status-pending';
-                if (plan.status === 'Approved') cls = 'status-approved';
-                else if (plan.status === 'For Review') cls = 'status-review';
-                const row = tbody.insertRow();
-                row.innerHTML = `
-                    <td>${escapeHtml(plan.lgu)}</td>
-                    <td>${escapeHtml(plan.province)}</td>
-                    <td>${escapeHtml(plan.planPeriod)}</td>
-                    <td><span class="status-badge ${cls}">${escapeHtml(plan.status)}</span></td>
-                    <td>${formatDate(plan.dateSubmitted)}</td>
-                    <td>${plan.dateApproved === 'Pending' ? 'Pending' : formatDate(plan.dateApproved)}</td>
-                    <td><div class="action-btns"><button class="action-btn view" onclick="viewPlan(${plan.id})">👁️ View</button><button class="action-btn edit" onclick="editPlan(${plan.id})">✏️ Edit</button><button class="action-btn delete" onclick="deletePlan(${plan.id})">🗑️ Delete</button></div></td>
-                `;
-            });
-        }
-
-        function filterPlans() {
-            const term = document.getElementById('planSearch').value.toLowerCase();
-            const prov = document.getElementById('provinceFilter').value;
-            const stat = document.getElementById('statusFilter').value;
-            const filtered = landUsePlans.filter(p => 
-                (p.lgu.toLowerCase().includes(term) || p.province.toLowerCase().includes(term)) &&
-                (!prov || p.province === prov) && (!stat || p.status === stat)
-            );
-            const tbody = document.getElementById('plansTableBody');
-            tbody.innerHTML = '';
-            filtered.forEach(plan => {
-                let cls = 'status-pending';
-                if (plan.status === 'Approved') cls = 'status-approved';
-                else if (plan.status === 'For Review') cls = 'status-review';
-                const row = tbody.insertRow();
-                row.innerHTML = `
-                    <td>${escapeHtml(plan.lgu)}</td>
-                    <td>${escapeHtml(plan.province)}</td>
-                    <td>${escapeHtml(plan.planPeriod)}</td>
-                    <td><span class="status-badge ${cls}">${escapeHtml(plan.status)}</span></td>
-                    <td>${formatDate(plan.dateSubmitted)}</td>
-                    <td>${plan.dateApproved === 'Pending' ? 'Pending' : formatDate(plan.dateApproved)}</td>
-                    <td><div class="action-btns"><button class="action-btn view" onclick="viewPlan(${plan.id})">👁️ View</button><button class="action-btn edit" onclick="editPlan(${plan.id})">✏️ Edit</button><button class="action-btn delete" onclick="deletePlan(${plan.id})">🗑️ Delete</button></div></td>
-                `;
-            });
-        }
-
-        function viewPlan(id) { const p = landUsePlans.find(x => x.id === id); if(p) openViewModal('View Land Use Plan', p); }
-        function editPlan(id) { const p = landUsePlans.find(x => x.id === id); if(p) openEditModal('Edit Land Use Plan', p, id, 'plan'); }
-        function deletePlan(id) { if(confirm('Delete?')) { const idx = landUsePlans.findIndex(x => x.id === id); if(idx!==-1) landUsePlans.splice(idx,1); renderPlansTable(); filterPlans(); alert('Deleted'); } }
-        function openViewModal(title, data) { const modal = document.getElementById('dataModal'); document.getElementById('modalTitle').textContent = title; let html='<div class="form-grid">'; for(let [k,v] of Object.entries(data)) if(k!=='id') html+=`<div class="form-group"><label>${k.replace(/([A-Z])/g,' $1').replace(/^./,s=>s.toUpperCase())}</label><input type="text" class="form-control" value="${escapeHtml(String(v))}" readonly></div>`; html+='</div><div style="text-align:right;"><button class="btn btn-primary" onclick="closeModal()">Close</button></div>'; document.getElementById('modalBody').innerHTML=html; modal.classList.add('active'); }
-        function openEditModal(title, data, id, type) { const modal = document.getElementById('dataModal'); document.getElementById('modalTitle').textContent = title; let html=`<form onsubmit="saveEdit(event, ${id}, '${type}')"><div class="form-grid">`; for(let [k,v] of Object.entries(data)) { if(k==='id') html+=`<div class="form-group"><label>ID</label><input type="text" class="form-control" name="${k}" value="${escapeHtml(String(v))}" readonly></div>`; else if(k==='status'||k==='province') html+=`<div class="form-group"><label>${k.charAt(0).toUpperCase()+k.slice(1)}</label><select class="form-control" name="${k}">${generateOptions(k,v)}</select></div>`; else if(k==='remarks') html+=`<div class="form-group full-width"><label>Remarks</label><textarea class="form-control" name="${k}" rows="3">${escapeHtml(String(v))}</textarea></div>`; else html+=`<div class="form-group"><label>${k.replace(/([A-Z])/g,' $1').replace(/^./,s=>s.toUpperCase())}</label><input type="text" class="form-control" name="${k}" value="${escapeHtml(String(v))}"></div>`; } html+=`</div><div style="text-align:right; margin-top:1rem;"><button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button><button type="submit" class="btn btn-success">Save Changes</button></div></form>`; document.getElementById('modalBody').innerHTML=html; modal.classList.add('active'); }
-        function generateOptions(field, cur) { let opts=''; if(field==='status') ['Pending','For Review','Approved','On Hold'].forEach(s=> opts+=`<option value="${s}" ${s===cur?'selected':''}>${s}</option>`); else if(field==='province') ['Aklan','Antique','Capiz','Guimaras','Iloilo','Negros Occidental'].forEach(p=> opts+=`<option value="${p}" ${p===cur?'selected':''}>${p}</option>`); return opts; }
-        function openAddModal() { const modal=document.getElementById('dataModal'); document.getElementById('modalTitle').textContent='Add New Land Use Plan'; document.getElementById('modalBody').innerHTML=`<form onsubmit="saveNewPlan(event)"><div class="form-grid"><div class="form-group"><label>LGU/Municipality</label><input type="text" class="form-control" name="lgu" required></div><div class="form-group"><label>Province</label><select class="form-control" name="province" required><option value="">Select</option><option value="Aklan">Aklan</option><option value="Antique">Antique</option><option value="Capiz">Capiz</option><option value="Guimaras">Guimaras</option><option value="Iloilo">Iloilo</option><option value="Negros Occidental">Negros Occidental</option></select></div><div class="form-group"><label>Plan Period</label><input type="text" class="form-control" name="planPeriod" placeholder="2024-2033" required></div><div class="form-group"><label>Status</label><select class="form-control" name="status" required><option value="Pending">Pending</option><option value="For Review">For Review</option><option value="Approved">Approved</option><option value="On Hold">On Hold</option></select></div><div class="form-group"><label>Date Submitted</label><input type="date" class="form-control" name="dateSubmitted" required></div><div class="form-group"><label>Date Approved</label><input type="date" class="form-control" name="dateApproved"></div><div class="form-group full-width"><label>Remarks</label><textarea class="form-control" name="remarks" rows="3"></textarea></div></div><div style="text-align:right; margin-top:1rem;"><button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button><button type="submit" class="btn btn-success">Save Plan</button></div></form>`; modal.classList.add('active'); }
-        function saveEdit(event, id, type) { event.preventDefault(); const fd=new FormData(event.target); if(type==='plan') { const idx=landUsePlans.findIndex(p=>p.id===id); if(idx!==-1) { ['lgu','province','planPeriod','status','dateSubmitted','dateApproved','remarks'].forEach(f=>{ if(fd.has(f)) landUsePlans[idx][f]=fd.get(f); }); } renderPlansTable(); filterPlans(); } closeModal(); alert('Updated'); }
-        function saveNewPlan(event) { event.preventDefault(); const fd=new FormData(event.target); const newId=landUsePlans.length?Math.max(...landUsePlans.map(p=>p.id))+1:1; landUsePlans.push({ id:newId, lgu:fd.get('lgu'), province:fd.get('province'), planPeriod:fd.get('planPeriod'), status:fd.get('status'), dateSubmitted:fd.get('dateSubmitted'), dateApproved:fd.get('dateApproved')||'Pending', remarks:fd.get('remarks')||'' }); renderPlansTable(); filterPlans(); closeModal(); alert('Added'); }
-        function exportData() { const dataStr=JSON.stringify(landUsePlans,null,2); const a=document.createElement('a'); a.href='data:application/json;charset=utf-8,'+encodeURIComponent(dataStr); a.download='land_use_plans_region6.json'; a.click(); alert('Exported'); }
-        function generateReport(type) { let title='', content=''; if(type==='annual') { title='Annual Report 2024'; content=`<p>Total Plans: ${landUsePlans.length}</p><p>Approved: ${landUsePlans.filter(p=>p.status==='Approved').length}</p><p>Ongoing Projects: ${projects.filter(p=>p.status==='Ongoing').length}</p><p>Total Budget: ₱${projects.reduce((s,p)=>s+p.budget,0).toLocaleString()}</p>`; } else if(type==='quarterly') { title='Q1 2024 Progress'; content='<p>Plans Reviewed: 5</p><p>Projects Started: 3</p><p>Budget Utilized: ₱125M</p>'; } else if(type==='project') { title='Project Status'; content=`<p>Ongoing: ${projects.filter(p=>p.status==='Ongoing').length}</p><p>Planning: ${projects.filter(p=>p.status==='Planning').length}</p>`; } else if(type==='environmental') { title='EIA Report'; content=`<p>Approved: ${eiaRecords.filter(e=>e.status==='Approved').length}</p><p>Under Review: ${eiaRecords.filter(e=>e.status==='Under Review').length}</p>`; } document.getElementById('modalTitle').textContent=title; document.getElementById('modalBody').innerHTML=`<div style="padding:1rem;">${content}</div><div style="text-align:right;"><button class="btn btn-primary" onclick="closeModal()">Close</button></div>`; document.getElementById('dataModal').classList.add('active'); }
-        function openAboutModal() { document.getElementById('modalTitle').textContent='About'; document.getElementById('modalBody').innerHTML=`<div><h3>ELUPDD Region VI</h3><p>Vision: Planned, resilient, sustainable communities.</p><p>Mission: Formulate CLUPs, protect environment, improve quality of life.</p><h4>Functions:</h4><ul><li>Review CLUPs</li><li>EIA monitoring</li><li>Urban development planning</li><li>Technical assistance to LGUs</li><li>Zoning implementation</li><li>Climate adaptation</li></ul></div><div style="text-align:right;"><button class="btn btn-primary" onclick="closeModal()">Close</button></div>`; document.getElementById('dataModal').classList.add('active'); }
-        function formatDate(d) { if(!d||d==='Pending') return d; return new Date(d).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'}); }
-        function closeModal() { document.getElementById('dataModal').classList.remove('active'); }
-
-        // ========== INIT ==========
+        // Initialize
         window.onload = () => {
-            loadCounter();
-            fetchReviewRecords();
-            fetchCertifications().then(() => renderCertificationsTable());
-            renderPlansTable();
-            document.getElementById('certificationNo').value = getNextCertificationNumber();
-            if (document.getElementById('landHoldingsContainer').children.length === 0) addLandHolding();
+            renderStats();
+            renderTable(clupData);
+            filteredData = [...clupData];
+            updateCharts(clupData);
+            updateDashboard();
         };
     </script>
 </body>
