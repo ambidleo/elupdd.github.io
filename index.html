@@ -292,7 +292,7 @@
                                 <tr><th>LGU/Province</th><th>Reviewer</th><th>Dates</th><th>Actions</th> </tr>
                             </thead>
                             <tbody id="reviewTableBody"></tbody>
-                         </table>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -362,12 +362,12 @@
                                 <tr><th>LGU/Municipality</th><th>Province</th><th>Plan Period</th><th>Status</th><th>Date Approved (Latest)</th><th>Actions</th> </tr>
                             </thead>
                             <tbody id="plansTableBody"></tbody>
-                         </table>
+                        </table>
                     </div>
                 </div>
             </div>
 
-            <!-- Site Zoning Certification Section with cascading auto-fill (MODIFIED) -->
+            <!-- Site Zoning Certification Section with cascading auto-fill (MODIFIED - FIXED) -->
             <div id="zoning" class="section" style="display: none;" role="region" aria-labelledby="zoning-heading">
                 <h1 id="zoning-heading" class="visually-hidden">Site Zoning Certification</h1>
                 <div class="cert-section">
@@ -523,7 +523,10 @@
                 localStorage.setItem('clupRecords', JSON.stringify(clupRecords));
                 renderClupTable();
                 updateClupChart();
-                refreshClupCascade();   // update cascading selects
+                // Refresh the province dropdown after data loads
+                if (document.getElementById('provinceSelect')) {
+                    populateProvinceSelect();
+                }
                 return clupRecords;
             } catch (error) {
                 console.warn("Google Sheets CLUP unavailable, using localStorage", error);
@@ -531,7 +534,10 @@
                 clupRecords = local ? JSON.parse(local) : [];
                 renderClupTable();
                 updateClupChart();
-                refreshClupCascade();
+                // Refresh the province dropdown after data loads
+                if (document.getElementById('provinceSelect')) {
+                    populateProvinceSelect();
+                }
                 return clupRecords;
             }
         }
@@ -562,7 +568,9 @@
                 clupRecords = stored;
                 renderClupTable();
                 updateClupChart();
-                refreshClupCascade();
+                if (document.getElementById('provinceSelect')) {
+                    populateProvinceSelect();
+                }
                 return true;
             }
         }
@@ -669,7 +677,9 @@
                 localStorage.setItem('clupRecords', JSON.stringify(clupRecords));
                 renderClupTable();
                 updateClupChart();
-                refreshClupCascade();
+                if (document.getElementById('provinceSelect')) {
+                    populateProvinceSelect();
+                }
                 closeModal();
                 alert('Updated successfully.');
             } else alert('Failed to update.');
@@ -684,7 +694,9 @@
                 localStorage.setItem('clupRecords', JSON.stringify(clupRecords));
                 renderClupTable();
                 updateClupChart();
-                refreshClupCascade();
+                if (document.getElementById('provinceSelect')) {
+                    populateProvinceSelect();
+                }
                 alert('Deleted.');
             } else alert('Failed to delete.');
         }
@@ -731,7 +743,9 @@
                 localStorage.setItem('clupRecords', JSON.stringify(clupRecords));
                 renderClupTable();
                 updateClupChart();
-                refreshClupCascade();
+                if (document.getElementById('provinceSelect')) {
+                    populateProvinceSelect();
+                }
                 closeModal();
                 alert('Added successfully.');
             } else alert('Failed to add.');
@@ -747,25 +761,39 @@
             alert('Exported.');
         }
 
-        // ========== CASCADING SELECTS FOR APPROVED CLUP - MODIFIED ==========
-        // Shows ALL provinces from Google Sheets (not just approved)
+        // ========== CASCADING SELECTS FOR APPROVED CLUP - FIXED ==========
+        // Shows ALL provinces from Google Sheets (all statuses)
         function populateProvinceSelect() {
             const select = document.getElementById('provinceSelect');
             if (!select) return;
+            
             select.innerHTML = '<option value="">-- Choose Province --</option>';
             const provinces = new Set();
+            
             // Get ALL provinces from clupRecords (all statuses)
-            clupRecords.forEach(plan => {
-                if (plan.Province) {
-                    provinces.add(plan.Province);
-                }
-            });
+            if (clupRecords && clupRecords.length > 0) {
+                clupRecords.forEach(plan => {
+                    if (plan.Province) {
+                        provinces.add(plan.Province);
+                    }
+                });
+            } else {
+                // Fallback sample data if no records
+                const fallbackProvinces = ['Aklan', 'Antique', 'Capiz', 'Guimaras', 'Iloilo', 'Negros Occidental'];
+                fallbackProvinces.forEach(p => provinces.add(p));
+            }
+            
             Array.from(provinces).sort().forEach(prov => {
                 const opt = document.createElement('option');
                 opt.value = prov;
                 opt.textContent = prov;
                 select.appendChild(opt);
             });
+            
+            // Enable the province select if there are options
+            if (select.options.length > 1) {
+                select.disabled = false;
+            }
         }
 
         function filterLguByProvince() {
@@ -776,7 +804,7 @@
             lguSelect.disabled = !selectedProvince;
             if (!selectedProvince) return;
 
-            // Show LGUs from the selected province (all statuses, but we'll prioritize approved)
+            // Show LGUs from the selected province (all statuses)
             const lgus = clupRecords.filter(plan => plan.Province === selectedProvince);
             const unique = new Map();
             lgus.forEach(plan => {
@@ -789,16 +817,28 @@
                 const opt = document.createElement('option');
                 opt.value = key;
                 // Add status indicator to dropdown
-                const statusIndicator = val.record.Status === 'Approved' ? ' ✅' : (val.record.Status === 'For Review' ? ' 📝' : ' ⏳');
+                let statusIndicator = '';
+                if (val.record.Status === 'Approved') statusIndicator = ' ✅';
+                else if (val.record.Status === 'For Review') statusIndicator = ' 📝';
+                else if (val.record.Status === 'Pending') statusIndicator = ' ⏳';
+                else if (val.record.Status === 'On Hold') statusIndicator = ' 🔒';
                 opt.textContent = val.lgu + statusIndicator;
                 opt.dataset.lgu = val.lgu;
                 opt.dataset.province = val.province;
                 opt.dataset.record = JSON.stringify(val.record);
                 lguSelect.appendChild(opt);
             });
+            
+            // Enable LGU select if there are options
+            if (lguSelect.options.length > 1) {
+                lguSelect.disabled = false;
+            } else {
+                lguSelect.innerHTML = '<option value="">-- No LGUs found --</option>';
+                lguSelect.disabled = true;
+            }
         }
 
-        // MODIFIED: Fill from approved CLUP - shows only latest plan data
+        // Fills from selected LGU - shows only latest plan data
         function fillFromApprovedCLUP() {
             const lguSelect = document.getElementById('lguSelect');
             const selectedOption = lguSelect.options[lguSelect.selectedIndex];
@@ -828,10 +868,12 @@
             // Show success message
             if (plan.Status !== 'Approved') {
                 alert(`Note: ${plan.LGU} CLUP status is "${plan.Status}". Data filled from latest record.`);
+            } else {
+                alert(`CLUP data for ${plan.LGU} loaded successfully!`);
             }
         }
 
-        // MODIFIED: Always show cascade div when Approved radio is selected
+        // Shows/hides cascade div based on radio selection
         function toggleClupCascade() {
             const approvedRadio = document.querySelector('input[name="clupStatus"][value="approved"]');
             const cascadeDiv = document.getElementById('clupCascadeDiv');
@@ -839,6 +881,7 @@
                 const show = approvedRadio.checked;
                 cascadeDiv.style.display = show ? 'block' : 'none';
                 if (show) {
+                    // Refresh province dropdown when showing
                     populateProvinceSelect();
                     document.getElementById('lguSelect').innerHTML = '<option value="">-- First select province --</option>';
                     document.getElementById('lguSelect').disabled = true;
@@ -1214,7 +1257,7 @@
                     container.appendChild(row);
                 });
             } else addLandHolding();
-            toggleClupCascade(); // ensure cascading selects are visible if needed
+            toggleClupCascade();
             showSection('zoning');
         }
 
@@ -1251,7 +1294,7 @@
             document.getElementById('certificationNo').value = getNextCertificationNumber();
             document.getElementById('series').value = '2002';
             currentEditingZoningId = null;
-            toggleClupCascade(); // reset cascading visibility
+            toggleClupCascade();
         }
 
         function addLandHolding() {
