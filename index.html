@@ -289,10 +289,10 @@
                         <table id="reviewTable" aria-label="CLUP and PDPFP review records">
                             <caption class="visually-hidden">List of CLUP and PDPFP review entries</caption>
                             <thead>
-                                <tr><th>LGU/Province</th><th>Reviewer</th><th>Dates</th><th>Actions</th></tr>
+                                <tr><th>LGU/Province</th><th>Reviewer</th><th>Dates</th><th>Actions</th> </tr>
                             </thead>
                             <tbody id="reviewTableBody"></tbody>
-                        </table>
+                         </table>
                     </div>
                 </div>
             </div>
@@ -359,15 +359,15 @@
                         <table id="plansTable" aria-label="Land Use Plans">
                             <caption class="visually-hidden">List of Comprehensive Land Use Plans in Region VI</caption>
                             <thead>
-                                <tr><th>LGU/Municipality</th><th>Province</th><th>Plan Period</th><th>Status</th><th>Date Approved (Latest)</th><th>Actions</th></tr>
+                                <tr><th>LGU/Municipality</th><th>Province</th><th>Plan Period</th><th>Status</th><th>Date Approved (Latest)</th><th>Actions</th> </tr>
                             </thead>
                             <tbody id="plansTableBody"></tbody>
-                        </table>
+                         </table>
                     </div>
                 </div>
             </div>
 
-            <!-- Site Zoning Certification Section with cascading auto-fill -->
+            <!-- Site Zoning Certification Section with cascading auto-fill (MODIFIED) -->
             <div id="zoning" class="section" style="display: none;" role="region" aria-labelledby="zoning-heading">
                 <h1 id="zoning-heading" class="visually-hidden">Site Zoning Certification</h1>
                 <div class="cert-section">
@@ -401,8 +401,8 @@
                                 <label class="radio-option"><input type="radio" name="clupStatus" value="none"> Without CLUP/ZO</label>
                             </div>
                         </div>
-                        <!-- New cascading selects for approved CLUP -->
-                        <div id="clupCascadeDiv" style="margin-top: 1rem; padding: 1rem; background: #e8f0fe; border-radius: 8px; display: none;">
+                        <!-- Cascading selects for approved CLUP - shows when Approved radio is selected -->
+                        <div id="clupCascadeDiv" style="margin-top: 1rem; padding: 1rem; background: #e8f0fe; border-radius: 8px; display: block;">
                             <div class="form-grid" style="margin-bottom: 1rem;">
                                 <div class="form-group">
                                     <label for="provinceSelect">Select Province</label>
@@ -417,7 +417,7 @@
                                     </select>
                                 </div>
                             </div>
-                            <small>Automatically fills City/Municipality, Province, Department Circular No., and Date of Approval from the approved CLUP record.</small>
+                            <small>Automatically fills City/Municipality, Province, Department Circular No. (Latest Plan), and Date of Approval from the approved CLUP record.</small>
                         </div>
 
                         <div id="approvedDetails" style="margin-top:1rem; padding:1rem; background:#f8f4e8; border-radius:8px;">
@@ -425,7 +425,7 @@
                                 <div class="form-group"><label for="city">City/Municipality</label><input type="text" class="form-control" id="city"></div>
                                 <div class="form-group"><label for="province">Province</label><input type="text" class="form-control" id="province" placeholder="e.g., Iloilo, Aklan, etc."></div>
                                 <div class="form-group"><label for="approvedBy">Approved by</label><input type="text" class="form-control" id="approvedBy"></div>
-                                <div class="form-group"><label for="circularNo">Department Circular No.</label><input type="text" class="form-control" id="circularNo" placeholder="Auto-filled from CLUP resolutions"></div>
+                                <div class="form-group"><label for="circularNo">Department Circular No.</label><input type="text" class="form-control" id="circularNo" placeholder="Auto-filled from latest CLUP resolution"></div>
                                 <div class="form-group"><label for="approvalDate">Date of Approval</label><input type="date" class="form-control" id="approvalDate"></div>
                             </div>
                             <div id="approvalDatesRef" style="margin-top: 0.5rem; font-size: 0.85rem; color: #555; display: none;">
@@ -445,7 +445,7 @@
                 </div>
                 <div class="cert-section" id="recordsSection" style="display:none;">
                     <div class="cert-title"><span aria-hidden="true">📋</span> Saved Certifications</div>
-                    <div style="overflow-x:auto;"><table class="cert-table" id="certificationsTable"><thead><tr><th>Certification No.</th><th>No. of Parcels</th><th>Location</th><th>Total Area</th><th>Date Issued</th><th>Requested By</th><th>Actions</th></tr></thead><tbody id="certificationsTableBody"></tbody></table></div>
+                    <div style="overflow-x:auto;"><table class="cert-table" id="certificationsTable"><thead> <tr><th>Certification No.</th><th>No. of Parcels</th><th>Location</th><th>Total Area</th><th>Date Issued</th><th>Requested By</th><th>Actions</th></tr> </thead><tbody id="certificationsTableBody"></tbody></table></div>
                     <div style="text-align:right; margin-top:1rem;"><button class="btn btn-secondary" onclick="toggleRecordsView()">Hide Records</button></div>
                 </div>
             </div>
@@ -747,14 +747,16 @@
             alert('Exported.');
         }
 
-        // ========== CASCADING SELECTS FOR APPROVED CLUP ==========
+        // ========== CASCADING SELECTS FOR APPROVED CLUP - MODIFIED ==========
+        // Shows ALL provinces from Google Sheets (not just approved)
         function populateProvinceSelect() {
             const select = document.getElementById('provinceSelect');
             if (!select) return;
             select.innerHTML = '<option value="">-- Choose Province --</option>';
             const provinces = new Set();
+            // Get ALL provinces from clupRecords (all statuses)
             clupRecords.forEach(plan => {
-                if (plan.Status === 'Approved' && plan.Province) {
+                if (plan.Province) {
                     provinces.add(plan.Province);
                 }
             });
@@ -774,7 +776,8 @@
             lguSelect.disabled = !selectedProvince;
             if (!selectedProvince) return;
 
-            const lgus = clupRecords.filter(plan => plan.Status === 'Approved' && plan.Province === selectedProvince);
+            // Show LGUs from the selected province (all statuses, but we'll prioritize approved)
+            const lgus = clupRecords.filter(plan => plan.Province === selectedProvince);
             const unique = new Map();
             lgus.forEach(plan => {
                 const key = `${plan.LGU}|${plan.Province}`;
@@ -785,7 +788,9 @@
             unique.forEach((val, key) => {
                 const opt = document.createElement('option');
                 opt.value = key;
-                opt.textContent = val.lgu;
+                // Add status indicator to dropdown
+                const statusIndicator = val.record.Status === 'Approved' ? ' ✅' : (val.record.Status === 'For Review' ? ' 📝' : ' ⏳');
+                opt.textContent = val.lgu + statusIndicator;
                 opt.dataset.lgu = val.lgu;
                 opt.dataset.province = val.province;
                 opt.dataset.record = JSON.stringify(val.record);
@@ -793,6 +798,7 @@
             });
         }
 
+        // MODIFIED: Fill from approved CLUP - shows only latest plan data
         function fillFromApprovedCLUP() {
             const lguSelect = document.getElementById('lguSelect');
             const selectedOption = lguSelect.options[lguSelect.selectedIndex];
@@ -801,26 +807,31 @@
             if (!recordData) return;
             const plan = JSON.parse(recordData);
 
+            // Auto-fill City/Municipality and Province
             document.getElementById('city').value = plan.LGU || '';
             document.getElementById('province').value = plan.Province || '';
 
-            const firstRes = plan.First_Plan_Res || '';
+            // Show ONLY the latest plan resolution (Latest_Plan_Res)
             const latestRes = plan.Latest_Plan_Res || '';
-            let circularNo = '';
-            if (firstRes && latestRes) circularNo = `${firstRes} | ${latestRes}`;
-            else if (firstRes) circularNo = firstRes;
-            else if (latestRes) circularNo = latestRes;
-            document.getElementById('circularNo').value = circularNo;
+            document.getElementById('circularNo').value = latestRes || 'No resolution on file';
 
+            // Show the latest approval date
             const latestDate = plan.Latest_Date_of_Approval ? plan.Latest_Date_of_Approval.split(' ')[0] : '';
             document.getElementById('approvalDate').value = latestDate;
 
+            // Show approval history reference (optional)
             const firstDate = plan.First_Plan_Date_of_Approval ? plan.First_Plan_Date_of_Approval.split(' ')[0] : '';
             document.getElementById('firstApprovalDateRef').textContent = firstDate || '—';
             document.getElementById('latestApprovalDateRef').textContent = latestDate || '—';
             document.getElementById('approvalDatesRef').style.display = 'block';
+            
+            // Show success message
+            if (plan.Status !== 'Approved') {
+                alert(`Note: ${plan.LGU} CLUP status is "${plan.Status}". Data filled from latest record.`);
+            }
         }
 
+        // MODIFIED: Always show cascade div when Approved radio is selected
         function toggleClupCascade() {
             const approvedRadio = document.querySelector('input[name="clupStatus"][value="approved"]');
             const cascadeDiv = document.getElementById('clupCascadeDiv');
@@ -833,6 +844,11 @@
                     document.getElementById('lguSelect').disabled = true;
                 } else {
                     document.getElementById('approvalDatesRef').style.display = 'none';
+                    // Clear auto-filled fields when switching away from Approved
+                    document.getElementById('city').value = '';
+                    document.getElementById('province').value = '';
+                    document.getElementById('circularNo').value = '';
+                    document.getElementById('approvalDate').value = '';
                 }
             }
         }
