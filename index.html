@@ -562,7 +562,7 @@
 
     <script>
         // ========== CONFIGURATION ==========
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzo9w2C1MsrwFrwJqz-ecdMtSmYI7RyFoVgXptUARe1BJNc3SaLO3BjbCbwhZyNp33OWw/exec";
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwKq13jAJ75UDWAyIdzEoq4EeueJWBF0LiVsP7XwkHgUj9kZy1ns3movDUL_DdIwzWtog/exec";
 
         // ========== SYNC MECHANISM VARIABLES ==========
         let isGoogleSheetsOnline = true;
@@ -1026,7 +1026,7 @@
             }, 2000);
         }
 
-        // ========== CLUP DATA MANAGEMENT WITH APPROVED BY ==========
+        // ========== CLUP DATA MANAGEMENT ==========
         let clupRecords = [];
         let clupChart = null;
         let currentEditingClupId = null;
@@ -1151,10 +1151,10 @@
                         <div class="form-group"><label>Date Approved (Latest)</label><input type="date" class="form-control" name="Latest_Date_of_Approval" value="${rec.Latest_Date_of_Approval ? rec.Latest_Date_of_Approval.split(' ')[0] : ''}"></div>
                         <div class="form-group"><label>Latest Resolution</label><input type="text" class="form-control" name="Latest_Plan_Res" value="${escapeHtml(rec.Latest_Plan_Res || '')}"></div>
                         <div class="form-group"><label>Approved By</label>
-                            <select class="form-control" name="Approved_By" required>
+                            <select class="form-control" name="Approved_By">
                                 <option value="">Select Approving Body</option>
-                                <option value="DHSUD" ${rec.Approved_By === 'DHSUD' ? 'selected' : ''}>DHSUD (Department of Human Settlements and Urban Development)</option>
-                                <option value="Sangguniang Panlalawigan" ${rec.Approved_By === 'Sangguniang Panlalawigan' ? 'selected' : ''}>Sangguniang Panlalawigan (Provincial Board)</option>
+                                <option value="DHSUD" ${rec.Approved_By === 'DHSUD' ? 'selected' : ''}>DHSUD</option>
+                                <option value="Sangguniang Panlalawigan" ${rec.Approved_By === 'Sangguniang Panlalawigan' ? 'selected' : ''}>Sangguniang Panlalawigan</option>
                             </select>
                         </div>
                     </div>
@@ -1223,12 +1223,12 @@
                         <div class="form-group"><label>Latest Plan Period</label><input type="text" class="form-control" name="Latest_Plan_PlanningPeriod" placeholder="e.g., 2020-2029"></div>
                         <div class="form-group"><label>Status</label><select class="form-control" name="Status">${['Pending','For Review','Approved','On Hold'].map(s => `<option value="${s}">${s}</option>`).join('')}</select></div>
                         <div class="form-group"><label>Date Approved (Latest)</label><input type="date" class="form-control" name="Latest_Date_of_Approval"></div>
-                        <div class="form-group"><label>Latest Resolution</label><input type="text" class="form-control" name="Latest_Plan_Res" placeholder="e.g., DC 2024-001 or SP Res. 2024-001"></div>
+                        <div class="form-group"><label>Latest Resolution</label><input type="text" class="form-control" name="Latest_Plan_Res"></div>
                         <div class="form-group"><label>Approved By</label>
-                            <select class="form-control" name="Approved_By" required>
+                            <select class="form-control" name="Approved_By">
                                 <option value="">Select Approving Body</option>
-                                <option value="DHSUD">DHSUD (Department of Human Settlements and Urban Development)</option>
-                                <option value="Sangguniang Panlalawigan">Sangguniang Panlalawigan (Provincial Board)</option>
+                                <option value="DHSUD">DHSUD</option>
+                                <option value="Sangguniang Panlalawigan">Sangguniang Panlalawigan</option>
                             </select>
                         </div>
                     </div>
@@ -1254,8 +1254,8 @@
                 First_Plan_Date_of_Approval: '',
                 Approved_By: form.Approved_By ? form.Approved_By.value : ''
             };
-            if (!newRecord.LGU || !newRecord.Province || !newRecord.Approved_By) { 
-                alert('Please fill all required fields including Approved By.'); 
+            if (!newRecord.LGU || !newRecord.Province) { 
+                alert('Please fill required fields.'); 
                 return false; 
             }
             const success = await saveClupToSheet(newRecord, 'add');
@@ -1331,16 +1331,14 @@
             alert('Exported.');
         }
 
-        // ========== CASCADING SELECTS WITH APPROVED BY FIX ==========
+        // ========== CASCADING SELECTS ==========
         function populateProvinceSelect() {
             const select = document.getElementById('provinceSelect');
             if (!select) return;
             select.innerHTML = '<option value="">-- Choose Province --</option>';
             const provinces = new Set();
             if (clupRecords && clupRecords.length > 0) {
-                clupRecords.forEach(plan => { 
-                    if (plan.Province) provinces.add(plan.Province); 
-                });
+                clupRecords.forEach(plan => { if (plan.Province) provinces.add(plan.Province); });
             } else {
                 ['Aklan','Antique','Capiz','Guimaras','Iloilo','Negros Occidental'].forEach(p => provinces.add(p));
             }
@@ -1368,18 +1366,7 @@
                 if (!unique.has(key)) unique.set(key, { 
                     lgu: plan.LGU, 
                     province: plan.Province, 
-                    record: {
-                        ID: plan.ID,
-                        LGU: plan.LGU,
-                        Province: plan.Province,
-                        Latest_Plan_PlanningPeriod: plan.Latest_Plan_PlanningPeriod,
-                        Status: plan.Status,
-                        Latest_Date_of_Approval: plan.Latest_Date_of_Approval,
-                        Latest_Plan_Res: plan.Latest_Plan_Res,
-                        First_Plan_Res: plan.First_Plan_Res,
-                        First_Plan_Date_of_Approval: plan.First_Plan_Date_of_Approval,
-                        Approved_By: plan.Approved_By || ''
-                    }
+                    record: plan 
                 });
             });
             
@@ -1387,16 +1374,11 @@
                 const opt = document.createElement('option');
                 opt.value = val.lgu;
                 let statusIndicator = '';
-                let approvedByIndicator = '';
-                
                 if (val.record.Status === 'Approved') statusIndicator = ' ✅';
                 else if (val.record.Status === 'For Review') statusIndicator = ' 📝';
                 else if (val.record.Status === 'Pending') statusIndicator = ' ⏳';
                 
-                if (val.record.Approved_By === 'DHSUD') approvedByIndicator = ' [DHSUD]';
-                else if (val.record.Approved_By === 'Sangguniang Panlalawigan') approvedByIndicator = ' [SP]';
-                
-                opt.textContent = val.lgu + statusIndicator + approvedByIndicator;
+                opt.textContent = val.lgu + statusIndicator;
                 opt.dataset.record = JSON.stringify(val.record);
                 lguSelect.appendChild(opt);
             });
@@ -1419,9 +1401,6 @@
             
             const plan = JSON.parse(recordData);
             
-            console.log('Selected Plan:', plan);
-            console.log('Approved_By value:', plan.Approved_By);
-            
             document.getElementById('city').value = plan.LGU || '';
             document.getElementById('province').value = plan.Province || '';
             document.getElementById('circularNo').value = plan.Latest_Plan_Res || 'No resolution on file';
@@ -1438,27 +1417,11 @@
             const approvedByValue = plan.Approved_By || '';
             const approvedByField = document.getElementById('approvedBy');
             
-            if (approvedByField) {
-                if (approvedByValue) {
-                    approvedByField.value = approvedByValue;
-                    console.log('Approved By set to:', approvedByValue);
-                } else {
-                    approvedByField.value = '';
-                    console.log('No Approved By value found in CLUP record');
-                }
+            if (approvedByField && approvedByValue) {
+                approvedByField.value = approvedByValue;
             }
             
-            // Also update the circular number label based on approved by
-            const circularNoLabel = document.querySelector('label[for="circularNo"]');
-            if (circularNoLabel && approvedByValue) {
-                if (approvedByValue === 'DHSUD') {
-                    circularNoLabel.innerHTML = 'Department Circular No. <span style="color: red;">*</span>';
-                } else if (approvedByValue === 'Sangguniang Panlalawigan') {
-                    circularNoLabel.innerHTML = 'SP Resolution No. <span style="color: red;">*</span>';
-                }
-            }
-            
-            alert(`CLUP data for ${plan.LGU} loaded successfully!\nApproved By: ${approvedByValue || 'Not specified in CLUP record'}`);
+            alert(`CLUP data for ${plan.LGU} loaded successfully!`);
         }
 
         function toggleClupCascade() {
@@ -1823,18 +1786,18 @@
             const tbody = document.getElementById('certificationsTableBody');
             if (!tbody) return;
             tbody.innerHTML = '';
-            if (!zoningCertifications.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No records found.您</tr>'; return; }
+            if (!zoningCertifications.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No records found.</td></tr>'; return; }
             const sorted = [...zoningCertifications].sort((a,b) => new Date(b.dateIssued) - new Date(a.dateIssued));
             sorted.forEach(rec => {
                 const row = tbody.insertRow();
                 row.innerHTML = `
-                    <td>${escapeHtml(rec.certificationNo)}</td
-                    <td>${escapeHtml(rec.parcels)}</td
-                    <td>${escapeHtml(rec.location)}</td
-                    <td>${escapeHtml(rec.totalArea)} ha</td
-                    <td>${formatDate(rec.dateIssued)}</td
-                    <td>${escapeHtml(rec.requestedBy)}</td
-                    <td><div class="action-btns"><button class="action-btn view" onclick="viewZoningRecord(${rec.id})">👁️ View</button><button class="action-btn edit" onclick="editZoningRecord(${rec.id})">✏️ Edit</button><button class="action-btn print" onclick="printZoningRecord(${rec.id})">🖨️ Print</button><button class="action-btn delete" onclick="deleteZoningRecord(${rec.id})">🗑️ Delete</button></div></td
+                    <td>${escapeHtml(rec.certificationNo)}</td>
+                    <td>${escapeHtml(rec.parcels)}</td>
+                    <td>${escapeHtml(rec.location)}</td>
+                    <td>${escapeHtml(rec.totalArea)} ha</td>
+                    <td>${formatDate(rec.dateIssued)}</td>
+                    <td>${escapeHtml(rec.requestedBy)}</td>
+                    <td><div class="action-btns"><button class="action-btn view" onclick="viewZoningRecord(${rec.id})">👁️ View</button><button class="action-btn edit" onclick="editZoningRecord(${rec.id})">✏️ Edit</button><button class="action-btn print" onclick="printZoningRecord(${rec.id})">🖨️ Print</button><button class="action-btn delete" onclick="deleteZoningRecord(${rec.id})">🗑️ Delete</button></div></td>
                 `;
             });
         }
@@ -2017,8 +1980,8 @@
                             <tr><th style="border:1px solid #000; padding:0.3cm; background-color: #000; color: #fff; font-weight: bold;">Registered Owner</th><th style="border:1px solid #000; padding:0.3cm; background-color: #000; color: #fff; font-weight: bold;">Lot Number</th><th style="border:1px solid #000; padding:0.3cm; background-color: #000; color: #fff; font-weight: bold;">OCT/TCT No.</th><th style="border:1px solid #000; padding:0.3cm; background-color: #000; color: #fff; font-weight: bold;">Area Per Title (Ha)</th><th style="border:1px solid #000; padding:0.3cm; background-color: #000; color: #fff; font-weight: bold;">Area Applied for Conversion (Ha)</th><th style="border:1px solid #000; padding:0.3cm; background-color: #000; color: #fff; font-weight: bold;">Zone Classification</th></tr>
                         </thead>
                         <tbody>
-                            <tr><td style="border:1px solid #000; padding:0.3cm;">______________________</td<td style="border:1px solid #000; padding:0.3cm;">______________</td<td style="border:1px solid #000; padding:0.3cm;">______________________</td<td style="border:1px solid #000; padding:0.3cm; text-align:right;">${escapeHtml(totalArea)}</td<td style="border:1px solid #000; padding:0.3cm;">___________</td<td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(proposedUse)}</td</tr>
-                            <tr><td colspan="3" style="border:1px solid #000; padding:0.3cm; text-align:right;"><strong>Total</strong></td<td style="border:1px solid #000; padding:0.3cm; text-align:right; font-weight: bold;"><strong>${escapeHtml(totalArea)}</strong></td<td style="border:1px solid #000; padding:0.3cm;">&nbsp;</td<td style="border:1px solid #000; padding:0.3cm;">&nbsp;</td</tr>
+                            <tr><td style="border:1px solid #000; padding:0.3cm;">______________________</td><td style="border:1px solid #000; padding:0.3cm;">______________</td><td style="border:1px solid #000; padding:0.3cm;">______________________</td><td style="border:1px solid #000; padding:0.3cm; text-align:right;">${escapeHtml(totalArea)}</td><td style="border:1px solid #000; padding:0.3cm;">___________</td><td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(proposedUse)}</td></tr>
+                            <tr><td colspan="3" style="border:1px solid #000; padding:0.3cm; text-align:right;"><strong>Total</strong></td><td style="border:1px solid #000; padding:0.3cm; text-align:right; font-weight: bold;"><strong>${escapeHtml(totalArea)}</strong></td><td style="border:1px solid #000; padding:0.3cm;">&nbsp;</td><td style="border:1px solid #000; padding:0.3cm;">&nbsp;</td></tr>
                         </tbody>
                     </table>`;
             } else {
@@ -2027,9 +1990,9 @@
                 landHoldingsArray.forEach(h => {
                     const area = h.areaPerTitle ? parseFloat(h.areaPerTitle) : 0;
                     totalAreaSum += area;
-                    rowsHtml += `<tr><td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(h.registeredOwner || '______________________')}</td<td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(h.lotNo || '______________')}</td<td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(h.tctNo || '______________________')}</td<td style="border:1px solid #000; padding:0.3cm; text-align:right;">${area.toFixed(4)}</td<td style="border:1px solid #000; padding:0.3cm;">___________</td<td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(h.zoneclass || '______________________')}</td</tr>`;
+                    rowsHtml += `<tr><td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(h.registeredOwner || '______________________')}</td><td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(h.lotNo || '______________')}</td><td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(h.tctNo || '______________________')}</td><td style="border:1px solid #000; padding:0.3cm; text-align:right;">${area.toFixed(4)}</td><td style="border:1px solid #000; padding:0.3cm;">___________</td><td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(h.zoneclass || '______________________')}</td></tr>`;
                 });
-                rowsHtml += `<tr><td colspan="3" style="border:1px solid #000; padding:0.3cm; text-align:right;"><strong>Total</strong></td<td style="border:1px solid #000; padding:0.3cm; text-align:right; font-weight: bold;"><strong>${totalAreaSum.toFixed(4)}</strong></td<td style="border:1px solid #000; padding:0.3cm;">&nbsp;</td<td style="border:1px solid #000; padding:0.3cm;">&nbsp;</td</tr>`;
+                rowsHtml += `<tr><td colspan="3" style="border:1px solid #000; padding:0.3cm; text-align:right;"><strong>Total</strong></td><td style="border:1px solid #000; padding:0.3cm; text-align:right; font-weight: bold;"><strong>${totalAreaSum.toFixed(4)}</strong></td><td style="border:1px solid #000; padding:0.3cm;">&nbsp;</td><td style="border:1px solid #000; padding:0.3cm;">&nbsp;</td></tr>`;
                 landHoldingsHtml = `<table class="land-holdings-table" style="width:100%; border-collapse:collapse; margin:0.5cm 0;"><thead><tr><th style="border:1px solid #000; padding:0.3cm; background-color: #000; color: #fff; font-weight: bold;">Registered Owner</th><th style="border:1px solid #000; padding:0.3cm; background-color: #000; color: #fff; font-weight: bold;">Lot Number</th><th style="border:1px solid #000; padding:0.3cm; background-color: #000; color: #fff; font-weight: bold;">OCT/TCT No.</th><th style="border:1px solid #000; padding:0.3cm; background-color: #000; color: #fff; font-weight: bold;">Area Per Title (Ha)</th><th style="border:1px solid #000; padding:0.3cm; background-color: #000; color: #fff; font-weight: bold;">Area Applied for Conversion (Ha)</th><th style="border:1px solid #000; padding:0.3cm; background-color: #000; color: #fff; font-weight: bold;">Zone Classification</th></tr></thead><tbody>${rowsHtml}</tbody></table>`;
             }
 
