@@ -246,7 +246,7 @@
             width: 100%;
         }
         
-        /* Sync status indicator styles - NEW ADDITION */
+        /* Sync status indicator styles */
         .sync-status {
             position: fixed;
             bottom: 20px;
@@ -277,6 +277,42 @@
             0% { opacity: 1; }
             50% { opacity: 0.5; }
             100% { opacity: 1; }
+        }
+        
+        /* Loading overlay for sync operations */
+        .sync-loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 20000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        .sync-loading.active {
+            display: flex;
+        }
+        .sync-loading-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -400,7 +436,7 @@
                 </div>
             </div>
 
-            <!-- Site Zoning Certification Section with cascading auto-fill and PRINT FUNCTIONS -->
+            <!-- Site Zoning Certification Section -->
             <div id="zoning" class="section" style="display: none;" role="region" aria-labelledby="zoning-heading">
                 <h1 id="zoning-heading" class="visually-hidden">Site Zoning Certification</h1>
                 <div class="cert-section">
@@ -434,7 +470,6 @@
                                 <label class="radio-option"><input type="radio" name="clupStatus" value="none"> Without CLUP/ZO</label>
                             </div>
                         </div>
-                        <!-- Cascading selects for approved CLUP -->
                         <div id="clupCascadeDiv" style="margin-top: 1rem; padding: 1rem; background: #e8f0fe; border-radius: 8px; display: block;">
                             <div class="form-grid" style="margin-bottom: 1rem;">
                                 <div class="form-group">
@@ -514,6 +549,12 @@
     </main>
 
     <div id="printSection" style="display:none;"></div>
+    <div id="syncLoading" class="sync-loading">
+        <div class="sync-loading-content">
+            <div class="spinner"></div>
+            <p>Syncing data with server...</p>
+        </div>
+    </div>
 
     <footer role="contentinfo">
         <p>Environmental Land Use and Urban Planning Development Division</p>
@@ -525,9 +566,9 @@
 
     <script>
         // ========== CONFIGURATION ==========
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzo9w2C1MsrwFrwJqz-ecdMtSmYI7RyFoVgXptUARe1BJNc3SaLO3BjbCbwhZyNp33OWw/exec";
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby_3yZk_MC3lm6VFo80Eu240oPbIOMPtDmm-TZ-iwuFtX8W1MYte3Ku-gGkxeFlYCo8Pw/exec";
 
-        // ========== SYNC MECHANISM VARIABLES (NEW) ==========
+        // ========== SYNC MECHANISM VARIABLES ==========
         let isGoogleSheetsOnline = true;
         let syncInProgress = false;
         let pendingSyncData = {
@@ -535,6 +576,10 @@
             review: [],
             zoning: []
         };
+        
+        // Lock mechanism for certification number generation
+        let certNumberLock = false;
+        let certNumberQueue = [];
 
         // ========== HELPER FUNCTIONS ==========
         function escapeHtml(str) {
@@ -590,7 +635,118 @@
 
         function closeModal() { document.getElementById('dataModal').classList.remove('active'); }
 
-        // ========== SYNC MECHANISM FUNCTIONS (NEW) ==========
+        function showLoadingOverlay() {
+            document.getElementById('syncLoading').classList.add('active');
+        }
+
+        function hideLoadingOverlay() {
+            document.getElementById('syncLoading').classList.remove('active');
+        }
+
+        // ========== ENHANCED CERTIFICATION NUMBER MANAGEMENT ==========
+        async function getNextCertificationNumberFromServer() {
+            return new Promise(async (resolve, reject) => {
+                try {
+                    const isOnline = await checkGoogleSheetsConnection();
+                    
+                    if (!isOnline) {
+                        // Offline mode: use local counter with timestamp to avoid conflicts
+                        const localCounter = JSON.parse(localStorage.getItem('certificationCounter') || '{"lastCertNumber":0}');
+                        const nextNumber = localCounter.lastCertNumber + 1;
+                        const year = new Date().getFullYear().toString().slice(-2);
+                        const certNumber = `SZC${year}-${nextNumber.toString().padStart(3, '0')}`;
+                        
+                        // Store pending certification number request
+                        addToPendingSync('certNumber', 'reserve', { number: nextNumber, certNumber: certNumber });
+                        
+                        resolve({ number: nextNumber, certNumber: certNumber, isOnline: false });
+                        return;
+                    }
+                    
+                    // Online mode: request from server
+                    const params = new URLSearchParams();
+                    params.append('action', 'getNextCertNumber');
+                    params.append('data_type', 'zoning');
+                    
+                    const response = await fetch(GOOGLE_SCRIPT_URL + '?' + params.toString(), {
+                        method: 'GET',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success && result.nextNumber) {
+                        const year = new Date().getFullYear().toString().slice(-2);
+                        const certNumber = `SZC${year}-${result.nextNumber.toString().padStart(3, '0')}`;
+                        resolve({ number: result.nextNumber, certNumber: certNumber, isOnline: true });
+                    } else {
+                        reject(new Error('Failed to get certification number from server'));
+                    }
+                } catch (error) {
+                    console.error('Error getting certification number:', error);
+                    reject(error);
+                }
+            });
+        }
+
+        async function generateUniqueCertificationNumber() {
+            // Queue mechanism for concurrent requests
+            return new Promise(async (resolve, reject) => {
+                const requestId = Date.now();
+                certNumberQueue.push({ id: requestId, resolve, reject });
+                
+                if (certNumberLock) {
+                    console.log('Cert number generation locked, queued request');
+                    return;
+                }
+                
+                certNumberLock = true;
+                
+                try {
+                    while (certNumberQueue.length > 0) {
+                        const request = certNumberQueue[0];
+                        try {
+                            const result = await getNextCertificationNumberFromServer();
+                            request.resolve(result);
+                        } catch (error) {
+                            request.reject(error);
+                        }
+                        certNumberQueue.shift();
+                    }
+                } finally {
+                    certNumberLock = false;
+                }
+            });
+        }
+
+        async function updateLocalCounterAfterSync() {
+            try {
+                const isOnline = await checkGoogleSheetsConnection();
+                if (!isOnline) return;
+                
+                const params = new URLSearchParams();
+                params.append('action', 'getCurrentMaxNumber');
+                params.append('data_type', 'zoning');
+                
+                const response = await fetch(GOOGLE_SCRIPT_URL + '?' + params.toString(), {
+                    method: 'GET'
+                });
+                
+                const result = await response.json();
+                if (result.success && result.maxNumber) {
+                    const counter = {
+                        lastCertNumber: result.maxNumber,
+                        lastSync: new Date().toISOString()
+                    };
+                    localStorage.setItem('certificationCounter', JSON.stringify(counter));
+                    console.log('Local counter updated to:', result.maxNumber);
+                }
+            } catch (error) {
+                console.error('Error updating local counter:', error);
+            }
+        }
+
+        // ========== SYNC MECHANISM FUNCTIONS ==========
         function showToast(message, type = 'info') {
             const toast = document.createElement('div');
             toast.className = `toast-notification ${type}`;
@@ -636,6 +792,7 @@
                         console.log('Google Sheets is back online! Syncing data...');
                         showToast('Google Sheets connection restored. Syncing data...', 'success');
                         syncAllPendingData();
+                        updateLocalCounterAfterSync();
                     }
                     return true;
                 }
@@ -666,7 +823,6 @@
             localStorage.setItem('pendingSyncData', JSON.stringify(pendingSyncData));
             console.log(`Added to pending sync: ${dataType} - ${action}`);
             
-            // Update sync status indicator
             updateSyncStatusIndicator();
         }
 
@@ -678,6 +834,7 @@
             
             syncInProgress = true;
             updateSyncStatusIndicator();
+            showLoadingOverlay();
             
             try {
                 const savedPending = localStorage.getItem('pendingSyncData');
@@ -686,7 +843,8 @@
                     pendingSyncData = {
                         clup: parsed.clup || [],
                         review: parsed.review || [],
-                        zoning: parsed.zoning || []
+                        zoning: parsed.zoning || [],
+                        certNumber: parsed.certNumber || []
                     };
                 }
                 
@@ -694,6 +852,7 @@
                 
                 if (!hasPending) {
                     console.log('No pending data to sync');
+                    hideLoadingOverlay();
                     syncInProgress = false;
                     updateSyncStatusIndicator();
                     return;
@@ -705,6 +864,7 @@
                 await syncDataType('clup');
                 await syncDataType('review');
                 await syncDataType('zoning');
+                await syncDataType('certNumber');
                 
                 const stillHasPending = Object.values(pendingSyncData).some(arr => arr.length > 0);
                 
@@ -712,6 +872,7 @@
                     localStorage.removeItem('pendingSyncData');
                     showToast('All data synced successfully!', 'success');
                     console.log('All pending data synced successfully');
+                    await updateLocalCounterAfterSync();
                 } else {
                     localStorage.setItem('pendingSyncData', JSON.stringify(pendingSyncData));
                 }
@@ -721,6 +882,7 @@
                 showToast('Sync failed. Will retry later.', 'error');
             } finally {
                 syncInProgress = false;
+                hideLoadingOverlay();
                 updateSyncStatusIndicator();
             }
         }
@@ -782,7 +944,8 @@
                     pendingSyncData = {
                         clup: parsed.clup || [],
                         review: parsed.review || [],
-                        zoning: parsed.zoning || []
+                        zoning: parsed.zoning || [],
+                        certNumber: parsed.certNumber || []
                     };
                     
                     const totalPending = Object.values(pendingSyncData).reduce((sum, arr) => sum + arr.length, 0);
@@ -872,7 +1035,7 @@
             }, 2000);
         }
 
-        // ========== CLUP DATA ==========
+        // ========== CLUP DATA (unchanged) ==========
         let clupRecords = [];
         let clupChart = null;
         let currentEditingClupId = null;
@@ -1367,9 +1530,9 @@
             alert('Exported');
         }
 
-        // ========== ZONING CERTIFICATION ==========
+        // ========== ZONING CERTIFICATION (UPDATED WITH ENHANCED SYNC) ==========
         let zoningCertifications = [];
-        let certificationCounter = { lastCertNumber: 0, prefix: 'SZC-RVI', year: new Date().getFullYear().toString().slice(-2) };
+        let certificationCounter = { lastCertNumber: 0, prefix: 'SZC', year: new Date().getFullYear().toString().slice(-2) };
         let currentEditingZoningId = null;
 
         async function fetchCertifications() {
@@ -1378,7 +1541,7 @@
                 const data = await response.json();
                 zoningCertifications = Array.isArray(data) ? data : [];
                 localStorage.setItem('zoningCertifications', JSON.stringify(zoningCertifications));
-                updateCounterFromData();
+                await updateLocalCounterAfterSync();
                 renderCertificationsTable();
             } catch (error) {
                 console.warn("Zoning using localStorage", error);
@@ -1398,79 +1561,99 @@
             localStorage.setItem('certificationCounter', JSON.stringify(certificationCounter));
         }
 
-        function getNextCertificationNumber() {
-            const nextNumber = certificationCounter.lastCertNumber + 1;
-            const number = nextNumber.toString().padStart(3, '0');
-            const year = new Date().getFullYear().toString().slice(-2);
-            return `${certificationCounter.prefix}${year}-${number}`;
-        }
-
-        function generateCertificationNumber() {
-            certificationCounter.lastCertNumber++;
-            const number = certificationCounter.lastCertNumber.toString().padStart(3, '0');
-            const year = new Date().getFullYear().toString().slice(-2);
-            const certNumber = `${certificationCounter.prefix}${year}-${number}`;
-            localStorage.setItem('certificationCounter', JSON.stringify(certificationCounter));
-            return certNumber;
+        async function refreshCertificationNumber() {
+            try {
+                const result = await generateUniqueCertificationNumber();
+                document.getElementById('certificationNo').value = result.certNumber;
+                return result.certNumber;
+            } catch (error) {
+                console.error('Failed to get certification number:', error);
+                // Fallback to local generation
+                const year = new Date().getFullYear().toString().slice(-2);
+                const localCounter = JSON.parse(localStorage.getItem('certificationCounter') || '{"lastCertNumber":0}');
+                const nextNumber = localCounter.lastCertNumber + 1;
+                const certNumber = `SZC${year}-${nextNumber.toString().padStart(3, '0')}`;
+                document.getElementById('certificationNo').value = certNumber;
+                return certNumber;
+            }
         }
 
         async function saveZoningRecord(event) {
             event.preventDefault();
-            const certificationNo = currentEditingZoningId ? zoningCertifications.find(r => r.id === currentEditingZoningId).certificationNo : generateCertificationNumber();
-            const series = document.getElementById('series').value;
-            const parcels = document.getElementById('parcels').value;
-            const location = document.getElementById('location').value;
-            const totalArea = document.getElementById('totalArea').value;
-            const proposedUse = document.getElementById('proposedUse').value;
-            const dateIssued = document.getElementById('dateIssued').value;
-            const requestedBy = document.getElementById('requestedBy').value;
-            const amountPaid = document.getElementById('amountPaid').value;
-            const orNo = document.getElementById('orNo').value || '';
-            const orDate = document.getElementById('orDate').value || '';
-            const remarks = document.getElementById('remarks').value || '';
-            const clupStatus = document.querySelector('input[name="clupStatus"]:checked')?.value || 'approved';
-            const city = document.getElementById('city').value || '';
-            const province = document.getElementById('province').value || '';
-            const approvedBy = document.getElementById('approvedBy').value || '';
-            const circularNo = document.getElementById('circularNo').value || '';
-            const approvalDate = document.getElementById('approvalDate').value || '';
-
-            if (!parcels || !location || !totalArea || !proposedUse || !dateIssued || !requestedBy || !amountPaid) {
-                alert('Please fill all required fields.');
-                return false;
-            }
-
-            const landHoldings = [];
-            const owners = document.getElementsByName('registeredOwner[]');
-            const tcts = document.getElementsByName('tctNo[]');
-            const lots = document.getElementsByName('lotNo[]');
-            const areas = document.getElementsByName('areaPerTitle[]');
-            const zones = document.getElementsByName('zoneclass[]');
-            for (let i = 0; i < owners.length; i++) {
-                if (!owners[i]?.value || !tcts[i]?.value || !zones[i]?.value) {
-                    alert(`Row ${i+1}: fill all required fields.`);
-                    return false;
-                }
-                landHoldings.push({
-                    registeredOwner: owners[i].value,
-                    tctNo: tcts[i].value,
-                    lotNo: lots[i]?.value || '',
-                    areaPerTitle: areas[i]?.value ? parseFloat(areas[i].value) : 0,
-                    zoneclass: zones[i].value
-                });
-            }
-
-            const record = {
-                id: currentEditingZoningId || Date.now(),
-                certificationNo, series, parcels, location, totalArea, proposedUse,
-                landHoldings, dateIssued, requestedBy, amountPaid, orNo, orDate, remarks, clupStatus,
-                city, province, approvedBy, circularNo, approvalDate,
-                timestamp: new Date().toLocaleString()
-            };
-
-            const action = currentEditingZoningId ? 'update' : 'add';
+            
+            // Show loading state
+            const saveBtn = event.submitter;
+            const originalText = saveBtn.innerHTML;
+            saveBtn.innerHTML = '⏳ Saving...';
+            saveBtn.disabled = true;
             
             try {
+                // Get unique certification number first
+                let certificationNo;
+                if (!currentEditingZoningId) {
+                    const certResult = await generateUniqueCertificationNumber();
+                    certificationNo = certResult.certNumber;
+                } else {
+                    certificationNo = zoningCertifications.find(r => r.id === currentEditingZoningId).certificationNo;
+                }
+                
+                const series = document.getElementById('series').value;
+                const parcels = document.getElementById('parcels').value;
+                const location = document.getElementById('location').value;
+                const totalArea = document.getElementById('totalArea').value;
+                const proposedUse = document.getElementById('proposedUse').value;
+                const dateIssued = document.getElementById('dateIssued').value;
+                const requestedBy = document.getElementById('requestedBy').value;
+                const amountPaid = document.getElementById('amountPaid').value;
+                const orNo = document.getElementById('orNo').value || '';
+                const orDate = document.getElementById('orDate').value || '';
+                const remarks = document.getElementById('remarks').value || '';
+                const clupStatus = document.querySelector('input[name="clupStatus"]:checked')?.value || 'approved';
+                const city = document.getElementById('city').value || '';
+                const province = document.getElementById('province').value || '';
+                const approvedBy = document.getElementById('approvedBy').value || '';
+                const circularNo = document.getElementById('circularNo').value || '';
+                const approvalDate = document.getElementById('approvalDate').value || '';
+
+                if (!parcels || !location || !totalArea || !proposedUse || !dateIssued || !requestedBy || !amountPaid) {
+                    alert('Please fill all required fields.');
+                    saveBtn.innerHTML = originalText;
+                    saveBtn.disabled = false;
+                    return false;
+                }
+
+                const landHoldings = [];
+                const owners = document.getElementsByName('registeredOwner[]');
+                const tcts = document.getElementsByName('tctNo[]');
+                const lots = document.getElementsByName('lotNo[]');
+                const areas = document.getElementsByName('areaPerTitle[]');
+                const zones = document.getElementsByName('zoneclass[]');
+                for (let i = 0; i < owners.length; i++) {
+                    if (!owners[i]?.value || !tcts[i]?.value || !zones[i]?.value) {
+                        alert(`Row ${i+1}: fill all required fields.`);
+                        saveBtn.innerHTML = originalText;
+                        saveBtn.disabled = false;
+                        return false;
+                    }
+                    landHoldings.push({
+                        registeredOwner: owners[i].value,
+                        tctNo: tcts[i].value,
+                        lotNo: lots[i]?.value || '',
+                        areaPerTitle: areas[i]?.value ? parseFloat(areas[i].value) : 0,
+                        zoneclass: zones[i].value
+                    });
+                }
+
+                const record = {
+                    id: currentEditingZoningId || Date.now(),
+                    certificationNo, series, parcels, location, totalArea, proposedUse,
+                    landHoldings, dateIssued, requestedBy, amountPaid, orNo, orDate, remarks, clupStatus,
+                    city, province, approvedBy, circularNo, approvalDate,
+                    timestamp: new Date().toLocaleString()
+                };
+
+                const action = currentEditingZoningId ? 'update' : 'add';
+                
                 const isOnline = await checkGoogleSheetsConnection();
                 
                 if (!isOnline) {
@@ -1481,15 +1664,26 @@
                     }
                     localStorage.setItem('zoningCertifications', JSON.stringify(zoningCertifications));
                     addToPendingSync('zoning', action, record);
-                    updateCounterFromData();
+                    
+                    // Update local counter
+                    const localCounter = JSON.parse(localStorage.getItem('certificationCounter') || '{"lastCertNumber":0}');
+                    const certNumber = parseInt(record.certificationNo.split('-')[1]);
+                    if (certNumber > localCounter.lastCertNumber) {
+                        localCounter.lastCertNumber = certNumber;
+                        localStorage.setItem('certificationCounter', JSON.stringify(localCounter));
+                    }
+                    
                     renderCertificationsTable();
                     clearZoningForm();
-                    document.getElementById('certificationNo').value = getNextCertificationNumber();
+                    await refreshCertificationNumber();
                     document.getElementById('recordsSection').style.display = 'block';
                     alert(`Saved locally! Will sync when online. No: ${certificationNo}`);
+                    saveBtn.innerHTML = originalText;
+                    saveBtn.disabled = false;
                     return false;
                 }
                 
+                // Online save with duplicate check
                 const params = new URLSearchParams();
                 params.append('action', action);
                 params.append('data_type', 'zoning');
@@ -1504,30 +1698,25 @@
                         if (idx !== -1) zoningCertifications[idx] = record;
                     }
                     localStorage.setItem('zoningCertifications', JSON.stringify(zoningCertifications));
-                    updateCounterFromData();
+                    await updateLocalCounterAfterSync();
                     renderCertificationsTable();
                     clearZoningForm();
-                    document.getElementById('certificationNo').value = getNextCertificationNumber();
+                    await refreshCertificationNumber();
                     document.getElementById('recordsSection').style.display = 'block';
                     alert(`Saved to Google Sheets! No: ${certificationNo}`);
+                } else if (result.duplicate) {
+                    // Handle duplicate certification number - retry with new number
+                    alert('Certification number conflict detected. Please try saving again.');
+                    await refreshCertificationNumber();
                 } else {
                     throw new Error(result.error || 'Save failed');
                 }
             } catch (error) {
-                console.warn("Zoning save failed, using localStorage with pending sync", error);
-                if (action === 'add') zoningCertifications.push(record);
-                else {
-                    const idx = zoningCertifications.findIndex(r => r.id === record.id);
-                    if (idx !== -1) zoningCertifications[idx] = record;
-                }
-                localStorage.setItem('zoningCertifications', JSON.stringify(zoningCertifications));
-                addToPendingSync('zoning', action, record);
-                updateCounterFromData();
-                renderCertificationsTable();
-                clearZoningForm();
-                document.getElementById('certificationNo').value = getNextCertificationNumber();
-                document.getElementById('recordsSection').style.display = 'block';
-                alert(`Saved locally! Will sync when connection restored. No: ${certificationNo}`);
+                console.error('Zoning save error:', error);
+                alert('Failed to save: ' + error.message);
+            } finally {
+                saveBtn.innerHTML = originalText;
+                saveBtn.disabled = false;
             }
             return false;
         }
@@ -1659,7 +1848,7 @@
             document.getElementById('zoningForm').reset();
             document.getElementById('landHoldingsContainer').innerHTML = '';
             addLandHolding();
-            document.getElementById('certificationNo').value = getNextCertificationNumber();
+            refreshCertificationNumber();
             document.getElementById('series').value = '2002';
             currentEditingZoningId = null;
             toggleClupCascade();
@@ -1695,15 +1884,15 @@
         function toggleRecordsView() { document.getElementById('recordsSection').style.display = 'none'; }
 
         function resetCertificationCounter() {
-            if (confirm('Reset counter?')) {
+            if (confirm('Reset counter? This will affect future certification numbers. Continue?')) {
                 certificationCounter.lastCertNumber = 0;
                 localStorage.setItem('certificationCounter', JSON.stringify(certificationCounter));
-                document.getElementById('certificationNo').value = getNextCertificationNumber();
-                alert(`Counter reset. Next: ${getNextCertificationNumber()}`);
+                refreshCertificationNumber();
+                alert(`Counter reset. Next number will be generated from server when online.`);
             }
         }
 
-        // ========== PRINT FUNCTIONS ==========
+        // ========== PRINT FUNCTIONS (unchanged) ==========
         function printZoningRecord(id) {
             const rec = zoningCertifications.find(r => r.id == id);
             if (!rec) return;
@@ -1730,7 +1919,7 @@
                         <tbody><tr><td style="border:1px solid #000; padding:0.3cm;">______________________</td><td style="border:1px solid #000; padding:0.3cm;">______________</td><td style="border:1px solid #000; padding:0.3cm;">______________________</td><td style="border:1px solid #000; padding:0.3cm; text-align:right;">${escapeHtml(totalArea)}</td><td style="border:1px solid #000; padding:0.3cm;">___________</td><td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(proposedUse)}</td></tr>
                         <tr><td colspan="3" style="border:1px solid #000; padding:0.3cm; text-align:right;"><strong>Total</strong></td><td style="border:1px solid #000; padding:0.3cm; text-align:right; font-weight: bold;"><strong>${escapeHtml(totalArea)}</strong></td><td style="border:1px solid #000; padding:0.3cm;">&nbsp;</td><td style="border:1px solid #000; padding:0.3cm;">&nbsp;</td></tr>
                     </tbody>
-                </table>`;
+                 </table>`;
             } else {
                 let totalAreaSum = 0;
                 let rowsHtml = '';
@@ -1818,7 +2007,7 @@
                     <thead><tr><th style="border:1px solid #000; padding:0.3cm;">Registered Owner</th><th style="border:1px solid #000; padding:0.3cm;">Lot Number</th><th style="border:1px solid #000; padding:0.3cm;">OCT/TCT No.</th><th style="border:1px solid #000; padding:0.3cm;">Area Per Title (Ha)</th><th style="border:1px solid #000; padding:0.3cm;">Area Applied for Conversion (Ha)</th><th style="border:1px solid #000; padding:0.3cm;">Zone Classification</th></tr></thead>
                     <tbody><tr><td style="border:1px solid #000; padding:0.3cm;">______________________</td><td style="border:1px solid #000; padding:0.3cm;">______________</td><td style="border:1px solid #000; padding:0.3cm;">______________________</td><td style="border:1px solid #000; padding:0.3cm; text-align:right;">${escapeHtml(totalArea)}</td><td style="border:1px solid #000; padding:0.3cm;">___________</td><td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(proposedUse)}</td></tr>
                     <tr><td colspan="3" style="border:1px solid #000; padding:0.3cm; text-align:right;"><strong>Total</strong></td><td style="border:1px solid #000; padding:0.3cm; text-align:right; font-weight: bold;"><strong>${escapeHtml(totalArea)}</strong></td><td style="border:1px solid #000; padding:0.3cm;">&nbsp;</td><td style="border:1px solid #000; padding:0.3cm;">&nbsp;</td></tr></tbody>
-                </table>`;
+                 </table>`;
 
             const printContent = `
                 <div class="print-document">
@@ -1853,7 +2042,7 @@
             setTimeout(() => ps.style.display = 'none', 1000);
         }
 
-        // ========== MAP FUNCTIONS ==========
+        // ========== MAP FUNCTIONS (unchanged) ==========
         let regionMap = null;
         let mapInitialized = false;
         let uploadedLayers = [];
@@ -2071,16 +2260,16 @@
         function showOnMap() { showSection('map'); setTimeout(() => regionMap?.invalidateSize(), 100); }
 
         // ========== INITIAL LOAD ==========
-        window.onload = () => {
+        window.onload = async () => {
             loadCounter();
-            fetchReviewRecords();
-            fetchCertifications();
-            fetchClupRecords();
+            await fetchReviewRecords();
+            await fetchCertifications();
+            await fetchClupRecords();
             setupClupCascadeEvents();
-            document.getElementById('certificationNo').value = getNextCertificationNumber();
+            await refreshCertificationNumber();
             if (document.getElementById('landHoldingsContainer').children.length === 0) addLandHolding();
             
-            // NEW: Initialize sync mechanism
+            // Initialize sync mechanism
             setupConnectionMonitoring();
             addSyncStatusIndicator();
             loadPendingSyncData();
