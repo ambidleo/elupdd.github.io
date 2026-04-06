@@ -2006,11 +2006,11 @@ function printZoningRecord(id) {
     if (isIloiloCity) {
         // Iloilo City: Approved by DHSUD through Department Circular No.
         approvedByText = 'DHSUD';
-        throughText = `Department Circular No. ${escapeHtml(circularNo)}`;
+        throughText = ` ${escapeHtml(circularNo)}`;
     } else {
         // Other LGUs: Approved by Sangguniang Panlalawigan through SP Resolution
         approvedByText = 'Sangguniang Panlalawigan';
-        throughText = `SP Resolution No. ${escapeHtml(circularNo)}`;
+        throughText =  '${escapeHtml(circularNo)}`;
     }
 
     const check1 = clupStatus === 'approved' ? '[✓]' : '[ ]';
