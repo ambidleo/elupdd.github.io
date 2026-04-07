@@ -2036,7 +2036,7 @@
     let approvedByText = approvedBy || (isIloiloCity ? 'DHSUD' : 'Sangguniang Panlalawigan');
     let throughText = '';
     if (isIloiloCity || approvedBy === 'DHSUD') {
-        throughText = `Department Circular No. ${escapeHtml(circularNo)}`;
+        throughText = ` ${escapeHtml(circularNo)}`;
     } else {
         throughText = `${escapeHtml(circularNo)}`; // just the resolution number
     }
@@ -2184,7 +2184,7 @@
             <h4 style="margin: 0.5cm 0 0.3cm; font-size: 14pt;">II. STATUS OF COMPREHENSIVE LAND USE PLAN (CLUP) ZONING ORDINANCE (ZO)</h4>
             <div class="clup-status" style="margin: 0.3cm 0; white-space: pre-line; font-size: 12pt; line-height: 1.5;">
                 <p>1. [ ] WITH APPROVED CLUP/ZO</p>
-                <p>THIS IS TO CERTIFY that the above-described landholdings is/are zoned for use/s specified in the above table per approved <strong>Comprehensive Land Use Plan/Zoning Ordinance</strong> of <strong>${escapeHtml(city)}</strong>, as approved by the <strong>${approvedByDisplay}</strong> through <strong>${throughDisplay}</strong> dated <strong>___________</strong> in accordance with pertinent issuances;</p>
+                <p>THIS IS TO CERTIFY that the above-described landholdings is/are zoned for use/s specified in the above table per approved <strong>Comprehensive Land Use Plan/Zoning Ordinance</strong> of <strong>___________, as approved by the <strong>_________</strong> through <strong>_____________</strong> dated <strong>___________</strong> in accordance with pertinent issuances;</p>
                 <p>Further, the proposed conversion:</p>
                 <p>&nbsp;&nbsp;&nbsp;[ ] Conforms/is compatible with the approved land use plan and/or Zoning Ordinance.</p>
                 <p>&nbsp;&nbsp;&nbsp;[ ] Does not conform/is not compatible with the approved land use plan and/or Zoning Ordinance.</p>
