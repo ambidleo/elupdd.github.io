@@ -1930,7 +1930,7 @@
         }
 
         // ========== UPDATED PRINT FUNCTIONS ==========
-       function printZoningRecord(id) {
+      function printZoningRecord(id) {
     const rec = zoningCertifications.find(r => r.id == id);
     if (!rec) return;
 
@@ -2024,7 +2024,8 @@
                     ${buildTotalRow(totalAreaSum)}
                 </tbody>
             </table>`;
-    } else {
+    }
+           else {
                 let totalAreaSum = 0;
                 let rowsHtml = '';
                 landHoldingsArray.forEach(h => {
