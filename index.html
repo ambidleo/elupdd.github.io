@@ -165,65 +165,25 @@
         .cert-table td { padding: 0.75rem; border-bottom: 1px solid #e0e0e0; }
         .cert-table tr:hover { background: #f8f4e8; }
        @media print {
-    @page { 
-        size: A4; 
-        margin: 1.2cm;  /* slightly smaller margin = more space for content */
-    }
-    body * { 
-        visibility: hidden; 
-    }
-    #printSection, #printSection * { 
-        visibility: visible; 
-    }
-    #printSection { 
-        position: absolute; 
-        left: 0; 
-        top: 0; 
-        width: 100%; 
-        background: white; 
-        font-family: 'Times New Roman', Times, serif;
-        /* Prevent browser scaling – force 100% size */
-        transform: scale(1);
-        transform-origin: top left;
-    }
-    .print-document { 
-        margin: 0; 
-        padding: 0.8cm; 
-        max-width: 100%; 
-        font-size: 13pt !important;   /* increased from 11pt */
-        line-height: 1.4;
-        box-sizing: border-box;
-    }
-    .print-document table {
-        font-size: 12pt !important;   /* table text also larger */
-        width: 100%;
-        table-layout: auto;
-    }
-    .print-document td, 
-    .print-document th {
-        padding: 0.25cm 0.2cm;        /* slightly more padding */
-    }
-    .print-document h2 { font-size: 18pt !important; }
-    .print-document h3 { font-size: 15pt !important; }
-    .print-document h4 { font-size: 14pt !important; }
-    .print-document .basic-info p,
-    .print-document .clup-status p {
-        margin: 0.2cm 0;
-        font-size: 12pt;
-    }
-    /* Prevent any unwanted scaling from browser print dialog */
-    html, body {
-        width: 100%;
-        height: auto;
-        margin: 0;
-        padding: 0;
-    }
+            @page { size: A4; margin: 1.2cm; }
+            body * { visibility: hidden; }
+            #printSection, #printSection * { visibility: visible; }
+            #printSection { position: absolute; left: 0; top: 0; width: 100%; background: white; font-family: 'Times New Roman', Times, serif; }
+            .print-document { margin: 0; padding: 1cm; max-width: 100%; page-break-after: always; page-break-inside: auto; font-size: 11pt; }
+            .print-document h2, .print-document h3, .print-document h4 { page-break-after: avoid; }
+            .print-document table { page-break-inside: auto; page-break-before: auto; table-layout: auto; width: 100%; word-wrap: break-word; }
+            .print-document tr { page-break-inside: avoid; page-break-after: auto; }
+            .print-document thead { display: table-header-group; }
+            .print-document tfoot { display: table-footer-group; }
+            .print-document .signature-area { page-break-before: avoid; page-break-inside: avoid; }
+            .print-document .notices { page-break-before: avoid; page-break-inside: avoid; }
+        }
         .print-document { font-family: 'Times New Roman', Times, serif; max-width: 100%; margin: 0; padding: 1cm; line-height: 1.5; font-size: 11pt; background: white; box-sizing: border-box; }
-        .print-document h2 { text-align: center; font-size: 16pt; font-weight: bold; margin: 0.5cm 0 0.3cm 0; text-transform: uppercase; page-break-after: avoid; }
-        .print-document h3 { text-align: center; font-size: 14pt; font-weight: bold; margin: 0.4cm 0 0.2cm 0; page-break-after: avoid; }
-        .print-document h4 { text-align: left; font-size: 13pt; font-weight: bold; margin: 0.3cm 0 0.2cm 0; page-break-after: avoid; }
+        .print-document h2 { text-align: center; font-size: 18pt; font-weight: bold; margin: 0.5cm 0 0.3cm 0; text-transform: uppercase; page-break-after: avoid; }
+        .print-document h3 { text-align: center; font-size: 15pt; font-weight: bold; margin: 0.4cm 0 0.2cm 0; page-break-after: avoid; }
+        .print-document h4 { text-align: left; font-size: 14pt; font-weight: bold; margin: 0.3cm 0 0.2cm 0; page-break-after: avoid; }
         .print-document .underline { text-decoration: underline; }
-        .print-document table { width: 100%; border-collapse: collapse; margin: 0.5cm 0; font-size: 11pt; page-break-inside: auto; border: 1px solid #000; table-layout: auto; word-wrap: break-word; }
+        .print-document table { width: 100%; border-collapse: collapse; margin: 0.5cm 0; font-size: 12pt; page-break-inside: auto; border: 1px solid #000; table-layout: auto; word-wrap: break-word; }
         .print-document th, .print-document td { border: 1px solid #000; padding: 0.3cm 0.2cm; text-align: left; vertical-align: top; }
         .print-document th { background: #f0f0f0; font-weight: bold; text-align: center; }
         .print-document .signature-area { margin-top: 1.5cm; display: flex; justify-content: flex-end; page-break-before: avoid; page-break-inside: avoid; }
