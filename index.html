@@ -1930,102 +1930,56 @@
         }
 
         // ========== UPDATED PRINT FUNCTIONS ==========
-      function printZoningRecord(id) {
-    const rec = zoningCertifications.find(r => r.id == id);
-    if (!rec) return;
+        function printZoningRecord(id) {
+            const rec = zoningCertifications.find(r => r.id == id);
+            if (!rec) return;
 
-    const certNo = rec.certificationNo;
-    const series = rec.series || '2002';
-    const parcels = rec.parcels || '______________________';
-    const location = rec.location || '______________________';
-    const totalArea = rec.totalArea || '__________';
-    const proposedUse = rec.proposedUse || '______________________';
-    const dateIssued = rec.dateIssued;
-    const requestedBy = rec.requestedBy || '______________________';
-    const amountPaid = rec.amountPaid || '___________';
-    const orNo = rec.orNo || '___________';
-    const orDate = rec.orDate || '';
+            const certNo = rec.certificationNo;
+            const series = rec.series || '2002';
+            const parcels = rec.parcels || '______________________';
+            const location = rec.location || '______________________';
+            const totalArea = rec.totalArea || '__________';
+            const proposedUse = rec.proposedUse || '______________________';
+            const dateIssued = rec.dateIssued;
+            const requestedBy = rec.requestedBy || '______________________';
+            const amountPaid = rec.amountPaid || '___________';
+            const orNo = rec.orNo || '___________';
+            const orDate = rec.orDate || '';
 
-    let landHoldingsArray = Array.isArray(rec.landHoldings) ? rec.landHoldings : [];
-    let landHoldingsHtml = '';
+            let landHoldingsArray = Array.isArray(rec.landHoldings) ? rec.landHoldings : [];
+            let landHoldingsHtml = '';
 
-    // Helper to build the total row (placed at the bottom)
-    const buildTotalRow = (totalAreaSum) => {
-        return `
-            <tr style="background-color: #f2f2f2;">
-                <td style="border:1px solid #000; padding:0.3cm; color: black; font-weight: bold;"><strong>Total</strong></td>
-                <td style="border:1px solid #000; padding:0.3cm;"></td>
-                <td style="border:1px solid #000; padding:0.3cm;"></td>
-                <td style="border:1px solid #000; padding:0.3cm; text-align:right; color: black; font-weight: bold;"><strong>${totalAreaSum.toFixed(4)}</strong></td>
-                <td style="border:1px solid #000; padding:0.3cm;"></td>
-                <td style="border:1px solid #000; padding:0.3cm;"></td>
-            </tr>
-        `;
-    };
-
-    if (landHoldingsArray.length === 0) {
-        // Empty case: one placeholder row + total row at bottom
-        let totalAreaNum = parseFloat(totalArea) || 0;
-        landHoldingsHtml = `
-            <table class="land-holdings-table" style="width:100%; border-collapse:collapse; margin:0.5cm 0;">
-                <thead>
-                    <tr>
-                        <th style="border:1px solid #000; padding:0.3cm; background-color: #000; color: #fff; font-weight: bold;">Registered Owner</th>
-                        <th style="border:1px solid #000; padding:0.3cm; background-color: #000; color: #fff; font-weight: bold;">Lot Number</th>
-                        <th style="border:1px solid #000; padding:0.3cm; background-color: #000; color: #fff; font-weight: bold;">OCT/TCT No.</th>
-                        <th style="border:1px solid #000; padding:0.3cm; background-color: #000; color: #fff; font-weight: bold;">Area Per Title (Ha)</th>
-                        <th style="border:1px solid #000; padding:0.3cm; background-color: #000; color: #fff; font-weight: bold;">Area Applied for Conversion (Ha)</th>
-                        <th style="border:1px solid #000; padding:0.3cm; background-color: #000; color: #fff; font-weight: bold;">Zone Classification</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td style="border:1px solid #000; padding:0.3cm; color: black; font-weight: bold;">______________________</td>
-                        <td style="border:1px solid #000; padding:0.3cm;">______________</td>
-                        <td style="border:1px solid #000; padding:0.3cm;">______________________</td>
-                        <td style="border:1px solid #000; padding:0.3cm; text-align:right;">${escapeHtml(totalArea)}</td>
-                        <td style="border:1px solid #000; padding:0.3cm;">___________</td>
-                        <td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(proposedUse)}</td>
-                    </tr>
-                    ${buildTotalRow(totalAreaNum)}
-                </tbody>
-            </table>`;
-    } else {
-        // Populated case: all land holding rows first, then total row at bottom
-        let totalAreaSum = 0;
-        let rowsHtml = '';
-        landHoldingsArray.forEach(h => {
-            const area = h.areaPerTitle ? parseFloat(h.areaPerTitle) : 0;
-            totalAreaSum += area;
-            rowsHtml += `
-                <tr>
-                    <td style="border:1px solid #000; padding:0.3cm; color: black; font-weight: bold;">${escapeHtml(h.registeredOwner || '______________________')}</td>
-                    <td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(h.lotNo || '______________')}</td>
-                    <td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(h.tctNo || '______________________')}</td>
-                    <td style="border:1px solid #000; padding:0.3cm; text-align:right;">${area.toFixed(4)}</td>
-                    <td style="border:1px solid #000; padding:0.3cm;">___________</td>
-                    <td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(h.zoneclass || '______________________')}</td>
-                </tr>`;
-        });
-        landHoldingsHtml = `
-            <table class="land-holdings-table" style="width:100%; border-collapse:collapse; margin:0.5cm 0;">
-                <thead>
-                    <tr>
-                        <th style="border:1px solid #000; padding:0.3cm; background-color: #000; color: #fff; font-weight: bold;">Registered Owner</th>
-                        <th style="border:1px solid #000; padding:0.3cm; background-color: #000; color: #fff; font-weight: bold;">Lot Number</th>
-                        <th style="border:1px solid #000; padding:0.3cm; background-color: #000; color: #fff; font-weight: bold;">OCT/TCT No.</th>
-                        <th style="border:1px solid #000; padding:0.3cm; background-color: #000; color: #fff; font-weight: bold;">Area Per Title (Ha)</th>
-                        <th style="border:1px solid #000; padding:0.3cm; background-color: #000; color: #fff; font-weight: bold;">Area Applied for Conversion (Ha)</th>
-                        <th style="border:1px solid #000; padding:0.3cm; background-color: #000; color: #fff; font-weight: bold;">Zone Classification</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${rowsHtml}
-                    ${buildTotalRow(totalAreaSum)}
-                </tbody>
-            </table>`;
-    }
-           else {
+            if (landHoldingsArray.length === 0) {
+                landHoldingsHtml = `
+                    <table class="land-holdings-table" style="width:100%; border-collapse:collapse; margin:0.5cm 0;">
+                        <thead>
+                            <tr>
+                                <th style="border:1px solid #000; padding:0.3cm; background-color: #000; color: #fff; font-weight: bold;">Registered Owner</th>
+                                <th style="border:1px solid #000; padding:0.3cm; background-color: #000; color: #fff; font-weight: bold;">Lot Number</th>
+                                <th style="border:1px solid #000; padding:0.3cm; background-color: #000; color: #fff; font-weight: bold;">OCT/TCT No.</th>
+                                <th style="border:1px solid #000; padding:0.3cm; background-color: #000; color: #fff; font-weight: bold;">Area Per Title (Ha)</th>
+                                <th style="border:1px solid #000; padding:0.3cm; background-color: #000; color: #fff; font-weight: bold;">Area Applied for Conversion (Ha)</th>
+                                <th style="border:1px solid #000; padding:0.3cm; background-color: #000; color: #fff; font-weight: bold;">Zone Classification</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="border:1px solid #000; padding:0.3cm;">______________________</td>
+                                <td style="border:1px solid #000; padding:0.3cm;">______________</td>
+                                <td style="border:1px solid #000; padding:0.3cm;">______________________</td>
+                                <td style="border:1px solid #000; padding:0.3cm; text-align:right;">${escapeHtml(totalArea)}</td>
+                                <td style="border:1px solid #000; padding:0.3cm;">___________</td>
+                                <td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(proposedUse)}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" style="border:1px solid #000; padding:0.3cm; text-align:right;"><strong>Total</strong></td>
+                                <td style="border:1px solid #000; padding:0.3cm; text-align:right; font-weight: bold;"><strong>${escapeHtml(totalArea)}</strong></td>
+                                <td style="border:1px solid #000; padding:0.3cm;">&nbsp;</td>
+                                <td style="border:1px solid #000; padding:0.3cm;">&nbsp;</td>
+                            </tr>
+                        </tbody>
+                    </table>`;
+            } else {
                 let totalAreaSum = 0;
                 let rowsHtml = '';
                 landHoldingsArray.forEach(h => {
@@ -2140,54 +2094,51 @@
         }
 
         // Also update the blank form printing function
-function printBlankForm() {
-    const certNo = document.getElementById('certificationNo').value || 'SZC-RVI25-046';
-    const series = document.getElementById('series').value || '2002';
-    const parcels = document.getElementById('parcels').value || '______________________';
-    const location = document.getElementById('location').value || '______________________';
-    const totalArea = document.getElementById('totalArea').value || '__________';
-    const proposedUse = document.getElementById('proposedUse').value || '______________________';
-    const city = document.getElementById('city').value || '______________________';
-    const isIloiloCity = city.toLowerCase().includes('iloilo city') || city.toLowerCase() === 'iloilo city';
-    let approvedByDisplay = isIloiloCity ? 'DHSUD' : 'Sangguniang Panlalawigan';
-    let throughDisplay = isIloiloCity ? 'Department Circular No. ___________' : 'SP Resolution No. ___________';
+        function printBlankForm() {
+            const certNo = document.getElementById('certificationNo').value || 'SZC-RVI25-046';
+            const series = document.getElementById('series').value || '2002';
+            const parcels = document.getElementById('parcels').value || '______________________';
+            const location = document.getElementById('location').value || '______________________';
+            const totalArea = document.getElementById('totalArea').value || '__________';
+            const proposedUse = document.getElementById('proposedUse').value || '______________________';
+            
+            // Get the city for conditional logic
+            const city = document.getElementById('city').value || '______________________';
+            const isIloiloCity = city.toLowerCase().includes('iloilo city') || city.toLowerCase() === 'iloilo city';
+            
+            // Set approved by and through text based on LGU
+            let approvedByDisplay = isIloiloCity ? 'DHSUD' : 'Sangguniang Panlalawigan';
+            let throughDisplay = isIloiloCity ? 'Department Circular No. ___________' : 'SP Resolution No. ___________';
 
-    const totalAreaNum = parseFloat(totalArea) || 0;
-    const totalRow = `
-        <tr style="background-color: #f2f2f2;">
-            <td style="border:1px solid #000; padding:0.3cm; color: black; font-weight: bold;"><strong>Total</strong></td>
-            <td style="border:1px solid #000; padding:0.3cm;"></td>
-            <td style="border:1px solid #000; padding:0.3cm;"></td>
-            <td style="border:1px solid #000; padding:0.3cm; text-align:right; color: black; font-weight: bold;"><strong>${totalAreaNum.toFixed(4)}</strong></td>
-            <td style="border:1px solid #000; padding:0.3cm;"></td>
-            <td style="border:1px solid #000; padding:0.3cm;"></td>
-        </tr>
-    `;
-
-    const landHoldingsHtml = `
-        <table class="land-holdings-table" style="width:100%; border-collapse:collapse; margin:0.5cm 0;">
-            <thead>
-                <tr>
-                    <th style="border:1px solid #000; padding:0.3cm; background-color: #000; color: #fff; font-weight: bold;">Registered Owner</th>
-                    <th style="border:1px solid #000; padding:0.3cm; background-color: #000; color: #fff; font-weight: bold;">Lot Number</th>
-                    <th style="border:1px solid #000; padding:0.3cm; background-color: #000; color: #fff; font-weight: bold;">OCT/TCT No.</th>
-                    <th style="border:1px solid #000; padding:0.3cm; background-color: #000; color: #fff; font-weight: bold;">Area Per Title (Ha)</th>
-                    <th style="border:1px solid #000; padding:0.3cm; background-color: #000; color: #fff; font-weight: bold;">Area Applied for Conversion (Ha)</th>
-                    <th style="border:1px solid #000; padding:0.3cm; background-color: #000; color: #fff; font-weight: bold;">Zone Classification</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td style="border:1px solid #000; padding:0.3cm; color: black; font-weight: bold;">______________________</td>
-                    <td style="border:1px solid #000; padding:0.3cm;">______________</td>
-                    <td style="border:1px solid #000; padding:0.3cm;">______________________</td>
-                    <td style="border:1px solid #000; padding:0.3cm; text-align:right;">${escapeHtml(totalArea)}</td>
-                    <td style="border:1px solid #000; padding:0.3cm;">___________</td>
-                    <td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(proposedUse)}</td>
-                </tr>
-                ${totalRow}
-            </tbody>
-        </table>`;
+            const landHoldingsHtml = `
+                <table class="land-holdings-table" style="width:100%; border-collapse:collapse; margin:0.5cm 0;">
+                    <thead>
+                        <tr>
+                            <th style="border:1px solid #000; padding:0.3cm; background-color: #000; color: #fff; font-weight: bold;">Registered Owner</th>
+                            <th style="border:1px solid #000; padding:0.3cm; background-color: #000; color: #fff; font-weight: bold;">Lot Number</th>
+                            <th style="border:1px solid #000; padding:0.3cm; background-color: #000; color: #fff; font-weight: bold;">OCT/TCT No.</th>
+                            <th style="border:1px solid #000; padding:0.3cm; background-color: #000; color: #fff; font-weight: bold;">Area Per Title (Ha)</th>
+                            <th style="border:1px solid #000; padding:0.3cm; background-color: #000; color: #fff; font-weight: bold;">Area Applied for Conversion (Ha)</th>
+                            <th style="border:1px solid #000; padding:0.3cm; background-color: #000; color: #fff; font-weight: bold;">Zone Classification</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="border:1px solid #000; padding:0.3cm;">______________________</td>
+                            <td style="border:1px solid #000; padding:0.3cm;">______________</td>
+                            <td style="border:1px solid #000; padding:0.3cm;">______________________</td>
+                            <td style="border:1px solid #000; padding:0.3cm; text-align:right;">${escapeHtml(totalArea)}</td>
+                            <td style="border:1px solid #000; padding:0.3cm;">___________</td>
+                            <td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(proposedUse)}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" style="border:1px solid #000; padding:0.3cm; text-align:right;"><strong>Total</strong></td>
+                            <td style="border:1px solid #000; padding:0.3cm; text-align:right; font-weight: bold;"><strong>${escapeHtml(totalArea)}</strong></td>
+                            <td style="border:1px solid #000; padding:0.3cm;">&nbsp;</td>
+                            <td style="border:1px solid #000; padding:0.3cm;">&nbsp;</td>
+                        </tr>
+                    </tbody>
+                </table>`;
 
             const printContent = `
                 <div class="print-document">
