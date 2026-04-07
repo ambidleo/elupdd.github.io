@@ -2052,7 +2052,7 @@
     if (isIloiloCity || approvedBy === 'DHSUD') {
         throughText = `Department Circular No. ${escapeHtml(circularNo)}`;
     } else {
-        throughText = `SP Resolution No. ${escapeHtml(circularNo)}`;
+        throughText = `${escapeHtml(circularNo)}`;
     }
 
     const check1 = clupStatus === 'approved' ? '[✓]' : '[ ]';
