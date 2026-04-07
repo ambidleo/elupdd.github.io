@@ -9,7 +9,7 @@
     <script src="https://unpkg.com/shpjs@3.4.3/dist/shp.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
-        /* ===== Full CSS (unchanged - kept as in original) ===== */
+        /* ===== Full CSS (unchanged) ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #e8f0f9; min-height: 100vh; }
         :root { --primary-dark: #1a4d5e; --primary: #2c6e8f; --primary-light-accessible: #1e7a9c; --secondary: #3a7b5c; --accent-accessible: #d4a017; --earth: #8B5A2B; --water: #3498db; --forest: #27ae60; --urban: #7f8c8d; --background: #f5f9ff; --card-bg: #ffffff; --cert-primary: #8B4513; --cert-secondary: #228B22; --cert-accent: #FFD700; }
@@ -498,6 +498,32 @@
                             </div>
                             <div id="approvalDatesRef" style="margin-top: 0.5rem; font-size: 0.85rem; color: #555; display: none;">
                                 <strong>Approval dates:</strong> <span id="firstApprovalDateRef"></span> (first) | <span id="latestApprovalDateRef"></span> (latest)
+                            </div>
+                            <!-- Conditional fields for Iloilo City -->
+                            <div id="iloiloConditionalFields" style="display: none; margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed #ccc;">
+                                <div class="form-group">
+                                    <label for="purpose">Purpose</label>
+                                    <select id="purpose" class="form-control">
+                                        <option value="">-- Select --</option>
+                                        <option value="Conversion">Conversion</option>
+                                        <option value="ROD">ROD</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                <div id="landClassGroup" style="display: none;">
+                                    <div class="form-group">
+                                        <label for="landClass">Land Class</label>
+                                        <select id="landClass" class="form-control">
+                                            <option value="">-- Select --</option>
+                                            <option value="Agricultural">Agricultural</option>
+                                            <option value="Commercial">Commercial</option>
+                                            <option value="Residential">Residential</option>
+                                            <option value="Industrial">Industrial</option>
+                                            <option value="F and S">F and S</option>
+                                            <option value="Institutional">Institutional</option>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -1348,13 +1374,18 @@
             
             // Set Approved By and Circular No based on LGU type
             if (isIloiloCity) {
-                // For Iloilo City: Approved by DHSUD through Department Circular No.
                 document.getElementById('approvedBy').value = 'DHSUD';
                 document.getElementById('circularNo').value = plan.Latest_Plan_Res || 'No Department Circular on file';
+                // Show conditional fields for Iloilo City
+                document.getElementById('iloiloConditionalFields').style.display = 'block';
             } else {
-                // For other LGUs: Approved by Sangguniang Panlalawigan through SP Resolution
                 document.getElementById('approvedBy').value = 'Sangguniang Panlalawigan';
                 document.getElementById('circularNo').value = plan.Latest_Plan_Res || 'No SP Resolution on file';
+                // Hide conditional fields for non-Iloilo
+                document.getElementById('iloiloConditionalFields').style.display = 'none';
+                document.getElementById('landClassGroup').style.display = 'none';
+                document.getElementById('purpose').value = '';
+                document.getElementById('landClass').value = '';
             }
             
             // Set approval date
@@ -1396,6 +1427,7 @@
                 } else {
                     document.getElementById('approvalDatesRef').style.display = 'none';
                     clearApprovedDetailsFields();
+                    document.getElementById('iloiloConditionalFields').style.display = 'none';
                 }
             }
         }
@@ -1407,11 +1439,28 @@
             });
             document.getElementById('firstApprovalDateRef').textContent = '—';
             document.getElementById('latestApprovalDateRef').textContent = '—';
+            document.getElementById('purpose').value = '';
+            document.getElementById('landClass').value = '';
+            document.getElementById('landClassGroup').style.display = 'none';
+            document.getElementById('iloiloConditionalFields').style.display = 'none';
         }
 
         function setupClupCascadeEvents() {
             document.querySelectorAll('input[name="clupStatus"]').forEach(radio => radio.addEventListener('change', toggleClupCascade));
             toggleClupCascade();
+            // Add event listener for purpose dropdown
+            const purposeSelect = document.getElementById('purpose');
+            if (purposeSelect) {
+                purposeSelect.addEventListener('change', function() {
+                    const landClassGroup = document.getElementById('landClassGroup');
+                    if (this.value === 'Conversion') {
+                        landClassGroup.style.display = 'block';
+                    } else {
+                        landClassGroup.style.display = 'none';
+                        document.getElementById('landClass').value = '';
+                    }
+                });
+            }
         }
 
         // ========== REVIEW DATA ==========
@@ -1650,6 +1699,8 @@
                 const approvedBy = document.getElementById('approvedBy').value || '';
                 const circularNo = document.getElementById('circularNo').value || '';
                 const approvalDate = document.getElementById('approvalDate').value || '';
+                const purpose = document.getElementById('purpose').value || '';
+                const landClass = document.getElementById('landClass').value || '';
 
                 if (!parcels || !location || !totalArea || !proposedUse || !dateIssued || !requestedBy || !amountPaid) {
                     alert('Please fill all required fields.');
@@ -1685,6 +1736,7 @@
                     certificationNo, series, parcels, location, totalArea, proposedUse,
                     landHoldings, dateIssued, requestedBy, amountPaid, orNo, orDate, remarks, clupStatus,
                     city, province, approvedBy, circularNo, approvalDate,
+                    purpose, landClass,
                     timestamp: new Date().toLocaleString()
                 };
 
