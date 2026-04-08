@@ -1981,7 +1981,7 @@
             }
         }
 
-        function printZoningRecord(id) {
+   function printZoningRecord(id) {
     const rec = zoningCertifications.find(r => r.id == id);
     if (!rec) return;
     
@@ -2010,7 +2010,7 @@
     const headerRow = `<thead><tr><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold;">Registered Owner</th><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold;">Lot Number</th><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold;">OCT/TCT No.</th><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold;">Area Per Title (Ha)</th><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold;">Area Applied for Conversion (Ha)</th><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold;">Zone Classification</th></tr></thead>`;
     if (landHoldingsArray.length === 0) {
         let totalAreaNum = parseFloat(totalArea) || 0;
-        landHoldingsHtml = `<table class="land-holdings-table" style="width:100%; border-collapse:collapse; margin:0.5cm 0;">${headerRow}<tbody><tr><td style="border:1px solid #000; padding:0.3cm; color: black; font-weight: bold;">______________________</td><td style="border:1px solid #000; padding:0.3cm;">______________</td><td style="border:1px solid #000; padding:0.3cm;">______________________</td><td style="border:1px solid #000; padding:0.3cm; text-align:right;">${escapeHtml(totalArea)}</td><td style="border:1px solid #000; padding:0.3cm;">___________<\/td><td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(proposedUse)}<\/td><\/tr>${buildTotalRow(totalAreaNum)}<\/tbody><\/table>`;
+        landHoldingsHtml = `<table class="land-holdings-table" style="width:100%; border-collapse:collapse; margin:0.5cm 0;">${headerRow}<tbody><tr><td style="border:1px solid #000; padding:0.3cm; color: black; font-weight: bold;">______________________<\/td><td style="border:1px solid #000; padding:0.3cm;">______________<\/td><td style="border:1px solid #000; padding:0.3cm;">______________________<\/td><td style="border:1px solid #000; padding:0.3cm; text-align:right;">${escapeHtml(totalArea)}<\/td><td style="border:1px solid #000; padding:0.3cm;">___________<\/td><td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(proposedUse)}<\/td><\/tr>${buildTotalRow(totalAreaNum)}<\/tbody><\/table>`;
     } else {
         let totalAreaSum = 0;
         let rowsHtml = '';
@@ -2040,18 +2040,13 @@
     const check2 = clupStatus === 'pending' ? '[✓]' : '[ ]';
     const check3 = clupStatus === 'none' ? '[✓]' : '[ ]';
     
-    // Extra paragraph for Iloilo City with Conversion purpose - IMPROVED with better data loading
+    // Extra paragraph for Iloilo City with Conversion purpose
     let extraParagraph = '';
     if (isIloiloCity && rec.purpose === 'Conversion') {
-        // Try to find Iloilo City CLUP record - case insensitive search
         let iloiloClup = clupRecords.find(r => r.LGU && r.LGU.toLowerCase().includes('iloilo city') && r.Province === 'Iloilo');
-        
-        // If not found, try to search without province filter
         if (!iloiloClup) {
             iloiloClup = clupRecords.find(r => r.LGU && r.LGU.toLowerCase().includes('iloilo city'));
         }
-        
-        // If still not found, try to get from localStorage directly
         if (!iloiloClup) {
             const stored = localStorage.getItem('clupRecords');
             if (stored) {
@@ -2059,21 +2054,33 @@
                 iloiloClup = allRecords.find(r => r.LGU && r.LGU.toLowerCase().includes('iloilo city'));
             }
         }
-        
         if (iloiloClup) {
             const landClassText = rec.landClass || '___________';
             const firstPlanRes = iloiloClup.First_Plan_Res || 'Resolution No. ___________';
             const firstApprovalDateRaw = iloiloClup.First_Plan_Date_of_Approval || '';
             const firstApprovalFormatted = firstApprovalDateRaw ? formatOrdinalDate(firstApprovalDateRaw) : '___________';
-            extraParagraph = `<p style="margin-top: 0.5cm;">THIS IS TO CERTIFY that same tract of land was within a zone classified as <strong>${escapeHtml(landClassText)}</strong> per the <strong>Comprehensive Land Use Plan/Zoning Ordinance of</strong>of<strong>${escapeHtml(city)}</strong>, that was approved on <strong>${firstApprovalFormatted}</strong>, an ${escapeHtml(firstPlanRes)}</strong> plan by then <strong>Human Settlements Regulatory Commission (HSRC)</strong>, now DHSUD.</p>`;
+            extraParagraph = `<p style="margin-top: 0.5cm; margin-left: 0.5cm; text-indent: 0.5cm;"><strong>THIS IS TO CERTIFY</strong> that same tract of land was within a zone classified as <strong>${escapeHtml(landClassText)}</strong> per the <strong>Comprehensive Land Use Plan/Zoning Ordinance of ${escapeHtml(city)}</strong>, that was approved on <strong>${firstApprovalFormatted}</strong>, via <strong>${escapeHtml(firstPlanRes)}</strong> by then <strong>Human Settlements Regulatory Commission (HSRC)</strong>, now DHSUD.</p>`;
         } else {
-            // Fallback paragraph if CLUP record not found
             const landClassText = rec.landClass || '___________';
-            extraParagraph = `<p style="margin-top: 0.5cm;">THIS IS TO CERTIFY that same tract of land was within a zone classified as <strong>${escapeHtml(landClassText)}</strong> per the <strong>Comprehensive Land Use Plan/Zoning Ordinance of</strong>of<strong>${escapeHtml(city)}</strong>.</p>`;
+            extraParagraph = `<p style="margin-top: 0.5cm; margin-left: 0.5cm; text-indent: 0.5cm;"><strong>THIS IS TO CERTIFY</strong> that same tract of land was within a zone classified as <strong>${escapeHtml(landClassText)}</strong> per the <strong>Comprehensive Land Use Plan/Zoning Ordinance of ${escapeHtml(city)}</strong>.</p>`;
         }
     }
     
-    const statusHtml = `<p>1. <strong>${check1} WITH APPROVED CLUP/ZO</strong></p><p>THIS IS TO CERTIFY that the above-described landholdings is/are zoned for use/s specified in the above table per approved <strong>Comprehensive Land Use Plan/Zoning Ordinance</strong> of <strong>${escapeHtml(cityProvince)}</strong>, as approved by the <strong>${approvedByText}</strong> through <strong>${throughText}</strong> dated <strong>${escapeHtml(approvalDateFormatted)}</strong> in accordance with pertinent issuances;</p>${extraParagraph}<p>Further, the proposed conversion:</p><p>&nbsp;&nbsp;&nbsp;[ ] Conforms/is compatible with the approved land use plan and/or Zoning Ordinance.</p><p>&nbsp;&nbsp;&nbsp;[ ] Does not conform/is not compatible with the approved land use plan and/or Zoning Ordinance.</p><p>Per record of this office, the city/municipality of ${escapeHtml(city)} has a total zoned agricultural land of <strong>${agriculturalLand}</strong> hectares of which <strong>${reclassified}</strong> hectares have been reclassified since <strong>${reclassYear}</strong>, as approved by the DHSUD/SP per DHSUD/SP Resolution No. <strong>${resolutionNo}</strong> dated <strong>${escapeHtml(resolutionDateFormatted)}</strong>.</p><p>2. <strong>${check2} WITH CLUP/ZO PENDING APPROVAL BY HLURB/SP</strong></p><p>THIS IS TO CERTIFY that the above-described property/ies lie/s is/are located within the area zoned for ________ use per Comprehensive Land Use Plan/Zoning Ordinance No. ________ dated _____ submitted to HLURB/SP for approval on _____________ and same remains pending to date.</p><p>THIS IS TO CERTIFY FURTHER that per record of this office-said city/municipality of _________ will have a total zoned agricultural land of __________s hectares.</p><p>3. <strong>${check3} WITHOUT CLUP/ZO</strong></p><p>THIS IS TO CERTIFY that the municipality of _______ has not submitted its Comprehensive Land Use Plan/ Zoning Ordinance to this Office.</p>`;
+    // Corrected statusHtml with proper indentation using CSS
+    const statusHtml = `
+        <p style="margin-left: 0cm;"><strong>1. ${check1} WITH APPROVED CLUP/ZO</strong></p>
+        ${extraParagraph}
+        <p style="margin-left: 0.5cm; text-indent: 0.5cm;">THIS IS TO CERTIFY that the above-described landholdings is/are zoned for use/s specified in the above table per approved <strong>Comprehensive Land Use Plan/Zoning Ordinance</strong> of <strong>${escapeHtml(cityProvince)}</strong>, as approved by the <strong>${approvedByText}</strong> through <strong>${throughText}</strong> dated <strong>${escapeHtml(approvalDateFormatted)}</strong> in accordance with pertinent issuances;</p>
+        <p style="margin-left: 0cm;">Further, the proposed conversion:</p>
+        <p style="margin-left: 1cm;">&nbsp;&nbsp;&nbsp;[ ] Conforms/is compatible with the approved land use plan and/or Zoning Ordinance.</p>
+        <p style="margin-left: 1cm;">&nbsp;&nbsp;&nbsp;[ ] Does not conform/is not compatible with the approved land use plan and/or Zoning Ordinance.</p>
+        <p style="margin-left: 0.5cm; text-indent: 0.5cm;">Per record of this office, the city/municipality of ${escapeHtml(city)} has a total zoned agricultural land of <strong>${agriculturalLand}</strong> hectares of which <strong>${reclassified}</strong> hectares have been reclassified since <strong>${reclassYear}</strong>, as approved by the DHSUD/SP per DHSUD/SP Resolution No. <strong>${resolutionNo}</strong> dated <strong>${escapeHtml(resolutionDateFormatted)}</strong>.</p>
+        <p style="margin-left: 0cm;"><strong>2. ${check2} WITH CLUP/ZO PENDING APPROVAL BY HLURB/SP</strong></p>
+        <p style="margin-left: 0.5cm; text-indent: 0.5cm;">THIS IS TO CERTIFY that the above-described property/ies lie/s is/are located within the area zoned for ________ use per Comprehensive Land Use Plan/Zoning Ordinance No. ________ dated _____ submitted to HLURB/SP for approval on _____________ and same remains pending to date.</p>
+        <p style="margin-left: 0.5cm; text-indent: 0.5cm;">THIS IS TO CERTIFY FURTHER that per record of this office-said city/municipality of _________ will have a total zoned agricultural land of __________s hectares.</p>
+        <p style="margin-left: 0cm;"><strong>3. ${check3} WITHOUT CLUP/ZO</strong></p>
+        <p style="margin-left: 0.5cm; text-indent: 0.5cm;">THIS IS TO CERTIFY that the municipality of _______ has not submitted its Comprehensive Land Use Plan/ Zoning Ordinance to this Office.</p>
+    `;
     
     const formattedDateIssued = formatOrdinalDate(dateIssued);
     const orDateFormatted = orDate ? formatToMMDDYYYY(orDate) : formattedDateIssued;
