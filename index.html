@@ -177,6 +177,13 @@
             .print-document tfoot { display: table-footer-group; }
             .print-document .signature-area { page-break-before: avoid; page-break-inside: avoid; }
             .print-document .notices { page-break-before: avoid; page-break-inside: avoid; }
+           }
+    /* Prevent extra pages */
+    .print-document,
+    .print-document * {
+        page-break-after: avoid;
+        page-break-before: avoid;
+        page-break-inside: avoid;
         }
         .print-document { font-family: 'Times New Roman', Times, serif; max-width: 100%; margin: 0; padding: 1cm; line-height: 1.5; font-size: 12pt; background: white; box-sizing: border-box; }
         .print-document h2 { text-align: center; font-size: 18pt; font-weight: bold; margin: 0.5cm 0 0.3cm 0; text-transform: uppercase; page-break-after: avoid; }
