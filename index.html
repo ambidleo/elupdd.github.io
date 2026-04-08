@@ -484,6 +484,14 @@
                             <div class="form-group"><label for="orNo">O.R. No.</label><input type="text" class="form-control" id="orNo" placeholder="Official Receipt Number"></div>
                             <div class="form-group"><label for="orDate">O.R. Date</label><input type="date" class="form-control" id="orDate"></div>
                             <div class="form-group full-width"><label for="remarks">Remarks/Notes</label><textarea class="form-control" id="remarks" rows="3"></textarea></div>
+                            <div class="form-group">
+    <label for="longitude">Longitude (X)</label>
+    <input type="text" class="form-control" id="longitude" placeholder="Click on map to set">
+</div>
+<div class="form-group">
+    <label for="latitude">Latitude (Y)</label>
+    <input type="text" class="form-control" id="latitude" placeholder="Click on map to set">
+</div>
                         </div>
                         <h3 class="cert-subtitle">CLUP/Zoning Ordinance Status</h3>
                         <div class="form-group">
@@ -1733,6 +1741,8 @@
                 const approvalDate = document.getElementById('approvalDate').value || '';
                 const purpose = document.getElementById('purpose').value || '';
                 const landClass = document.getElementById('landClass').value || '';
+                const longitude = document.getElementById('longitude').value || '';
+const latitude = document.getElementById('latitude').value || '';
 
                 if (!parcels || !location || !totalArea || !proposedUse || !dateIssued || !requestedBy || !amountPaid) {
                     alert('Please fill all required fields.');
@@ -1768,7 +1778,7 @@
                     certificationNo, series, parcels, location, totalArea, proposedUse,
                     landHoldings, dateIssued, requestedBy, amountPaid, orNo, orDate, remarks, clupStatus,
                     city, province, approvedBy, circularNo, approvalDate,
-                    purpose, landClass,
+                    purpose, landClass,longitude,latitude
                     timestamp: new Date().toLocaleString()
                 };
 
@@ -1901,6 +1911,8 @@
             document.getElementById('approvedBy').value = rec.approvedBy || '';
             document.getElementById('circularNo').value = rec.circularNo || '';
             document.getElementById('approvalDate').value = rec.approvalDate || '';
+            document.getElementById('longitude').value = rec.longitude || '';
+            document.getElementById('latitude').value = rec.latitude || '';
             document.querySelector(`input[name="clupStatus"][value="${rec.clupStatus||'approved'}"]`).checked = true;
             const container = document.getElementById('landHoldingsContainer');
             container.innerHTML = '';
@@ -1967,6 +1979,8 @@
         function clearZoningForm() {
             document.getElementById('zoningForm').reset();
             document.getElementById('landHoldingsContainer').innerHTML = '';
+            document.getElementById('longitude').value = '';
+            document.getElementById('latitude').value = '';
             addLandHolding();
             refreshCertificationNumber();
             document.getElementById('series').value = '2002';
@@ -2324,12 +2338,21 @@ function setupMapClick() {
         const lng = e.latlng.lng;
         const coordText = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
         
-        // Add a marker
+        // Add a marker (optional – you may want to remove previous marker)
         const marker = L.marker(e.latlng).addTo(regionMap);
         marker.bindPopup(`<strong>Coordinates:</strong><br>Lat: ${lat.toFixed(6)}<br>Lng: ${lng.toFixed(6)}<br><button onclick="copyCoordinates('${lat}', '${lng}')">Copy</button>`).openPopup();
         addedMarkers.push(marker);
         
-        // Show coordinate info box
+        // --- NEW: Fill the zoning form fields if the zoning section is visible ---
+        const longitudeField = document.getElementById('longitude');
+        const latitudeField = document.getElementById('latitude');
+        if (longitudeField && latitudeField) {
+            longitudeField.value = lng.toFixed(6);
+            latitudeField.value = lat.toFixed(6);
+            showToast('Coordinates added to certification form', 'success');
+        }
+        
+        // Show coordinate info box (optional)
         const coordInfoDiv = document.getElementById('coordInfo');
         const coordDisplaySpan = document.getElementById('coordDisplay');
         if (coordInfoDiv && coordDisplaySpan) {
@@ -2337,15 +2360,10 @@ function setupMapClick() {
             coordDisplaySpan.innerHTML = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
         }
         
-        // Show clear markers button
         const clearBtn = document.getElementById('clearMarkersBtn');
         if (clearBtn) clearBtn.style.display = 'inline-flex';
-        
-        // Optional: Also show a toast
-        showToast(`Point added at ${coordText}`, 'info');
     });
 }
-
 function clearAllMarkers() {
     addedMarkers.forEach(marker => regionMap.removeLayer(marker));
     addedMarkers = [];
