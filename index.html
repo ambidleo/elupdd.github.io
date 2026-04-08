@@ -2059,7 +2059,7 @@
             const firstPlanRes = iloiloClup.First_Plan_Res || 'Resolution No. ___________';
             const firstApprovalDateRaw = iloiloClup.First_Plan_Date_of_Approval || '';
             const firstApprovalFormatted = firstApprovalDateRaw ? formatOrdinalDate(firstApprovalDateRaw) : '___________';
-            extraParagraph = `<p style="margin-top: 0.5cm; margin-left: 0.5cm; text-indent: 0.5cm;"><strong>THIS IS TO CERTIFY</strong> that same tract of land was within a zone classified as <strong>${escapeHtml(landClassText)}</strong> per the <strong>Comprehensive Land Use Plan/Zoning Ordinance of ${escapeHtml(city)}</strong>, that was approved on <strong>${firstApprovalFormatted}</strong>, via <strong>${escapeHtml(firstPlanRes)}</strong> by then <strong>Human Settlements Regulatory Commission (HSRC)</strong>, now DHSUD.</p>`;
+            extraParagraph = `<p style="margin-top: 0.5cm; margin-left: 0.5cm; text-indent: 0.5cm;"><strong>THIS IS TO CERTIFY</strong> that same tract of land was within a zone classified as <strong>${escapeHtml(landClassText)}</strong> per the <strong>Land Use Plan/Zoning Ordinance of ${escapeHtml(city)}</strong>, that was approved on <strong>${firstApprovalFormatted}</strong>, an <strong>${escapeHtml(firstPlanRes)}</strong> by then <strong>Human Settlements Regulatory Commission (HSRC)</strong>, now DHSUD.</p>`;
         } else {
             const landClassText = rec.landClass || '___________';
             extraParagraph = `<p style="margin-top: 0.5cm; margin-left: 0.5cm; text-indent: 0.5cm;"><strong>THIS IS TO CERTIFY</strong> that same tract of land was within a zone classified as <strong>${escapeHtml(landClassText)}</strong> per the <strong>Comprehensive Land Use Plan/Zoning Ordinance of ${escapeHtml(city)}</strong>.</p>`;
@@ -2070,7 +2070,7 @@
     const statusHtml = `
         <p style="margin-left: 0cm;"><strong>1. ${check1} WITH APPROVED CLUP/ZO</strong></p>
         ${extraParagraph}
-        <p style="margin-left: 0.5cm; text-indent: 0.5cm;">THIS IS TO CERTIFY that the above-described landholdings is/are zoned for use/s specified in the above table per approved <strong>Comprehensive Land Use Plan/Zoning Ordinance</strong> of <strong>${escapeHtml(cityProvince)}</strong>, as approved by the <strong>${approvedByText}</strong> through <strong>${throughText}</strong> dated <strong>${escapeHtml(approvalDateFormatted)}</strong> in accordance with pertinent issuances;</p>
+        <p style="margin-left: 0.5cm; text-indent: 0.5cm;">THIS IS TO CERTIFY that the above-described landholdings is/are zoned for use/s specified in the above table per approved <strong>Comprehensive Land Use Plan/Zoning Ordinance</strong> of <strong>${escapeHtml(cityProvince)}</strong>, as approved by the <strong>${approvedByText}</strong> through <strong>${throughText}</strong> dated <strong>${escapeHtml(approvalDateFormatted)}</strong> in accordance with pertinent issuances;</p>${extraParagraph}
         <p style="margin-left: 0cm;">Further, the proposed conversion:</p>
         <p style="margin-left: 1cm;">&nbsp;&nbsp;&nbsp;[ ] Conforms/is compatible with the approved land use plan and/or Zoning Ordinance.</p>
         <p style="margin-left: 1cm;">&nbsp;&nbsp;&nbsp;[ ] Does not conform/is not compatible with the approved land use plan and/or Zoning Ordinance.</p>
