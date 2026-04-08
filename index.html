@@ -9,7 +9,7 @@
     <script src="https://unpkg.com/shpjs@3.4.3/dist/shp.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
-        /* ===== Full CSS (unchanged) ===== */
+        /* ===== Full CSS ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #e8f0f9; min-height: 100vh; }
         :root { --primary-dark: #1a4d5e; --primary: #2c6e8f; --primary-light-accessible: #1e7a9c; --secondary: #3a7b5c; --accent-accessible: #d4a017; --earth: #8B5A2B; --water: #3498db; --forest: #27ae60; --urban: #7f8c8d; --background: #f5f9ff; --card-bg: #ffffff; --cert-primary: #8B4513; --cert-secondary: #228B22; --cert-accent: #FFD700; }
@@ -164,7 +164,7 @@
         .cert-table th { background: var(--cert-primary); color: white; padding: 0.75rem; text-align: left; }
         .cert-table td { padding: 0.75rem; border-bottom: 1px solid #e0e0e0; }
         .cert-table tr:hover { background: #f8f4e8; }
-       @media print {
+        @media print {
             @page { size: A4; margin: 1.2cm; }
             body * { visibility: hidden; }
             #printSection, #printSection * { visibility: visible; }
@@ -676,29 +676,19 @@
                     const isOnline = await checkGoogleSheetsConnection();
                     
                     if (!isOnline) {
-                        // Offline mode: use local counter with timestamp to avoid conflicts
                         const localCounter = JSON.parse(localStorage.getItem('certificationCounter') || '{"lastCertNumber":0}');
                         const nextNumber = localCounter.lastCertNumber + 1;
                         const year = new Date().getFullYear().toString().slice(-2);
                         const certNumber = `SZC${year}-${nextNumber.toString().padStart(3, '0')}`;
-                        
-                        // Store pending certification number request
                         addToPendingSync('certNumber', 'reserve', { number: nextNumber, certNumber: certNumber });
-                        
                         resolve({ number: nextNumber, certNumber: certNumber, isOnline: false });
                         return;
                     }
                     
-                    // Online mode: request from server
                     const params = new URLSearchParams();
                     params.append('action', 'getNextCertNumber');
                     params.append('data_type', 'zoning');
-                    
-                    const response = await fetch(GOOGLE_SCRIPT_URL + '?' + params.toString(), {
-                        method: 'GET',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-                    });
-                    
+                    const response = await fetch(GOOGLE_SCRIPT_URL + '?' + params.toString(), { method: 'GET' });
                     const result = await response.json();
                     
                     if (result.success && result.nextNumber) {
@@ -716,18 +706,11 @@
         }
 
         async function generateUniqueCertificationNumber() {
-            // Queue mechanism for concurrent requests
             return new Promise(async (resolve, reject) => {
                 const requestId = Date.now();
                 certNumberQueue.push({ id: requestId, resolve, reject });
-                
-                if (certNumberLock) {
-                    console.log('Cert number generation locked, queued request');
-                    return;
-                }
-                
+                if (certNumberLock) return;
                 certNumberLock = true;
-                
                 try {
                     while (certNumberQueue.length > 0) {
                         const request = certNumberQueue[0];
@@ -749,23 +732,13 @@
             try {
                 const isOnline = await checkGoogleSheetsConnection();
                 if (!isOnline) return;
-                
                 const params = new URLSearchParams();
                 params.append('action', 'getCurrentMaxNumber');
                 params.append('data_type', 'zoning');
-                
-                const response = await fetch(GOOGLE_SCRIPT_URL + '?' + params.toString(), {
-                    method: 'GET'
-                });
-                
+                const response = await fetch(GOOGLE_SCRIPT_URL + '?' + params.toString(), { method: 'GET' });
                 const result = await response.json();
                 if (result.success && result.maxNumber) {
-                    const counter = {
-                        lastCertNumber: result.maxNumber,
-                        lastSync: new Date().toISOString()
-                    };
-                    localStorage.setItem('certificationCounter', JSON.stringify(counter));
-                    console.log('Local counter updated to:', result.maxNumber);
+                    localStorage.setItem('certificationCounter', JSON.stringify({ lastCertNumber: result.maxNumber, lastSync: new Date().toISOString() }));
                 }
             } catch (error) {
                 console.error('Error updating local counter:', error);
@@ -791,7 +764,6 @@
             `;
             toast.innerHTML = `<span>${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'} ${escapeHtml(message)}</span>`;
             document.body.appendChild(toast);
-            
             setTimeout(() => {
                 toast.style.animation = 'slideOutRight 0.3s ease';
                 setTimeout(() => toast.remove(), 300);
@@ -802,21 +774,12 @@
             try {
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 5000);
-                
-                const response = await fetch(GOOGLE_SCRIPT_URL + '?action=ping', {
-                    method: 'GET',
-                    signal: controller.signal
-                });
-                
+                const response = await fetch(GOOGLE_SCRIPT_URL + '?action=ping', { method: 'GET', signal: controller.signal });
                 clearTimeout(timeoutId);
-                
                 if (response.ok) {
                     const wasOffline = !isGoogleSheetsOnline;
                     isGoogleSheetsOnline = true;
-                    
                     if (wasOffline) {
-                        console.log('Google Sheets is back online! Syncing data...');
-                        showToast('Google Sheets connection restored. Syncing data...', 'success');
                         syncAllPendingData();
                         updateLocalCounterAfterSync();
                     }
@@ -826,7 +789,6 @@
             } catch (error) {
                 if (isGoogleSheetsOnline) {
                     isGoogleSheetsOnline = false;
-                    console.warn('Google Sheets offline, using localStorage only');
                     showToast('Google Sheets unavailable. Saving to local storage only.', 'warning');
                 }
                 return false;
@@ -834,75 +796,31 @@
         }
 
         function addToPendingSync(dataType, action, data) {
-            if (!pendingSyncData[dataType]) {
-                pendingSyncData[dataType] = [];
-            }
-            
-            pendingSyncData[dataType].push({
-                id: Date.now(),
-                action: action,
-                data: data,
-                timestamp: new Date().toISOString(),
-                retryCount: 0
-            });
-            
+            if (!pendingSyncData[dataType]) pendingSyncData[dataType] = [];
+            pendingSyncData[dataType].push({ id: Date.now(), action, data, timestamp: new Date().toISOString(), retryCount: 0 });
             localStorage.setItem('pendingSyncData', JSON.stringify(pendingSyncData));
-            console.log(`Added to pending sync: ${dataType} - ${action}`);
-            
             updateSyncStatusIndicator();
         }
 
         async function syncAllPendingData() {
-            if (syncInProgress) {
-                console.log('Sync already in progress, skipping...');
-                return;
-            }
-            
+            if (syncInProgress) return;
             syncInProgress = true;
             updateSyncStatusIndicator();
             showLoadingOverlay();
-            
             try {
                 const savedPending = localStorage.getItem('pendingSyncData');
                 if (savedPending && !Object.values(pendingSyncData).some(arr => arr.length > 0)) {
                     const parsed = JSON.parse(savedPending);
-                    pendingSyncData = {
-                        clup: parsed.clup || [],
-                        review: parsed.review || [],
-                        zoning: parsed.zoning || [],
-                        certNumber: parsed.certNumber || []
-                    };
+                    pendingSyncData = { clup: parsed.clup || [], review: parsed.review || [], zoning: parsed.zoning || [], certNumber: parsed.certNumber || [] };
                 }
-                
                 const hasPending = Object.values(pendingSyncData).some(arr => arr.length > 0);
-                
-                if (!hasPending) {
-                    console.log('No pending data to sync');
-                    hideLoadingOverlay();
-                    syncInProgress = false;
-                    updateSyncStatusIndicator();
-                    return;
-                }
-                
-                console.log('Starting sync of pending data...');
-                showToast('Syncing offline data to Google Sheets...', 'info');
-                
+                if (!hasPending) { hideLoadingOverlay(); syncInProgress = false; updateSyncStatusIndicator(); return; }
                 await syncDataType('clup');
                 await syncDataType('review');
                 await syncDataType('zoning');
                 await syncDataType('certNumber');
-                
-                const stillHasPending = Object.values(pendingSyncData).some(arr => arr.length > 0);
-                
-                if (!stillHasPending) {
-                    localStorage.removeItem('pendingSyncData');
-                    showToast('All data synced successfully!', 'success');
-                    console.log('All pending data synced successfully');
-                    await updateLocalCounterAfterSync();
-                } else {
-                    localStorage.setItem('pendingSyncData', JSON.stringify(pendingSyncData));
-                }
-                
+                if (!Object.values(pendingSyncData).some(arr => arr.length > 0)) localStorage.removeItem('pendingSyncData');
+                else localStorage.setItem('pendingSyncData', JSON.stringify(pendingSyncData));
             } catch (error) {
                 console.error('Sync error:', error);
                 showToast('Sync failed. Will retry later.', 'error');
@@ -916,49 +834,25 @@
         async function syncDataType(dataType) {
             const pendingItems = pendingSyncData[dataType];
             if (!pendingItems || pendingItems.length === 0) return;
-            
-            console.log(`Syncing ${pendingItems.length} items for ${dataType}...`);
-            
             const itemsToKeep = [];
-            
             for (const item of pendingItems) {
                 try {
                     const params = new URLSearchParams();
                     params.append('action', item.action);
                     params.append('data_type', dataType);
                     params.append('data', JSON.stringify(item.data));
-                    
-                    const response = await fetch(GOOGLE_SCRIPT_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: params.toString()
-                    });
-                    
+                    const response = await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: params.toString() });
                     if (response.ok) {
                         const result = await response.json();
-                        if (result.success) {
-                            console.log(`Synced ${dataType} item ${item.id} successfully`);
-                            continue;
-                        } else {
-                            throw new Error(result.error || 'Sync failed');
-                        }
-                    } else {
-                        throw new Error(`HTTP ${response.status}`);
-                    }
+                        if (result.success) continue;
+                        else throw new Error(result.error || 'Sync failed');
+                    } else throw new Error(`HTTP ${response.status}`);
                 } catch (error) {
-                    console.error(`Failed to sync ${dataType} item ${item.id}:`, error);
                     item.retryCount++;
-                    item.lastError = error.message;
-                    
-                    if (item.retryCount < 5) {
-                        itemsToKeep.push(item);
-                    } else {
-                        console.warn(`Dropping ${dataType} item ${item.id} after ${item.retryCount} retries`);
-                        showToast(`Failed to sync some data after multiple attempts`, 'warning');
-                    }
+                    if (item.retryCount < 5) itemsToKeep.push(item);
+                    else showToast(`Failed to sync some data after multiple attempts`, 'warning');
                 }
             }
-            
             pendingSyncData[dataType] = itemsToKeep;
         }
 
@@ -967,21 +861,10 @@
             if (savedPending) {
                 try {
                     const parsed = JSON.parse(savedPending);
-                    pendingSyncData = {
-                        clup: parsed.clup || [],
-                        review: parsed.review || [],
-                        zoning: parsed.zoning || [],
-                        certNumber: parsed.certNumber || []
-                    };
-                    
+                    pendingSyncData = { clup: parsed.clup || [], review: parsed.review || [], zoning: parsed.zoning || [], certNumber: parsed.certNumber || [] };
                     const totalPending = Object.values(pendingSyncData).reduce((sum, arr) => sum + arr.length, 0);
-                    if (totalPending > 0) {
-                        console.log(`Found ${totalPending} pending items to sync`);
-                        showToast(`Found ${totalPending} items pending sync. Will sync when online.`, 'info');
-                    }
-                } catch(e) {
-                    console.error('Error loading pending sync data:', e);
-                }
+                    if (totalPending > 0) showToast(`Found ${totalPending} items pending sync. Will sync when online.`, 'info');
+                } catch(e) { console.error('Error loading pending sync data:', e); }
             }
         }
 
@@ -989,76 +872,37 @@
             const statusDiv = document.createElement('div');
             statusDiv.id = 'syncStatus';
             statusDiv.className = 'sync-status online';
-            statusDiv.innerHTML = `
-                <span class="sync-dot online"></span>
-                <span>Google Sheets: Online</span>
-                <button onclick="manualSync()" style="margin-left: 8px; padding: 2px 6px; font-size: 10px; border: none; border-radius: 4px; cursor: pointer;">Sync Now</button>
-            `;
+            statusDiv.innerHTML = `<span class="sync-dot online"></span><span>Google Sheets: Online</span><button onclick="manualSync()" style="margin-left: 8px; padding: 2px 6px; font-size: 10px; border: none; border-radius: 4px; cursor: pointer;">Sync Now</button>`;
             document.body.appendChild(statusDiv);
         }
 
         function updateSyncStatusIndicator() {
             const statusDiv = document.getElementById('syncStatus');
             if (!statusDiv) return;
-            
             const pendingCount = Object.values(pendingSyncData).reduce((sum, arr) => sum + arr.length, 0);
-            
             if (syncInProgress) {
                 statusDiv.className = 'sync-status syncing';
-                statusDiv.innerHTML = `
-                    <span class="sync-dot syncing"></span>
-                    <span>Syncing data...</span>
-                    <button onclick="manualSync()" style="margin-left: 8px; padding: 2px 6px; font-size: 10px; border: none; border-radius: 4px; cursor: pointer;">Sync Now</button>
-                `;
+                statusDiv.innerHTML = `<span class="sync-dot syncing"></span><span>Syncing data...</span><button onclick="manualSync()">Sync Now</button>`;
             } else if (isGoogleSheetsOnline) {
                 statusDiv.className = 'sync-status online';
-                statusDiv.innerHTML = `
-                    <span class="sync-dot online"></span>
-                    <span>Google Sheets: Online ${pendingCount > 0 ? `(${pendingCount} pending)` : ''}</span>
-                    <button onclick="manualSync()" style="margin-left: 8px; padding: 2px 6px; font-size: 10px; border: none; border-radius: 4px; cursor: pointer;">Sync Now</button>
-                `;
+                statusDiv.innerHTML = `<span class="sync-dot online"></span><span>Google Sheets: Online ${pendingCount > 0 ? `(${pendingCount} pending)` : ''}</span><button onclick="manualSync()">Sync Now</button>`;
             } else {
                 statusDiv.className = 'sync-status offline';
-                statusDiv.innerHTML = `
-                    <span class="sync-dot offline"></span>
-                    <span>Google Sheets: Offline ${pendingCount > 0 ? `(${pendingCount} pending)` : ''}</span>
-                    <button onclick="manualSync()" style="margin-left: 8px; padding: 2px 6px; font-size: 10px; border: none; border-radius: 4px; cursor: pointer;" ${!isGoogleSheetsOnline ? 'disabled' : ''}>Sync Now</button>
-                `;
+                statusDiv.innerHTML = `<span class="sync-dot offline"></span><span>Google Sheets: Offline ${pendingCount > 0 ? `(${pendingCount} pending)` : ''}</span><button onclick="manualSync()" disabled>Sync Now</button>`;
             }
         }
 
         function manualSync() {
-            if (!isGoogleSheetsOnline) {
-                showToast('Google Sheets is offline. Cannot sync at this time.', 'error');
-                return;
-            }
-            if (syncInProgress) {
-                showToast('Sync already in progress...', 'warning');
-                return;
-            }
+            if (!isGoogleSheetsOnline) { showToast('Google Sheets is offline. Cannot sync at this time.', 'error'); return; }
+            if (syncInProgress) { showToast('Sync already in progress...', 'warning'); return; }
             syncAllPendingData();
         }
 
         function setupConnectionMonitoring() {
-            setInterval(async () => {
-                await checkGoogleSheetsConnection();
-                updateSyncStatusIndicator();
-            }, 30000);
-            
-            window.addEventListener('online', async () => {
-                console.log('Browser online, checking Google Sheets...');
-                await checkGoogleSheetsConnection();
-            });
-            
-            window.addEventListener('offline', () => {
-                isGoogleSheetsOnline = false;
-                updateSyncStatusIndicator();
-                showToast('You are offline. Data will be saved locally and synced when online.', 'warning');
-            });
-            
-            setTimeout(() => {
-                checkGoogleSheetsConnection();
-            }, 2000);
+            setInterval(async () => { await checkGoogleSheetsConnection(); updateSyncStatusIndicator(); }, 30000);
+            window.addEventListener('online', async () => { await checkGoogleSheetsConnection(); });
+            window.addEventListener('offline', () => { isGoogleSheetsOnline = false; updateSyncStatusIndicator(); showToast('You are offline. Data will be saved locally.', 'warning'); });
+            setTimeout(() => { checkGoogleSheetsConnection(); }, 2000);
         }
 
         // ========== CLUP DATA ==========
@@ -1077,7 +921,6 @@
                 if (document.getElementById('provinceSelect')) populateProvinceSelect();
                 return clupRecords;
             } catch (error) {
-                console.warn("Google Sheets CLUP unavailable, using localStorage", error);
                 const local = localStorage.getItem('clupRecords');
                 clupRecords = local ? JSON.parse(local) : [];
                 renderClupTable();
@@ -1094,24 +937,14 @@
             const term = document.getElementById('planSearch')?.value.toLowerCase() || '';
             const prov = document.getElementById('provinceFilter')?.value || '';
             const stat = document.getElementById('statusFilter')?.value || '';
-            const filtered = clupRecords.filter(p => 
-                (p.LGU?.toLowerCase().includes(term) || p.Province?.toLowerCase().includes(term)) &&
-                (!prov || p.Province === prov) && (!stat || p.Status === stat)
-            );
+            const filtered = clupRecords.filter(p => (p.LGU?.toLowerCase().includes(term) || p.Province?.toLowerCase().includes(term)) && (!prov || p.Province === prov) && (!stat || p.Status === stat));
             filtered.forEach(plan => {
                 let cls = 'status-pending';
                 if (plan.Status === 'Approved') cls = 'status-approved';
                 else if (plan.Status === 'For Review') cls = 'status-review';
                 else if (plan.Status === 'On Hold') cls = 'status-hold';
                 const row = tbody.insertRow();
-                row.innerHTML = `
-                    <td>${escapeHtml(plan.LGU)}</td>
-                    <td>${escapeHtml(plan.Province)}</td>
-                    <td>${escapeHtml(plan.Latest_Plan_PlanningPeriod || '')}</td>
-                    <td><span class="status-badge ${cls}">${escapeHtml(plan.Status || '')}</span></td>
-                    <td>${formatDate(plan.Latest_Date_of_Approval)}</td>
-                    <td><div class="action-btns"><button class="action-btn view" onclick="viewClupRecord(${plan.ID})">👁️ View</button><button class="action-btn edit" onclick="editClupRecord(${plan.ID})">✏️ Edit</button><button class="action-btn delete" onclick="deleteClupRecord(${plan.ID})">🗑️ Delete</button></div></td>
-                `;
+                row.innerHTML = `<td>${escapeHtml(plan.LGU)}</td><td>${escapeHtml(plan.Province)}</td><td>${escapeHtml(plan.Latest_Plan_PlanningPeriod || '')}</td><td><span class="status-badge ${cls}">${escapeHtml(plan.Status || '')}</span></td><td>${formatDate(plan.Latest_Date_of_Approval)}</td><td><div class="action-btns"><button class="action-btn view" onclick="viewClupRecord(${plan.ID})">👁️ View</button><button class="action-btn edit" onclick="editClupRecord(${plan.ID})">✏️ Edit</button><button class="action-btn delete" onclick="deleteClupRecord(${plan.ID})">🗑️ Delete</button></div></td>`;
             });
         }
 
@@ -1146,19 +979,7 @@
             currentEditingClupId = id;
             const modal = document.getElementById('dataModal');
             document.getElementById('modalTitle').textContent = 'Edit Land Use Plan';
-            document.getElementById('modalBody').innerHTML = `
-                <form onsubmit="saveClupEdit(event)">
-                    <div class="form-grid">
-                        <div class="form-group"><label>LGU</label><input type="text" class="form-control" name="LGU" value="${escapeHtml(rec.LGU)}" required></div>
-                        <div class="form-group"><label>Province</label><select class="form-control" name="Province" required>${['Aklan','Antique','Capiz','Guimaras','Iloilo','Negros Occidental'].map(p => `<option value="${p}" ${p===rec.Province?'selected':''}>${p}</option>`).join('')}</select></div>
-                        <div class="form-group"><label>Latest Plan Period</label><input type="text" class="form-control" name="Latest_Plan_PlanningPeriod" value="${escapeHtml(rec.Latest_Plan_PlanningPeriod || '')}" placeholder="e.g., 2020-2029"></div>
-                        <div class="form-group"><label>Status</label><select class="form-control" name="Status">${['Pending','For Review','Approved','On Hold'].map(s => `<option value="${s}" ${s===rec.Status?'selected':''}>${s}</option>`).join('')}</select></div>
-                        <div class="form-group"><label>Date Approved (Latest)</label><input type="date" class="form-control" name="Latest_Date_of_Approval" value="${rec.Latest_Date_of_Approval ? rec.Latest_Date_of_Approval.split(' ')[0] : ''}"></div>
-                        <div class="form-group"><label>Latest Resolution</label><input type="text" class="form-control" name="Latest_Plan_Res" value="${escapeHtml(rec.Latest_Plan_Res || '')}"></div>
-                    </div>
-                    <div style="text-align:right; margin-top:1rem;"><button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button><button type="submit" class="btn btn-success">Save Changes</button></div>
-                </form>
-            `;
+            document.getElementById('modalBody').innerHTML = `<form onsubmit="saveClupEdit(event)"><div class="form-grid"><div class="form-group"><label>LGU</label><input type="text" class="form-control" name="LGU" value="${escapeHtml(rec.LGU)}" required></div><div class="form-group"><label>Province</label><select class="form-control" name="Province" required>${['Aklan','Antique','Capiz','Guimaras','Iloilo','Negros Occidental'].map(p => `<option value="${p}" ${p===rec.Province?'selected':''}>${p}</option>`).join('')}</select></div><div class="form-group"><label>Latest Plan Period</label><input type="text" class="form-control" name="Latest_Plan_PlanningPeriod" value="${escapeHtml(rec.Latest_Plan_PlanningPeriod || '')}"></div><div class="form-group"><label>Status</label><select class="form-control" name="Status">${['Pending','For Review','Approved','On Hold'].map(s => `<option value="${s}" ${s===rec.Status?'selected':''}>${s}</option>`).join('')}</select></div><div class="form-group"><label>Date Approved (Latest)</label><input type="date" class="form-control" name="Latest_Date_of_Approval" value="${rec.Latest_Date_of_Approval ? rec.Latest_Date_of_Approval.split(' ')[0] : ''}"></div><div class="form-group"><label>Latest Resolution</label><input type="text" class="form-control" name="Latest_Plan_Res" value="${escapeHtml(rec.Latest_Plan_Res || '')}"></div></div><div style="text-align:right; margin-top:1rem;"><button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button><button type="submit" class="btn btn-success">Save Changes</button></div></form>`;
             modal.classList.add('active');
         }
 
@@ -1166,17 +987,7 @@
             event.preventDefault();
             const form = event.target;
             const original = clupRecords.find(r => r.ID === currentEditingClupId);
-            const updated = {
-                ID: currentEditingClupId,
-                LGU: form.LGU.value.trim(),
-                Province: form.Province.value,
-                Latest_Plan_PlanningPeriod: form.Latest_Plan_PlanningPeriod.value.trim(),
-                Status: form.Status.value,
-                Latest_Date_of_Approval: form.Latest_Date_of_Approval.value || '',
-                Latest_Plan_Res: form.Latest_Plan_Res.value.trim(),
-                First_Plan_Res: original.First_Plan_Res || '',
-                First_Plan_Date_of_Approval: original.First_Plan_Date_of_Approval || ''
-            };
+            const updated = { ID: currentEditingClupId, LGU: form.LGU.value.trim(), Province: form.Province.value, Latest_Plan_PlanningPeriod: form.Latest_Plan_PlanningPeriod.value.trim(), Status: form.Status.value, Latest_Date_of_Approval: form.Latest_Date_of_Approval.value || '', Latest_Plan_Res: form.Latest_Plan_Res.value.trim(), First_Plan_Res: original.First_Plan_Res || '', First_Plan_Date_of_Approval: original.First_Plan_Date_of_Approval || '' };
             if (!updated.LGU || !updated.Province) { alert('Please fill required fields.'); return false; }
             const success = await saveClupToSheet(updated, 'update');
             if (success) {
@@ -1209,19 +1020,7 @@
             currentEditingClupId = null;
             const modal = document.getElementById('dataModal');
             document.getElementById('modalTitle').textContent = 'Add New Land Use Plan';
-            document.getElementById('modalBody').innerHTML = `
-                <form onsubmit="saveNewClup(event)">
-                    <div class="form-grid">
-                        <div class="form-group"><label>LGU</label><input type="text" class="form-control" name="LGU" required></div>
-                        <div class="form-group"><label>Province</label><select class="form-control" name="Province" required>${['Aklan','Antique','Capiz','Guimaras','Iloilo','Negros Occidental'].map(p => `<option value="${p}">${p}</option>`).join('')}</select></div>
-                        <div class="form-group"><label>Latest Plan Period</label><input type="text" class="form-control" name="Latest_Plan_PlanningPeriod" placeholder="e.g., 2020-2029"></div>
-                        <div class="form-group"><label>Status</label><select class="form-control" name="Status">${['Pending','For Review','Approved','On Hold'].map(s => `<option value="${s}">${s}</option>`).join('')}</select></div>
-                        <div class="form-group"><label>Date Approved (Latest)</label><input type="date" class="form-control" name="Latest_Date_of_Approval"></div>
-                        <div class="form-group"><label>Latest Resolution</label><input type="text" class="form-control" name="Latest_Plan_Res"></div>
-                    </div>
-                    <div style="text-align:right; margin-top:1rem;"><button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button><button type="submit" class="btn btn-success">Save Plan</button></div>
-                </form>
-            `;
+            document.getElementById('modalBody').innerHTML = `<form onsubmit="saveNewClup(event)"><div class="form-grid"><div class="form-group"><label>LGU</label><input type="text" class="form-control" name="LGU" required></div><div class="form-group"><label>Province</label><select class="form-control" name="Province" required>${['Aklan','Antique','Capiz','Guimaras','Iloilo','Negros Occidental'].map(p => `<option value="${p}">${p}</option>`).join('')}</select></div><div class="form-group"><label>Latest Plan Period</label><input type="text" class="form-control" name="Latest_Plan_PlanningPeriod" placeholder="e.g., 2020-2029"></div><div class="form-group"><label>Status</label><select class="form-control" name="Status">${['Pending','For Review','Approved','On Hold'].map(s => `<option value="${s}">${s}</option>`).join('')}</select></div><div class="form-group"><label>Date Approved (Latest)</label><input type="date" class="form-control" name="Latest_Date_of_Approval"></div><div class="form-group"><label>Latest Resolution</label><input type="text" class="form-control" name="Latest_Plan_Res"></div></div><div style="text-align:right; margin-top:1rem;"><button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button><button type="submit" class="btn btn-success">Save Plan</button></div></form>`;
             modal.classList.add('active');
         }
 
@@ -1229,17 +1028,7 @@
             event.preventDefault();
             const form = event.target;
             const newId = clupRecords.length ? Math.max(...clupRecords.map(r => r.ID)) + 1 : 1;
-            const newRecord = {
-                ID: newId,
-                LGU: form.LGU.value.trim(),
-                Province: form.Province.value,
-                Latest_Plan_PlanningPeriod: form.Latest_Plan_PlanningPeriod.value.trim(),
-                Status: form.Status.value,
-                Latest_Date_of_Approval: form.Latest_Date_of_Approval.value || '',
-                Latest_Plan_Res: form.Latest_Plan_Res.value.trim(),
-                First_Plan_Res: '',
-                First_Plan_Date_of_Approval: ''
-            };
+            const newRecord = { ID: newId, LGU: form.LGU.value.trim(), Province: form.Province.value, Latest_Plan_PlanningPeriod: form.Latest_Plan_PlanningPeriod.value.trim(), Status: form.Status.value, Latest_Date_of_Approval: form.Latest_Date_of_Approval.value || '', Latest_Plan_Res: form.Latest_Plan_Res.value.trim(), First_Plan_Res: '', First_Plan_Date_of_Approval: '' };
             if (!newRecord.LGU || !newRecord.Province) { alert('Please fill required fields.'); return false; }
             const success = await saveClupToSheet(newRecord, 'add');
             if (success) {
@@ -1257,80 +1046,55 @@
         async function saveClupToSheet(record, action) {
             try {
                 const isOnline = await checkGoogleSheetsConnection();
-                
                 if (!isOnline) {
                     addToPendingSync('clup', action, record);
-                    
                     let stored = JSON.parse(localStorage.getItem('clupRecords') || '[]');
                     if (action === 'add') stored.push(record);
-                    else if (action === 'update') {
-                        const index = stored.findIndex(r => r.ID == record.ID);
-                        if (index !== -1) stored[index] = record;
-                    } else if (action === 'delete') stored = stored.filter(r => r.ID != record.ID);
+                    else if (action === 'update') { const index = stored.findIndex(r => r.ID == record.ID); if (index !== -1) stored[index] = record; }
+                    else if (action === 'delete') stored = stored.filter(r => r.ID != record.ID);
                     localStorage.setItem('clupRecords', JSON.stringify(stored));
                     clupRecords = stored;
-                    
-                    showToast(`Saved locally. Will sync to Google Sheets when online.`, 'warning');
+                    showToast(`Saved locally. Will sync when online.`, 'warning');
                     return true;
                 }
-                
                 const params = new URLSearchParams();
                 params.append('action', action);
                 params.append('data_type', 'clup');
                 params.append('data', JSON.stringify(record));
-                const response = await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: params.toString() });
+                const response = await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: params.toString() });
                 const result = await response.json();
-                
-                if (result.success) {
-                    showToast(`Saved to Google Sheets successfully`, 'success');
-                    return true;
-                } else {
-                    throw new Error(result.error || 'Save failed');
-                }
+                if (result.success) { showToast(`Saved to Google Sheets`, 'success'); return true; }
+                else throw new Error(result.error || 'Save failed');
             } catch (error) {
-                console.warn("Google Sheets CLUP save failed, using localStorage with pending sync", error);
                 addToPendingSync('clup', action, record);
-                
                 let stored = JSON.parse(localStorage.getItem('clupRecords') || '[]');
                 if (action === 'add') stored.push(record);
-                else if (action === 'update') {
-                    const index = stored.findIndex(r => r.ID == record.ID);
-                    if (index !== -1) stored[index] = record;
-                } else if (action === 'delete') stored = stored.filter(r => r.ID != record.ID);
+                else if (action === 'update') { const index = stored.findIndex(r => r.ID == record.ID); if (index !== -1) stored[index] = record; }
+                else if (action === 'delete') stored = stored.filter(r => r.ID != record.ID);
                 localStorage.setItem('clupRecords', JSON.stringify(stored));
                 clupRecords = stored;
-                
                 showToast(`Saved locally. Will sync when connection restored.`, 'warning');
                 return true;
             }
         }
 
         function exportClupData() {
-            const dataStr = JSON.stringify(clupRecords, null, 2);
             const a = document.createElement('a');
-            a.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+            a.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(clupRecords, null, 2));
             a.download = 'clup_records_region6.json';
             a.click();
             alert('Exported.');
         }
 
-        // ========== CASCADING SELECTS WITH AUTOMATED APPROVED BY ==========
+        // ========== CASCADING SELECTS ==========
         function populateProvinceSelect() {
             const select = document.getElementById('provinceSelect');
             if (!select) return;
             select.innerHTML = '<option value="">-- Choose Province --</option>';
             const provinces = new Set();
-            if (clupRecords && clupRecords.length > 0) {
-                clupRecords.forEach(plan => { if (plan.Province) provinces.add(plan.Province); });
-            } else {
-                ['Aklan','Antique','Capiz','Guimaras','Iloilo','Negros Occidental'].forEach(p => provinces.add(p));
-            }
-            Array.from(provinces).sort().forEach(prov => {
-                const opt = document.createElement('option');
-                opt.value = prov;
-                opt.textContent = prov;
-                select.appendChild(opt);
-            });
+            if (clupRecords && clupRecords.length > 0) clupRecords.forEach(plan => { if (plan.Province) provinces.add(plan.Province); });
+            else ['Aklan','Antique','Capiz','Guimaras','Iloilo','Negros Occidental'].forEach(p => provinces.add(p));
+            Array.from(provinces).sort().forEach(prov => { const opt = document.createElement('option'); opt.value = prov; opt.textContent = prov; select.appendChild(opt); });
             if (select.options.length > 1) select.disabled = false;
         }
 
@@ -1341,13 +1105,9 @@
             lguSelect.innerHTML = '<option value="">-- Select LGU --</option>';
             lguSelect.disabled = !selectedProvince;
             if (!selectedProvince) return;
-
             const lgus = clupRecords.filter(plan => plan.Province === selectedProvince);
             const unique = new Map();
-            lgus.forEach(plan => {
-                const key = `${plan.LGU}|${plan.Province}`;
-                if (!unique.has(key)) unique.set(key, { lgu: plan.LGU, province: plan.Province, record: plan });
-            });
+            lgus.forEach(plan => { const key = `${plan.LGU}|${plan.Province}`; if (!unique.has(key)) unique.set(key, { lgu: plan.LGU, province: plan.Province, record: plan }); });
             unique.forEach((val) => {
                 const opt = document.createElement('option');
                 opt.value = val.lgu;
@@ -1364,35 +1124,24 @@
         }
 
         function updateApprovedByFields(plan) {
-            // Set basic fields
             document.getElementById('city').value = plan.LGU || '';
             document.getElementById('province').value = plan.Province || '';
-            
-            // Check if LGU is Iloilo City (case insensitive)
             const lguName = (plan.LGU || '').toLowerCase();
             const isIloiloCity = lguName.includes('iloilo city') || lguName === 'iloilo city';
-            
-            // Set Approved By and Circular No based on LGU type
             if (isIloiloCity) {
                 document.getElementById('approvedBy').value = 'DHSUD';
                 document.getElementById('circularNo').value = plan.Latest_Plan_Res || 'No Department Circular on file';
-                // Show conditional fields for Iloilo City
                 document.getElementById('iloiloConditionalFields').style.display = 'block';
             } else {
                 document.getElementById('approvedBy').value = 'Sangguniang Panlalawigan';
                 document.getElementById('circularNo').value = plan.Latest_Plan_Res || 'No SP Resolution on file';
-                // Hide conditional fields for non-Iloilo
                 document.getElementById('iloiloConditionalFields').style.display = 'none';
                 document.getElementById('landClassGroup').style.display = 'none';
                 document.getElementById('purpose').value = '';
                 document.getElementById('landClass').value = '';
             }
-            
-            // Set approval date
             const latestDateRaw = plan.Latest_Date_of_Approval || '';
             document.getElementById('approvalDate').value = formatDateForInput(latestDateRaw);
-            
-            // Set reference dates
             const firstDateRaw = plan.First_Plan_Date_of_Approval || '';
             document.getElementById('firstApprovalDateRef').textContent = firstDateRaw ? formatDate(firstDateRaw) : '—';
             document.getElementById('latestApprovalDateRef').textContent = latestDateRaw ? formatDate(latestDateRaw) : '—';
@@ -1406,11 +1155,8 @@
             const recordData = selectedOption.dataset.record;
             if (!recordData) return;
             const plan = JSON.parse(recordData);
-            
-            // Update all fields including approved by
             updateApprovedByFields(plan);
-            
-            alert(`CLUP data for ${plan.LGU} loaded successfully!\n\nApproved by: ${document.getElementById('approvedBy').value}\nDocument: ${document.getElementById('circularNo').value}`);
+            alert(`CLUP data for ${plan.LGU} loaded successfully!`);
         }
 
         function toggleClupCascade() {
@@ -1422,21 +1168,16 @@
                     populateProvinceSelect();
                     document.getElementById('lguSelect').innerHTML = '<option value="">-- First select province --</option>';
                     document.getElementById('lguSelect').disabled = true;
-                    // Clear fields when switching to approved
                     clearApprovedDetailsFields();
                 } else {
                     document.getElementById('approvalDatesRef').style.display = 'none';
                     clearApprovedDetailsFields();
-                    document.getElementById('iloiloConditionalFields').style.display = 'none';
                 }
             }
         }
         
         function clearApprovedDetailsFields() {
-            ['city', 'province', 'approvedBy', 'circularNo', 'approvalDate'].forEach(id => {
-                const field = document.getElementById(id);
-                if (field) field.value = '';
-            });
+            ['city', 'province', 'approvedBy', 'circularNo', 'approvalDate'].forEach(id => { const field = document.getElementById(id); if (field) field.value = ''; });
             document.getElementById('firstApprovalDateRef').textContent = '—';
             document.getElementById('latestApprovalDateRef').textContent = '—';
             document.getElementById('purpose').value = '';
@@ -1448,17 +1189,12 @@
         function setupClupCascadeEvents() {
             document.querySelectorAll('input[name="clupStatus"]').forEach(radio => radio.addEventListener('change', toggleClupCascade));
             toggleClupCascade();
-            // Add event listener for purpose dropdown
             const purposeSelect = document.getElementById('purpose');
             if (purposeSelect) {
                 purposeSelect.addEventListener('change', function() {
                     const landClassGroup = document.getElementById('landClassGroup');
-                    if (this.value === 'Conversion') {
-                        landClassGroup.style.display = 'block';
-                    } else {
-                        landClassGroup.style.display = 'none';
-                        document.getElementById('landClass').value = '';
-                    }
+                    if (this.value === 'Conversion') landClassGroup.style.display = 'block';
+                    else { landClassGroup.style.display = 'none'; document.getElementById('landClass').value = ''; }
                 });
             }
         }
@@ -1473,7 +1209,6 @@
                 localStorage.setItem('clupPdpfpReviews', JSON.stringify(reviewRecords));
                 renderReviewTable();
             } catch (error) {
-                console.warn("Reviews using localStorage", error);
                 reviewRecords = JSON.parse(localStorage.getItem('clupPdpfpReviews') || '[]');
                 renderReviewTable();
             }
@@ -1483,63 +1218,39 @@
             const tbody = document.getElementById('reviewTableBody');
             if (!tbody) return;
             tbody.innerHTML = '';
-            reviewRecords.forEach(rec => {
-                const row = tbody.insertRow();
-                row.innerHTML = `
-                    <td>${escapeHtml(rec.lgu)}</td>
-                    <td>${escapeHtml(rec.reviewer)}</td>
-                    <td>${escapeHtml(rec.dates)}</td>
-                    <td><div class="action-btns"><button class="action-btn edit" onclick="openReviewModal(${rec.id})">✏️ Edit</button><button class="action-btn delete" onclick="deleteReviewRecord(${rec.id})">🗑️ Delete</button></div></td>
-                `;
-            });
+            reviewRecords.forEach(rec => { const row = tbody.insertRow(); row.innerHTML = `<td>${escapeHtml(rec.lgu)}</td><td>${escapeHtml(rec.reviewer)}</td><td>${escapeHtml(rec.dates)}</td><td><div class="action-btns"><button class="action-btn edit" onclick="openReviewModal(${rec.id})">✏️ Edit</button><button class="action-btn delete" onclick="deleteReviewRecord(${rec.id})">🗑️ Delete</button></div></td>`; });
         }
 
         async function saveReviewToSheet(record, action) {
             try {
                 const isOnline = await checkGoogleSheetsConnection();
-                
                 if (!isOnline) {
                     addToPendingSync('review', action, record);
-                    
                     let stored = JSON.parse(localStorage.getItem('clupPdpfpReviews') || '[]');
                     if (action === 'add') stored.push(record);
-                    else if (action === 'update') {
-                        const index = stored.findIndex(r => r.id == record.id);
-                        if (index !== -1) stored[index] = record;
-                    } else if (action === 'delete') stored = stored.filter(r => r.id != record.id);
+                    else if (action === 'update') { const index = stored.findIndex(r => r.id == record.id); if (index !== -1) stored[index] = record; }
+                    else if (action === 'delete') stored = stored.filter(r => r.id != record.id);
                     localStorage.setItem('clupPdpfpReviews', JSON.stringify(stored));
                     reviewRecords = stored;
-                    
-                    showToast(`Saved locally. Will sync to Google Sheets when online.`, 'warning');
+                    showToast(`Saved locally. Will sync when online.`, 'warning');
                     return true;
                 }
-                
                 const params = new URLSearchParams();
                 params.append('action', action);
                 params.append('data_type', 'review');
                 params.append('data', JSON.stringify(record));
-                const response = await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: params.toString() });
+                const response = await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: params.toString() });
                 const result = await response.json();
-                
-                if (result.success) {
-                    showToast(`Saved to Google Sheets successfully`, 'success');
-                    return true;
-                } else {
-                    throw new Error(result.error || 'Save failed');
-                }
+                if (result.success) { showToast(`Saved to Google Sheets`, 'success'); return true; }
+                else throw new Error(result.error || 'Save failed');
             } catch (error) {
-                console.warn("Google Sheets review save failed, using localStorage with pending sync", error);
                 addToPendingSync('review', action, record);
-                
                 let stored = JSON.parse(localStorage.getItem('clupPdpfpReviews') || '[]');
                 if (action === 'add') stored.push(record);
-                else if (action === 'update') {
-                    const index = stored.findIndex(r => r.id == record.id);
-                    if (index !== -1) stored[index] = record;
-                } else if (action === 'delete') stored = stored.filter(r => r.id != record.id);
+                else if (action === 'update') { const index = stored.findIndex(r => r.id == record.id); if (index !== -1) stored[index] = record; }
+                else if (action === 'delete') stored = stored.filter(r => r.id != record.id);
                 localStorage.setItem('clupPdpfpReviews', JSON.stringify(stored));
                 reviewRecords = stored;
-                
                 showToast(`Saved locally. Will sync when connection restored.`, 'warning');
                 return true;
             }
@@ -1551,16 +1262,7 @@
             const rec = id !== null ? reviewRecords.find(r => r.id === id) : null;
             const modal = document.getElementById('dataModal');
             document.getElementById('modalTitle').textContent = id ? 'Edit Review Entry' : 'Add Review Entry';
-            document.getElementById('modalBody').innerHTML = `
-                <form onsubmit="saveReviewEntry(event)">
-                    <div class="form-grid">
-                        <div class="form-group full-width"><label>LGU/Province</label><input type="text" class="form-control" name="lgu" value="${rec ? escapeHtml(rec.lgu) : ''}" required></div>
-                        <div class="form-group full-width"><label>Reviewer</label><input type="text" class="form-control" name="reviewer" value="${rec ? escapeHtml(rec.reviewer) : ''}" required></div>
-                        <div class="form-group full-width"><label>Dates</label><input type="text" class="form-control" name="dates" value="${rec ? escapeHtml(rec.dates) : ''}" required></div>
-                    </div>
-                    <div style="text-align:right; margin-top:1rem;"><button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button><button type="submit" class="btn btn-success">Save</button></div>
-                </form>
-            `;
+            document.getElementById('modalBody').innerHTML = `<form onsubmit="saveReviewEntry(event)"><div class="form-grid"><div class="form-group full-width"><label>LGU/Province</label><input type="text" class="form-control" name="lgu" value="${rec ? escapeHtml(rec.lgu) : ''}" required></div><div class="form-group full-width"><label>Reviewer</label><input type="text" class="form-control" name="reviewer" value="${rec ? escapeHtml(rec.reviewer) : ''}" required></div><div class="form-group full-width"><label>Dates</label><input type="text" class="form-control" name="dates" value="${rec ? escapeHtml(rec.dates) : ''}" required></div></div><div style="text-align:right; margin-top:1rem;"><button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button><button type="submit" class="btn btn-success">Save</button></div></form>`;
             modal.classList.add('active');
         }
 
@@ -1575,10 +1277,7 @@
             if (currentReviewId !== null) {
                 const updatedRec = { id: currentReviewId, lgu, reviewer, dates };
                 success = await saveReviewToSheet(updatedRec, 'update');
-                if (success) {
-                    const idx = reviewRecords.findIndex(r => r.id === currentReviewId);
-                    if (idx !== -1) reviewRecords[idx] = updatedRec;
-                }
+                if (success) { const idx = reviewRecords.findIndex(r => r.id === currentReviewId); if (idx !== -1) reviewRecords[idx] = updatedRec; }
             } else {
                 const newId = reviewRecords.length ? Math.max(...reviewRecords.map(r => r.id)) + 1 : 1;
                 const newRec = { id: newId, lgu, reviewer, dates };
@@ -1607,9 +1306,8 @@
         }
 
         function exportReviewData() {
-            const dataStr = JSON.stringify(reviewRecords, null, 2);
             const a = document.createElement('a');
-            a.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+            a.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(reviewRecords, null, 2));
             a.download = 'clup_pdpfp_reviews.json';
             a.click();
             alert('Exported');
@@ -1629,7 +1327,6 @@
                 await updateLocalCounterAfterSync();
                 renderCertificationsTable();
             } catch (error) {
-                console.warn("Zoning using localStorage", error);
                 zoningCertifications = JSON.parse(localStorage.getItem('zoningCertifications') || '[]');
                 updateCounterFromData();
                 renderCertificationsTable();
@@ -1638,10 +1335,7 @@
 
         function updateCounterFromData() {
             let maxNum = 0;
-            zoningCertifications.forEach(rec => {
-                const match = rec.certificationNo?.match(/-(\d+)$/);
-                if (match) maxNum = Math.max(maxNum, parseInt(match[1], 10));
-            });
+            zoningCertifications.forEach(rec => { const match = rec.certificationNo?.match(/-(\d+)$/); if (match) maxNum = Math.max(maxNum, parseInt(match[1], 10)); });
             certificationCounter.lastCertNumber = maxNum;
             localStorage.setItem('certificationCounter', JSON.stringify(certificationCounter));
         }
@@ -1652,8 +1346,6 @@
                 document.getElementById('certificationNo').value = result.certNumber;
                 return result.certNumber;
             } catch (error) {
-                console.error('Failed to get certification number:', error);
-                // Fallback to local generation
                 const year = new Date().getFullYear().toString().slice(-2);
                 const localCounter = JSON.parse(localStorage.getItem('certificationCounter') || '{"lastCertNumber":0}');
                 const nextNumber = localCounter.lastCertNumber + 1;
@@ -1665,23 +1357,14 @@
 
         async function saveZoningRecord(event) {
             event.preventDefault();
-            
-            // Show loading state
             const saveBtn = event.submitter;
             const originalText = saveBtn.innerHTML;
             saveBtn.innerHTML = '⏳ Saving...';
             saveBtn.disabled = true;
-            
             try {
-                // Get unique certification number first
                 let certificationNo;
-                if (!currentEditingZoningId) {
-                    const certResult = await generateUniqueCertificationNumber();
-                    certificationNo = certResult.certNumber;
-                } else {
-                    certificationNo = zoningCertifications.find(r => r.id === currentEditingZoningId).certificationNo;
-                }
-                
+                if (!currentEditingZoningId) { const certResult = await generateUniqueCertificationNumber(); certificationNo = certResult.certNumber; }
+                else { certificationNo = zoningCertifications.find(r => r.id === currentEditingZoningId).certificationNo; }
                 const series = document.getElementById('series').value;
                 const parcels = document.getElementById('parcels').value;
                 const location = document.getElementById('location').value;
@@ -1701,14 +1384,7 @@
                 const approvalDate = document.getElementById('approvalDate').value || '';
                 const purpose = document.getElementById('purpose').value || '';
                 const landClass = document.getElementById('landClass').value || '';
-
-                if (!parcels || !location || !totalArea || !proposedUse || !dateIssued || !requestedBy || !amountPaid) {
-                    alert('Please fill all required fields.');
-                    saveBtn.innerHTML = originalText;
-                    saveBtn.disabled = false;
-                    return false;
-                }
-
+                if (!parcels || !location || !totalArea || !proposedUse || !dateIssued || !requestedBy || !amountPaid) { alert('Please fill all required fields.'); saveBtn.innerHTML = originalText; saveBtn.disabled = false; return false; }
                 const landHoldings = [];
                 const owners = document.getElementsByName('registeredOwner[]');
                 const tcts = document.getElementsByName('tctNo[]');
@@ -1716,51 +1392,17 @@
                 const areas = document.getElementsByName('areaPerTitle[]');
                 const zones = document.getElementsByName('zoneclass[]');
                 for (let i = 0; i < owners.length; i++) {
-                    if (!owners[i]?.value || !tcts[i]?.value || !zones[i]?.value) {
-                        alert(`Row ${i+1}: fill all required fields.`);
-                        saveBtn.innerHTML = originalText;
-                        saveBtn.disabled = false;
-                        return false;
-                    }
-                    landHoldings.push({
-                        registeredOwner: owners[i].value,
-                        tctNo: tcts[i].value,
-                        lotNo: lots[i]?.value || '',
-                        areaPerTitle: areas[i]?.value ? parseFloat(areas[i].value) : 0,
-                        zoneclass: zones[i].value
-                    });
+                    if (!owners[i]?.value || !tcts[i]?.value || !zones[i]?.value) { alert(`Row ${i+1}: fill all required fields.`); saveBtn.innerHTML = originalText; saveBtn.disabled = false; return false; }
+                    landHoldings.push({ registeredOwner: owners[i].value, tctNo: tcts[i].value, lotNo: lots[i]?.value || '', areaPerTitle: areas[i]?.value ? parseFloat(areas[i].value) : 0, zoneclass: zones[i].value });
                 }
-
-                const record = {
-                    id: currentEditingZoningId || Date.now(),
-                    certificationNo, series, parcels, location, totalArea, proposedUse,
-                    landHoldings, dateIssued, requestedBy, amountPaid, orNo, orDate, remarks, clupStatus,
-                    city, province, approvedBy, circularNo, approvalDate,
-                    purpose, landClass,
-                    timestamp: new Date().toLocaleString()
-                };
-
+                const record = { id: currentEditingZoningId || Date.now(), certificationNo, series, parcels, location, totalArea, proposedUse, landHoldings, dateIssued, requestedBy, amountPaid, orNo, orDate, remarks, clupStatus, city, province, approvedBy, circularNo, approvalDate, purpose, landClass, timestamp: new Date().toLocaleString() };
                 const action = currentEditingZoningId ? 'update' : 'add';
-                
                 const isOnline = await checkGoogleSheetsConnection();
-                
                 if (!isOnline) {
                     if (action === 'add') zoningCertifications.push(record);
-                    else {
-                        const idx = zoningCertifications.findIndex(r => r.id === record.id);
-                        if (idx !== -1) zoningCertifications[idx] = record;
-                    }
+                    else { const idx = zoningCertifications.findIndex(r => r.id === record.id); if (idx !== -1) zoningCertifications[idx] = record; }
                     localStorage.setItem('zoningCertifications', JSON.stringify(zoningCertifications));
                     addToPendingSync('zoning', action, record);
-                    
-                    // Update local counter
-                    const localCounter = JSON.parse(localStorage.getItem('certificationCounter') || '{"lastCertNumber":0}');
-                    const certNumber = parseInt(record.certificationNo.split('-')[1]);
-                    if (certNumber > localCounter.lastCertNumber) {
-                        localCounter.lastCertNumber = certNumber;
-                        localStorage.setItem('certificationCounter', JSON.stringify(localCounter));
-                    }
-                    
                     renderCertificationsTable();
                     clearZoningForm();
                     await refreshCertificationNumber();
@@ -1770,21 +1412,15 @@
                     saveBtn.disabled = false;
                     return false;
                 }
-                
-                // Online save with duplicate check
                 const params = new URLSearchParams();
                 params.append('action', action);
                 params.append('data_type', 'zoning');
                 params.append('data', JSON.stringify(record));
-                const response = await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: params.toString() });
+                const response = await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: params.toString() });
                 const result = await response.json();
-                
                 if (result.success) {
                     if (action === 'add') zoningCertifications.push(record);
-                    else {
-                        const idx = zoningCertifications.findIndex(r => r.id === record.id);
-                        if (idx !== -1) zoningCertifications[idx] = record;
-                    }
+                    else { const idx = zoningCertifications.findIndex(r => r.id === record.id); if (idx !== -1) zoningCertifications[idx] = record; }
                     localStorage.setItem('zoningCertifications', JSON.stringify(zoningCertifications));
                     await updateLocalCounterAfterSync();
                     renderCertificationsTable();
@@ -1792,20 +1428,10 @@
                     await refreshCertificationNumber();
                     document.getElementById('recordsSection').style.display = 'block';
                     alert(`Saved to Google Sheets! No: ${certificationNo}`);
-                } else if (result.duplicate) {
-                    // Handle duplicate certification number - retry with new number
-                    alert('Certification number conflict detected. Please try saving again.');
-                    await refreshCertificationNumber();
-                } else {
-                    throw new Error(result.error || 'Save failed');
-                }
-            } catch (error) {
-                console.error('Zoning save error:', error);
-                alert('Failed to save: ' + error.message);
-            } finally {
-                saveBtn.innerHTML = originalText;
-                saveBtn.disabled = false;
-            }
+                } else if (result.duplicate) { alert('Certification number conflict detected. Please try saving again.'); await refreshCertificationNumber(); }
+                else { throw new Error(result.error || 'Save failed'); }
+            } catch (error) { console.error('Zoning save error:', error); alert('Failed to save: ' + error.message); }
+            finally { saveBtn.innerHTML = originalText; saveBtn.disabled = false; }
             return false;
         }
 
@@ -1813,36 +1439,17 @@
             const tbody = document.getElementById('certificationsTableBody');
             if (!tbody) return;
             tbody.innerHTML = '';
-            if (!zoningCertifications.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No records found.</tr></tr>'; return; }
+            if (!zoningCertifications.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No records found.</td></tr>'; return; }
             const sorted = [...zoningCertifications].sort((a,b) => new Date(b.dateIssued) - new Date(a.dateIssued));
-            sorted.forEach(rec => {
-                const row = tbody.insertRow();
-                row.innerHTML = `
-                    <td>${escapeHtml(rec.certificationNo)}</td>
-                    <td>${escapeHtml(rec.parcels)}</td>
-                    <td>${escapeHtml(rec.location)}</td>
-                    <td>${escapeHtml(rec.totalArea)} ha</td>
-                    <td>${formatDate(rec.dateIssued)}</td>
-                    <td>${escapeHtml(rec.requestedBy)}</td>
-                    <td><div class="action-btns"><button class="action-btn view" onclick="viewZoningRecord(${rec.id})">👁️ View</button><button class="action-btn edit" onclick="editZoningRecord(${rec.id})">✏️ Edit</button><button class="action-btn print" onclick="printZoningRecord(${rec.id})">🖨️ Print</button><button class="action-btn delete" onclick="deleteZoningRecord(${rec.id})">🗑️ Delete</button></div></td>
-                `;
-            });
+            sorted.forEach(rec => { const row = tbody.insertRow(); row.innerHTML = `<td>${escapeHtml(rec.certificationNo)}</td><td>${escapeHtml(rec.parcels)}</td><td>${escapeHtml(rec.location)}</td><td>${escapeHtml(rec.totalArea)} ha</td><td>${formatDate(rec.dateIssued)}</td><td>${escapeHtml(rec.requestedBy)}</td><td><div class="action-btns"><button class="action-btn view" onclick="viewZoningRecord(${rec.id})">👁️ View</button><button class="action-btn edit" onclick="editZoningRecord(${rec.id})">✏️ Edit</button><button class="action-btn print" onclick="printZoningRecord(${rec.id})">🖨️ Print</button><button class="action-btn delete" onclick="deleteZoningRecord(${rec.id})">🗑️ Delete</button></div></td>`; });
         }
 
         function viewZoningRecord(id) {
             const rec = zoningCertifications.find(r => r.id === id);
             if (!rec) return;
             let details = '<div style="padding:1rem;">';
-            for (let [k,v] of Object.entries(rec)) {
-                if (k !== 'id' && k !== 'timestamp' && k !== 'landHoldings') {
-                    details += `<p><strong>${k.replace(/([A-Z])/g, ' $1').replace(/^./, s=>s.toUpperCase())}:</strong> ${escapeHtml(String(v))}</p>`;
-                }
-            }
-            if (rec.landHoldings?.length) {
-                details += '<p><strong>Land Holdings:</strong></p><ul>';
-                rec.landHoldings.forEach((h,i) => details += `<li>${i+1}. ${escapeHtml(h.registeredOwner)} - ${escapeHtml(h.tctNo)} - ${escapeHtml(h.lotNo||'N/A')} - ${escapeHtml(h.areaPerTitle||'N/A')} ha - ${escapeHtml(h.zoneclass)}</li>`);
-                details += '</ul>';
-            }
+            for (let [k,v] of Object.entries(rec)) { if (k !== 'id' && k !== 'timestamp' && k !== 'landHoldings') { details += `<p><strong>${k.replace(/([A-Z])/g, ' $1').replace(/^./, s=>s.toUpperCase())}:</strong> ${escapeHtml(String(v))}</p>`; } }
+            if (rec.landHoldings?.length) { details += '<p><strong>Land Holdings:</strong></p><ul>'; rec.landHoldings.forEach((h,i) => details += `<li>${i+1}. ${escapeHtml(h.registeredOwner)} - ${escapeHtml(h.tctNo)} - ${escapeHtml(h.lotNo||'N/A')} - ${escapeHtml(h.areaPerTitle||'N/A')} ha - ${escapeHtml(h.zoneclass)}</li>`); details += '</ul>'; }
             details += '</div><div style="text-align:right;"><button class="btn btn-primary" onclick="closeModal()">Close</button></div>';
             document.getElementById('modalTitle').textContent = 'View Certification';
             document.getElementById('modalBody').innerHTML = details;
@@ -1869,25 +1476,18 @@
             document.getElementById('approvedBy').value = rec.approvedBy || '';
             document.getElementById('circularNo').value = rec.circularNo || '';
             document.getElementById('approvalDate').value = rec.approvalDate || '';
+            document.getElementById('purpose').value = rec.purpose || '';
+            document.getElementById('landClass').value = rec.landClass || '';
             document.querySelector(`input[name="clupStatus"][value="${rec.clupStatus||'approved'}"]`).checked = true;
             const container = document.getElementById('landHoldingsContainer');
             container.innerHTML = '';
             if (rec.landHoldings?.length) {
-                rec.landHoldings.forEach(h => {
-                    const row = document.createElement('div');
-                    row.className = 'land-holding-row';
-                    row.style.cssText = 'display: grid; grid-template-columns: 2fr 1.5fr 1.5fr 1fr 1fr 0.5fr; gap: 10px; margin-bottom: 15px; padding: 15px; background: #f9f9f9; border-radius: 5px; border: 1px solid #e0e0e0;';
-                    row.innerHTML = `
-                        <div><label>Registered Owner</label><input type="text" class="form-control" name="registeredOwner[]" value="${escapeHtml(h.registeredOwner)}" required></div>
-                        <div><label>TCT/OCT No.</label><input type="text" class="form-control" name="tctNo[]" value="${escapeHtml(h.tctNo)}" required></div>
-                        <div><label>Lot Number</label><input type="text" class="form-control" name="lotNo[]" value="${escapeHtml(h.lotNo||'')}"></div>
-                        <div><label>Area Per Title (ha)</label><input type="number" step="0.0001" class="form-control" name="areaPerTitle[]" value="${h.areaPerTitle||''}"></div>
-                        <div><label>Zone Classification</label><input type="text" class="form-control" name="zoneclass[]" value="${escapeHtml(h.zoneclass)}" required></div>
-                        <div><button type="button" class="btn btn-danger" onclick="removeLandHolding(this)">🗑️</button></div>
-                    `;
-                    container.appendChild(row);
-                });
+                rec.landHoldings.forEach(h => { const row = document.createElement('div'); row.className = 'land-holding-row'; row.style.cssText = 'display: grid; grid-template-columns: 2fr 1.5fr 1.5fr 1fr 1fr 0.5fr; gap: 10px; margin-bottom: 15px; padding: 15px; background: #f9f9f9; border-radius: 5px; border: 1px solid #e0e0e0;'; row.innerHTML = `<div><label>Registered Owner</label><input type="text" class="form-control" name="registeredOwner[]" value="${escapeHtml(h.registeredOwner)}" required></div><div><label>TCT/OCT No.</label><input type="text" class="form-control" name="tctNo[]" value="${escapeHtml(h.tctNo)}" required></div><div><label>Lot Number</label><input type="text" class="form-control" name="lotNo[]" value="${escapeHtml(h.lotNo||'')}"></div><div><label>Area Per Title (ha)</label><input type="number" step="0.0001" class="form-control" name="areaPerTitle[]" value="${h.areaPerTitle||''}"></div><div><label>Zone Classification</label><input type="text" class="form-control" name="zoneclass[]" value="${escapeHtml(h.zoneclass)}" required></div><div><button type="button" class="btn btn-danger" onclick="removeLandHolding(this)">🗑️</button></div>`; container.appendChild(row); });
             } else addLandHolding();
+            if (rec.purpose === 'Conversion') document.getElementById('landClassGroup').style.display = 'block';
+            else document.getElementById('landClassGroup').style.display = 'none';
+            if (rec.city && rec.city.toLowerCase().includes('iloilo city')) document.getElementById('iloiloConditionalFields').style.display = 'block';
+            else document.getElementById('iloiloConditionalFields').style.display = 'none';
             toggleClupCascade();
             showSection('zoning');
         }
@@ -1896,7 +1496,6 @@
             if (confirm('Delete this record?')) {
                 try {
                     const isOnline = await checkGoogleSheetsConnection();
-                    
                     if (!isOnline) {
                         addToPendingSync('zoning', 'delete', { id });
                         zoningCertifications = zoningCertifications.filter(r => r.id !== id);
@@ -1906,12 +1505,11 @@
                         alert('Deleted locally. Will sync when online.');
                         return;
                     }
-                    
                     const params = new URLSearchParams();
                     params.append('action', 'delete');
                     params.append('data_type', 'zoning');
                     params.append('data', JSON.stringify({ id }));
-                    const response = await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: params.toString() });
+                    const response = await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: params.toString() });
                     const result = await response.json();
                     if (result.success) {
                         zoningCertifications = zoningCertifications.filter(r => r.id !== id);
@@ -1921,7 +1519,6 @@
                         alert('Deleted.');
                     } else alert('Failed to delete.');
                 } catch (error) {
-                    console.warn("Delete failed, adding to pending sync", error);
                     addToPendingSync('zoning', 'delete', { id });
                     zoningCertifications = zoningCertifications.filter(r => r.id !== id);
                     localStorage.setItem('zoningCertifications', JSON.stringify(zoningCertifications));
@@ -1948,28 +1545,13 @@
             const newRow = document.createElement('div');
             newRow.className = 'land-holding-row';
             newRow.style.cssText = 'display: grid; grid-template-columns: 2fr 1.5fr 1.5fr 1fr 1fr 0.5fr; gap: 10px; margin-bottom: 15px; padding: 15px; background: #f9f9f9; border-radius: 5px; border: 1px solid #e0e0e0;';
-            newRow.innerHTML = `
-                <div><label>Registered Owner</label><input type="text" class="form-control" name="registeredOwner[]" placeholder="Enter registered owner" required></div>
-                <div><label>TCT/OCT No.</label><input type="text" class="form-control" name="tctNo[]" placeholder="Enter TCT/OCT number" required></div>
-                <div><label>Lot Number</label><input type="text" class="form-control" name="lotNo[]" placeholder="e.g., Lot 1234"></div>
-                <div><label>Area Per Title (ha)</label><input type="number" step="0.0001" class="form-control" name="areaPerTitle[]" placeholder="0.0000"></div>
-                <div><label>Zone Classification</label><input type="text" class="form-control" name="zoneclass[]" placeholder="e.g., Residential-3" required></div>
-                <div style="display:flex; align-items:flex-end;"><button type="button" class="btn btn-danger" onclick="removeLandHolding(this)" style="padding:0.6rem 1rem;">🗑️</button></div>
-            `;
+            newRow.innerHTML = `<div><label>Registered Owner</label><input type="text" class="form-control" name="registeredOwner[]" placeholder="Enter registered owner" required></div><div><label>TCT/OCT No.</label><input type="text" class="form-control" name="tctNo[]" placeholder="Enter TCT/OCT number" required></div><div><label>Lot Number</label><input type="text" class="form-control" name="lotNo[]" placeholder="e.g., Lot 1234"></div><div><label>Area Per Title (ha)</label><input type="number" step="0.0001" class="form-control" name="areaPerTitle[]" placeholder="0.0000"></div><div><label>Zone Classification</label><input type="text" class="form-control" name="zoneclass[]" placeholder="e.g., Residential-3" required></div><div style="display:flex; align-items:flex-end;"><button type="button" class="btn btn-danger" onclick="removeLandHolding(this)" style="padding:0.6rem 1rem;">🗑️</button></div>`;
             container.appendChild(newRow);
         }
 
-        function removeLandHolding(btn) {
-            const row = btn.closest('.land-holding-row');
-            if (document.querySelectorAll('.land-holding-row').length > 1) row.remove();
-            else alert('At least one land holding is required.');
-        }
+        function removeLandHolding(btn) { const row = btn.closest('.land-holding-row'); if (document.querySelectorAll('.land-holding-row').length > 1) row.remove(); else alert('At least one land holding is required.'); }
 
-        function viewAllCertifications() {
-            document.getElementById('recordsSection').style.display = 'block';
-            renderCertificationsTable();
-        }
-
+        function viewAllCertifications() { document.getElementById('recordsSection').style.display = 'block'; renderCertificationsTable(); }
         function toggleRecordsView() { document.getElementById('recordsSection').style.display = 'none'; }
 
         function resetCertificationCounter() {
@@ -1981,331 +1563,117 @@
             }
         }
 
-        // ========== UPDATED PRINT FUNCTIONS ==========
+        // ========== PRINT FUNCTIONS ==========
         function printZoningRecord(id) {
-    const rec = zoningCertifications.find(r => r.id == id);
-    if (!rec) return;
+            const rec = zoningCertifications.find(r => r.id == id);
+            if (!rec) return;
+            const certNo = rec.certificationNo;
+            const series = rec.series || '2002';
+            const parcels = rec.parcels || '______________________';
+            const location = rec.location || '______________________';
+            const totalArea = rec.totalArea || '__________';
+            const proposedUse = rec.proposedUse || '______________________';
+            const dateIssued = rec.dateIssued;
+            const requestedBy = rec.requestedBy || '______________________';
+            const amountPaid = rec.amountPaid || '___________';
+            const orNo = rec.orNo || '___________';
+            const orDate = rec.orDate || '';
+            let landHoldingsArray = Array.isArray(rec.landHoldings) ? rec.landHoldings : [];
+            let landHoldingsHtml = '';
+            const buildTotalRow = (totalAreaSum) => `<tr style="background-color: #f2f2f2;"><td style="border:1px solid #000; padding:0.3cm; color: black; font-weight: bold;"><strong>Total</strong></td><td style="border:1px solid #000; padding:0.3cm;"></td><td style="border:1px solid #000; padding:0.3cm;"></td><td style="border:1px solid #000; padding:0.3cm; text-align:right; color: black; font-weight: bold;"><strong>${totalAreaSum.toFixed(4)}</strong></td><td style="border:1px solid #000; padding:0.3cm;"></td><td style="border:1px solid #000; padding:0.3cm;"></td></tr>`;
+            const headerRow = `<thead><tr><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold;">Registered Owner</th><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold;">Lot Number</th><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold;">OCT/TCT No.</th><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold;">Area Per Title (Ha)</th><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold;">Area Applied for Conversion (Ha)</th><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold;">Zone Classification</th></tr></thead>`;
+            if (landHoldingsArray.length === 0) {
+                let totalAreaNum = parseFloat(totalArea) || 0;
+                landHoldingsHtml = `<table class="land-holdings-table" style="width:100%; border-collapse:collapse; margin:0.5cm 0;">${headerRow}<tbody><tr><td style="border:1px solid #000; padding:0.3cm; color: black; font-weight: bold;">______________________</td><td style="border:1px solid #000; padding:0.3cm;">______________</td><td style="border:1px solid #000; padding:0.3cm;">______________________</td><td style="border:1px solid #000; padding:0.3cm; text-align:right;">${escapeHtml(totalArea)}</td><td style="border:1px solid #000; padding:0.3cm;">___________</td><td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(proposedUse)}</td></tr>${buildTotalRow(totalAreaNum)}</tbody></table>`;
+            } else {
+                let totalAreaSum = 0;
+                let rowsHtml = '';
+                landHoldingsArray.forEach(h => { const area = h.areaPerTitle ? parseFloat(h.areaPerTitle) : 0; totalAreaSum += area; rowsHtml += `<tr><td style="border:1px solid #000; padding:0.3cm; color: black; font-weight: bold;">${escapeHtml(h.registeredOwner || '______________________')}</td><td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(h.lotNo || '______________')}</td><td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(h.tctNo || '______________________')}</td><td style="border:1px solid #000; padding:0.3cm; text-align:right;">${area.toFixed(4)}</td><td style="border:1px solid #000; padding:0.3cm;">___________</td><td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(h.zoneclass || '______________________')}</td></tr>`; });
+                landHoldingsHtml = `<table class="land-holdings-table" style="width:100%; border-collapse:collapse; margin:0.5cm 0;">${headerRow}<tbody>${rowsHtml}${buildTotalRow(totalAreaSum)}</tbody></table>`;
+            }
+            const clupStatus = rec.clupStatus || 'approved';
+            const approvedBy = rec.approvedBy || '______________________';
+            const city = rec.city || '______________________';
+            const province = rec.province || '______________________';
+            const cityProvince = province && province !== '______________________' ? `${city}, ${province}` : city;
+            const circularNo = rec.circularNo || '___________';
+            const approvalDateRaw = rec.approvalDate || '___________';
+            const approvalDateFormatted = formatToMMDDYYYY(approvalDateRaw);
+            const agriculturalLand = '___________';
+            const reclassified = '___________';
+            const reclassYear = '___________';
+            const resolutionNo = '___________';
+            const resolutionDateRaw = '___________';
+            const resolutionDateFormatted = formatToMMDDYYYY(resolutionDateRaw);
+            const isIloiloCity = city.toLowerCase().includes('iloilo city') || city.toLowerCase() === 'iloilo city';
+            let approvedByText = approvedBy || (isIloiloCity ? 'DHSUD' : 'Sangguniang Panlalawigan');
+            let throughText = '';
+            if (isIloiloCity || approvedBy === 'DHSUD') throughText = ` ${escapeHtml(circularNo)}`;
+            else throughText = `${escapeHtml(circularNo)}`;
+            const check1 = clupStatus === 'approved' ? '[✓]' : '[ ]';
+            const check2 = clupStatus === 'pending' ? '[✓]' : '[ ]';
+            const check3 = clupStatus === 'none' ? '[✓]' : '[ ]';
+            
+            // Extra paragraph for Iloilo City with Conversion purpose
+            let extraParagraph = '';
+            if (isIloiloCity && rec.purpose === 'Conversion') {
+                const iloiloClup = clupRecords.find(r => r.LGU && r.LGU.toLowerCase().includes('iloilo city') && r.Province === 'Iloilo');
+                if (iloiloClup) {
+                    const landClassText = rec.landClass || '___________';
+                    const firstPlanRes = iloiloClup.First_Plan_Res || 'Resolution No. ___________';
+                    const firstApprovalDateRaw = iloiloClup.First_Plan_Date_of_Approval || '';
+                    const firstApprovalFormatted = firstApprovalDateRaw ? formatOrdinalDate(firstApprovalDateRaw) : '___________';
+                    extraParagraph = `<p>This is to Certify that same tract of land was within a zone classified as <strong>${escapeHtml(landClassText)}</strong> per approved Comprehensive Land Use Plan/Zoning Ordinance of <strong>${escapeHtml(city)}</strong> by then Human Settlements Regulatory Commission now DHSUD through <strong>${escapeHtml(firstPlanRes)}</strong> dated <strong>${firstApprovalFormatted}</strong>.</p>`;
+                }
+            }
+            
+            const statusHtml = `<p>1. <strong>${check1} WITH APPROVED CLUP/ZO</strong></p>${extraParagraph}<p>THIS IS TO CERTIFY that the above-described landholdings is/are zoned for use/s specified in the above table per approved <strong>Comprehensive Land Use Plan/Zoning Ordinance</strong> of <strong>${escapeHtml(cityProvince)}</strong>, as approved by the <strong>${approvedByText}</strong> through <strong>${throughText}</strong> dated <strong>${escapeHtml(approvalDateFormatted)}</strong> in accordance with pertinent issuances;</p><p>Further, the proposed conversion:</p><p>&nbsp;&nbsp;&nbsp;[ ] Conforms/is compatible with the approved land use plan and/or Zoning Ordinance.</p><p>&nbsp;&nbsp;&nbsp;[ ] Does not conform/is not compatible with the approved land use plan and/or Zoning Ordinance.</p><p>Per record of this office, the city/municipality of ${escapeHtml(city)} has a total zoned agricultural land of <strong>${agriculturalLand}</strong> hectares of which <strong>${reclassified}</strong> hectares have been reclassified since <strong>${reclassYear}</strong>, as approved by the DHSUD/SP per DHSUD/SP Resolution No. <strong>${resolutionNo}</strong> dated <strong>${escapeHtml(resolutionDateFormatted)}</strong>.</p><p>2. <strong>${check2} WITH CLUP/ZO PENDING APPROVAL BY HLURB/SP</strong></p><p>THIS IS TO CERTIFY that the above-described property/ies lie/s is/are located within the area zoned for ________ use per Comprehensive Land Use Plan/Zoning Ordinance No. ________ dated _____ submitted to HLURB/SP for approval on _____________ and same remains pending to date.</p><p>THIS IS TO CERTIFY FURTHER that per record of this office-said city/municipality of _________ will have a total zoned agricultural land of __________s hectares.</p><p>3. <strong>${check3} WITHOUT CLUP/ZO</strong></p><p>THIS IS TO CERTIFY that the municipality of _______ has not submitted its Comprehensive Land Use Plan/ Zoning Ordinance to this Office.</p>`;
+            
+            const formattedDateIssued = formatOrdinalDate(dateIssued);
+            const orDateFormatted = orDate ? formatToMMDDYYYY(orDate) : formattedDateIssued;
+            const printContent = `<div class="print-document"><div style="text-align: right; margin-bottom: 0.5cm;"><p style="margin: 0; font-size: 12pt;"><strong>DHSUD Certification No. ${escapeHtml(certNo)}</strong></p></div><div style="margin-bottom: 0.5cm;"><p style="margin: 0; font-size: 12pt;"><strong>LUC FORM NO. 5</strong></p><p style="margin: 0; font-size: 12pt;">Series of ${escapeHtml(series)}</p><p style="margin: 0; font-size: 11pt; font-style: italic;">(To be filled-up by the Regional DHSUD)</p></div><div style="text-align: center; margin: 0.5cm 0;"><h2 style="font-size: 18pt; margin: 0.2cm 0;">Republic of the Philippines</h2><h3 style="font-size: 14pt; margin: 0.1cm 0;">DEPARTMENT OF HUMAN SETTLEMENTS AND URBAN DEVELOPMENT</h3><h3 style="font-size: 13pt; margin: 0.1cm 0;">Region VI, Iloilo City</h3><h2 style="text-decoration: underline; margin: 0.3cm 0; font-size: 18pt;">CERTIFICATION</h2></div><div style="text-align: left; margin: 0.3cm 0 0.2cm 0;"><h4 style="font-size: 16pt; font-weight: bold; margin: 0;">I. BASIC INFORMATION</h4></div><div class="basic-info" style="margin-left: 0.5cm; font-size: 14pt; margin-bottom: 0.3cm;"><p style="margin: 0.1cm 0;"><strong>A. No. of Parcels :</strong> ${escapeHtml(parcels)}</p><p style="margin: 0.1cm 0;"><strong>B. Location of the Property :</strong> ${escapeHtml(location)}</p><p style="margin: 0.1cm 0;"><strong>C. Total Area (ha.) :</strong> ${escapeHtml(totalArea)} ha</p><p style="margin: 0.1cm 0;"><strong>D. Proposed Use :</strong> ${escapeHtml(proposedUse)}</p><p style="margin: 0.1cm 0;"><strong>E. Description of Land Holdings :</strong></p></div>${landHoldingsHtml}<h4 style="margin: 0.5cm 0 0.3cm; font-size: 16pt;">II. STATUS OF COMPREHENSIVE LAND USE PLAN (CLUP) ZONING ORDINANCE (ZO)</h4><div class="clup-status" style="margin: 0.3cm 0; white-space: pre-line; font-size: 14pt; line-height: 1.5;">${statusHtml}</div><div style="margin: 0.5cm 0; font-size: 14pt;"><p style="margin: 0.2cm 0;">This certification is issued upon the request of <strong>${escapeHtml(requestedBy)}</strong> for whatever legal purpose/s it may serve.</p><p style="margin: 0.2cm 0;">Given this <strong>${formattedDateIssued}</strong> in Iloilo City, Philippines.</p></div><div class="signature-area" style="margin-top: 1.5cm; display: flex; justify-content: flex-end;"><div class="signature-box" style="text-align: center; width: 8cm;"><div class="signature-line" style="border-bottom: 2px solid #000; margin: 0.8cm 0 0.2cm 0; width: 100%;"></div><p style="margin: 0.1cm 0; font-size: 14pt;"><strong>EnP. EVA MARIA P. MARFIL</strong></p><p style="margin: 0.1cm 0; font-size: 12pt;">Regional Director</p></div></div><div class="notices" style="margin-top: 1cm; font-size: 10pt; border-top: 1px dashed #000; padding-top: 0.3cm;"><p style="margin: 0.1cm 0;"><strong>Note:</strong></p><p style="margin: 0.1cm 0;">1. This certification is issued relative to the requirement of DAR regarding the implementation of the Comprehensive Agrarian Reform Law and shall not be construed as a Certificate of Eligibility for conversion.</p><p style="margin: 0.1cm 0;">2. This certification <strong>shall not</strong> be construed as a Locational Clearance/Certificate of Zoning Compliance/Development Permit or License to Sell.</p><p style="margin: 0.1cm 0;">3. This <strong>shall not</strong> be construed as a certification as to the ownership by the applicant of the above listed parcel(s) of land.</p><p style="margin: 0.1cm 0;">4. Any misrepresentation on the part of the requesting party shall be a ground for cancellation of this certification.</p></div><div style="margin-top: 0.5cm; display: flex; justify-content: space-between; font-size: 11pt;"><div><p style="margin: 0.1cm 0;"><strong>${escapeHtml(certNo)}</strong></p><p style="margin: 0.1cm 0;"><strong>O.R. No. :</strong> ${escapeHtml(orNo)}</p><p style="margin: 0.1cm 0;"><strong>Amount Paid :</strong> P ${escapeHtml(amountPaid)}</p><p style="margin: 0.1cm 0;"><strong>Date :</strong> ${escapeHtml(orDateFormatted)}</p></div></div></div>`;
+            const ps = document.getElementById('printSection');
+            ps.innerHTML = printContent;
+            ps.style.display = 'block';
+            setTimeout(() => window.print(), 200);
+            setTimeout(() => ps.style.display = 'none', 1000);
+        }
 
-    const certNo = rec.certificationNo;
-    const series = rec.series || '2002';
-    const parcels = rec.parcels || '______________________';
-    const location = rec.location || '______________________';
-    const totalArea = rec.totalArea || '__________';
-    const proposedUse = rec.proposedUse || '______________________';
-    const dateIssued = rec.dateIssued;
-    const requestedBy = rec.requestedBy || '______________________';
-    const amountPaid = rec.amountPaid || '___________';
-    const orNo = rec.orNo || '___________';
-    const orDate = rec.orDate || '';
-
-    let landHoldingsArray = Array.isArray(rec.landHoldings) ? rec.landHoldings : [];
-    let landHoldingsHtml = '';
-
-    const buildTotalRow = (totalAreaSum) => `
-        <tr style="background-color: #f2f2f2;">
-            <td style="border:1px solid #000; padding:0.3cm; color: black; font-weight: bold;"><strong>Total</strong></td>
-            <td style="border:1px solid #000; padding:0.3cm;"></td>
-            <td style="border:1px solid #000; padding:0.3cm;"></td>
-            <td style="border:1px solid #000; padding:0.3cm; text-align:right; color: black; font-weight: bold;"><strong>${totalAreaSum.toFixed(4)}</strong></td>
-            <td style="border:1px solid #000; padding:0.3cm;"></td>
-            <td style="border:1px solid #000; padding:0.3cm;"></td>
-        </tr>
-    `;
-
-    const headerRow = `
-        <thead>
-            <tr>
-                <th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold;">Registered Owner</th>
-                <th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold;">Lot Number</th>
-                <th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold;">OCT/TCT No.</th>
-                <th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold;">Area Per Title (Ha)</th>
-                <th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold;">Area Applied for Conversion (Ha)</th>
-                <th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold;">Zone Classification</th>
-            </tr>
-        </thead>
-    `;
-
-    if (landHoldingsArray.length === 0) {
-        let totalAreaNum = parseFloat(totalArea) || 0;
-        landHoldingsHtml = `
-            <table class="land-holdings-table" style="width:100%; border-collapse:collapse; margin:0.5cm 0;">
-                ${headerRow}
-                <tbody>
-                    <tr>
-                        <td style="border:1px solid #000; padding:0.3cm; color: black; font-weight: bold;">______________________</td>
-                        <td style="border:1px solid #000; padding:0.3cm;">______________</td>
-                        <td style="border:1px solid #000; padding:0.3cm;">______________________</td>
-                        <td style="border:1px solid #000; padding:0.3cm; text-align:right;">${escapeHtml(totalArea)}</td>
-                        <td style="border:1px solid #000; padding:0.3cm;">___________</td>
-                        <td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(proposedUse)}</td>
-                    </tr>
-                    ${buildTotalRow(totalAreaNum)}
-                </tbody>
-            </table>`;
-    } else {
-        let totalAreaSum = 0;
-        let rowsHtml = '';
-        landHoldingsArray.forEach(h => {
-            const area = h.areaPerTitle ? parseFloat(h.areaPerTitle) : 0;
-            totalAreaSum += area;
-            rowsHtml += `
-                <tr>
-                    <td style="border:1px solid #000; padding:0.3cm; color: black; font-weight: bold;">${escapeHtml(h.registeredOwner || '______________________')}</td>
-                    <td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(h.lotNo || '______________')}</td>
-                    <td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(h.tctNo || '______________________')}</td>
-                    <td style="border:1px solid #000; padding:0.3cm; text-align:right;">${area.toFixed(4)}</td>
-                    <td style="border:1px solid #000; padding:0.3cm;">___________</td>
-                    <td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(h.zoneclass || '______________________')}</td>
-                </tr>`;
-        });
-        landHoldingsHtml = `
-            <table class="land-holdings-table" style="width:100%; border-collapse:collapse; margin:0.5cm 0;">
-                ${headerRow}
-                <tbody>
-                    ${rowsHtml}
-                    ${buildTotalRow(totalAreaSum)}
-                </tbody>
-            </table>`;
-    }
-
-    // ========== STATUS SECTION (unchanged logic) ==========
-    const clupStatus = rec.clupStatus || 'approved';
-    const approvedBy = rec.approvedBy || '______________________';
-    const city = rec.city || '______________________';
-    const province = rec.province || '______________________';
-    const cityProvince = province && province !== '______________________' ? `${city}, ${province}` : city;
-    const circularNo = rec.circularNo || '___________';
-    const approvalDateRaw = rec.approvalDate || '___________';
-    const approvalDateFormatted = formatToMMDDYYYY(approvalDateRaw);
-    const agriculturalLand = '___________';
-    const reclassified = '___________';
-    const reclassYear = '___________';
-    const resolutionNo = '___________';
-    const resolutionDateRaw = '___________';
-    const resolutionDateFormatted = formatToMMDDYYYY(resolutionDateRaw);
-
-    const isIloiloCity = city.toLowerCase().includes('iloilo city') || city.toLowerCase() === 'iloilo city';
-    let approvedByText = approvedBy || (isIloiloCity ? 'DHSUD' : 'Sangguniang Panlalawigan');
-    let throughText = '';
-    if (isIloiloCity || approvedBy === 'DHSUD') {
-        throughText = ` ${escapeHtml(circularNo)}`;
-    } else {
-        throughText = `${escapeHtml(circularNo)}`; // just the resolution number
-    }
-
-    const check1 = clupStatus === 'approved' ? '[✓]' : '[ ]';
-    const check2 = clupStatus === 'pending' ? '[✓]' : '[ ]';
-    const check3 = clupStatus === 'none' ? '[✓]' : '[ ]';
-
-    const statusHtml = `
-        <p>1. <strong>${check1} WITH APPROVED CLUP/ZO</strong></p>
-        <p>THIS IS TO CERTIFY that the above-described landholdings is/are zoned for use/s specified in the above table per approved <strong>Comprehensive Land Use Plan/Zoning Ordinance</strong> of <strong>${escapeHtml(cityProvince)}</strong>, as approved by the <strong>${approvedByText}</strong> through <strong>${throughText}</strong> dated <strong>${escapeHtml(approvalDateFormatted)}</strong> in accordance with pertinent issuances;</p>
-        <p>Further, the proposed conversion:</p>
-        <p>&nbsp;&nbsp;&nbsp;[ ] Conforms/is compatible with the approved land use plan and/or Zoning Ordinance.</p>
-        <p>&nbsp;&nbsp;&nbsp;[ ] Does not conform/is not compatible with the approved land use plan and/or Zoning Ordinance.</p>
-        <p>Per record of this office, the city/municipality of ${escapeHtml(city)} has a total zoned agricultural land of <strong>${agriculturalLand}</strong> hectares of which <strong>${reclassified}</strong> hectares have been reclassified since <strong>${reclassYear}</strong>, as approved by the DHSUD/SP per DHSUD/SP Resolution No. <strong>${resolutionNo}</strong> dated <strong>${escapeHtml(resolutionDateFormatted)}</strong>.</p>
-
-        <p>2. <strong>${check2} WITH CLUP/ZO PENDING APPROVAL BY HLURB/SP</strong></p>
-        <p>THIS IS TO CERTIFY that the above-described property/ies lie/s is/are located within the area zoned for ________ use per Comprehensive Land Use Plan/Zoning Ordinance No. ________ dated _____ submitted to HLURB/SP for approval on _____________ and same remains pending to date.</p>
-        <p>THIS IS TO CERTIFY FURTHER that per record of this office-said city/municipality of _________ will have a total zoned agricultural land of __________s hectares.</p>
-
-        <p>3. <strong>${check3} WITHOUT CLUP/ZO</strong></p>
-        <p>THIS IS TO CERTIFY that the municipality of _______ has not submitted its Comprehensive Land Use Plan/ Zoning Ordinance to this Office.</p>
-    `;
-
-    const formattedDateIssued = formatOrdinalDate(dateIssued);
-    const orDateFormatted = orDate ? formatToMMDDYYYY(orDate) : formattedDateIssued;
-
-    // ========== CORRECTED PRINT CONTENT (no duplicate notices, proper OR block) ==========
-    const printContent = `
-        <div class="print-document">
-            <div style="text-align: right; margin-bottom: 0.5cm;"><p style="margin: 0; font-size: 12pt;"><strong>DHSUD Certification No. ${escapeHtml(certNo)}</strong></p></div>
-            <div style="margin-bottom: 0.5cm;"><p style="margin: 0; font-size: 12pt;"><strong>LUC FORM NO. 5</strong></p><p style="margin: 0; font-size: 12pt;">Series of ${escapeHtml(series)}</p><p style="margin: 0; font-size: 11pt; font-style: italic;">(To be filled-up by the Regional DHSUD)</p></div>
-            <div style="text-align: center; margin: 0.5cm 0;"><h2 style="font-size: 18pt; margin: 0.2cm 0;">Republic of the Philippines</h2><h3 style="font-size: 14pt; margin: 0.1cm 0;">DEPARTMENT OF HUMAN SETTLEMENTS AND URBAN DEVELOPMENT</h3><h3 style="font-size: 13pt; margin: 0.1cm 0;">Region VI, Iloilo City</h3><h2 style="text-decoration: underline; margin: 0.3cm 0; font-size: 18pt;">CERTIFICATION</h2></div>
-            <div style="text-align: left; margin: 0.3cm 0 0.2cm 0;"><h4 style="font-size: 16pt; font-weight: bold; margin: 0;">I. BASIC INFORMATION</h4></div>
-            <div class="basic-info" style="margin-left: 0.5cm; font-size: 14pt; margin-bottom: 0.3cm;">
-                <p style="margin: 0.1cm 0;"><strong>A. No. of Parcels :</strong> ${escapeHtml(parcels)}</p>
-                <p style="margin: 0.1cm 0;"><strong>B. Location of the Property :</strong> ${escapeHtml(location)}</p>
-                <p style="margin: 0.1cm 0;"><strong>C. Total Area (ha.) :</strong> ${escapeHtml(totalArea)} ha</p>
-                <p style="margin: 0.1cm 0;"><strong>D. Proposed Use :</strong> ${escapeHtml(proposedUse)}</p>
-                <p style="margin: 0.1cm 0;"><strong>E. Description of Land Holdings :</strong></p>
-            </div>
-            ${landHoldingsHtml}
-            <h4 style="margin: 0.5cm 0 0.3cm; font-size: 16pt;">II. STATUS OF COMPREHENSIVE LAND USE PLAN (CLUP) ZONING ORDINANCE (ZO)</h4>
-            <div class="clup-status" style="margin: 0.3cm 0; white-space: pre-line; font-size: 14pt; line-height: 1.5;">${statusHtml}</div>
-            <div style="margin: 0.5cm 0; font-size: 14pt;">
-                <p style="margin: 0.2cm 0;">This certification is issued upon the request of <strong>${escapeHtml(requestedBy)}</strong> for whatever legal purpose/s it may serve.</p>
-                <p style="margin: 0.2cm 0;">Given this <strong>${formattedDateIssued}</strong> in Iloilo City, Philippines.</p>
-            </div>
-            <div class="signature-area" style="margin-top: 1.5cm; display: flex; justify-content: flex-end;">
-                <div class="signature-box" style="text-align: center; width: 8cm;">
-                    <div class="signature-line" style="border-bottom: 2px solid #000; margin: 0.8cm 0 0.2cm 0; width: 100%;"></div>
-                    <p style="margin: 0.1cm 0; font-size: 14pt;"><strong>EnP. EVA MARIA P. MARFIL</strong></p>
-                    <p style="margin: 0.1cm 0; font-size: 12pt;">Regional Director</p>
-                </div>
-            </div>
-            <div class="notices" style="margin-top: 1cm; font-size: 10pt; border-top: 1px dashed #000; padding-top: 0.3cm;">
-                <p style="margin: 0.1cm 0;"><strong>Note:</strong></p>
-                <p style="margin: 0.1cm 0;">1. This certification is issued relative to the requirement of DAR regarding the implementation of the Comprehensive Agrarian Reform Law and shall not be construed as a Certificate of Eligibility for conversion.</p>
-                <p style="margin: 0.1cm 0;">2. This certification <strong>shall not</strong> be construed as a Locational Clearance/Certificate of Zoning Compliance/Development Permit or License to Sell.</p>
-                <p style="margin: 0.1cm 0;">3. This <strong>shall not</strong> be construed as a certification as to the ownership by the applicant of the above listed parcel(s) of land.</p>
-                <p style="margin: 0.1cm 0;">4. Any misrepresentation on the part of the requesting party shall be a ground for cancellation of this certification.</p>
-            </div>
-            <div style="margin-top: 0.5cm; display: flex; justify-content: space-between; font-size: 11pt;">
-                <div><p style="margin: 0.1cm 0;"><strong>${escapeHtml(certNo)}</strong></p>
-                    <p style="margin: 0.1cm 0;"><strong>O.R. No. :</strong> ${escapeHtml(orNo)}</p>
-                    <p style="margin: 0.1cm 0;"><strong>Amount Paid :</strong> P ${escapeHtml(amountPaid)}</p>
-                    <p style="margin: 0.1cm 0;"><strong>Date :</strong> ${escapeHtml(orDateFormatted)}</p>
-                </div>
-            </div>
-        </div>
-    `;
-
-    const ps = document.getElementById('printSection');
-    ps.innerHTML = printContent;
-    ps.style.display = 'block';
-    setTimeout(() => window.print(), 200);
-    setTimeout(() => ps.style.display = 'none', 1000);
-}
-
-        // Also update the blank form printing function
         function printBlankForm() {
-    const certNo = document.getElementById('certificationNo').value || 'SZC-RVI25-046';
-    const series = document.getElementById('series').value || '2002';
-    const parcels = document.getElementById('parcels').value || '______________________';
-    const location = document.getElementById('location').value || '______________________';
-    const totalArea = document.getElementById('totalArea').value || '__________';
-    const proposedUse = document.getElementById('proposedUse').value || '______________________';
-    const city = document.getElementById('city').value || '______________________';
-    const isIloiloCity = city.toLowerCase().includes('iloilo city') || city.toLowerCase() === 'iloilo city';
-    let approvedByDisplay = isIloiloCity ? 'DHSUD' : 'Sangguniang Panlalawigan';
-    let throughDisplay = isIloiloCity ? 'Department Circular No. ___________' : 'SP Resolution No. ___________';
-
-    const totalAreaNum = parseFloat(totalArea) || 0;
-    const totalRow = `
-        <tr style="background-color: #f2f2f2;">
-            <td style="border:1px solid #000; padding:0.3cm; color: black; font-weight: bold;"><strong>Total</strong></td>
-            <td style="border:1px solid #000; padding:0.3cm;"></td>
-            <td style="border:1px solid #000; padding:0.3cm;"></td>
-            <td style="border:1px solid #000; padding:0.3cm; text-align:right; color: black; font-weight: bold;"><strong>${totalAreaNum.toFixed(4)}</strong></td>
-            <td style="border:1px solid #000; padding:0.3cm;"></td>
-            <td style="border:1px solid #000; padding:0.3cm;"></td>
-        </tr>
-    `;
-
-    const landHoldingsHtml = `
-        <table class="land-holdings-table" style="width:100%; border-collapse:collapse; margin:0.5cm 0;">
-            <thead>
-                <tr>
-                    <th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold;">Registered Owner</th>
-                    <th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold;">Lot Number</th>
-                    <th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold;">OCT/TCT No.</th>
-                    <th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold;">Area Per Title (Ha)</th>
-                    <th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold;">Area Applied for Conversion (Ha)</th>
-                    <th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold;">Zone Classification</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td style="border:1px solid #000; padding:0.3cm; color: black; font-weight: bold;">______________________</td>
-                    <td style="border:1px solid #000; padding:0.3cm;">______________</td>
-                    <td style="border:1px solid #000; padding:0.3cm;">______________________</td>
-                    <td style="border:1px solid #000; padding:0.3cm; text-align:right;">${escapeHtml(totalArea)}</td>
-                    <td style="border:1px solid #000; padding:0.3cm;">___________</td>
-                    <td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(proposedUse)}</td>
-                </tr>
-                ${totalRow}
-            </tbody>
-        </table>`;
-
-    const printContent = `
-        <div class="print-document">
-            <div style="text-align: right; margin-bottom: 0.5cm;"><p style="margin: 0; font-size: 12pt;"><strong>DHSUD Certification No. ${escapeHtml(certNo)}</strong></p></div>
-            <div style="margin-bottom: 0.5cm;"><p style="margin: 0; font-size: 12pt;"><strong>LUC FORM NO. 5</strong></p><p style="margin: 0; font-size: 12pt;">Series of ${escapeHtml(series)}</p><p style="margin: 0; font-size: 11pt; font-style: italic;">(To be filled-up by the Regional DHSUD)</p></div>
-            <div style="text-align: center; margin: 0.5cm 0;"><h2 style="font-size: 16pt; margin: 0.2cm 0;">Republic of the Philippines</h2><h3 style="font-size: 14pt; margin: 0.1cm 0;">DEPARTMENT OF HUMAN SETTLEMENTS AND URBAN DEVELOPMENT</h3><h3 style="font-size: 13pt; margin: 0.1cm 0;">Region VI, Iloilo City</h3><h2 style="text-decoration: underline; margin: 0.3cm 0; font-size: 16pt;">CERTIFICATION</h2></div>
-            <div style="text-align: left; margin: 0.3cm 0 0.2cm 0;"><h4 style="font-size: 14pt; font-weight: bold; margin: 0;">I. BASIC INFORMATION</h4></div>
-            <div class="basic-info" style="margin-left: 0.5cm; font-size: 12pt; margin-bottom: 0.3cm;">
-                <p style="margin: 0.1cm 0;"><strong>A. No. of Parcels :</strong> ${escapeHtml(parcels)}</p>
-                <p style="margin: 0.1cm 0;"><strong>B. Location of the Property :</strong> ${escapeHtml(location)}</p>
-                <p style="margin: 0.1cm 0;"><strong>C. Total Area (ha.) :</strong> ${escapeHtml(totalArea)} ha</p>
-                <p style="margin: 0.1cm 0;"><strong>D. Proposed Use :</strong> ${escapeHtml(proposedUse)}</p>
-                <p style="margin: 0.1cm 0;"><strong>E. Description of Land Holdings :</strong></p>
-            </div>
-            ${landHoldingsHtml}
-            <h4 style="margin: 0.5cm 0 0.3cm; font-size: 14pt;">II. STATUS OF COMPREHENSIVE LAND USE PLAN (CLUP) ZONING ORDINANCE (ZO)</h4>
-            <div class="clup-status" style="margin: 0.3cm 0; white-space: pre-line; font-size: 12pt; line-height: 1.5;">
-                <p>1. [ ] WITH APPROVED CLUP/ZO</p>
-                <p>THIS IS TO CERTIFY that the above-described landholdings is/are zoned for use/s specified in the above table per approved <strong>Comprehensive Land Use Plan/Zoning Ordinance</strong> of <strong>___________, as approved by the <strong>_________</strong> through <strong>_____________</strong> dated <strong>___________</strong> in accordance with pertinent issuances;</p>
-                <p>Further, the proposed conversion:</p>
-                <p>&nbsp;&nbsp;&nbsp;[ ] Conforms/is compatible with the approved land use plan and/or Zoning Ordinance.</p>
-                <p>&nbsp;&nbsp;&nbsp;[ ] Does not conform/is not compatible with the approved land use plan and/or Zoning Ordinance.</p>
-                <p>Per record of this office, the city/municipality of ___________ has a total zoned agricultural land of ___________ hectares of which ___________ hectares have been reclassified since ___________, as approved by the DHSUD/SP per DHSUD/SP Resolution No. ___________ dated ___________.</p>
-                <p>2. [ ] WITH CLUP/ZO PENDING APPROVAL BY HLURB/SP</p>
-                <p>3. [ ] WITHOUT CLUP/ZO</p>
-            </div>
-            <div style="margin: 0.5cm 0;">
-                <p style="margin: 0.2cm 0;">This certification is issued upon the request of <strong>______________________</strong> for whatever legal purpose/s it may serve.</p>
-                <p style="margin: 0.2cm 0;">Given this <strong>___________</strong> in Iloilo City, Philippines.</p>
-            </div>
-            <div class="signature-area" style="margin-top: 1.5cm; display: flex; justify-content: flex-end;">
-                <div class="signature-box" style="text-align: center; width: 8cm;">
-                    <div class="signature-line" style="border-bottom: 2px solid #000; margin: 0.8cm 0 0.2cm 0; width: 100%;"></div>
-                    <p style="margin: 0.1cm 0; font-size: 12pt;"><strong>EnP. EVA MARIA P. MARFIL</strong></p>
-                    <p style="margin: 0.1cm 0; font-size: 12pt;">Regional Director</p>
-                </div>
-            </div>
-            <div class="notices" style="margin-top: 1cm; font-size: 10pt; border-top: 1px dashed #000; padding-top: 0.3cm;">
-                <p style="margin: 0.1cm 0;"><strong>Note:</strong></p>
-                <p style="margin: 0.1cm 0;">1. This certification is issued relative to the requirement of DAR regarding the implementation of the Comprehensive Agrarian Reform Law and shall not be construed as a Certificate of Eligibility for conversion.</p>
-                <p style="margin: 0.1cm 0;">2. This certification <strong>shall not</strong> be construed as a Locational Clearance/Certificate of Zoning Compliance/Development Permit or License to Sell.</p>
-                <p style="margin: 0.1cm 0;">3. This <strong>shall not</strong> be construed as a certification as to the ownership by the applicant of the above listed parcel(s) of land.</p>
-                <p style="margin: 0.1cm 0;">4. Any misrepresentation on the part of the requesting party shall be a ground for cancellation of this certification.</p>
-            </div>
-            <div style="margin-top: 0.5cm; display: flex; justify-content: space-between; font-size: 11pt;">
-                <div><p style="margin: 0.1cm 0;"><strong>${escapeHtml(certNo)}</strong></p>
-                    <p style="margin: 0.1cm 0;"><strong>O.R. No. :</strong> ___________</p>
-                    <p style="margin: 0.1cm 0;"><strong>Amount Paid :</strong> P ___________</p>
-                    <p style="margin: 0.1cm 0;"><strong>Date :</strong> ___________</p>
-                </div>
-            </div>
-        </div>
-    `;
-
-    const ps = document.getElementById('printSection');
-    ps.innerHTML = printContent;
-    ps.style.display = 'block';
-    setTimeout(() => window.print(), 200);
-    setTimeout(() => ps.style.display = 'none', 1000);
-}
+            const certNo = document.getElementById('certificationNo').value || 'SZC-RVI25-046';
+            const series = document.getElementById('series').value || '2002';
+            const parcels = document.getElementById('parcels').value || '______________________';
+            const location = document.getElementById('location').value || '______________________';
+            const totalArea = document.getElementById('totalArea').value || '__________';
+            const proposedUse = document.getElementById('proposedUse').value || '______________________';
+            const city = document.getElementById('city').value || '______________________';
+            const isIloiloCity = city.toLowerCase().includes('iloilo city') || city.toLowerCase() === 'iloilo city';
+            let approvedByDisplay = isIloiloCity ? 'DHSUD' : 'Sangguniang Panlalawigan';
+            let throughDisplay = isIloiloCity ? 'Department Circular No. ___________' : 'SP Resolution No. ___________';
+            const totalAreaNum = parseFloat(totalArea) || 0;
+            const totalRow = `<tr style="background-color: #f2f2f2;"><td style="border:1px solid #000; padding:0.3cm; color: black; font-weight: bold;"><strong>Total</strong></td><td style="border:1px solid #000; padding:0.3cm;"></td><td style="border:1px solid #000; padding:0.3cm;"></td><td style="border:1px solid #000; padding:0.3cm; text-align:right; color: black; font-weight: bold;"><strong>${totalAreaNum.toFixed(4)}</strong></td><td style="border:1px solid #000; padding:0.3cm;"></td><td style="border:1px solid #000; padding:0.3cm;"></td></tr>`;
+            const landHoldingsHtml = `<table class="land-holdings-table" style="width:100%; border-collapse:collapse; margin:0.5cm 0;"><thead><tr><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold;">Registered Owner</th><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold;">Lot Number</th><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold;">OCT/TCT No.</th><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold;">Area Per Title (Ha)</th><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold;">Area Applied for Conversion (Ha)</th><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold;">Zone Classification</th></tr></thead><tbody><tr><td style="border:1px solid #000; padding:0.3cm; color: black; font-weight: bold;">______________________</td><td style="border:1px solid #000; padding:0.3cm;">______________</td><td style="border:1px solid #000; padding:0.3cm;">______________________</td><td style="border:1px solid #000; padding:0.3cm; text-align:right;">${escapeHtml(totalArea)}</td><td style="border:1px solid #000; padding:0.3cm;">___________</td><td style="border:1px solid #000; padding:0.3cm;">${escapeHtml(proposedUse)}</td></tr>${totalRow}</tbody></table>`;
+            const printContent = `<div class="print-document"><div style="text-align: right; margin-bottom: 0.5cm;"><p style="margin: 0; font-size: 12pt;"><strong>DHSUD Certification No. ${escapeHtml(certNo)}</strong></p></div><div style="margin-bottom: 0.5cm;"><p style="margin: 0; font-size: 12pt;"><strong>LUC FORM NO. 5</strong></p><p style="margin: 0; font-size: 12pt;">Series of ${escapeHtml(series)}</p><p style="margin: 0; font-size: 11pt; font-style: italic;">(To be filled-up by the Regional DHSUD)</p></div><div style="text-align: center; margin: 0.5cm 0;"><h2 style="font-size: 16pt; margin: 0.2cm 0;">Republic of the Philippines</h2><h3 style="font-size: 14pt; margin: 0.1cm 0;">DEPARTMENT OF HUMAN SETTLEMENTS AND URBAN DEVELOPMENT</h3><h3 style="font-size: 13pt; margin: 0.1cm 0;">Region VI, Iloilo City</h3><h2 style="text-decoration: underline; margin: 0.3cm 0; font-size: 16pt;">CERTIFICATION</h2></div><div style="text-align: left; margin: 0.3cm 0 0.2cm 0;"><h4 style="font-size: 14pt; font-weight: bold; margin: 0;">I. BASIC INFORMATION</h4></div><div class="basic-info" style="margin-left: 0.5cm; font-size: 12pt; margin-bottom: 0.3cm;"><p style="margin: 0.1cm 0;"><strong>A. No. of Parcels :</strong> ${escapeHtml(parcels)}</p><p style="margin: 0.1cm 0;"><strong>B. Location of the Property :</strong> ${escapeHtml(location)}</p><p style="margin: 0.1cm 0;"><strong>C. Total Area (ha.) :</strong> ${escapeHtml(totalArea)} ha</p><p style="margin: 0.1cm 0;"><strong>D. Proposed Use :</strong> ${escapeHtml(proposedUse)}</p><p style="margin: 0.1cm 0;"><strong>E. Description of Land Holdings :</strong></p></div>${landHoldingsHtml}<h4 style="margin: 0.5cm 0 0.3cm; font-size: 14pt;">II. STATUS OF COMPREHENSIVE LAND USE PLAN (CLUP) ZONING ORDINANCE (ZO)</h4><div class="clup-status" style="margin: 0.3cm 0; white-space: pre-line; font-size: 12pt; line-height: 1.5;"><p>1. [ ] WITH APPROVED CLUP/ZO</p><p>THIS IS TO CERTIFY that the above-described landholdings is/are zoned for use/s specified in the above table per approved <strong>Comprehensive Land Use Plan/Zoning Ordinance</strong> of <strong>${escapeHtml(city)}</strong>, as approved by the <strong>${approvedByDisplay}</strong> through <strong>${throughDisplay}</strong> dated <strong>___________</strong> in accordance with pertinent issuances;</p><p>Further, the proposed conversion:</p><p>&nbsp;&nbsp;&nbsp;[ ] Conforms/is compatible with the approved land use plan and/or Zoning Ordinance.</p><p>&nbsp;&nbsp;&nbsp;[ ] Does not conform/is not compatible with the approved land use plan and/or Zoning Ordinance.</p><p>Per record of this office, the city/municipality of ___________ has a total zoned agricultural land of ___________ hectares of which ___________ hectares have been reclassified since ___________, as approved by the DHSUD/SP per DHSUD/SP Resolution No. ___________ dated ___________.</p><p>2. [ ] WITH CLUP/ZO PENDING APPROVAL BY HLURB/SP</p><p>3. [ ] WITHOUT CLUP/ZO</p></div><div style="margin: 0.5cm 0;"><p style="margin: 0.2cm 0;">This certification is issued upon the request of <strong>______________________</strong> for whatever legal purpose/s it may serve.</p><p style="margin: 0.2cm 0;">Given this <strong>___________</strong> in Iloilo City, Philippines.</p></div><div class="signature-area" style="margin-top: 1.5cm; display: flex; justify-content: flex-end;"><div class="signature-box" style="text-align: center; width: 8cm;"><div class="signature-line" style="border-bottom: 2px solid #000; margin: 0.8cm 0 0.2cm 0; width: 100%;"></div><p style="margin: 0.1cm 0; font-size: 12pt;"><strong>EnP. EVA MARIA P. MARFIL</strong></p><p style="margin: 0.1cm 0; font-size: 12pt;">Regional Director</p></div></div><div class="notices" style="margin-top: 1cm; font-size: 10pt; border-top: 1px dashed #000; padding-top: 0.3cm;"><p style="margin: 0.1cm 0;"><strong>Note:</strong></p><p style="margin: 0.1cm 0;">1. This certification is issued relative to the requirement of DAR regarding the implementation of the Comprehensive Agrarian Reform Law and shall not be construed as a Certificate of Eligibility for conversion.</p><p style="margin: 0.1cm 0;">2. This certification <strong>shall not</strong> be construed as a Locational Clearance/Certificate of Zoning Compliance/Development Permit or License to Sell.</p><p style="margin: 0.1cm 0;">3. This <strong>shall not</strong> be construed as a certification as to the ownership by the applicant of the above listed parcel(s) of land.</p><p style="margin: 0.1cm 0;">4. Any misrepresentation on the part of the requesting party shall be a ground for cancellation of this certification.</p></div><div style="margin-top: 0.5cm; display: flex; justify-content: space-between; font-size: 11pt;"><div><p style="margin: 0.1cm 0;"><strong>${escapeHtml(certNo)}</strong></p><p style="margin: 0.1cm 0;"><strong>O.R. No. :</strong> ___________</p><p style="margin: 0.1cm 0;"><strong>Amount Paid :</strong> P ___________</p><p style="margin: 0.1cm 0;"><strong>Date :</strong> ___________</p></div></div></div>`;
+            const ps = document.getElementById('printSection');
+            ps.innerHTML = printContent;
+            ps.style.display = 'block';
+            setTimeout(() => window.print(), 200);
+            setTimeout(() => ps.style.display = 'none', 1000);
+        }
 
         // ========== MAP FUNCTIONS ==========
         let regionMap = null;
         let mapInitialized = false;
         let uploadedLayers = [];
-        let baseLayers = {
-            "OpenStreetMap": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }),
-            "Humanitarian": L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }),
-            "Satellite": L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: 'Esri' }),
-            "CartoDB Positron": L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '© OpenStreetMap, CartoDB' })
-        };
+        let baseLayers = { "OpenStreetMap": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }), "Humanitarian": L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }), "Satellite": L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: 'Esri' }), "CartoDB Positron": L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '© OpenStreetMap, CartoDB' }) };
         let currentBaseLayer = baseLayers.OpenStreetMap;
 
         function initMap() {
             if (mapInitialized) return;
             regionMap = L.map('regionMap').setView([11.0,122.5],8);
             currentBaseLayer.addTo(regionMap);
-            const provinces = [
-                { name:"Aklan", coords:[11.7074,122.3630], color:"#27ae60" },
-                { name:"Antique", coords:[10.7435,121.9413], color:"#f39c12" },
-                { name:"Capiz", coords:[11.5853,122.7511], color:"#27ae60" },
-                { name:"Guimaras", coords:[10.6583,122.6233], color:"#27ae60" },
-                { name:"Iloilo", coords:[10.7202,122.5621], color:"#27ae60" },
-                { name:"Negros Occidental", coords:[10.6710,122.9494], color:"#f39c12" }
-            ];
-            provinces.forEach(p => {
-                const icon = L.divIcon({ html:`<div style="background:${p.color}; width:20px; height:20px; border-radius:50%; border:3px solid white;"></div>`, iconSize:[20,20] });
-                L.marker(p.coords, { icon }).addTo(regionMap).bindPopup(`<h3>${p.name}</h3><button onclick="focusProvince('${p.name}')">Details</button>`);
-            });
+            const provinces = [{ name:"Aklan", coords:[11.7074,122.3630], color:"#27ae60" }, { name:"Antique", coords:[10.7435,121.9413], color:"#f39c12" }, { name:"Capiz", coords:[11.5853,122.7511], color:"#27ae60" }, { name:"Guimaras", coords:[10.6583,122.6233], color:"#27ae60" }, { name:"Iloilo", coords:[10.7202,122.5621], color:"#27ae60" }, { name:"Negros Occidental", coords:[10.6710,122.9494], color:"#f39c12" }];
+            provinces.forEach(p => { const icon = L.divIcon({ html:`<div style="background:${p.color}; width:20px; height:20px; border-radius:50%; border:3px solid white;"></div>`, iconSize:[20,20] }); L.marker(p.coords, { icon }).addTo(regionMap).bindPopup(`<h3>${p.name}</h3><button onclick="focusProvince('${p.name}')">Details</button>`); });
             renderProvinceStats();
             setupFileUpload();
             mapInitialized = true;
@@ -2315,184 +1683,23 @@
             const cont = document.getElementById('provinceStats');
             if (!cont) return;
             cont.innerHTML = '';
-            const data = [
-                { name:"Aklan", capital:"Kalibo", projects:15, status:"Approved" },
-                { name:"Antique", capital:"San Jose", projects:12, status:"For Review" },
-                { name:"Capiz", capital:"Roxas City", projects:18, status:"Approved" },
-                { name:"Guimaras", capital:"Jordan", projects:8, status:"Approved" },
-                { name:"Iloilo", capital:"Iloilo City", projects:25, status:"Approved" },
-                { name:"Negros Occidental", capital:"Bacolod City", projects:22, status:"For Review" }
-            ];
-            data.forEach(p => {
-                const card = document.createElement('div');
-                card.className = 'province-stat-card';
-                card.onclick = () => focusProvince(p.name);
-                card.innerHTML = `<h4>${p.name}</h4><p><strong>Capital:</strong> ${p.capital}</p><p><strong>Projects:</strong> ${p.projects}</p><span class="status ${p.status==='Approved'?'approved':'review'}">${p.status}</span>`;
-                cont.appendChild(card);
-            });
+            const data = [{ name:"Aklan", capital:"Kalibo", projects:15, status:"Approved" }, { name:"Antique", capital:"San Jose", projects:12, status:"For Review" }, { name:"Capiz", capital:"Roxas City", projects:18, status:"Approved" }, { name:"Guimaras", capital:"Jordan", projects:8, status:"Approved" }, { name:"Iloilo", capital:"Iloilo City", projects:25, status:"Approved" }, { name:"Negros Occidental", capital:"Bacolod City", projects:22, status:"For Review" }];
+            data.forEach(p => { const card = document.createElement('div'); card.className = 'province-stat-card'; card.onclick = () => focusProvince(p.name); card.innerHTML = `<h4>${p.name}</h4><p><strong>Capital:</strong> ${p.capital}</p><p><strong>Projects:</strong> ${p.projects}</p><span class="status ${p.status==='Approved'?'approved':'review'}">${p.status}</span>`; cont.appendChild(card); });
         }
 
-        function focusProvince(name) {
-            const coords = { Aklan:[11.7074,122.3630], Antique:[10.7435,121.9413], Capiz:[11.5853,122.7511], Guimaras:[10.6583,122.6233], Iloilo:[10.7202,122.5621], "Negros Occidental":[10.6710,122.9494] };
-            if (coords[name] && regionMap) {
-                regionMap.setView(coords[name], 10);
-                const ui = document.getElementById('uploadInfo');
-                ui.innerHTML = `Focused on ${name}`;
-                ui.className = 'upload-info show';
-                setTimeout(() => ui.className = 'upload-info', 3000);
-            }
-        }
-
-        function changeBaseMap() {
-            const value = document.getElementById('baseMapSelect').value;
-            if (!regionMap) return;
-            regionMap.removeLayer(currentBaseLayer);
-            switch(value) {
-                case 'osm': currentBaseLayer = baseLayers.OpenStreetMap; break;
-                case 'osm_hot': currentBaseLayer = baseLayers.Humanitarian; break;
-                case 'satellite': currentBaseLayer = baseLayers.Satellite; break;
-                case 'cartodb': currentBaseLayer = baseLayers["CartoDB Positron"]; break;
-                default: currentBaseLayer = baseLayers.OpenStreetMap;
-            }
-            currentBaseLayer.addTo(regionMap);
-        }
-
-        function setupFileUpload() {
-            document.getElementById('shapefileUpload').addEventListener('change', handleFileSelect);
-        }
-
-        function handleFileSelect(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            if (file.size > 50*1024*1024) { alert('File >50MB'); return; }
-            const label = document.getElementById('uploadLabel');
-            const info = document.getElementById('uploadInfo');
-            label.classList.add('uploading');
-            label.innerHTML = '⏳ Processing...';
-            info.className = 'upload-info show';
-            info.innerHTML = 'Reading...';
-            const reader = new FileReader();
-            reader.onload = ev => {
-                try {
-                    const content = ev.target.result;
-                    let geojson;
-                    if (file.name.endsWith('.geojson') || file.name.endsWith('.json')) geojson = JSON.parse(content);
-                    else if (file.name.endsWith('.zip') && typeof shp !== 'undefined') {
-                        info.innerHTML = 'Parsing shapefile...';
-                        shp(file).then(g => addGeoJSONToMap(g, file.name.replace('.zip',''))).catch(err => { throw new Error('Invalid shapefile: '+err.message); });
-                        return;
-                    } else throw new Error('Unsupported file');
-                    addGeoJSONToMap(geojson, file.name);
-                } catch(err) {
-                    label.classList.remove('uploading');
-                    label.innerHTML = '📁 Upload GeoJSON or Shapefile (ZIP) (Max 50MB)';
-                    info.className = 'upload-info show error';
-                    info.innerHTML = '❌ '+err.message;
-                }
-            };
-            reader.onerror = () => {
-                label.classList.remove('uploading');
-                label.innerHTML = '📁 Upload GeoJSON or Shapefile (ZIP) (Max 50MB)';
-                info.className = 'upload-info show error';
-                info.innerHTML = '❌ Error reading file';
-            };
-            if (file.name.endsWith('.geojson') || file.name.endsWith('.json')) reader.readAsText(file);
-            else reader.readAsArrayBuffer(file);
-        }
-
-        function addGeoJSONToMap(geojson, name) {
-            if (!regionMap) return;
-            const layerId = `layer_${Date.now()}`;
-            const display = name || `Layer ${uploadedLayers.length+1}`;
-            const color = ['#8e44ad','#2980b9','#16a085','#c0392b','#d35400','#27ae60'][Math.floor(Math.random()*6)];
-            const layer = L.geoJSON(geojson, {
-                style: { color, weight:2, fillColor:color, fillOpacity:0.3 },
-                onEachFeature: (f,l) => {
-                    if (f.properties) {
-                        let pop = '<div><h4>Properties</h4>';
-                        for (let [k,v] of Object.entries(f.properties)) if (v) pop += `<p><strong>${escapeHtml(k)}:</strong> ${escapeHtml(String(v))}</p>`;
-                        pop += '</div>';
-                        l.bindPopup(pop);
-                    }
-                }
-            }).addTo(regionMap);
-            uploadedLayers.push({ id:layerId, name:display, layer, visible:true });
-            updateLayerSelect();
-            document.getElementById('clearLayersBtn').style.display = 'inline-flex';
-            const bounds = layer.getBounds();
-            if (bounds.isValid()) regionMap.fitBounds(bounds);
-            const label = document.getElementById('uploadLabel');
-            const info = document.getElementById('uploadInfo');
-            label.classList.remove('uploading');
-            label.innerHTML = '📁 Upload GeoJSON or Shapefile (ZIP) (Max 50MB)';
-            info.className = 'upload-info show success';
-            info.innerHTML = `✅ Loaded: ${display}`;
-        }
-
-        function updateLayerSelect() {
-            const container = document.getElementById('layerListContainer');
-            const sel = document.getElementById('layerSelect');
-            if (uploadedLayers.length) {
-                container.style.display = 'block';
-                sel.innerHTML = '<option value="">Select Layer to Toggle</option>';
-                uploadedLayers.forEach(l => {
-                    const opt = document.createElement('option');
-                    opt.value = l.id;
-                    opt.textContent = `${l.visible ? '👁️' : '👁️‍🗨️'} ${l.name}`;
-                    sel.appendChild(opt);
-                });
-            } else container.style.display = 'none';
-        }
-
-        function toggleLayerVisibility() {
-            const id = document.getElementById('layerSelect').value;
-            if (!id) return;
-            const l = uploadedLayers.find(x => x.id === id);
-            if (!l) return;
-            if (l.visible) { regionMap.removeLayer(l.layer); l.visible = false; }
-            else { l.layer.addTo(regionMap); l.visible = true; }
-            updateLayerSelect();
-            document.getElementById('layerSelect').value = id;
-        }
-
-        function clearUploadedLayers() {
-            uploadedLayers.forEach(l => { if (l.visible) regionMap.removeLayer(l.layer); });
-            uploadedLayers = [];
-            updateLayerSelect();
-            document.getElementById('clearLayersBtn').style.display = 'none';
-            document.getElementById('uploadInfo').className = 'upload-info';
-            document.getElementById('uploadInfo').innerHTML = '';
-            document.getElementById('shapefileUpload').value = '';
-        }
+        function focusProvince(name) { const coords = { Aklan:[11.7074,122.3630], Antique:[10.7435,121.9413], Capiz:[11.5853,122.7511], Guimaras:[10.6583,122.6233], Iloilo:[10.7202,122.5621], "Negros Occidental":[10.6710,122.9494] }; if (coords[name] && regionMap) { regionMap.setView(coords[name], 10); const ui = document.getElementById('uploadInfo'); ui.innerHTML = `Focused on ${name}`; ui.className = 'upload-info show'; setTimeout(() => ui.className = 'upload-info', 3000); } }
+        function changeBaseMap() { const value = document.getElementById('baseMapSelect').value; if (!regionMap) return; regionMap.removeLayer(currentBaseLayer); switch(value) { case 'osm': currentBaseLayer = baseLayers.OpenStreetMap; break; case 'osm_hot': currentBaseLayer = baseLayers.Humanitarian; break; case 'satellite': currentBaseLayer = baseLayers.Satellite; break; case 'cartodb': currentBaseLayer = baseLayers["CartoDB Positron"]; break; default: currentBaseLayer = baseLayers.OpenStreetMap; } currentBaseLayer.addTo(regionMap); }
+        function setupFileUpload() { document.getElementById('shapefileUpload').addEventListener('change', handleFileSelect); }
+        function handleFileSelect(e) { const file = e.target.files[0]; if (!file) return; if (file.size > 50*1024*1024) { alert('File >50MB'); return; } const label = document.getElementById('uploadLabel'); const info = document.getElementById('uploadInfo'); label.classList.add('uploading'); label.innerHTML = '⏳ Processing...'; info.className = 'upload-info show'; info.innerHTML = 'Reading...'; const reader = new FileReader(); reader.onload = ev => { try { const content = ev.target.result; let geojson; if (file.name.endsWith('.geojson') || file.name.endsWith('.json')) geojson = JSON.parse(content); else if (file.name.endsWith('.zip') && typeof shp !== 'undefined') { info.innerHTML = 'Parsing shapefile...'; shp(file).then(g => addGeoJSONToMap(g, file.name.replace('.zip',''))).catch(err => { throw new Error('Invalid shapefile: '+err.message); }); return; } else throw new Error('Unsupported file'); addGeoJSONToMap(geojson, file.name); } catch(err) { label.classList.remove('uploading'); label.innerHTML = '📁 Upload GeoJSON or Shapefile (ZIP) (Max 50MB)'; info.className = 'upload-info show error'; info.innerHTML = '❌ '+err.message; } }; reader.onerror = () => { label.classList.remove('uploading'); label.innerHTML = '📁 Upload GeoJSON or Shapefile (ZIP) (Max 50MB)'; info.className = 'upload-info show error'; info.innerHTML = '❌ Error reading file'; }; if (file.name.endsWith('.geojson') || file.name.endsWith('.json')) reader.readAsText(file); else reader.readAsArrayBuffer(file); }
+        function addGeoJSONToMap(geojson, name) { if (!regionMap) return; const layerId = `layer_${Date.now()}`; const display = name || `Layer ${uploadedLayers.length+1}`; const color = ['#8e44ad','#2980b9','#16a085','#c0392b','#d35400','#27ae60'][Math.floor(Math.random()*6)]; const layer = L.geoJSON(geojson, { style: { color, weight:2, fillColor:color, fillOpacity:0.3 }, onEachFeature: (f,l) => { if (f.properties) { let pop = '<div><h4>Properties</h4>'; for (let [k,v] of Object.entries(f.properties)) if (v) pop += `<p><strong>${escapeHtml(k)}:</strong> ${escapeHtml(String(v))}</p>`; pop += '</div>'; l.bindPopup(pop); } } }).addTo(regionMap); uploadedLayers.push({ id:layerId, name:display, layer, visible:true }); updateLayerSelect(); document.getElementById('clearLayersBtn').style.display = 'inline-flex'; const bounds = layer.getBounds(); if (bounds.isValid()) regionMap.fitBounds(bounds); const label = document.getElementById('uploadLabel'); const info = document.getElementById('uploadInfo'); label.classList.remove('uploading'); label.innerHTML = '📁 Upload GeoJSON or Shapefile (ZIP) (Max 50MB)'; info.className = 'upload-info show success'; info.innerHTML = `✅ Loaded: ${display}`; }
+        function updateLayerSelect() { const container = document.getElementById('layerListContainer'); const sel = document.getElementById('layerSelect'); if (uploadedLayers.length) { container.style.display = 'block'; sel.innerHTML = '<option value="">Select Layer to Toggle</option>'; uploadedLayers.forEach(l => { const opt = document.createElement('option'); opt.value = l.id; opt.textContent = `${l.visible ? '👁️' : '👁️‍🗨️'} ${l.name}`; sel.appendChild(opt); }); } else container.style.display = 'none'; }
+        function toggleLayerVisibility() { const id = document.getElementById('layerSelect').value; if (!id) return; const l = uploadedLayers.find(x => x.id === id); if (!l) return; if (l.visible) { regionMap.removeLayer(l.layer); l.visible = false; } else { l.layer.addTo(regionMap); l.visible = true; } updateLayerSelect(); document.getElementById('layerSelect').value = id; }
+        function clearUploadedLayers() { uploadedLayers.forEach(l => { if (l.visible) regionMap.removeLayer(l.layer); }); uploadedLayers = []; updateLayerSelect(); document.getElementById('clearLayersBtn').style.display = 'none'; document.getElementById('uploadInfo').className = 'upload-info'; document.getElementById('uploadInfo').innerHTML = ''; document.getElementById('shapefileUpload').value = ''; }
 
         // ========== REPORTS & GENERAL ==========
-        function generateReport(type) {
-            let title='', content='';
-            if(type==='annual') { title='Annual Report 2024'; content=`<p>Total Plans: ${clupRecords.length}</p><p>Approved: ${clupRecords.filter(p=>p.Status==='Approved').length}</p>`; }
-            else if(type==='quarterly') { title='Q1 2024 Progress'; content='<p>Plans Reviewed: 5</p><p>Projects Started: 3</p>'; }
-            else if(type==='project') { title='Project Status'; content='<p>Ongoing: 3</p><p>Planning: 2</p>'; }
-            else if(type==='environmental') { title='EIA Report'; content='<p>Approved: 2</p><p>Under Review: 1</p>'; }
-            document.getElementById('modalTitle').textContent=title;
-            document.getElementById('modalBody').innerHTML=`<div style="padding:1rem;">${content}</div><div style="text-align:right;"><button class="btn btn-primary" onclick="closeModal()">Close</button></div>`;
-            document.getElementById('dataModal').classList.add('active');
-        }
-
-        function openAboutModal() {
-            document.getElementById('modalTitle').textContent='About';
-            document.getElementById('modalBody').innerHTML=`<div><h3>ELUPDD Region VI</h3><p>Vision: Planned, resilient, sustainable communities.</p><p>Mission: Formulate CLUPs, protect environment, improve quality of life.</p><h4>Functions:</h4><ul><li>Review CLUPs</li><li>EIA monitoring</li><li>Urban development planning</li><li>Technical assistance to LGUs</li><li>Zoning implementation</li><li>Climate adaptation</li></ul></div><div style="text-align:right;"><button class="btn btn-primary" onclick="closeModal()">Close</button></div>`;
-            document.getElementById('dataModal').classList.add('active');
-        }
-
-        function showSection(sectionId) {
-            document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
-            document.getElementById(sectionId).style.display = 'block';
-            document.querySelectorAll('.nav-bar a').forEach(link => link.classList.remove('active'));
-            for (let link of document.querySelectorAll('.nav-bar a')) {
-                if (link.getAttribute('onclick')?.includes(sectionId)) link.classList.add('active');
-            }
-            if (sectionId === 'map') { initMap(); setTimeout(() => regionMap?.invalidateSize(), 100); }
-        }
-
+        function generateReport(type) { let title='', content=''; if(type==='annual') { title='Annual Report 2024'; content=`<p>Total Plans: ${clupRecords.length}</p><p>Approved: ${clupRecords.filter(p=>p.Status==='Approved').length}</p>`; } else if(type==='quarterly') { title='Q1 2024 Progress'; content='<p>Plans Reviewed: 5</p><p>Projects Started: 3</p>'; } else if(type==='project') { title='Project Status'; content='<p>Ongoing: 3</p><p>Planning: 2</p>'; } else if(type==='environmental') { title='EIA Report'; content='<p>Approved: 2</p><p>Under Review: 1</p>'; } document.getElementById('modalTitle').textContent=title; document.getElementById('modalBody').innerHTML=`<div style="padding:1rem;">${content}</div><div style="text-align:right;"><button class="btn btn-primary" onclick="closeModal()">Close</button></div>`; document.getElementById('dataModal').classList.add('active'); }
+        function openAboutModal() { document.getElementById('modalTitle').textContent='About'; document.getElementById('modalBody').innerHTML=`<div><h3>ELUPDD Region VI</h3><p>Vision: Planned, resilient, sustainable communities.</p><p>Mission: Formulate CLUPs, protect environment, improve quality of life.</p><h4>Functions:</h4><ul><li>Review CLUPs</li><li>EIA monitoring</li><li>Urban development planning</li><li>Technical assistance to LGUs</li><li>Zoning implementation</li><li>Climate adaptation</li></ul></div><div style="text-align:right;"><button class="btn btn-primary" onclick="closeModal()">Close</button></div>`; document.getElementById('dataModal').classList.add('active'); }
+        function showSection(sectionId) { document.querySelectorAll('.section').forEach(s => s.style.display = 'none'); document.getElementById(sectionId).style.display = 'block'; document.querySelectorAll('.nav-bar a').forEach(link => link.classList.remove('active')); for (let link of document.querySelectorAll('.nav-bar a')) { if (link.getAttribute('onclick')?.includes(sectionId)) link.classList.add('active'); } if (sectionId === 'map') { initMap(); setTimeout(() => regionMap?.invalidateSize(), 100); } }
         function showOnMap() { showSection('map'); setTimeout(() => regionMap?.invalidateSize(), 100); }
 
         // ========== INITIAL LOAD ==========
@@ -2504,45 +1711,16 @@
             setupClupCascadeEvents();
             await refreshCertificationNumber();
             if (document.getElementById('landHoldingsContainer').children.length === 0) addLandHolding();
-            
-            // Initialize sync mechanism
             setupConnectionMonitoring();
             addSyncStatusIndicator();
             loadPendingSyncData();
-            
-            // Check for pending sync on startup
-            setTimeout(() => {
-                if (isGoogleSheetsOnline) {
-                    syncAllPendingData();
-                }
-            }, 3000);
+            setTimeout(() => { if (isGoogleSheetsOnline) syncAllPendingData(); }, 3000);
         };
 
-        function loadCounter() {
-            const saved = localStorage.getItem('certificationCounter');
-            if (saved) {
-                try {
-                    certificationCounter = JSON.parse(saved);
-                    certificationCounter.year = new Date().getFullYear().toString().slice(-2);
-                } catch(e) { resetCertificationCounter(); }
-            } else {
-                certificationCounter.lastCertNumber = 0;
-            }
-            localStorage.setItem('certificationCounter', JSON.stringify(certificationCounter));
-        }
+        function loadCounter() { const saved = localStorage.getItem('certificationCounter'); if (saved) { try { certificationCounter = JSON.parse(saved); certificationCounter.year = new Date().getFullYear().toString().slice(-2); } catch(e) { resetCertificationCounter(); } } else { certificationCounter.lastCertNumber = 0; } localStorage.setItem('certificationCounter', JSON.stringify(certificationCounter)); }
         
-        // Add CSS animations for toast
         const styleSheet = document.createElement('style');
-        styleSheet.textContent = `
-            @keyframes slideInRight {
-                from { transform: translateX(100%); opacity: 0; }
-                to { transform: translateX(0); opacity: 1; }
-            }
-            @keyframes slideOutRight {
-                from { transform: translateX(0); opacity: 1; }
-                to { transform: translateX(100%); opacity: 0; }
-            }
-        `;
+        styleSheet.textContent = `@keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } } @keyframes slideOutRight { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }`;
         document.head.appendChild(styleSheet);
     </script>
 </body>
