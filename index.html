@@ -398,12 +398,6 @@
                                 <option value="satellite">Esri World Imagery</option>
                                 <option value="cartodb">CartoDB Positron</option>
                             </select>
-                            <div class="layer-controls">
-    <button id="clearMarkersBtn" class="btn btn-danger" style="display: none;" onclick="clearAllMarkers()">🗑️ Clear Markers</button>
-</div>
-<div id="coordInfo" style="margin-left: auto; background: #fff; padding: 5px 10px; border-radius: 20px; font-size: 12px; border: 1px solid #ccc; display: none;">
-    <span>📍 Last point: </span><span id="coordDisplay">-</span>
-</div>
                         </div>
                         <div class="file-upload">
                             <input type="file" id="shapefileUpload" accept=".zip,.geojson,.json" multiple>
@@ -484,14 +478,6 @@
                             <div class="form-group"><label for="orNo">O.R. No.</label><input type="text" class="form-control" id="orNo" placeholder="Official Receipt Number"></div>
                             <div class="form-group"><label for="orDate">O.R. Date</label><input type="date" class="form-control" id="orDate"></div>
                             <div class="form-group full-width"><label for="remarks">Remarks/Notes</label><textarea class="form-control" id="remarks" rows="3"></textarea></div>
-                            <div class="form-group">
-    <label for="longitude">Longitude (X)</label>
-    <input type="text" class="form-control" id="longitude" placeholder="Click on map to set">
-</div>
-<div class="form-group">
-    <label for="latitude">Latitude (Y)</label>
-    <input type="text" class="form-control" id="latitude" placeholder="Click on map to set">
-</div>
                         </div>
                         <h3 class="cert-subtitle">CLUP/Zoning Ordinance Status</h3>
                         <div class="form-group">
@@ -632,7 +618,7 @@
 
     <script>
         // ========== CONFIGURATION ==========
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx7Bi4ctylYoprDHKbXO1ge0PqZFZ4cuBjg9q2ijF6pWUKozLGXrvEHZzkx-2OzeBKCiA/exec";
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbylIEOF8fN7J0VQ5HYN2XtdwjIsn7nXYjmNL7tfkR7zszyieEBm7KdWJO5B_tURTsBsAA/exec";
 
         // ========== SYNC MECHANISM VARIABLES ==========
         let isGoogleSheetsOnline = true;
@@ -1741,8 +1727,6 @@
                 const approvalDate = document.getElementById('approvalDate').value || '';
                 const purpose = document.getElementById('purpose').value || '';
                 const landClass = document.getElementById('landClass').value || '';
-                const longitude = document.getElementById('longitude').value || '';
-const latitude = document.getElementById('latitude').value || '';
 
                 if (!parcels || !location || !totalArea || !proposedUse || !dateIssued || !requestedBy || !amountPaid) {
                     alert('Please fill all required fields.');
@@ -1778,7 +1762,7 @@ const latitude = document.getElementById('latitude').value || '';
                     certificationNo, series, parcels, location, totalArea, proposedUse,
                     landHoldings, dateIssued, requestedBy, amountPaid, orNo, orDate, remarks, clupStatus,
                     city, province, approvedBy, circularNo, approvalDate,
-                    purpose, landClass,longitude,latitude
+                    purpose, landClass,
                     timestamp: new Date().toLocaleString()
                 };
 
@@ -1911,8 +1895,6 @@ const latitude = document.getElementById('latitude').value || '';
             document.getElementById('approvedBy').value = rec.approvedBy || '';
             document.getElementById('circularNo').value = rec.circularNo || '';
             document.getElementById('approvalDate').value = rec.approvalDate || '';
-            document.getElementById('longitude').value = rec.longitude || '';
-            document.getElementById('latitude').value = rec.latitude || '';
             document.querySelector(`input[name="clupStatus"][value="${rec.clupStatus||'approved'}"]`).checked = true;
             const container = document.getElementById('landHoldingsContainer');
             container.innerHTML = '';
@@ -1979,8 +1961,6 @@ const latitude = document.getElementById('latitude').value || '';
         function clearZoningForm() {
             document.getElementById('zoningForm').reset();
             document.getElementById('landHoldingsContainer').innerHTML = '';
-            document.getElementById('longitude').value = '';
-            document.getElementById('latitude').value = '';
             addLandHolding();
             refreshCertificationNumber();
             document.getElementById('series').value = '2002';
@@ -2180,8 +2160,6 @@ function clearCertSearch() {
         let regionMap = null;
         let mapInitialized = false;
         let uploadedLayers = [];
-        let addedMarkers = [];   // Array to store added markers
-        let currentCoordInfo = null;
         let baseLayers = {
             "OpenStreetMap": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }),
             "Humanitarian": L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }),
@@ -2208,9 +2186,7 @@ function clearCertSearch() {
             });
             renderProvinceStats();
             setupFileUpload();
-            setupMapClick();
             mapInitialized = true;
-            
         }
 
         function renderProvinceStats() {
@@ -2330,58 +2306,6 @@ function clearCertSearch() {
             info.className = 'upload-info show success';
             info.innerHTML = `✅ Loaded: ${display}`;
         }
-        // Add a marker on map click and show coordinates
-function setupMapClick() {
-    if (!regionMap) return;
-    regionMap.on('click', function(e) {
-        const lat = e.latlng.lat;
-        const lng = e.latlng.lng;
-        const coordText = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-        
-        // Add a marker (optional – you may want to remove previous marker)
-        const marker = L.marker(e.latlng).addTo(regionMap);
-        marker.bindPopup(`<strong>Coordinates:</strong><br>Lat: ${lat.toFixed(6)}<br>Lng: ${lng.toFixed(6)}<br><button onclick="copyCoordinates('${lat}', '${lng}')">Copy</button>`).openPopup();
-        addedMarkers.push(marker);
-        
-        // --- NEW: Fill the zoning form fields if the zoning section is visible ---
-        const longitudeField = document.getElementById('longitude');
-        const latitudeField = document.getElementById('latitude');
-        if (longitudeField && latitudeField) {
-            longitudeField.value = lng.toFixed(6);
-            latitudeField.value = lat.toFixed(6);
-            showToast('Coordinates added to certification form', 'success');
-        }
-        
-        // Show coordinate info box (optional)
-        const coordInfoDiv = document.getElementById('coordInfo');
-        const coordDisplaySpan = document.getElementById('coordDisplay');
-        if (coordInfoDiv && coordDisplaySpan) {
-            coordInfoDiv.style.display = 'block';
-            coordDisplaySpan.innerHTML = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-        }
-        
-        const clearBtn = document.getElementById('clearMarkersBtn');
-        if (clearBtn) clearBtn.style.display = 'inline-flex';
-    });
-}
-function clearAllMarkers() {
-    addedMarkers.forEach(marker => regionMap.removeLayer(marker));
-    addedMarkers = [];
-    const coordInfoDiv = document.getElementById('coordInfo');
-    if (coordInfoDiv) coordInfoDiv.style.display = 'none';
-    const clearBtn = document.getElementById('clearMarkersBtn');
-    if (clearBtn) clearBtn.style.display = 'none';
-    showToast('All markers cleared', 'info');
-}
-
-function copyCoordinates(lat, lng) {
-    const coordText = `${lat}, ${lng}`;
-    navigator.clipboard.writeText(coordText).then(() => {
-        showToast(`Coordinates copied: ${coordText}`, 'success');
-    }).catch(() => {
-        alert('Copy failed. Select and copy manually.');
-    });
-}
 
         function updateLayerSelect() {
             const container = document.getElementById('layerListContainer');
