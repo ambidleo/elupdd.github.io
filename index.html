@@ -578,35 +578,53 @@
             </div>
 
             <!-- Reports Section -->
-            <div id="reports" class="section" style="display: none;" role="region" aria-labelledby="reports-heading">
-                <h1 id="reports-heading" class="visually-hidden">Planning Reports</h1>
-                <div class="data-section">
-                    <div class="section-header"><h3><span aria-hidden="true">📊</span> Planning Reports</h3></div>
-                    <div class="stats-grid">
-                        <div class="stat-card" onclick="generateReport('annual')" role="button" tabindex="0" onkeypress="if(event.key==='Enter'||event.key===' ') generateReport('annual')"><div class="stat-number" aria-hidden="true">📅</div><div class="stat-label">Annual Report</div></div>
-                        <div class="stat-card" onclick="generateReport('quarterly')" role="button" tabindex="0" onkeypress="if(event.key==='Enter'||event.key===' ') generateReport('quarterly')"><div class="stat-number" aria-hidden="true">📆</div><div class="stat-label">Quarterly Report</div></div>
-                        <div class="stat-card" onclick="generateReport('project')" role="button" tabindex="0" onkeypress="if(event.key==='Enter'||event.key===' ') generateReport('project')"><div class="stat-number" aria-hidden="true">🏗️</div><div class="stat-label">Project Status</div></div>
-                        <div class="stat-card" onclick="generateReport('environmental')" role="button" tabindex="0" onkeypress="if(event.key==='Enter'||event.key===' ') generateReport('environmental')"><div class="stat-number" aria-hidden="true">🌳</div><div class="stat-label">Environmental Report</div></div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="dataModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-                <div class="modal-content">
-                    <div class="modal-header"><h2 id="modalTitle">View/Edit Record</h2><button class="close-btn" onclick="closeModal()">&times;</button></div>
-                    <div id="modalBody"></div>
-                </div>
+<div id="reports" class="section" style="display: none;" role="region" aria-labelledby="reports-heading">
+    <h1 id="reports-heading" class="visually-hidden">Certification Reports</h1>
+    <div class="data-section">
+        <div class="section-header">
+            <h3><span aria-hidden="true">📊</span> Zoning Certification Report</h3>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="generateReport()">📋 Generate Report</button>
+                <button class="btn btn-success" onclick="exportReportToCSV()">📥 Export to CSV</button>
+                <button class="btn btn-print" onclick="printReport()">🖨️ Print Report</button>
             </div>
         </div>
-    </main>
-
-    <div id="printSection" style="display:none;"></div>
-    <div id="syncLoading" class="sync-loading">
-        <div class="sync-loading-content">
-            <div class="spinner"></div>
-            <p>Syncing data with server...</p>
+        <div class="search-bar" style="margin-bottom: 1rem;">
+            <div class="filter-group">
+                <label for="reportMonth">Filter by Month:</label>
+                <input type="month" id="reportMonth" class="form-control" style="width: auto;">
+            </div>
+            <button class="btn btn-primary" onclick="generateReport()">Apply Filter</button>
+            <button class="btn btn-secondary" onclick="clearReportFilter()">Clear Filter</button>
+        </div>
+        <div class="table-responsive">
+            <table id="reportTable" style="min-width: 1200px;">
+                <thead>
+                    <tr>
+                        <th>Control No.</th>
+                        <th>Requesting Party</th>
+                        <th>Certification Issued</th>
+                        <th>Date Issued (MM/DD/YYYY)</th>
+                        <th>Report Month</th>
+                        <th>Owner / Proponents</th>
+                        <th>Location</th>
+                        <th>No. of Parcel/s</th>
+                        <th>Total Area (ha)</th>
+                        <th>No. of Days Processed</th>
+                        <th>On Time / Delayed</th>
+                        <th>Count_Timeliness</th>
+                        <th>Longitude (X)</th>
+                        <th>Latitude (Y)</th>
+                        <th>Remarks</th>
+                    </tr>
+                </thead>
+                <tbody id="reportTableBody">
+                    <tr><td colspan="15" style="text-align:center;">Click "Generate Report" to load data</td></tr>
+                </tbody>
+            </table>
         </div>
     </div>
+</div>
 
     <footer role="contentinfo">
         <p>Environmental Land Use and Urban Planning Development Division</p>
@@ -2156,6 +2174,178 @@ function clearCertSearch() {
     setTimeout(() => window.print(), 200);
     setTimeout(() => ps.style.display = 'none', 1000);
 }
+        // ========== REPORTS FUNCTIONS ==========
+function generateReport() {
+    const monthFilter = document.getElementById('reportMonth').value;
+    const tbody = document.getElementById('reportTableBody');
+    if (!tbody) return;
+    
+    // Filter certifications by month if selected
+    let filteredCerts = [...zoningCertifications];
+    if (monthFilter) {
+        const [year, month] = monthFilter.split('-');
+        filteredCerts = filteredCerts.filter(cert => {
+            if (!cert.dateIssued) return false;
+            const certDate = new Date(cert.dateIssued);
+            return certDate.getFullYear() == year && (certDate.getMonth() + 1) == month;
+        });
+    }
+    
+    if (filteredCerts.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="15" style="text-align:center;">No certifications found for the selected period.</td></tr>';
+        return;
+    }
+    
+    // Sort by date issued descending
+    filteredCerts.sort((a,b) => new Date(b.dateIssued) - new Date(a.dateIssued));
+    
+    tbody.innerHTML = '';
+    filteredCerts.forEach(cert => {
+        const row = tbody.insertRow();
+        
+        // Control No.
+        const controlNo = cert.certificationNo || '';
+        // Requesting Party
+        const requestingParty = cert.requestedBy || '';
+        // Certification Issued (always "Site Zoning Certification")
+        const certIssued = 'Site Zoning Certification';
+        // Date Issued formatted
+        const dateIssuedFormatted = cert.dateIssued ? formatToMMDDYYYY(cert.dateIssued) : '';
+        // Report Month (from dateIssued)
+        let reportMonth = '';
+        if (cert.dateIssued) {
+            const d = new Date(cert.dateIssued);
+            reportMonth = `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}`;
+        }
+        // Owner / Proponents (first land holding owner)
+        let owner = '';
+        if (cert.landHoldings && cert.landHoldings.length > 0) {
+            owner = cert.landHoldings[0].registeredOwner || '';
+            if (cert.landHoldings.length > 1) owner += ` +${cert.landHoldings.length-1} more`;
+        }
+        // Location
+        const location = cert.location || '';
+        // No. of Parcels
+        const parcels = cert.parcels || '';
+        // Total Area
+        const totalArea = cert.totalArea || '';
+        // No. of Days Processed (days between dateIssued and today)
+        let daysProcessed = '';
+        let onTimeDelayed = '';
+        let countTimeliness = '';
+        if (cert.dateIssued) {
+            const issued = new Date(cert.dateIssued);
+            const today = new Date();
+            const diffTime = Math.abs(today - issued);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            daysProcessed = diffDays;
+            // On Time if <= 30 days, else Delayed (example threshold)
+            onTimeDelayed = diffDays <= 30 ? 'On Time' : 'Delayed';
+            countTimeliness = onTimeDelayed === 'On Time' ? '1' : '0'; // simple count indicator
+        }
+        // Longitude/Latitude (not available – leave blank)
+        const longitude = '';
+        const latitude = '';
+        // Remarks
+        const remarks = cert.remarks || '';
+        
+        row.innerHTML = `
+            <td>${escapeHtml(controlNo)}</td>
+            <td>${escapeHtml(requestingParty)}</td>
+            <td>${escapeHtml(certIssued)}</td>
+            <td>${escapeHtml(dateIssuedFormatted)}</td>
+            <td>${escapeHtml(reportMonth)}</td>
+            <td>${escapeHtml(owner)}</td>
+            <td>${escapeHtml(location)}</td>
+            <td>${escapeHtml(parcels)}</td>
+            <td>${escapeHtml(totalArea)}</td>
+            <td>${escapeHtml(daysProcessed)}</td>
+            <td>${escapeHtml(onTimeDelayed)}</td>
+            <td>${escapeHtml(countTimeliness)}</td>
+            <td>${escapeHtml(longitude)}</td>
+            <td>${escapeHtml(latitude)}</td>
+            <td>${escapeHtml(remarks)}</td>
+        `;
+    });
+}
+
+function clearReportFilter() {
+    document.getElementById('reportMonth').value = '';
+    generateReport();
+}
+
+function exportReportToCSV() {
+    const table = document.getElementById('reportTable');
+    const rows = table.querySelectorAll('tr');
+    const csvData = [];
+    
+    // Get headers
+    const headers = [];
+    const headerCells = rows[0].querySelectorAll('th');
+    headerCells.forEach(cell => headers.push(cell.innerText));
+    csvData.push(headers.join(','));
+    
+    // Get data rows (skip header row)
+    for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        const cells = row.querySelectorAll('td');
+        if (cells.length === 0) continue;
+        const rowData = [];
+        cells.forEach(cell => {
+            let text = cell.innerText;
+            // Escape quotes and wrap in quotes if contains comma
+            if (text.includes(',') || text.includes('"') || text.includes('\n')) {
+                text = '"' + text.replace(/"/g, '""') + '"';
+            }
+            rowData.push(text);
+        });
+        csvData.push(rowData.join(','));
+    }
+    
+    const blob = new Blob([csvData.join('\n')], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `zoning_report_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Report exported to CSV', 'success');
+}
+
+function printReport() {
+    const originalTitle = document.title;
+    document.title = 'Zoning Certification Report';
+    const printContent = document.getElementById('reports').cloneNode(true);
+    // Remove buttons and filters for print
+    const btnGroups = printContent.querySelectorAll('.btn-group, .search-bar');
+    btnGroups.forEach(el => el.remove());
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+        <html>
+        <head>
+            <title>Zoning Certification Report</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 20px; }
+                table { border-collapse: collapse; width: 100%; font-size: 10pt; }
+                th, td { border: 1px solid #000; padding: 6px; text-align: left; vertical-align: top; }
+                th { background-color: #f2f2f2; }
+                @media print {
+                    body { margin: 0; }
+                    .no-print { display: none; }
+                }
+            </style>
+        </head>
+        <body>
+            <h2 style="text-align:center;">Zoning Certification Report</h2>
+            <p style="text-align:center;">Generated: ${new Date().toLocaleString()}</p>
+            ${printContent.querySelector('.table-responsive').innerHTML}
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
+    document.title = originalTitle;
+}
        // ========== MAP FUNCTIONS ==========
         let regionMap = null;
         let mapInitialized = false;
@@ -2369,6 +2559,9 @@ function clearCertSearch() {
                 if (link.getAttribute('onclick')?.includes(sectionId)) link.classList.add('active');
             }
             if (sectionId === 'map') { initMap(); setTimeout(() => regionMap?.invalidateSize(), 100); }
+            if (sectionId === 'reports') {
+    generateReport();
+}
         }
 
         function showOnMap() { showSection('map'); setTimeout(() => regionMap?.invalidateSize(), 100); }
