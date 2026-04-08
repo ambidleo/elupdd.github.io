@@ -398,6 +398,12 @@
                                 <option value="satellite">Esri World Imagery</option>
                                 <option value="cartodb">CartoDB Positron</option>
                             </select>
+                            <div class="layer-controls">
+    <button id="clearMarkersBtn" class="btn btn-danger" style="display: none;" onclick="clearAllMarkers()">🗑️ Clear Markers</button>
+</div>
+<div id="coordInfo" style="margin-left: auto; background: #fff; padding: 5px 10px; border-radius: 20px; font-size: 12px; border: 1px solid #ccc; display: none;">
+    <span>📍 Last point: </span><span id="coordDisplay">-</span>
+</div>
                         </div>
                         <div class="file-upload">
                             <input type="file" id="shapefileUpload" accept=".zip,.geojson,.json" multiple>
@@ -2160,6 +2166,8 @@ function clearCertSearch() {
         let regionMap = null;
         let mapInitialized = false;
         let uploadedLayers = [];
+        let addedMarkers = [];   // Array to store added markers
+        let currentCoordInfo = null;
         let baseLayers = {
             "OpenStreetMap": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }),
             "Humanitarian": L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }),
@@ -2186,7 +2194,9 @@ function clearCertSearch() {
             });
             renderProvinceStats();
             setupFileUpload();
+            setupMapClick();
             mapInitialized = true;
+            
         }
 
         function renderProvinceStats() {
@@ -2306,6 +2316,54 @@ function clearCertSearch() {
             info.className = 'upload-info show success';
             info.innerHTML = `✅ Loaded: ${display}`;
         }
+        // Add a marker on map click and show coordinates
+function setupMapClick() {
+    if (!regionMap) return;
+    regionMap.on('click', function(e) {
+        const lat = e.latlng.lat;
+        const lng = e.latlng.lng;
+        const coordText = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+        
+        // Add a marker
+        const marker = L.marker(e.latlng).addTo(regionMap);
+        marker.bindPopup(`<strong>Coordinates:</strong><br>Lat: ${lat.toFixed(6)}<br>Lng: ${lng.toFixed(6)}<br><button onclick="copyCoordinates('${lat}', '${lng}')">Copy</button>`).openPopup();
+        addedMarkers.push(marker);
+        
+        // Show coordinate info box
+        const coordInfoDiv = document.getElementById('coordInfo');
+        const coordDisplaySpan = document.getElementById('coordDisplay');
+        if (coordInfoDiv && coordDisplaySpan) {
+            coordInfoDiv.style.display = 'block';
+            coordDisplaySpan.innerHTML = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+        }
+        
+        // Show clear markers button
+        const clearBtn = document.getElementById('clearMarkersBtn');
+        if (clearBtn) clearBtn.style.display = 'inline-flex';
+        
+        // Optional: Also show a toast
+        showToast(`Point added at ${coordText}`, 'info');
+    });
+}
+
+function clearAllMarkers() {
+    addedMarkers.forEach(marker => regionMap.removeLayer(marker));
+    addedMarkers = [];
+    const coordInfoDiv = document.getElementById('coordInfo');
+    if (coordInfoDiv) coordInfoDiv.style.display = 'none';
+    const clearBtn = document.getElementById('clearMarkersBtn');
+    if (clearBtn) clearBtn.style.display = 'none';
+    showToast('All markers cleared', 'info');
+}
+
+function copyCoordinates(lat, lng) {
+    const coordText = `${lat}, ${lng}`;
+    navigator.clipboard.writeText(coordText).then(() => {
+        showToast(`Coordinates copied: ${coordText}`, 'success');
+    }).catch(() => {
+        alert('Copy failed. Select and copy manually.');
+    });
+}
 
         function updateLayerSelect() {
             const container = document.getElementById('layerListContainer');
