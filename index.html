@@ -556,8 +556,25 @@
                     </form>
                 </div>
                 <div class="cert-section" id="recordsSection" style="display:none;">
-                    <div class="cert-title"><span aria-hidden="true">📋</span> Saved Certifications</div>
-                    <div style="overflow-x:auto;">
+    <div class="cert-title"><span aria-hidden="true">📋</span> Saved Certifications</div>
+    <!-- Search Bar for Certifications -->
+    <div class="search-bar" style="margin-bottom: 1rem; padding: 1rem; background: #f8faff; border-radius: 12px;">
+        <div class="search-box" style="flex: 2;">
+            <span aria-hidden="true">🔍</span>
+            <input type="text" id="certSearchInput" placeholder="Search by Certification No., Location, or Requested By..." onkeyup="filterCertificationsTable()">
+        </div>
+        <div class="filter-group">
+            <select id="certStatusFilter" onchange="filterCertificationsTable()">
+                <option value="">All CLUP Status</option>
+                <option value="approved">With Approved CLUP/ZO</option>
+                <option value="pending">With CLUP/ZO Pending Approval</option>
+                <option value="none">Without CLUP/ZO</option>
+            </select>
+        </div>
+        <button class="btn btn-primary" onclick="filterCertificationsTable()" style="padding: 0.8rem 1.5rem;">🔍 Search</button>
+        <button class="btn btn-secondary" onclick="clearCertSearch()" style="padding: 0.8rem 1.5rem;">🗑️ Clear</button>
+    </div>
+    <div style="overflow-x:auto;">
                         <table class="cert-table" id="certificationsTable">
                             <thead>
                                 <tr><th>Certification No.</th><th>No. of Parcels</th><th>Location</th><th>Total Area</th><th>Date Issued</th><th>Requested By</th><th>Actions</th></tr>
@@ -1989,6 +2006,62 @@
         }
 
         function toggleRecordsView() { document.getElementById('recordsSection').style.display = 'none'; }
+        // ========== CERTIFICATION SEARCH FUNCTIONS ==========
+function filterCertificationsTable() {
+    const searchTerm = document.getElementById('certSearchInput')?.value.toLowerCase() || '';
+    const statusFilter = document.getElementById('certStatusFilter')?.value || '';
+    
+    const tbody = document.getElementById('certificationsTableBody');
+    if (!tbody) return;
+    
+    const rows = tbody.getElementsByTagName('tr');
+    
+    for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        const cells = row.getElementsByTagName('td');
+        if (cells.length === 0) continue;
+        
+        // Get cell values
+        const certNo = cells[0]?.innerText.toLowerCase() || '';
+        const location = cells[2]?.innerText.toLowerCase() || '';
+        const requestedBy = cells[5]?.innerText.toLowerCase() || '';
+        
+        // Get the full record to check CLUP status
+        let clupStatusMatch = true;
+        if (statusFilter) {
+            const certNumber = cells[0]?.innerText || '';
+            const record = zoningCertifications.find(r => r.certificationNo === certNumber);
+            if (record) {
+                clupStatusMatch = record.clupStatus === statusFilter;
+            } else {
+                clupStatusMatch = false;
+            }
+        }
+        
+        // Check if search term matches any field
+        const matchesSearch = searchTerm === '' || 
+            certNo.includes(searchTerm) || 
+            location.includes(searchTerm) || 
+            requestedBy.includes(searchTerm);
+        
+        // Show/hide row
+        if (matchesSearch && clupStatusMatch) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    }
+}
+
+function clearCertSearch() {
+    const searchInput = document.getElementById('certSearchInput');
+    const statusFilter = document.getElementById('certStatusFilter');
+    
+    if (searchInput) searchInput.value = '';
+    if (statusFilter) statusFilter.value = '';
+    
+    filterCertificationsTable();
+}
 
         function resetCertificationCounter() {
             if (confirm('Reset counter? This will affect future certification numbers. Continue?')) {
