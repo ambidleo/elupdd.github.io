@@ -2149,7 +2149,30 @@ function clearCertSearch() {
     
     const formattedDateIssued = formatOrdinalDate(dateIssued);
     const orDateFormatted = orDate ? formatToMMDDYYYY(orDate) : formattedDateIssued;
-    const printContent = `<div class="print-document" style="margin: 0; padding: 0; page-break-after: avoid;">
+    const printContent = `<style>
+    @media print {
+        * {
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        body {
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        .print-document {
+            margin: 0 !important;
+            padding: 0 !important;
+            page-break-after: avoid;
+        }
+        p {
+            page-break-inside: avoid;
+            margin: 0.1cm 0 !important;
+        }
+        div {
+            page-break-inside: avoid;
+        }
+    }
+</style><div class="print-document" style="margin: 0; padding: 0; page-break-after: avoid;">
     <div style="text-align: right; margin-bottom: 0.5cm;">
         <p style="margin: 0; font-size: 12pt;"><strong>DHSUD Certification No. ${escapeHtml(certNo)}</strong></p>
     </div><div style="margin-bottom: 0.5cm;"><p style="margin: 0; font-size: 12pt;"><strong>LUC FORM NO. 5</strong></p><p style="margin: 0; font-size: 12pt;">Series of ${escapeHtml(series)}</p><p style="margin: 0; font-size: 11pt; font-style: italic;">(To be filled-up by the Regional DHSUD)</p></div><div style="text-align: center; margin: 0.5cm 0;"><h2 style="font-size: 18pt; margin: 0.2cm 0;">Republic of the Philippines</h2><h3 style="font-size: 14pt; margin: 0.1cm 0;">DEPARTMENT OF HUMAN SETTLEMENTS AND URBAN DEVELOPMENT</h3><h3 style="font-size: 13pt; margin: 0.1cm 0;">Region VI, Iloilo City</h3><h2 style="text-decoration: underline; margin: 0.3cm 0; font-size: 18pt;">CERTIFICATION</h2></div><div style="text-align: left; margin: 0.3cm 0 0.2cm 0;"><h4 style="font-size: 16pt; font-weight: bold; margin: 0;">I. BASIC INFORMATION</h4></div><div class="basic-info" style="margin-left: 0.5cm; font-size: 14pt; margin-bottom: 0.3cm;">
