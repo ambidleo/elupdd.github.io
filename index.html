@@ -2124,10 +2124,10 @@ function clearCertSearch() {
             const firstPlanRes = iloiloClup.First_Plan_Res || 'Resolution No. ___________';
             const firstApprovalDateRaw = iloiloClup.First_Plan_Date_of_Approval || '';
             const firstApprovalFormatted = firstApprovalDateRaw ? formatOrdinalDate(firstApprovalDateRaw) : '___________';
-            extraParagraph = `<p style="margin-top: 0.5cm; margin-left: 0.5cm; text-indent: 0.5cm;"><strong>THIS IS TO CERTIFY</strong> that same tract of land was within a zone classified as <strong>${escapeHtml(landClassText)}</strong> per the <strong>Comprehensive Land Use Plan/Zoning Ordinance of ${escapeHtml(city)}</strong>, that was approved on <strong>${firstApprovalFormatted}</strong>, via <strong>${escapeHtml(firstPlanRes)}</strong> by then <strong>Human Settlements Regulatory Commission (HSRC)</strong>, now DHSUD.</p>`;
+            extraParagraph = `<p style="margin-top: 0.2cm; margin-left: 0.5cm; text-indent: 0.5cm;">THIS IS TO CERTIFY that same tract of land was within a zone classified as <strong>${escapeHtml(landClassText)}</strong> per the <strong>Comprehensive Land Use Plan/Zoning Ordinance of ${escapeHtml(city)}</strong>, that was approved on <strong>${firstApprovalFormatted}</strong>, via <strong>${escapeHtml(firstPlanRes)}</strong> by then <strong>Human Settlements Regulatory Commission (HSRC)</strong>, now DHSUD.</p>`;
         } else {
             const landClassText = rec.landClass || '___________';
-            extraParagraph = `<p style="margin-top: 0.5cm; margin-left: 0.5cm; text-indent: 0.5cm;"><strong>THIS IS TO CERTIFY</strong> that same tract of land was within a zone classified as <strong>${escapeHtml(landClassText)}</strong> per the <strong>Comprehensive Land Use Plan/Zoning Ordinance of ${escapeHtml(city)}</strong>.</p>`;
+            extraParagraph = `<p style="margin-top: 0.2cm; margin-left: 0.5cm; text-indent: 0.5cm;"><strong>THIS IS TO CERTIFY</strong> that same tract of land was within a zone classified as <strong>${escapeHtml(landClassText)}</strong> per the <strong>Comprehensive Land Use Plan/Zoning Ordinance of ${escapeHtml(city)}</strong>.</p>`;
         }
     }
     
