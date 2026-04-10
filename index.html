@@ -629,9 +629,29 @@
             zoning: []
         };
         
-        // Lock mechanism for certification number generation
-        let certNumberLock = false;
-        let certNumberQueue = [];
+        async function getServerCertificationNumber() {
+    try {
+        const params = new URLSearchParams();
+        params.append('action', 'getNextCertNumber');
+        const response = await fetch(GOOGLE_SCRIPT_URL + '?' + params.toString());
+        const result = await response.json();
+        if (result.success && result.certNumber) {
+            document.getElementById('certificationNo').value = result.certNumber;
+            return result.certNumber;
+        }
+        throw new Error('Server did not return a valid certification number');
+    } catch (error) {
+        console.error('Failed to fetch certification number:', error);
+        // Fallback – but show warning that number may conflict
+        alert('Unable to generate certification number. Please try again or contact administrator.');
+        throw error;
+    }
+}
+
+// In saveZoningRecord, call:
+if (!currentEditingZoningId) {
+    certificationNo = await getServerCertificationNumber();
+}
 
         // ========== HELPER FUNCTIONS ==========
         function escapeHtml(str) {
@@ -2156,7 +2176,112 @@ function clearCertSearch() {
     setTimeout(() => window.print(), 200);
     setTimeout(() => ps.style.display = 'none', 1000);
 }
-       // ========== MAP FUNCTIONS ==========
+     function printBlankForm() {
+    const blankContent = `
+        <div class="print-document">
+            <div style="text-align: right; margin-bottom: 0.5cm;">
+                <p style="margin: 0; font-size: 12pt;"><strong>DHSUD Certification No. ___________</strong></p>
+            </div>
+            <div style="margin-bottom: 0.5cm;">
+                <p style="margin: 0; font-size: 12pt;"><strong>LUC FORM NO. 5</strong></p>
+                <p style="margin: 0; font-size: 12pt;">Series of 2002</p>
+                <p style="margin: 0; font-size: 11pt; font-style: italic;">(To be filled-up by the Regional DHSUD)</p>
+            </div>
+            <div style="text-align: center; margin: 0.5cm 0;">
+                <h2 style="font-size: 18pt; margin: 0.2cm 0;">Republic of the Philippines</h2>
+                <h3 style="font-size: 14pt; margin: 0.1cm 0;">DEPARTMENT OF HUMAN SETTLEMENTS AND URBAN DEVELOPMENT</h3>
+                <h3 style="font-size: 13pt; margin: 0.1cm 0;">Region VI, Iloilo City</h3>
+                <h2 style="text-decoration: underline; margin: 0.3cm 0; font-size: 18pt;">CERTIFICATION</h2>
+            </div>
+            <div style="text-align: left; margin: 0.3cm 0 0.2cm 0;">
+                <h4 style="font-size: 16pt; font-weight: bold; margin: 0;">I. BASIC INFORMATION</h4>
+            </div>
+            <div class="basic-info" style="margin-left: 0.5cm; font-size: 14pt; margin-bottom: 0.3cm;">
+                <p style="margin: 0.1cm 0;"><strong>A. No. of Parcels :</strong> ______________________</p>
+                <p style="margin: 0.1cm 0;"><strong>B. Location of the Property :</strong> ______________________</p>
+                <p style="margin: 0.1cm 0;"><strong>C. Total Area (ha.) :</strong> __________ ha</p>
+                <p style="margin: 0.1cm 0;"><strong>D. Proposed Use :</strong> ______________________</p>
+                <p style="margin: 0.1cm 0;"><strong>E. Description of Land Holdings :</strong></p>
+            </div>
+            <table style="width:100%; border-collapse:collapse; margin:0.5cm 0;">
+                <thead>
+                    <tr>
+                        <th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000;">Registered Owner</th>
+                        <th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000;">Lot Number</th>
+                        <th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000;">OCT/TCT No.</th>
+                        <th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000;">Area Per Title (Ha)</th>
+                        <th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000;">Area Applied for Conversion (Ha)</th>
+                        <th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000;">Zone Classification</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="border:1px solid #000; padding:0.3cm;">______________________</td>
+                        <td style="border:1px solid #000; padding:0.3cm;">______________</td>
+                        <td style="border:1px solid #000; padding:0.3cm;">______________________</td>
+                        <td style="border:1px solid #000; padding:0.3cm; text-align:right;">__________</td>
+                        <td style="border:1px solid #000; padding:0.3cm;">___________</td>
+                        <td style="border:1px solid #000; padding:0.3cm;">______________________</td>
+                    </tr>
+                    <tr style="background-color: #f2f2f2;">
+                        <td style="border:1px solid #000; padding:0.3cm;"><strong>Total</strong></td>
+                        <td style="border:1px solid #000; padding:0.3cm;"></td>
+                        <td style="border:1px solid #000; padding:0.3cm;"></td>
+                        <td style="border:1px solid #000; padding:0.3cm; text-align:right;"><strong>__________</strong></td>
+                        <td style="border:1px solid #000; padding:0.3cm;"></td>
+                        <td style="border:1px solid #000; padding:0.3cm;"></td>
+                    </tr>
+                </tbody>
+            </table>
+            <h4 style="margin: 0.5cm 0 0.3cm; font-size: 16pt;">II. STATUS OF COMPREHENSIVE LAND USE PLAN (CLUP) ZONING ORDINANCE (ZO)</h4>
+            <div style="margin: 0.3cm 0; font-size: 14pt; line-height: 1.5;">
+                <p style="margin-left: 0cm;"><strong>1. [ ] WITH APPROVED CLUP/ZO</strong></p>
+                <p style="margin-left: 0.5cm; text-indent: 0.5cm;">THIS IS TO CERTIFY that the above-described landholdings is/are zoned for use/s specified in the above table per approved <strong>Comprehensive Land Use Plan/Zoning Ordinance</strong> of <strong>______________</strong>, as approved by the <strong>______________</strong> through <strong>______________</strong> dated <strong>______________</strong> in accordance with pertinent issuances;</p>
+                <p style="margin-left: 0cm;">Further, the proposed conversion:</p>
+                <p style="margin-left: 1cm;">&nbsp;&nbsp;&nbsp;[ ] Conforms/is compatible with the approved land use plan and/or Zoning Ordinance.</p>
+                <p style="margin-left: 1cm;">&nbsp;&nbsp;&nbsp;[ ] Does not conform/is not compatible with the approved land use plan and/or Zoning Ordinance.</p>
+                <p style="margin-left: 0.5cm; text-indent: 0.5cm;">Per record of this office, the city/municipality of ________ has a total zoned agricultural land of <strong>________</strong> hectares of which <strong>________</strong> hectares have been reclassified since <strong>________</strong>, as approved by the DHSUD/SP per DHSUD/SP Resolution No. <strong>________</strong> dated <strong>________</strong>.</p>
+                <p style="margin-left: 0cm;"><strong>2. [ ] WITH CLUP/ZO PENDING APPROVAL BY HLURB/SP</strong></p>
+                <p style="margin-left: 0.5cm; text-indent: 0.5cm;">THIS IS TO CERTIFY that the above-described property/ies lie/s is/are located within the area zoned for ________ use per Comprehensive Land Use Plan/Zoning Ordinance No. ________ dated _____ submitted to HLURB/SP for approval on _____________ and same remains pending to date.</p>
+                <p style="margin-left: 0.5cm; text-indent: 0.5cm;">THIS IS TO CERTIFY FURTHER that per record of this office-said city/municipality of _________ will have a total zoned agricultural land of __________s hectares.</p>
+                <p style="margin-left: 0cm;"><strong>3. [ ] WITHOUT CLUP/ZO</strong></p>
+                <p style="margin-left: 0.5cm; text-indent: 0.5cm;">THIS IS TO CERTIFY that the municipality of _______ has not submitted its Comprehensive Land Use Plan/ Zoning Ordinance to this Office.</p>
+            </div>
+            <div style="margin: 0.5cm 0; font-size: 14pt;">
+                <p style="margin: 0.2cm 0;">This certification is issued upon the request of <strong>______________________</strong> for whatever legal purpose/s it may serve.</p>
+                <p style="margin: 0.2cm 0;">Given this <strong>___________ day of ___________ 20___</strong> in Iloilo City, Philippines.</p>
+            </div>
+            <div class="signature-area" style="margin-top: 1.5cm; display: flex; justify-content: flex-end;">
+                <div class="signature-box" style="text-align: center; width: 8cm;">
+                    <div class="signature-line" style="border-bottom: 2px solid #000; margin: 0.8cm 0 0.2cm 0; width: 100%;"></div>
+                    <p style="margin: 0.1cm 0; font-size: 14pt;"><strong>EnP. EVA MARIA P. MARFIL</strong></p>
+                    <p style="margin: 0.1cm 0; font-size: 12pt;">Regional Director</p>
+                </div>
+            </div>
+            <div class="notices" style="margin-top: 1cm; font-size: 10pt; border-top: 1px dashed #000; padding-top: 0.3cm;">
+                <p style="margin: 0.1cm 0;"><strong>Note:</strong></p>
+                <p style="margin: 0.1cm 0;">1. This certification is issued relative to the requirement of DAR regarding the implementation of the Comprehensive Agrarian Reform Law and shall not be construed as a Certificate of Eligibility for conversion.</p>
+                <p style="margin: 0.1cm 0;">2. This certification <strong>shall not</strong> be construed as a Locational Clearance/Certificate of Zoning Compliance/Development Permit or License to Sell.</p>
+                <p style="margin: 0.1cm 0;">3. This <strong>shall not</strong> be construed as a certification as to the ownership by the applicant of the above listed parcel(s) of land.</p>
+                <p style="margin: 0.1cm 0;">4. Any misrepresentation on the part of the requesting party shall be a ground for cancellation of this certification.</p>
+            </div>
+            <div style="margin-top: 0.5cm; display: flex; justify-content: space-between; font-size: 11pt;">
+                <div>
+                    <p style="margin: 0.1cm 0;"><strong>Certification No. ___________</strong></p>
+                    <p style="margin: 0.1cm 0;"><strong>O.R. No. :</strong> ___________</p>
+                    <p style="margin: 0.1cm 0;"><strong>Amount Paid :</strong> P ___________</p>
+                    <p style="margin: 0.1cm 0;"><strong>Date :</strong> ___________</p>
+                </div>
+            </div>
+        </div>
+    `;
+    const ps = document.getElementById('printSection');
+    ps.innerHTML = blankContent;
+    ps.style.display = 'block';
+    setTimeout(() => window.print(), 200);
+    setTimeout(() => ps.style.display = 'none', 1000);
+}
+        // ========== MAP FUNCTIONS ==========
         let regionMap = null;
         let mapInitialized = false;
         let uploadedLayers = [];
