@@ -2132,20 +2132,20 @@ function clearCertSearch() {
     }
     
     // Corrected statusHtml with proper indentation using CSS
-    const statusHtml = `
-        <p style="margin-left: 0cm;"><strong>1. ${check1} WITH APPROVED CLUP/ZO</strong></p>
-        <p style="margin-left: 0.5cm; text-indent: 0.5cm;">THIS IS TO CERTIFY that the above-described landholdings is/are zoned for use/s specified in the above table per approved <strong>Comprehensive Land Use Plan/Zoning Ordinance</strong> of <strong>${escapeHtml(cityProvince)}</strong>, as approved by the <strong>${approvedByText}</strong> through <strong>${throughText}</strong> dated <strong>${escapeHtml(approvalDateFormatted)}</strong> in accordance with pertinent issuances;</p>
-        ${extraParagraph}
-        <p style="margin-left: 0cm;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Further, the proposed conversion:</p>
-        <p style="margin-left: 1cm;">&nbsp;&nbsp;&nbsp;[ ] Conforms/is compatible with the approved land use plan and/or Zoning Ordinance.</p>
-        <p style="margin-left: 1cm;">&nbsp;&nbsp;&nbsp;[ ] Does not conform/is not compatible with the approved land use plan and/or Zoning Ordinance.</p>
-        <p style="margin-left: 0.5cm; text-indent: 0.5cm;">Per record of this office, the city/municipality of ${escapeHtml(city)} has a total zoned agricultural land of <strong>${agriculturalLand}</strong> hectares of which <strong>${reclassified}</strong> hectares have been reclassified since <strong>${reclassYear}</strong>, as approved by the DHSUD/SP per DHSUD/SP Resolution No. <strong>${resolutionNo}</strong> dated <strong>${escapeHtml(resolutionDateFormatted)}</strong>.</p>
-        <p style="margin-left: 0cm;"><strong>2. ${check2} WITH CLUP/ZO PENDING APPROVAL BY HLURB/SP</strong></p>
-        <p style="margin-left: 0.5cm; text-indent: 0.5cm;">THIS IS TO CERTIFY that the above-described property/ies lie/s is/are located within the area zoned for ________ use per Comprehensive Land Use Plan/Zoning Ordinance No. ________ dated _____ submitted to HLURB/SP for approval on _____________ and same remains pending to date.</p>
-        <p style="margin-left: 0.5cm; text-indent: 0.5cm;">THIS IS TO CERTIFY FURTHER that per record of this office-said city/municipality of _________ will have a total zoned agricultural land of __________s hectares.</p>
-        <p style="margin-left: 0cm;"><strong>3. ${check3} WITHOUT CLUP/ZO</strong></p>
-        <p style="margin-left: 1cm; text-indent: 0.5cm;">THIS IS TO CERTIFY that the municipality of _______ has not submitted its Comprehensive Land Use Plan/ Zoning Ordinance to this Office.</p>
-    `;
+   const statusHtml = `
+    <p style="margin-left: 0cm; margin-top: 0.2cm; margin-bottom: 0.1cm;"><strong>1. ${check1} WITH APPROVED CLUP/ZO</strong></p>
+    <p style="margin-left: 0.5cm; text-indent: 0.5cm; text-align: justify; margin-top: 0.1cm; margin-bottom: 0.1cm;">THIS IS TO CERTIFY that the above-described landholdings is/are zoned for use/s specified in the above table per approved <strong>Comprehensive Land Use Plan/Zoning Ordinance</strong> of <strong>${escapeHtml(cityProvince)}</strong>, as approved by the <strong>${approvedByText}</strong> through <strong>${throughText}</strong> dated <strong>${escapeHtml(approvalDateFormatted)}</strong> in accordance with pertinent issuances;</p>
+    ${extraParagraph}
+    <p style="margin-left: 0.6cm; text-align: justify; margin-top: 0.1cm; margin-bottom: 0.1cm;">Further, the proposed conversion:</p>
+    <p style="margin-left: 1.2cm; text-align: justify; margin-top: 0.05cm; margin-bottom: 0.05cm;">[ ] Conforms/is compatible with the approved land use plan and/or Zoning Ordinance.</p>
+    <p style="margin-left: 1.2cm; text-align: justify; margin-top: 0.05cm; margin-bottom: 0.05cm;">[ ] Does not conform/is not compatible with the approved land use plan and/or Zoning Ordinance.</p>
+    <p style="margin-left: 0.5cm; text-indent: 0.5cm; text-align: justify; margin-top: 0.1cm; margin-bottom: 0.1cm;">Per record of this office, the city/municipality of ${escapeHtml(city)} has a total zoned agricultural land of <strong>${agriculturalLand}</strong> hectares of which <strong>${reclassified}</strong> hectares have been reclassified since <strong>${reclassYear}</strong>, as approved by the DHSUD/SP per DHSUD/SP Resolution No. <strong>${resolutionNo}</strong> dated <strong>${escapeHtml(resolutionDateFormatted)}</strong>.</p>
+    <p style="margin-left: 0cm; margin-top: 0.2cm; margin-bottom: 0.1cm;"><strong>2. ${check2} WITH CLUP/ZO PENDING APPROVAL BY HLURB/SP</strong></p>
+    <p style="margin-left: 0.5cm; text-indent: 0.5cm; text-align: justify; margin-top: 0.1cm; margin-bottom: 0.1cm;">THIS IS TO CERTIFY that the above-described property/ies lie/s is/are located within the area zoned for ________ use per Comprehensive Land Use Plan/Zoning Ordinance No. ________ dated _____ submitted to HLURB/SP for approval on _____________ and same remains pending to date.</p>
+    <p style="margin-left: 0.5cm; text-indent: 0.5cm; text-align: justify; margin-top: 0.1cm; margin-bottom: 0.1cm;">THIS IS TO CERTIFY FURTHER that per record of this office-said city/municipality of _________ will have a total zoned agricultural land of __________s hectares.</p>
+    <p style="margin-left: 0cm; margin-top: 0.2cm; margin-bottom: 0.1cm;"><strong>3. ${check3} WITHOUT CLUP/ZO</strong></p>
+    <p style="margin-left: 1.2cm; text-indent: 0.5cm; text-align: justify; margin-top: 0.1cm; margin-bottom: 0.1cm;">THIS IS TO CERTIFY that the municipality of _______ has not submitted its Comprehensive Land Use Plan/ Zoning Ordinance to this Office.</p>
+`;
     
     const formattedDateIssued = formatOrdinalDate(dateIssued);
     const orDateFormatted = orDate ? formatToMMDDYYYY(orDate) : formattedDateIssued;
