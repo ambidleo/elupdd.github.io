@@ -649,9 +649,9 @@
             </div>
         </div>
         <div class="map-popup-footer">
-            <button type="button" class="btn btn-secondary" id="cancelMapBtn">Cancel</button>
-            <button type="button" class="btn btn-primary" id="useCoordinatesBtn">✅ Use Selected Coordinates</button>
-        </div>
+    <button type="button" class="btn btn-secondary" id="cancelMapBtn" onclick="closeMapPopup()">Cancel</button>
+    <button type="button" class="btn btn-primary" id="useCoordinatesBtn" onclick="saveCoordinatesFromPopup()">✅ Use Selected Coordinates</button>
+</div>
     </div>
 </div>
 
@@ -689,7 +689,6 @@
         let certNumberQueue = [];
 
         // ========== MAP POPUP FOR COORDINATES ==========
- // ========== MAP POPUP FOR COORDINATES ==========
 let popupMap = null;
 let popupMapInitialized = false;
 let selectedLat = null;
@@ -698,7 +697,7 @@ let mapMarker = null;
 
 function openMapPopup() {
     const modal = document.getElementById('mapPopupModal');
-    modal.style.display = 'flex';
+    modal.classList.add('active');
     
     setTimeout(() => {
         if (!popupMapInitialized) {
@@ -713,15 +712,16 @@ function openMapPopup() {
             popupMap.invalidateSize();
         }
         
-        // Remove existing click handler to avoid duplicates
         popupMap.off('click');
         
         popupMap.on('click', function(e) {
             selectedLat = e.latlng.lat;
             selectedLng = e.latlng.lng;
             
-            document.getElementById('popupLatitude').value = selectedLat.toFixed(6);
-            document.getElementById('popupLongitude').value = selectedLng.toFixed(6);
+            const latInput = document.getElementById('popupLatitude');
+            const lngInput = document.getElementById('popupLongitude');
+            if (latInput) latInput.value = selectedLat.toFixed(6);
+            if (lngInput) lngInput.value = selectedLng.toFixed(6);
             
             if (mapMarker) {
                 mapMarker.setLatLng([selectedLat, selectedLng]);
@@ -731,8 +731,8 @@ function openMapPopup() {
             mapMarker.bindPopup(`Selected Location<br>Lat: ${selectedLat.toFixed(6)}<br>Lng: ${selectedLng.toFixed(6)}`).openPopup();
         });
         
-        const existingLat = document.getElementById('latitude').value;
-        const existingLng = document.getElementById('longitude').value;
+        const existingLat = document.getElementById('latitude')?.value;
+        const existingLng = document.getElementById('longitude')?.value;
         if (existingLat && existingLng && !isNaN(parseFloat(existingLat)) && !isNaN(parseFloat(existingLng))) {
             const lat = parseFloat(existingLat);
             const lng = parseFloat(existingLng);
@@ -743,8 +743,10 @@ function openMapPopup() {
                 mapMarker = L.marker([lat, lng]).addTo(popupMap);
             }
             mapMarker.bindPopup(`Selected Location<br>Lat: ${lat.toFixed(6)}<br>Lng: ${lng.toFixed(6)}`).openPopup();
-            document.getElementById('popupLatitude').value = lat.toFixed(6);
-            document.getElementById('popupLongitude').value = lng.toFixed(6);
+            const latInput = document.getElementById('popupLatitude');
+            const lngInput = document.getElementById('popupLongitude');
+            if (latInput) latInput.value = lat.toFixed(6);
+            if (lngInput) lngInput.value = lng.toFixed(6);
             selectedLat = lat;
             selectedLng = lng;
         }
@@ -753,9 +755,13 @@ function openMapPopup() {
 
 function closeMapPopup() {
     const modal = document.getElementById('mapPopupModal');
-    modal.style.display = 'none';
-    document.getElementById('popupLatitude').value = '';
-    document.getElementById('popupLongitude').value = '';
+    modal.classList.remove('active');
+    
+    const latInput = document.getElementById('popupLatitude');
+    const lngInput = document.getElementById('popupLongitude');
+    if (latInput) latInput.value = '';
+    if (lngInput) lngInput.value = '';
+    
     selectedLat = null;
     selectedLng = null;
     if (mapMarker && popupMap) {
@@ -766,10 +772,18 @@ function closeMapPopup() {
 
 function saveCoordinatesFromPopup() {
     if (selectedLat !== null && selectedLng !== null) {
-        document.getElementById('latitude').value = selectedLat.toFixed(6);
-        document.getElementById('longitude').value = selectedLng.toFixed(6);
+        const latField = document.getElementById('latitude');
+        const lngField = document.getElementById('longitude');
+        if (latField) latField.value = selectedLat.toFixed(6);
+        if (lngField) lngField.value = selectedLng.toFixed(6);
         closeMapPopup();
-        showToast('Coordinates saved to form!', 'success');
+        
+        // Show success message
+        if (typeof showToast === 'function') {
+            showToast('Coordinates saved to form!', 'success');
+        } else {
+            alert('Coordinates saved!');
+        }
     } else {
         alert('Please click on the map to select coordinates first.');
     }
