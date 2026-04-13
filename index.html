@@ -2175,14 +2175,14 @@ function printZoningRecord(id) {
             extraParagraph = `<p style="margin-top: 0.2cm; margin-left: 0.5cm; text-indent: 1.5cm;">THIS IS TO CERTIFY that same tract of land was within a zone classified as <strong>${escapeHtml(landClassText)}</strong> per the <strong>Comprehensive Land Use Plan/Zoning Ordinance of ${escapeHtml(city)}</strong>, that was approved on <strong>${firstApprovalFormatted}</strong>, via <strong>${escapeHtml(firstPlanRes)}</strong> by then <strong>Human Settlements Regulatory Commission (HSRC)</strong>, now DHSUD.</p>`;
         } else {
             const landClassText = rec.landClass || '___________';
-            extraParagraph = `<p style="margin-top: 0.2cm; margin-left: 0.5cm; text-indent: 0.5cm;"><strong>THIS IS TO CERTIFY</strong> that same tract of land was within a zone classified as <strong>${escapeHtml(landClassText)}</strong> per the <strong>Comprehensive Land Use Plan/Zoning Ordinance of ${escapeHtml(city)}</strong>.</p>`;
+            extraParagraph = `<p style="margin-top: 0.05cm; margin-left: 0.5cm; text-indent: 0.5cm;"><strong>THIS IS TO CERTIFY</strong> that same tract of land was within a zone classified as <strong>${escapeHtml(landClassText)}</strong> per the <strong>Comprehensive Land Use Plan/Zoning Ordinance of ${escapeHtml(city)}</strong>.</p>`;
         }
     }
     
     // UPDATED: Status HTML with automated City/Municipality detection
     const statusHtml = `
-    <p style="margin-left: 0cm; margin-top: 0.2cm; margin-bottom: 0.1cm;"><strong>1. ${check1} WITH APPROVED CLUP/ZO</strong></p>
-    <p style="margin-left: 0.5cm; text-indent: 1.5cm; text-align: justify; margin-top: 0.1cm; margin-bottom: 0.1cm;">THIS IS TO CERTIFY that the above-described landholdings is/are zoned for use/s specified in the above table per approved <strong>Comprehensive Land Use Plan/Zoning Ordinance</strong> of <strong>${escapeHtml(cityProvince)}</strong>, as approved by the <strong>${approvedByText}</strong> through <strong>${throughText}</strong> dated <strong>${escapeHtml(approvalDateFormatted)}</strong> in accordance with pertinent issuances;</p>
+    <p style="margin-left: 0cm; margin-top: 0.05cm; margin-bottom: 0.1cm;"><strong>1. ${check1} WITH APPROVED CLUP/ZO</strong></p>
+    <p style="margin-left: 0.5cm; text-indent: 1.5cm; text-align: justify; margin-top: 0.1cm; margin-bottom: 0.05cm;">THIS IS TO CERTIFY that the above-described landholdings is/are zoned for use/s specified in the above table per approved <strong>Comprehensive Land Use Plan/Zoning Ordinance</strong> of <strong>${escapeHtml(cityProvince)}</strong>, as approved by the <strong>${approvedByText}</strong> through <strong>${throughText}</strong> dated <strong>${escapeHtml(approvalDateFormatted)}</strong> in accordance with pertinent issuances;</p>
     ${extraParagraph}
     <p style="margin-left: 0.6cm; text-align: justify; margin-top: 0.1cm; margin-bottom: 0.1cm;">Further, the proposed conversion:</p>
     <p style="margin-left: 1.2cm; text-align: justify; margin-top: 0.05cm; margin-bottom: 0.05cm;">[ ] Conforms/is compatible with the approved land use plan and/or Zoning Ordinance.</p>
