@@ -551,8 +551,10 @@
 </div>
 <div class="form-group">
     <label for="longitude">Longitude</label>
-    <input type="text" class="form-control" id="longitude" placeholder="e.g., 122.5621" readonly style="background:#f0f0f0">
-    <button type="button" class="btn btn-map" onclick="openMapPopup()" style="margin-top: 5px; padding: 3px 8px; font-size: 10px; width: 100%;">🗺️ Map</button>
+    <div style="display: flex; gap: 5px;">
+        <input type="text" class="form-control" id="longitude" placeholder="e.g., 122.5621" readonly style="background:#f0f0f0; flex: 1;">
+        <button type="button" class="btn btn-map" onclick="openMapPopup()" style="padding: 8px 10px; font-size: 20px; line-height: 1; border-radius: 8px; width: 42px;">🗺️Open Map</button>
+    </div>
 </div>
                             <div class="form-group"><label for="totalArea">Total Area (ha.)</label><input type="text" class="form-control" id="totalArea" placeholder="e.g., 15.5026" required></div>
                             <div class="form-group"><label for="proposedUse">Proposed Use</label><input type="text" class="form-control" id="proposedUse" placeholder="e.g., Residential-3 Zone" required></div>
