@@ -2218,34 +2218,34 @@ function printZoningRecord(id) {
         <h4 style="font-size: 16pt; font-weight: bold; margin: 0;">I. BASIC INFORMATION</h4>
     </div>
   <div class="basic-info" style="margin-left: 0.5cm; margin-bottom: 0.3cm;">
-        <table style="width: 100%; border-collapse: collapse; font-size: 14pt; border: none;">
-            <tr style="border: none;">
-                <td style="width: 6cm; padding: 0.1cm 0; border: none;"><strong>A. No. of Parcels</strong></td>
-                <td style="width: 0.5cm; padding: 0.1cm 0; border: none;"><strong>:</strong></td>
-                <td style="padding: 0.1cm 0; border: none;">${escapeHtml(parcels)}</td>
-            </tr>
-            <tr style="border: none;">
-                <td style="width: 6cm; padding: 0.1cm 0; border: none;"><strong>B. Location of the Property</strong></td>
-                <td style="width: 0.5cm; padding: 0.1cm 0; border: none;"><strong>:</strong></td>
-                <td style="padding: 0.1cm 0; border: none;">${escapeHtml(location)}</td>
-            </tr>
-            <tr style="border: none;">
-                <td style="width: 6cm; padding: 0.1cm 0; border: none;"><strong>C. Total Area (ha.)</strong></td>
-                <td style="width: 0.5cm; padding: 0.1cm 0; border: none;"><strong>:</strong></td>
-                <td style="padding: 0.1cm 0; border: none;">${escapeHtml(totalArea)} ha</td>
-            </tr>
-            <tr style="border: none;">
-                <td style="width: 6cm; padding: 0.1cm 0; border: none;"><strong>D. Proposed Use</strong></td>
-                <td style="width: 0.5cm; padding: 0.1cm 0; border: none;"><strong>:</strong></td>
-                <td style="padding: 0.1cm 0; border: none;">${escapeHtml(proposedUse)}</td>
-            </tr>
-            <tr style="border: none;">
-                <td style="width: 6cm; padding: 0.1cm 0; border: none;"><strong>E. Description of Land Holdings</strong></td>
-                <td style="width: 0.5cm; padding: 0.1cm 0; border: none;"><strong>:</strong></td>
-                <td style="padding: 0.1cm 0; border: none;"></td>
-            </tr>
-        </table>
-    </div>
+    <table style="width: 100%; border-collapse: collapse; font-size: 14pt; border: none;">
+        <tr style="border: none;">
+            <td style="width: 6cm; padding: 0.1cm 0; border: none; white-space: nowrap;"><strong>A. No. of Parcels</strong></td>
+            <td style="width: 0.5cm; padding: 0.1cm 0; border: none; white-space: nowrap;"><strong>:</strong></td>
+            <td style="padding: 0.1cm 0; border: none;">${escapeHtml(parcels)}</td>
+        </tr>
+        <tr style="border: none;">
+            <td style="width: 6cm; padding: 0.1cm 0; border: none; white-space: nowrap;"><strong>B. Location of the Property</strong></td>
+            <td style="width: 0.5cm; padding: 0.1cm 0; border: none; white-space: nowrap;"><strong>:</strong></td>
+            <td style="padding: 0.1cm 0; border: none;">${escapeHtml(location)}</td>
+        </tr>
+        <tr style="border: none;">
+            <td style="width: 6cm; padding: 0.1cm 0; border: none; white-space: nowrap;"><strong>C. Total Area (ha.)</strong></td>
+            <td style="width: 0.5cm; padding: 0.1cm 0; border: none; white-space: nowrap;"><strong>:</strong></td>
+            <td style="padding: 0.1cm 0; border: none;">${escapeHtml(totalArea)} ha</td>
+        </tr>
+        <tr style="border: none;">
+            <td style="width: 6cm; padding: 0.1cm 0; border: none; white-space: nowrap;"><strong>D. Proposed Use</strong></td>
+            <td style="width: 0.5cm; padding: 0.1cm 0; border: none; white-space: nowrap;"><strong>:</strong></td>
+            <td style="padding: 0.1cm 0; border: none;">${escapeHtml(proposedUse)}</td>
+        </tr>
+        <tr style="border: none;">
+            <td style="width: 6cm; padding: 0.1cm 0; border: none; white-space: nowrap;"><strong>E. Description of Land Holdings</strong></td>
+            <td style="width: 0.5cm; padding: 0.1cm 0; border: none; white-space: nowrap;"><strong>:</strong></td>
+            <td style="padding: 0.1cm 0; border: none;"></td>
+        </tr>
+    </table>
+</div>
     ${landHoldingsHtml}
     <h4 style="margin: 0.5cm 0 0.3cm; font-size: 16pt;">II. STATUS OF COMPREHENSIVE LAND USE PLAN (CLUP) ZONING ORDINANCE (ZO)</h4>
     <div class="clup-status" style="margin: 0.3cm 0; white-space: pre-line; font-size: 14pt; line-height: 1.2;">${statusHtml}</div>
