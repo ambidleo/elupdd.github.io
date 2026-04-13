@@ -768,85 +768,85 @@
         let certNumberQueue = [];
 
         // ========== MAP POPUP FOR COORDINATES ==========
-        let popupMap = null;
-        let popupMapInitialized = false;
-        let selectedLat = null;
-        let selectedLng = null;
-        let mapMarker = null;
+      let popupMap = null;
+let popupMapInitialized = false;
+let popupCurrentBaseLayer = null;
+let selectedLat = null;
+let selectedLng = null;
+let mapMarker = null;
 
-        function openMapPopup() {
-            const modal = document.getElementById('mapPopupModal');
-            modal.classList.add('active');
+function openMapPopup() {
+    const modal = document.getElementById('mapPopupModal');
+    modal.classList.add('active');
+    
+    setTimeout(() => {
+        if (!popupMapInitialized) {
+            popupMap = L.map('popupMap').setView([11.0, 122.5], 8);
             
-            setTimeout(() => {
-                if (!popupMapInitialized) {
-                    popupMap = L.map('popupMap').setView([11.0, 122.5], 8);
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        attribution: '© OpenStreetMap'
-                    }).addTo(popupMap);
-                    popupMapInitialized = true;
-                } else {
-                    popupMap.invalidateSize();
-                }
-                
-                popupMap.on('click', function(e) {
-                    selectedLat = e.latlng.lat;
-                    selectedLng = e.latlng.lng;
-                    
-                    document.getElementById('popupLatitude').value = selectedLat.toFixed(6);
-                    document.getElementById('popupLongitude').value = selectedLng.toFixed(6);
-                    
-                    if (mapMarker) {
-                        mapMarker.setLatLng([selectedLat, selectedLng]);
-                    } else {
-                        mapMarker = L.marker([selectedLat, selectedLng]).addTo(popupMap);
-                    }
-                    mapMarker.bindPopup(`Selected Location<br>Lat: ${selectedLat.toFixed(6)}<br>Lng: ${selectedLng.toFixed(6)}`).openPopup();
-                });
-                
-                const existingLat = document.getElementById('latitude').value;
-                const existingLng = document.getElementById('longitude').value;
-                if (existingLat && existingLng && !isNaN(parseFloat(existingLat)) && !isNaN(parseFloat(existingLng))) {
-                    const lat = parseFloat(existingLat);
-                    const lng = parseFloat(existingLng);
-                    popupMap.setView([lat, lng], 15);
-                    if (mapMarker) {
-                        mapMarker.setLatLng([lat, lng]);
-                    } else {
-                        mapMarker = L.marker([lat, lng]).addTo(popupMap);
-                    }
-                    mapMarker.bindPopup(`Selected Location<br>Lat: ${lat.toFixed(6)}<br>Lng: ${lng.toFixed(6)}`).openPopup();
-                    document.getElementById('popupLatitude').value = lat.toFixed(6);
-                    document.getElementById('popupLongitude').value = lng.toFixed(6);
-                    selectedLat = lat;
-                    selectedLng = lng;
-                }
-            }, 100);
+            // Esri World Imagery (Satellite)
+            const esriSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: '&copy; <a href="https://www.esri.com/">Esri</a>',
+                maxZoom: 18
+            });
+            
+            // OpenStreetMap (Street map as fallback)
+            const osmStreet = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap'
+            });
+            
+            // Set default to Esri Satellite
+            popupCurrentBaseLayer = esriSatellite;
+            esriSatellite.addTo(popupMap);
+            
+            // Add layer control to switch maps
+            const baseMaps = {
+                "🛰️ Satellite (Esri)": esriSatellite,
+                "🗺️ Street (OSM)": osmStreet
+            };
+            L.control.layers(baseMaps).addTo(popupMap);
+            
+            popupMapInitialized = true;
+        } else {
+            popupMap.invalidateSize();
         }
-
-        function closeMapPopup() {
-            const modal = document.getElementById('mapPopupModal');
-            modal.classList.remove('active');
-            document.getElementById('popupLatitude').value = '';
-            document.getElementById('popupLongitude').value = '';
-            selectedLat = null;
-            selectedLng = null;
-            if (mapMarker && popupMap) {
-                popupMap.removeLayer(mapMarker);
-                mapMarker = null;
-            }
-        }
-
-        function saveCoordinatesFromPopup() {
-            if (selectedLat !== null && selectedLng !== null) {
-                document.getElementById('latitude').value = selectedLat.toFixed(6);
-                document.getElementById('longitude').value = selectedLng.toFixed(6);
-                closeMapPopup();
-                showToast('Coordinates saved to form!', 'success');
+        
+        // Remove existing click handler to avoid duplicates
+        popupMap.off('click');
+        
+        popupMap.on('click', function(e) {
+            selectedLat = e.latlng.lat;
+            selectedLng = e.latlng.lng;
+            
+            document.getElementById('popupLatitude').value = selectedLat.toFixed(6);
+            document.getElementById('popupLongitude').value = selectedLng.toFixed(6);
+            
+            if (mapMarker) {
+                mapMarker.setLatLng([selectedLat, selectedLng]);
             } else {
-                alert('Please click on the map to select coordinates first.');
+                mapMarker = L.marker([selectedLat, selectedLng]).addTo(popupMap);
             }
+            mapMarker.bindPopup(`Selected Location<br>Lat: ${selectedLat.toFixed(6)}<br>Lng: ${selectedLng.toFixed(6)}`).openPopup();
+        });
+        
+        const existingLat = document.getElementById('latitude').value;
+        const existingLng = document.getElementById('longitude').value;
+        if (existingLat && existingLng && !isNaN(parseFloat(existingLat)) && !isNaN(parseFloat(existingLng))) {
+            const lat = parseFloat(existingLat);
+            const lng = parseFloat(existingLng);
+            popupMap.setView([lat, lng], 15);
+            if (mapMarker) {
+                mapMarker.setLatLng([lat, lng]);
+            } else {
+                mapMarker = L.marker([lat, lng]).addTo(popupMap);
+            }
+            mapMarker.bindPopup(`Selected Location<br>Lat: ${lat.toFixed(6)}<br>Lng: ${lng.toFixed(6)}`).openPopup();
+            document.getElementById('popupLatitude').value = lat.toFixed(6);
+            document.getElementById('popupLongitude').value = lng.toFixed(6);
+            selectedLat = lat;
+            selectedLng = lng;
         }
+    }, 100);
+}
 
         // ========== HELPER FUNCTIONS ==========
         function escapeHtml(str) {
