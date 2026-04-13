@@ -165,7 +165,10 @@
         .cert-table td { padding: 0.75rem; border-bottom: 1px solid #e0e0e0; }
         .cert-table tr:hover { background: #f8f4e8; }
      @media print {
-    @page { 
+    .signature-box p:first-of-type {
+        white-space: nowrap !important;
+    }
+        { 
         size: A4; 
         margin: 0.5cm;
     }
