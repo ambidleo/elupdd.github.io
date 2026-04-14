@@ -165,80 +165,23 @@
         .cert-table td { padding: 0.75rem; border-bottom: 1px solid #e0e0e0; }
         .cert-table tr:hover { background: #f8f4e8; }
         
-        /* Map Popup Modal Styles */
-        .map-popup-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            z-index: 30000;
-            justify-content: center;
-            align-items: center;
-        }
-        .map-popup-modal.active {
-            display: flex;
-        }
-        .map-popup-content {
-            background: white;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 800px;
-            height: 80%;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-        }
-        .map-popup-header {
-            padding: 15px 20px;
-            background: var(--primary-dark);
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .map-popup-header h3 {
-            margin: 0;
-        }
-        .map-popup-close {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-        }
-        .map-popup-body {
-            flex: 1;
-            padding: 15px;
-        }
-        #popupMap {
-            height: 350px;
-            width: 100%;
-            border-radius: 10px;
-        }
-        .coord-info {
-            margin-top: 10px;
-            padding: 10px;
-            background: #f0f0f0;
-            border-radius: 8px;
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-        }
-        .coord-info input {
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            width: 180px;
-        }
-        .map-popup-footer {
-            padding: 15px;
-            text-align: right;
-            border-top: 1px solid #ddd;
-        }
+       /* Map Popup Modal Styles - FIXED */
+/* Map Popup Modal Styles */
+.map-popup-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    z-index: 30000;
+    justify-content: center;
+    align-items: center;
+}
+.map-popup-modal.active {
+    display: flex;
+}
         
         @media print {
             .signature-box p:first-of-type {
@@ -545,8 +488,17 @@
                             <div class="form-group"><label for="series">Series</label><input type="text" class="form-control" id="series" value="2002" readonly></div>
                             <div class="form-group"><label for="parcels">No. of Parcels</label><input type="text" class="form-control" id="parcels" placeholder="e.g., Three hundred seventy-five (375) parcels" required></div>
                             <div class="form-group full-width"><label for="location">Location of the Property</label><input type="text" class="form-control" id="location" placeholder="Enter complete address" required></div>
-                            <div class="form-group"><label for="latitude">Latitude</label><input type="text" class="form-control" id="latitude" placeholder="e.g., 10.7202" readonly style="background:#f0f0f0"></div>
-                            <div class="form-group"><label for="longitude">Longitude</label><input type="text" class="form-control" id="longitude" placeholder="e.g., 122.5621" readonly style="background:#f0f0f0"><button type="button" class="btn btn-map" onclick="openMapPopup()" style="margin-top: 5px; width: 100%;">🗺️ Open Map</button></div>
+                            <div class="form-group">
+    <label for="latitude">Latitude</label>
+    <input type="text" class="form-control" id="latitude" placeholder="e.g., 10.7202" readonly style="background:#f0f0f0">
+</div>
+<div class="form-group">
+    <label for="longitude">Longitude</label>
+    <div style="display: flex; gap: 5px;">
+        <input type="text" class="form-control" id="longitude" placeholder="e.g., 122.5621" readonly style="background:#f0f0f0; flex: 1;">
+        <button type="button" class="btn btn-map" onclick="openMapPopup()" style="padding: 8px 10px; font-size: 20px; line-height: 1; border-radius: 8px; width: 42px;">🗺️</button>
+    </div>
+</div>
                             <div class="form-group"><label for="totalArea">Total Area (ha.)</label><input type="text" class="form-control" id="totalArea" placeholder="e.g., 15.5026" required></div>
                             <div class="form-group"><label for="proposedUse">Proposed Use</label><input type="text" class="form-control" id="proposedUse" placeholder="e.g., Residential-3 Zone" required></div>
                             <div class="form-group full-width">
@@ -683,25 +635,25 @@
     </main>
 
     <!-- Map Popup Modal for Coordinates -->
-    <div id="mapPopupModal" class="map-popup-modal">
-        <div class="map-popup-content">
-            <div class="map-popup-header">
-                <h3>Select Location on Map</h3>
-                <button class="map-popup-close" onclick="closeMapPopup()">&times;</button>
-            </div>
-            <div class="map-popup-body">
-                <div id="popupMap" style="height: 400px; width: 100%;"></div>
-                <div class="coord-info">
-                    <label>Latitude: <input type="text" id="popupLatitude" readonly placeholder="Click on map"></label>
-                    <label>Longitude: <input type="text" id="popupLongitude" readonly placeholder="Click on map"></label>
-                </div>
-            </div>
-            <div class="map-popup-footer">
-                <button class="btn btn-primary" onclick="saveCoordinatesFromPopup()">Use Selected Coordinates</button>
-                <button class="btn btn-secondary" onclick="closeMapPopup()">Cancel</button>
+<div id="mapPopupModal" class="map-popup-modal">
+    <div class="map-popup-content">
+        <div class="map-popup-header">
+            <h3>Select Location on Map</h3>
+            <button class="map-popup-close" onclick="closeMapPopup()">&times;</button>
+        </div>
+        <div class="map-popup-body">
+            <div id="popupMap" style="height: 400px; width: 100%; border-radius: 10px;"></div>
+            <div class="coord-info">
+                <label>🌐 Latitude: <input type="text" id="popupLatitude" readonly placeholder="Click on map"></label>
+                <label>📍 Longitude: <input type="text" id="popupLongitude" readonly placeholder="Click on map"></label>
             </div>
         </div>
+        <div class="map-popup-footer">
+    <button type="button" class="btn btn-secondary" id="cancelMapBtn" onclick="closeMapPopup()">Cancel</button>
+    <button type="button" class="btn btn-primary" id="useCoordinatesBtn" onclick="saveCoordinatesFromPopup()">✅ Use Selected Coordinates</button>
+</div>
     </div>
+</div>
 
     <div id="printSection" style="display:none;"></div>
     <div id="syncLoading" class="sync-loading">
@@ -737,85 +689,120 @@
         let certNumberQueue = [];
 
         // ========== MAP POPUP FOR COORDINATES ==========
-        let popupMap = null;
-        let popupMapInitialized = false;
-        let selectedLat = null;
-        let selectedLng = null;
-        let mapMarker = null;
+let popupMap = null;
+let popupMapInitialized = false;
+let selectedLat = null;
+let selectedLng = null;
+let mapMarker = null;
 
-        function openMapPopup() {
-            const modal = document.getElementById('mapPopupModal');
-            modal.classList.add('active');
+function openMapPopup() {
+    const modal = document.getElementById('mapPopupModal');
+    modal.classList.add('active');
+    
+    setTimeout(() => {
+        if (!popupMapInitialized) {
+            // Use Esri World Imagery (Satellite View)
+            popupMap = L.map('popupMap').setView([11.0, 122.5], 8);
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: '&copy; <a href="https://www.esri.com/">Esri</a> | Satellite Imagery',
+                maxZoom: 19
+            }).addTo(popupMap);
+            popupMapInitialized = true;
+        } else {
+            popupMap.invalidateSize();
+        }
+        
+        popupMap.off('click');
+        
+        popupMap.on('click', function(e) {
+            selectedLat = e.latlng.lat;
+            selectedLng = e.latlng.lng;
             
-            setTimeout(() => {
-                if (!popupMapInitialized) {
-                    popupMap = L.map('popupMap').setView([11.0, 122.5], 8);
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        attribution: '© OpenStreetMap'
-                    }).addTo(popupMap);
-                    popupMapInitialized = true;
-                } else {
-                    popupMap.invalidateSize();
-                }
-                
-                popupMap.on('click', function(e) {
-                    selectedLat = e.latlng.lat;
-                    selectedLng = e.latlng.lng;
-                    
-                    document.getElementById('popupLatitude').value = selectedLat.toFixed(6);
-                    document.getElementById('popupLongitude').value = selectedLng.toFixed(6);
-                    
-                    if (mapMarker) {
-                        mapMarker.setLatLng([selectedLat, selectedLng]);
-                    } else {
-                        mapMarker = L.marker([selectedLat, selectedLng]).addTo(popupMap);
-                    }
-                    mapMarker.bindPopup(`Selected Location<br>Lat: ${selectedLat.toFixed(6)}<br>Lng: ${selectedLng.toFixed(6)}`).openPopup();
-                });
-                
-                const existingLat = document.getElementById('latitude').value;
-                const existingLng = document.getElementById('longitude').value;
-                if (existingLat && existingLng && !isNaN(parseFloat(existingLat)) && !isNaN(parseFloat(existingLng))) {
-                    const lat = parseFloat(existingLat);
-                    const lng = parseFloat(existingLng);
-                    popupMap.setView([lat, lng], 15);
-                    if (mapMarker) {
-                        mapMarker.setLatLng([lat, lng]);
-                    } else {
-                        mapMarker = L.marker([lat, lng]).addTo(popupMap);
-                    }
-                    mapMarker.bindPopup(`Selected Location<br>Lat: ${lat.toFixed(6)}<br>Lng: ${lng.toFixed(6)}`).openPopup();
-                    document.getElementById('popupLatitude').value = lat.toFixed(6);
-                    document.getElementById('popupLongitude').value = lng.toFixed(6);
-                    selectedLat = lat;
-                    selectedLng = lng;
-                }
-            }, 100);
-        }
-
-        function closeMapPopup() {
-            const modal = document.getElementById('mapPopupModal');
-            modal.classList.remove('active');
-            document.getElementById('popupLatitude').value = '';
-            document.getElementById('popupLongitude').value = '';
-            selectedLat = null;
-            selectedLng = null;
-            if (mapMarker && popupMap) {
-                popupMap.removeLayer(mapMarker);
-                mapMarker = null;
-            }
-        }
-
-        function saveCoordinatesFromPopup() {
-            if (selectedLat !== null && selectedLng !== null) {
-                document.getElementById('latitude').value = selectedLat.toFixed(6);
-                document.getElementById('longitude').value = selectedLng.toFixed(6);
-                closeMapPopup();
-                showToast('Coordinates saved to form!', 'success');
+            const latInput = document.getElementById('popupLatitude');
+            const lngInput = document.getElementById('popupLongitude');
+            if (latInput) latInput.value = selectedLat.toFixed(6);
+            if (lngInput) lngInput.value = selectedLng.toFixed(6);
+            
+            if (mapMarker) {
+                mapMarker.setLatLng([selectedLat, selectedLng]);
             } else {
-                alert('Please click on the map to select coordinates first.');
+                mapMarker = L.marker([selectedLat, selectedLng]).addTo(popupMap);
             }
+            mapMarker.bindPopup(`Selected Location<br>Lat: ${selectedLat.toFixed(6)}<br>Lng: ${selectedLng.toFixed(6)}`).openPopup();
+        });
+        
+        const existingLat = document.getElementById('latitude')?.value;
+        const existingLng = document.getElementById('longitude')?.value;
+        if (existingLat && existingLng && !isNaN(parseFloat(existingLat)) && !isNaN(parseFloat(existingLng))) {
+            const lat = parseFloat(existingLat);
+            const lng = parseFloat(existingLng);
+            popupMap.setView([lat, lng], 15);
+            if (mapMarker) {
+                mapMarker.setLatLng([lat, lng]);
+            } else {
+                mapMarker = L.marker([lat, lng]).addTo(popupMap);
+            }
+            mapMarker.bindPopup(`Selected Location<br>Lat: ${lat.toFixed(6)}<br>Lng: ${lng.toFixed(6)}`).openPopup();
+            const latInput = document.getElementById('popupLatitude');
+            const lngInput = document.getElementById('popupLongitude');
+            if (latInput) latInput.value = lat.toFixed(6);
+            if (lngInput) lngInput.value = lng.toFixed(6);
+            selectedLat = lat;
+            selectedLng = lng;
         }
+    }, 100);
+}
+
+function closeMapPopup() {
+    const modal = document.getElementById('mapPopupModal');
+    modal.classList.remove('active');
+    
+    const latInput = document.getElementById('popupLatitude');
+    const lngInput = document.getElementById('popupLongitude');
+    if (latInput) latInput.value = '';
+    if (lngInput) lngInput.value = '';
+    
+    selectedLat = null;
+    selectedLng = null;
+    if (mapMarker && popupMap) {
+        popupMap.removeLayer(mapMarker);
+        mapMarker = null;
+    }
+}
+
+function saveCoordinatesFromPopup() {
+    if (selectedLat !== null && selectedLng !== null) {
+        const latField = document.getElementById('latitude');
+        const lngField = document.getElementById('longitude');
+        if (latField) latField.value = selectedLat.toFixed(6);
+        if (lngField) lngField.value = selectedLng.toFixed(6);
+        closeMapPopup();
+        
+        // Show success message
+        if (typeof showToast === 'function') {
+            showToast('Coordinates saved to form!', 'success');
+        } else {
+            alert('Coordinates saved!');
+        }
+    } else {
+        alert('Please click on the map to select coordinates first.');
+    }
+}
+
+// Initialize event listeners when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Setup map popup button listeners
+    const cancelBtn = document.getElementById('cancelMapBtn');
+    const useBtn = document.getElementById('useCoordinatesBtn');
+    
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', closeMapPopup);
+    }
+    
+    if (useBtn) {
+        useBtn.addEventListener('click', saveCoordinatesFromPopup);
+    }
+});
 
         // ========== HELPER FUNCTIONS ==========
         function escapeHtml(str) {
