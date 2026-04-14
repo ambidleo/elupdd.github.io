@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ELUPDD Region VI - Environmental Land Use & Urban Planning</title>
+    <title>ELUPDD Region VI - Enhanced Map Selection</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/shpjs@3.4.3/dist/shp.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
-        /* ===== Full CSS ===== */
+        /* ===== Full CSS (unchanged from original, plus minor additions for search bar) ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #e8f0f9; min-height: 100vh; }
         :root { --primary-dark: #1a4d5e; --primary: #2c6e8f; --primary-light-accessible: #1e7a9c; --secondary: #3a7b5c; --accent-accessible: #d4a017; --earth: #8B5A2B; --water: #3498db; --forest: #27ae60; --urban: #7f8c8d; --background: #f5f9ff; --card-bg: #ffffff; --cert-primary: #8B4513; --cert-secondary: #228B22; --cert-accent: #FFD700; }
@@ -165,23 +165,53 @@
         .cert-table td { padding: 0.75rem; border-bottom: 1px solid #e0e0e0; }
         .cert-table tr:hover { background: #f8f4e8; }
         
-       /* Map Popup Modal Styles - FIXED */
-/* Map Popup Modal Styles */
-.map-popup-modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.7);
-    z-index: 30000;
-    justify-content: center;
-    align-items: center;
-}
-.map-popup-modal.active {
-    display: flex;
-}
+        /* Enhanced Map Popup Modal Styles */
+        .map-popup-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 30000;
+            justify-content: center;
+            align-items: center;
+        }
+        .map-popup-modal.active {
+            display: flex;
+        }
+        .map-popup-content {
+            background: white;
+            border-radius: 20px;
+            padding: 1.5rem;
+            max-width: 900px;
+            width: 95%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .search-coord-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .search-coord-bar input {
+            flex: 2;
+            padding: 8px 12px;
+            border-radius: 30px;
+            border: 1px solid #ccc;
+        }
+        .coord-info {
+            margin-top: 12px;
+            display: flex;
+            gap: 20px;
+            background: #f0f0f0;
+            padding: 8px;
+            border-radius: 8px;
+            justify-content: space-between;
+        }
+        @media (max-width: 768px) { .coord-info { flex-direction: column; } }
         
         @media print {
             .signature-box p:first-of-type {
@@ -384,7 +414,7 @@
 
     <main id="main-content" role="main">
         <div class="container">
-            <!-- Dashboard Section -->
+            <!-- Dashboard Section (unchanged) -->
             <div id="dashboard" class="section active" role="region" aria-labelledby="dashboard-heading">
                 <h1 id="dashboard-heading" class="visually-hidden">Dashboard - CLUP & PDPFP Review</h1>
                 <div class="review-card">
@@ -398,16 +428,14 @@
                     <div class="table-responsive">
                         <table id="reviewTable" aria-label="CLUP and PDPFP review records">
                             <caption class="visually-hidden">List of CLUP and PDPFP review entries</caption>
-                            <thead>
-                                <tr><th>LGU/Province</th><th>Reviewer</th><th>Dates</th><th>Actions</th></tr>
-                            </thead>
+                            <thead><tr><th>LGU/Province</th><th>Reviewer</th><th>Dates</th><th>Actions</th></tr></thead>
                             <tbody id="reviewTableBody"></tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <!-- Map Section -->
+            <!-- Map Section (unchanged) -->
             <div id="map" class="section" style="display: none;" role="region" aria-labelledby="map-heading">
                 <h1 id="map-heading" class="visually-hidden">Regional Navigation Map - Western Visayas</h1>
                 <div class="map-section">
@@ -445,7 +473,7 @@
                 </div>
             </div>
 
-            <!-- Land Use Plans Section -->
+            <!-- Land Use Plans Section (unchanged) -->
             <div id="plans" class="section" style="display: none;" role="region" aria-labelledby="plans-heading">
                 <h1 id="plans-heading" class="visually-hidden">Comprehensive Land Use Plans</h1>
                 <div class="data-section">
@@ -468,16 +496,14 @@
                     <div class="table-responsive">
                         <table id="plansTable" aria-label="Land Use Plans">
                             <caption class="visually-hidden">List of Comprehensive Land Use Plans in Region VI</caption>
-                            <thead>
-                                <tr><th>LGU/Municipality</th><th>Province</th><th>Plan Period</th><th>Status</th><th>Date Approved (Latest)</th><th>Actions</th></tr>
-                            </thead>
+                            <thead><tr><th>LGU/Municipality</th><th>Province</th><th>Plan Period</th><th>Status</th><th>Date Approved (Latest)</th><th>Actions</th></tr></thead>
                             <tbody id="plansTableBody"></tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <!-- Site Zoning Certification Section -->
+            <!-- Site Zoning Certification Section (with improved map popup button) -->
             <div id="zoning" class="section" style="display: none;" role="region" aria-labelledby="zoning-heading">
                 <h1 id="zoning-heading" class="visually-hidden">Site Zoning Certification</h1>
                 <div class="cert-section">
@@ -488,17 +514,8 @@
                             <div class="form-group"><label for="series">Series</label><input type="text" class="form-control" id="series" value="2002" readonly></div>
                             <div class="form-group"><label for="parcels">No. of Parcels</label><input type="text" class="form-control" id="parcels" placeholder="e.g., Three hundred seventy-five (375) parcels" required></div>
                             <div class="form-group full-width"><label for="location">Location of the Property</label><input type="text" class="form-control" id="location" placeholder="Enter complete address" required></div>
-                            <div class="form-group">
-    <label for="latitude">Latitude</label>
-    <input type="text" class="form-control" id="latitude" placeholder="e.g., 10.7202" readonly style="background:#f0f0f0">
-</div>
-<div class="form-group">
-    <label for="longitude">Longitude</label>
-    <div style="display: flex; gap: 5px;">
-        <input type="text" class="form-control" id="longitude" placeholder="e.g., 122.5621" readonly style="background:#f0f0f0; flex: 1;">
-        <button type="button" class="btn btn-map" onclick="openMapPopup()" style="padding: 8px 10px; font-size: 20px; line-height: 1; border-radius: 8px; width: 42px;">🗺️</button>
-    </div>
-</div>
+                            <div class="form-group"><label for="latitude">Latitude</label><input type="text" class="form-control" id="latitude" placeholder="e.g., 10.7202" readonly style="background:#f0f0f0"></div>
+                            <div class="form-group"><label for="longitude">Longitude</label><div style="display: flex; gap: 5px;"><input type="text" class="form-control" id="longitude" placeholder="e.g., 122.5621" readonly style="background:#f0f0f0; flex: 1;"><button type="button" class="btn btn-map" onclick="openEnhancedMapPopup()" style="padding: 8px 10px; font-size: 20px; line-height: 1; border-radius: 8px; width: 42px;">🗺️</button></div></div>
                             <div class="form-group"><label for="totalArea">Total Area (ha.)</label><input type="text" class="form-control" id="totalArea" placeholder="e.g., 15.5026" required></div>
                             <div class="form-group"><label for="proposedUse">Proposed Use</label><input type="text" class="form-control" id="proposedUse" placeholder="e.g., Residential-3 Zone" required></div>
                             <div class="form-group full-width">
@@ -601,9 +618,7 @@
                     </div>
                     <div style="overflow-x:auto;">
                         <table class="cert-table" id="certificationsTable">
-                            <thead>
-                                <tr><th>Certification No.</th><th>No. of Parcels</th><th>Location</th><th>Total Area</th><th>Date Issued</th><th>Requested By</th><th>Actions</th></tr>
-                            </thead>
+                            <thead><tr><th>Certification No.</th><th>No. of Parcels</th><th>Location</th><th>Total Area</th><th>Date Issued</th><th>Requested By</th><th>Actions</th></tr></thead>
                             <tbody id="certificationsTableBody"></tbody>
                         </table>
                     </div>
@@ -611,7 +626,7 @@
                 </div>
             </div>
 
-            <!-- Reports Section -->
+            <!-- Reports Section (unchanged) -->
             <div id="reports" class="section" style="display: none;" role="region" aria-labelledby="reports-heading">
                 <h1 id="reports-heading" class="visually-hidden">Planning Reports</h1>
                 <div class="data-section">
@@ -634,26 +649,30 @@
         </div>
     </main>
 
-    <!-- Map Popup Modal for Coordinates -->
-<div id="mapPopupModal" class="map-popup-modal">
-    <div class="map-popup-content">
-        <div class="map-popup-header">
-            <h3>Select Location on Map</h3>
-            <button class="map-popup-close" onclick="closeMapPopup()">&times;</button>
-        </div>
-        <div class="map-popup-body">
+    <!-- ENHANCED Map Popup Modal with Search and Geolocation -->
+    <div id="mapPopupModal" class="map-popup-modal">
+        <div class="map-popup-content">
+            <div class="modal-header">
+                <h3>Select Location on Map</h3>
+                <button class="close-btn" onclick="closeMapPopup()">&times;</button>
+            </div>
+            <div class="search-coord-bar">
+                <input type="text" id="addressSearchInput" placeholder="Search for an address, city, or landmark..." class="form-control">
+                <button class="btn btn-primary" id="searchAddressBtn">🔍 Search</button>
+                <button class="btn btn-secondary" id="useMyLocationBtn">📍 My Location</button>
+            </div>
             <div id="popupMap" style="height: 400px; width: 100%; border-radius: 10px;"></div>
             <div class="coord-info">
                 <label>🌐 Latitude: <input type="text" id="popupLatitude" readonly placeholder="Click on map"></label>
                 <label>📍 Longitude: <input type="text" id="popupLongitude" readonly placeholder="Click on map"></label>
             </div>
+            <div class="btn-group" style="margin-top: 15px; justify-content: flex-end;">
+                <button class="btn btn-secondary" onclick="closeMapPopup()">Cancel</button>
+                <button class="btn btn-success" id="useCoordinatesBtn">✅ Use Selected Coordinates</button>
+            </div>
+            <p class="small" style="margin-top: 8px; font-size: 12px; color: #666;">💡 Tip: Click anywhere on the map to set coordinates. Use search or "My Location" to find a place.</p>
         </div>
-        <div class="map-popup-footer">
-    <button type="button" class="btn btn-secondary" id="cancelMapBtn" onclick="closeMapPopup()">Cancel</button>
-    <button type="button" class="btn btn-primary" id="useCoordinatesBtn" onclick="saveCoordinatesFromPopup()">✅ Use Selected Coordinates</button>
-</div>
     </div>
-</div>
 
     <div id="printSection" style="display:none;"></div>
     <div id="syncLoading" class="sync-loading">
