@@ -9,7 +9,7 @@
     <script src="https://unpkg.com/shpjs@3.4.3/dist/shp.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
-        /* ===== Full CSS ===== */
+        /* ===== Full CSS (unchanged) ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #e8f0f9; min-height: 100vh; }
         :root { --primary-dark: #1a4d5e; --primary: #2c6e8f; --primary-light-accessible: #1e7a9c; --secondary: #3a7b5c; --accent-accessible: #d4a017; --earth: #8B5A2B; --water: #3498db; --forest: #27ae60; --urban: #7f8c8d; --background: #f5f9ff; --card-bg: #ffffff; --cert-primary: #8B4513; --cert-secondary: #228B22; --cert-accent: #FFD700; }
@@ -164,116 +164,41 @@
         .cert-table th { background: var(--cert-primary); color: white; padding: 0.75rem; text-align: left; }
         .cert-table td { padding: 0.75rem; border-bottom: 1px solid #e0e0e0; }
         .cert-table tr:hover { background: #f8f4e8; }
-        
-        /* Map Popup Modal Styles */
-        .map-popup-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            z-index: 30000;
-            justify-content: center;
-            align-items: center;
-        }
-        .map-popup-modal.active {
-            display: flex;
-        }
-        .map-popup-content {
-            background: white;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 800px;
-            height: 80%;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-        }
-        .map-popup-header {
-            padding: 15px 20px;
-            background: var(--primary-dark);
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .map-popup-header h3 {
-            margin: 0;
-        }
-        .map-popup-close {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-        }
-        .map-popup-body {
-            flex: 1;
-            padding: 15px;
-        }
-        #popupMap {
-            height: 350px;
-            width: 100%;
-            border-radius: 10px;
-        }
-        .coord-info {
-            margin-top: 10px;
-            padding: 10px;
-            background: #f0f0f0;
-            border-radius: 8px;
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-        }
-        .coord-info input {
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            width: 180px;
-        }
-        .map-popup-footer {
-            padding: 15px;
-            text-align: right;
-            border-top: 1px solid #ddd;
-        }
-        
-        @media print {
-            .signature-box p:first-of-type {
-                white-space: nowrap !important;
-            }
-            { 
-                size: A4; 
-                margin: 0.5cm;
-            }
-            body * { 
-                visibility: hidden; 
-            }
-            #printSection, #printSection * { 
-                visibility: visible; 
-            }
-            #printSection { 
-                position: absolute; 
-                left: 0; 
-                top: 0; 
-                width: 100%; 
-                background: white; 
-                font-family: 'Times New Roman', Times, serif;
-            }
-            .print-document { 
-                margin: 0; 
-                padding: 0; 
-                max-width: 100%; 
-            }
-            .print-document,
-            .print-document * {
-                page-break-after: avoid;
-                page-break-before: avoid;
-                page-break-inside: avoid;
-            }
-        }
+     @media print {
+    .signature-box p:first-of-type {
+        white-space: nowrap !important;
+    }
+        { 
+        size: A4; 
+        margin: 0.5cm;
+    }
+    body * { 
+        visibility: hidden; 
+    }
+    #printSection, #printSection * { 
+        visibility: visible; 
+    }
+    #printSection { 
+        position: absolute; 
+        left: 0; 
+        top: 0; 
+        width: 100%; 
+        background: white; 
+        font-family: 'Times New Roman', Times, serif;
+    }
+    .print-document { 
+        margin: 0; 
+        padding: 0; 
+        max-width: 100%; 
+    }
+    /* Prevent page breaks inside content */
+    .print-document,
+    .print-document * {
+        page-break-after: avoid;
+        page-break-before: avoid;
+        page-break-inside: avoid;
+    }
+}
         .print-document { font-family: 'Times New Roman', Times, serif; max-width: 100%; margin: 0; padding: 1cm; line-height: 1.0; font-size: 12pt; background: white; box-sizing: border-box; }
         .print-document h2 { text-align: center; font-size: 18pt; font-weight: bold; margin: 0.5cm 0 0.3cm 0; text-transform: uppercase; page-break-after: avoid; }
         .print-document h3 { text-align: center; font-size: 15pt; font-weight: bold; margin: 0.4cm 0 0.2cm 0; page-break-after: avoid; }
@@ -311,8 +236,6 @@
             .search-bar { flex-direction: column; }
             .map-container { height: 350px; }
             .map-controls { flex-direction: column; align-items: stretch; }
-            .coord-info { flex-direction: column; align-items: center; }
-            .coord-info input { width: 100%; }
         }
         .review-card {
             background: var(--card-bg);
@@ -545,8 +468,6 @@
                             <div class="form-group"><label for="series">Series</label><input type="text" class="form-control" id="series" value="2002" readonly></div>
                             <div class="form-group"><label for="parcels">No. of Parcels</label><input type="text" class="form-control" id="parcels" placeholder="e.g., Three hundred seventy-five (375) parcels" required></div>
                             <div class="form-group full-width"><label for="location">Location of the Property</label><input type="text" class="form-control" id="location" placeholder="Enter complete address" required></div>
-                            <div class="form-group"><label for="latitude">Latitude</label><input type="text" class="form-control" id="latitude" placeholder="e.g., 10.7202" readonly style="background:#f0f0f0"></div>
-                            <div class="form-group"><label for="longitude">Longitude</label><input type="text" class="form-control" id="longitude" placeholder="e.g., 122.5621" readonly style="background:#f0f0f0"><button type="button" class="btn btn-map" onclick="openMapPopup()" style="margin-top: 5px; width: 100%;">🗺️ Open Map</button></div>
                             <div class="form-group"><label for="totalArea">Total Area (ha.)</label><input type="text" class="form-control" id="totalArea" placeholder="e.g., 15.5026" required></div>
                             <div class="form-group"><label for="proposedUse">Proposed Use</label><input type="text" class="form-control" id="proposedUse" placeholder="e.g., Residential-3 Zone" required></div>
                             <div class="form-group full-width">
@@ -638,17 +559,17 @@
                     </form>
                 </div>
                 <div class="cert-section" id="recordsSection" style="display:none;">
-                    <div class="cert-title"><span aria-hidden="true">📋</span> Saved Certifications</div>
-                    <div class="search-bar" style="margin-bottom: 1rem; padding: 1rem; background: #f8faff; border-radius: 12px;">
-                        <div class="search-box" style="flex: 2;">
-                            <span aria-hidden="true">🔍</span>
-                            <input type="text" id="certSearchInput" placeholder="Search by Certification No., Location, or Requested By..." onkeyup="filterCertificationsTable()">
-                        </div>
-                        <button class="btn btn-primary" onclick="filterCertificationsTable()" style="padding: 0.8rem 1.5rem;">🔍 Search</button>
-                        <button class="btn btn-secondary" onclick="clearCertSearch()" style="padding: 0.8rem 1.5rem;">🗑️ Clear</button>
-                    </div>
-                    <div style="overflow-x:auto;">
-                        <table class="cert-table" id="certificationsTable">
+    <div class="cert-title"><span aria-hidden="true">📋</span> Saved Certifications</div>
+    <!-- Search Bar for Certifications -->
+    <div class="search-bar" style="margin-bottom: 1rem; padding: 1rem; background: #f8faff; border-radius: 12px;">
+        <div class="search-box" style="flex: 2;">
+            <span aria-hidden="true">🔍</span>
+            <input type="text" id="certSearchInput" placeholder="Search by Certification No., Location, or Requested By..." onkeyup="filterCertificationsTable()">
+        </div>
+        <button class="btn btn-primary" onclick="filterCertificationsTable()" style="padding: 0.8rem 1.5rem;">🔍 Search</button>
+        <button class="btn btn-secondary" onclick="clearCertSearch()" style="padding: 0.8rem 1.5rem;">🗑️ Clear</button>
+    </div>
+    <div style="overflow-x:auto;">                        <table class="cert-table" id="certificationsTable">
                             <thead>
                                 <tr><th>Certification No.</th><th>No. of Parcels</th><th>Location</th><th>Total Area</th><th>Date Issued</th><th>Requested By</th><th>Actions</th></tr>
                             </thead>
@@ -682,27 +603,6 @@
         </div>
     </main>
 
-    <!-- Map Popup Modal for Coordinates -->
-    <div id="mapPopupModal" class="map-popup-modal">
-        <div class="map-popup-content">
-            <div class="map-popup-header">
-                <h3>Select Location on Map</h3>
-                <button class="map-popup-close" onclick="closeMapPopup()">&times;</button>
-            </div>
-            <div class="map-popup-body">
-                <div id="popupMap" style="height: 400px; width: 100%;"></div>
-                <div class="coord-info">
-                    <label>Latitude: <input type="text" id="popupLatitude" readonly placeholder="Click on map"></label>
-                    <label>Longitude: <input type="text" id="popupLongitude" readonly placeholder="Click on map"></label>
-                </div>
-            </div>
-            <div class="map-popup-footer">
-                <button class="btn btn-primary" onclick="saveCoordinatesFromPopup()">Use Selected Coordinates</button>
-                <button class="btn btn-secondary" onclick="closeMapPopup()">Cancel</button>
-            </div>
-        </div>
-    </div>
-
     <div id="printSection" style="display:none;"></div>
     <div id="syncLoading" class="sync-loading">
         <div class="sync-loading-content">
@@ -735,87 +635,6 @@
         // Lock mechanism for certification number generation
         let certNumberLock = false;
         let certNumberQueue = [];
-
-        // ========== MAP POPUP FOR COORDINATES ==========
-        let popupMap = null;
-        let popupMapInitialized = false;
-        let selectedLat = null;
-        let selectedLng = null;
-        let mapMarker = null;
-
-        function openMapPopup() {
-            const modal = document.getElementById('mapPopupModal');
-            modal.classList.add('active');
-            
-            setTimeout(() => {
-                if (!popupMapInitialized) {
-                    popupMap = L.map('popupMap').setView([11.0, 122.5], 8);
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        attribution: '© OpenStreetMap'
-                    }).addTo(popupMap);
-                    popupMapInitialized = true;
-                } else {
-                    popupMap.invalidateSize();
-                }
-                
-                popupMap.on('click', function(e) {
-                    selectedLat = e.latlng.lat;
-                    selectedLng = e.latlng.lng;
-                    
-                    document.getElementById('popupLatitude').value = selectedLat.toFixed(6);
-                    document.getElementById('popupLongitude').value = selectedLng.toFixed(6);
-                    
-                    if (mapMarker) {
-                        mapMarker.setLatLng([selectedLat, selectedLng]);
-                    } else {
-                        mapMarker = L.marker([selectedLat, selectedLng]).addTo(popupMap);
-                    }
-                    mapMarker.bindPopup(`Selected Location<br>Lat: ${selectedLat.toFixed(6)}<br>Lng: ${selectedLng.toFixed(6)}`).openPopup();
-                });
-                
-                const existingLat = document.getElementById('latitude').value;
-                const existingLng = document.getElementById('longitude').value;
-                if (existingLat && existingLng && !isNaN(parseFloat(existingLat)) && !isNaN(parseFloat(existingLng))) {
-                    const lat = parseFloat(existingLat);
-                    const lng = parseFloat(existingLng);
-                    popupMap.setView([lat, lng], 15);
-                    if (mapMarker) {
-                        mapMarker.setLatLng([lat, lng]);
-                    } else {
-                        mapMarker = L.marker([lat, lng]).addTo(popupMap);
-                    }
-                    mapMarker.bindPopup(`Selected Location<br>Lat: ${lat.toFixed(6)}<br>Lng: ${lng.toFixed(6)}`).openPopup();
-                    document.getElementById('popupLatitude').value = lat.toFixed(6);
-                    document.getElementById('popupLongitude').value = lng.toFixed(6);
-                    selectedLat = lat;
-                    selectedLng = lng;
-                }
-            }, 100);
-        }
-
-        function closeMapPopup() {
-            const modal = document.getElementById('mapPopupModal');
-            modal.classList.remove('active');
-            document.getElementById('popupLatitude').value = '';
-            document.getElementById('popupLongitude').value = '';
-            selectedLat = null;
-            selectedLng = null;
-            if (mapMarker && popupMap) {
-                popupMap.removeLayer(mapMarker);
-                mapMarker = null;
-            }
-        }
-
-        function saveCoordinatesFromPopup() {
-            if (selectedLat !== null && selectedLng !== null) {
-                document.getElementById('latitude').value = selectedLat.toFixed(6);
-                document.getElementById('longitude').value = selectedLng.toFixed(6);
-                closeMapPopup();
-                showToast('Coordinates saved to form!', 'success');
-            } else {
-                alert('Please click on the map to select coordinates first.');
-            }
-        }
 
         // ========== HELPER FUNCTIONS ==========
         function escapeHtml(str) {
@@ -886,17 +705,20 @@
                     const isOnline = await checkGoogleSheetsConnection();
                     
                     if (!isOnline) {
+                        // Offline mode: use local counter with timestamp to avoid conflicts
                         const localCounter = JSON.parse(localStorage.getItem('certificationCounter') || '{"lastCertNumber":0}');
                         const nextNumber = localCounter.lastCertNumber + 1;
                         const year = new Date().getFullYear().toString().slice(-2);
                         const certNumber = `SZC${year}-${nextNumber.toString().padStart(3, '0')}`;
                         
+                        // Store pending certification number request
                         addToPendingSync('certNumber', 'reserve', { number: nextNumber, certNumber: certNumber });
                         
                         resolve({ number: nextNumber, certNumber: certNumber, isOnline: false });
                         return;
                     }
                     
+                    // Online mode: request from server
                     const params = new URLSearchParams();
                     params.append('action', 'getNextCertNumber');
                     params.append('data_type', 'zoning');
@@ -923,6 +745,7 @@
         }
 
         async function generateUniqueCertificationNumber() {
+            // Queue mechanism for concurrent requests
             return new Promise(async (resolve, reject) => {
                 const requestId = Date.now();
                 certNumberQueue.push({ id: requestId, resolve, reject });
@@ -1570,28 +1393,35 @@
         }
 
         function updateApprovedByFields(plan) {
+            // Set basic fields
             document.getElementById('city').value = plan.LGU || '';
             document.getElementById('province').value = plan.Province || '';
             
+            // Check if LGU is Iloilo City (case insensitive)
             const lguName = (plan.LGU || '').toLowerCase();
             const isIloiloCity = lguName.includes('iloilo city') || lguName === 'iloilo city';
             
+            // Set Approved By and Circular No based on LGU type
             if (isIloiloCity) {
                 document.getElementById('approvedBy').value = 'DHSUD';
                 document.getElementById('circularNo').value = plan.Latest_Plan_Res || 'No Department Circular on file';
+                // Show conditional fields for Iloilo City
                 document.getElementById('iloiloConditionalFields').style.display = 'block';
             } else {
                 document.getElementById('approvedBy').value = 'Sangguniang Panlalawigan';
                 document.getElementById('circularNo').value = plan.Latest_Plan_Res || 'No SP Resolution on file';
+                // Hide conditional fields for non-Iloilo
                 document.getElementById('iloiloConditionalFields').style.display = 'none';
                 document.getElementById('landClassGroup').style.display = 'none';
                 document.getElementById('purpose').value = '';
                 document.getElementById('landClass').value = '';
             }
             
+            // Set approval date
             const latestDateRaw = plan.Latest_Date_of_Approval || '';
             document.getElementById('approvalDate').value = formatDateForInput(latestDateRaw);
             
+            // Set reference dates
             const firstDateRaw = plan.First_Plan_Date_of_Approval || '';
             document.getElementById('firstApprovalDateRef').textContent = firstDateRaw ? formatDate(firstDateRaw) : '—';
             document.getElementById('latestApprovalDateRef').textContent = latestDateRaw ? formatDate(latestDateRaw) : '—';
@@ -1606,6 +1436,7 @@
             if (!recordData) return;
             const plan = JSON.parse(recordData);
             
+            // Update all fields including approved by
             updateApprovedByFields(plan);
             
             alert(`CLUP data for ${plan.LGU} loaded successfully!\n\nApproved by: ${document.getElementById('approvedBy').value}\nDocument: ${document.getElementById('circularNo').value}`);
@@ -1620,6 +1451,7 @@
                     populateProvinceSelect();
                     document.getElementById('lguSelect').innerHTML = '<option value="">-- First select province --</option>';
                     document.getElementById('lguSelect').disabled = true;
+                    // Clear fields when switching to approved
                     clearApprovedDetailsFields();
                 } else {
                     document.getElementById('approvalDatesRef').style.display = 'none';
@@ -1645,6 +1477,7 @@
         function setupClupCascadeEvents() {
             document.querySelectorAll('input[name="clupStatus"]').forEach(radio => radio.addEventListener('change', toggleClupCascade));
             toggleClupCascade();
+            // Add event listener for purpose dropdown
             const purposeSelect = document.getElementById('purpose');
             if (purposeSelect) {
                 purposeSelect.addEventListener('change', function() {
@@ -1849,6 +1682,7 @@
                 return result.certNumber;
             } catch (error) {
                 console.error('Failed to get certification number:', error);
+                // Fallback to local generation
                 const year = new Date().getFullYear().toString().slice(-2);
                 const localCounter = JSON.parse(localStorage.getItem('certificationCounter') || '{"lastCertNumber":0}');
                 const nextNumber = localCounter.lastCertNumber + 1;
@@ -1861,12 +1695,14 @@
         async function saveZoningRecord(event) {
             event.preventDefault();
             
+            // Show loading state
             const saveBtn = event.submitter;
             const originalText = saveBtn.innerHTML;
             saveBtn.innerHTML = '⏳ Saving...';
             saveBtn.disabled = true;
             
             try {
+                // Get unique certification number first
                 let certificationNo;
                 if (!currentEditingZoningId) {
                     const certResult = await generateUniqueCertificationNumber();
@@ -1878,8 +1714,6 @@
                 const series = document.getElementById('series').value;
                 const parcels = document.getElementById('parcels').value;
                 const location = document.getElementById('location').value;
-                const latitude = document.getElementById('latitude').value || '';
-                const longitude = document.getElementById('longitude').value || '';
                 const totalArea = document.getElementById('totalArea').value;
                 const proposedUse = document.getElementById('proposedUse').value;
                 const dateIssued = document.getElementById('dateIssued').value;
@@ -1928,7 +1762,7 @@
 
                 const record = {
                     id: currentEditingZoningId || Date.now(),
-                    certificationNo, series, parcels, location, latitude, longitude, totalArea, proposedUse,
+                    certificationNo, series, parcels, location, totalArea, proposedUse,
                     landHoldings, dateIssued, requestedBy, amountPaid, orNo, orDate, remarks, clupStatus,
                     city, province, approvedBy, circularNo, approvalDate,
                     purpose, landClass,
@@ -1948,6 +1782,7 @@
                     localStorage.setItem('zoningCertifications', JSON.stringify(zoningCertifications));
                     addToPendingSync('zoning', action, record);
                     
+                    // Update local counter
                     const localCounter = JSON.parse(localStorage.getItem('certificationCounter') || '{"lastCertNumber":0}');
                     const certNumber = parseInt(record.certificationNo.split('-')[1]);
                     if (certNumber > localCounter.lastCertNumber) {
@@ -1965,6 +1800,7 @@
                     return false;
                 }
                 
+                // Online save with duplicate check
                 const params = new URLSearchParams();
                 params.append('action', action);
                 params.append('data_type', 'zoning');
@@ -1986,6 +1822,7 @@
                     document.getElementById('recordsSection').style.display = 'block';
                     alert(`Saved to Google Sheets! No: ${certificationNo}`);
                 } else if (result.duplicate) {
+                    // Handle duplicate certification number - retry with new number
                     alert('Certification number conflict detected. Please try saving again.');
                     await refreshCertificationNumber();
                 } else {
@@ -2005,7 +1842,7 @@
             const tbody = document.getElementById('certificationsTableBody');
             if (!tbody) return;
             tbody.innerHTML = '';
-            if (!zoningCertifications.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No records found.</td></tr>'; return; }
+            if (!zoningCertifications.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No records found.</tr></tr>'; return; }
             const sorted = [...zoningCertifications].sort((a,b) => new Date(b.dateIssued) - new Date(a.dateIssued));
             sorted.forEach(rec => {
                 const row = tbody.insertRow();
@@ -2048,8 +1885,6 @@
             document.getElementById('certificationNo').value = rec.certificationNo;
             document.getElementById('parcels').value = rec.parcels;
             document.getElementById('location').value = rec.location;
-            document.getElementById('latitude').value = rec.latitude || '';
-            document.getElementById('longitude').value = rec.longitude || '';
             document.getElementById('totalArea').value = rec.totalArea;
             document.getElementById('proposedUse').value = rec.proposedUse;
             document.getElementById('dateIssued').value = rec.dateIssued;
@@ -2132,8 +1967,6 @@
             addLandHolding();
             refreshCertificationNumber();
             document.getElementById('series').value = '2002';
-            document.getElementById('latitude').value = '';
-            document.getElementById('longitude').value = '';
             currentEditingZoningId = null;
             clearApprovedDetailsFields();
             toggleClupCascade();
@@ -2167,33 +2000,45 @@
         }
 
         function toggleRecordsView() { document.getElementById('recordsSection').style.display = 'none'; }
+      // ========== CERTIFICATION SEARCH FUNCTIONS ==========
+function filterCertificationsTable() {
+    const searchTerm = document.getElementById('certSearchInput')?.value.toLowerCase() || '';
+    
+    const tbody = document.getElementById('certificationsTableBody');
+    if (!tbody) return;
+    
+    const rows = tbody.getElementsByTagName('tr');
+    
+    for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        const cells = row.getElementsByTagName('td');
+        if (cells.length === 0) continue;
         
-        function filterCertificationsTable() {
-            const searchTerm = document.getElementById('certSearchInput')?.value.toLowerCase() || '';
-            const tbody = document.getElementById('certificationsTableBody');
-            if (!tbody) return;
-            const rows = tbody.getElementsByTagName('tr');
-            for (let i = 0; i < rows.length; i++) {
-                const row = rows[i];
-                const cells = row.getElementsByTagName('td');
-                if (cells.length === 0) continue;
-                const certNo = cells[0]?.innerText.toLowerCase() || '';
-                const location = cells[2]?.innerText.toLowerCase() || '';
-                const requestedBy = cells[5]?.innerText.toLowerCase() || '';
-                const matchesSearch = searchTerm === '' || certNo.includes(searchTerm) || location.includes(searchTerm) || requestedBy.includes(searchTerm);
-                if (matchesSearch) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            }
+        // Get cell values
+        const certNo = cells[0]?.innerText.toLowerCase() || '';
+        const location = cells[2]?.innerText.toLowerCase() || '';
+        const requestedBy = cells[5]?.innerText.toLowerCase() || '';
+        
+        // Check if search term matches any field
+        const matchesSearch = searchTerm === '' || 
+            certNo.includes(searchTerm) || 
+            location.includes(searchTerm) || 
+            requestedBy.includes(searchTerm);
+        
+        // Show/hide row
+        if (matchesSearch) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
         }
+    }
+}
 
-        function clearCertSearch() {
-            const searchInput = document.getElementById('certSearchInput');
-            if (searchInput) searchInput.value = '';
-            filterCertificationsTable();
-        }
+function clearCertSearch() {
+    const searchInput = document.getElementById('certSearchInput');
+    if (searchInput) searchInput.value = '';
+    filterCertificationsTable();
+}
 
         function resetCertificationCounter() {
             if (confirm('Reset counter? This will affect future certification numbers. Continue?')) {
@@ -2202,190 +2047,181 @@
                 refreshCertificationNumber();
                 alert(`Counter reset. Next number will be generated from server when online.`);
             }
-        }
+        }// Helper function to format date as "May 21, 2022" (Month Day, Year)
+function formatMonthDayYear(dateStr) {
+    if (!dateStr || dateStr === '___________' || dateStr === 'Pending' || dateStr === 'N/A') return '___________';
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return '___________';
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                        'July', 'August', 'September', 'October', 'November', 'December'];
+    return `${monthNames[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+}
 
-        function formatMonthDayYear(dateStr) {
-            if (!dateStr || dateStr === '___________' || dateStr === 'Pending' || dateStr === 'N/A') return '___________';
-            const d = new Date(dateStr);
-            if (isNaN(d.getTime())) return '___________';
-            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
-                                'July', 'August', 'September', 'October', 'November', 'December'];
-            return `${monthNames[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
-        }
+// Helper function to format date as "28th day of April 2026" (Ordinal format)
+function formatOrdinalDateLong(dateStr) {
+    if (!dateStr || dateStr === '___________' || dateStr === 'Pending' || dateStr === 'N/A') return '___________';
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return '___________';
+    const day = d.getDate();
+    const suffix = (day % 10 === 1 && day !== 11) ? 'st' :
+                   (day % 10 === 2 && day !== 12) ? 'nd' :
+                   (day % 10 === 3 && day !== 13) ? 'rd' : 'th';
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                        'July', 'August', 'September', 'October', 'November', 'December'];
+    return `${day}${suffix} day of ${monthNames[d.getMonth()]} ${d.getFullYear()}`;
+}
 
-        function formatOrdinalDateLong(dateStr) {
-            if (!dateStr || dateStr === '___________' || dateStr === 'Pending' || dateStr === 'N/A') return '___________';
-            const d = new Date(dateStr);
-            if (isNaN(d.getTime())) return '___________';
-            const day = d.getDate();
-            const suffix = (day % 10 === 1 && day !== 11) ? 'st' :
-                           (day % 10 === 2 && day !== 12) ? 'nd' :
-                           (day % 10 === 3 && day !== 13) ? 'rd' : 'th';
-            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
-                                'July', 'August', 'September', 'October', 'November', 'December'];
-            return `${day}${suffix} day of ${monthNames[d.getMonth()]} ${d.getFullYear()}`;
+function printZoningRecord(id) {
+    const rec = zoningCertifications.find(r => r.id == id);
+    if (!rec) return;
+    
+    // Ensure clupRecords is loaded from localStorage if empty
+    if (clupRecords.length === 0) {
+        const stored = localStorage.getItem('clupRecords');
+        if (stored) {
+            clupRecords = JSON.parse(stored);
         }
-
-        function printBlankForm() {
-            // Print blank form functionality
-            const blankForm = `<div class="print-document">
-                <h2>Republic of the Philippines</h2>
-                <h3>DEPARTMENT OF HUMAN SETTLEMENTS AND URBAN DEVELOPMENT</h3>
-                <h3>Region VI, Iloilo City</h3>
-                <h2>CERTIFICATION</h2>
-                <p>This is a blank certification form. Fill in the details before printing.</p>
-            </div>`;
-            const ps = document.getElementById('printSection');
-            ps.innerHTML = blankForm;
-            ps.style.display = 'block';
-            setTimeout(() => window.print(), 200);
-            setTimeout(() => ps.style.display = 'none', 1000);
+    }
+    
+    const certNo = rec.certificationNo;
+    const series = rec.series || '2002';
+    const parcels = rec.parcels || '______________________';
+    const location = rec.location || '______________________';
+    const totalArea = rec.totalArea || '__________';
+    const proposedUse = rec.proposedUse || '______________________';
+    const dateIssued = rec.dateIssued;
+    const requestedBy = rec.requestedBy || '______________________';
+    const amountPaid = rec.amountPaid || '___________';
+    const orNo = rec.orNo || '___________';
+    const orDate = rec.orDate || '';
+    let landHoldingsArray = Array.isArray(rec.landHoldings) ? rec.landHoldings : [];
+    let landHoldingsHtml = '';
+    const buildTotalRow = (totalAreaSum) => `<tr style="background-color: #f2f2f2;"><td style="border:1px solid #000; padding:0.3cm; color: black; font-weight: bold;"><strong>Total</strong><\/td><td style="border:1px solid #000; padding:0.3cm;"><\/td><td style="border:1px solid #000; padding:0.3cm;"><\/td><td style="border:1px solid #000; padding:0.3cm; text-align:right; color: black; font-weight: bold;"><strong>${totalAreaSum.toFixed(4)}</strong><\/td><td style="border:1px solid #000; padding:0.3cm;"><\/td><td style="border:1px solid #000; padding:0.3cm;"><\/td><\/tr>`;
+    const headerRow = `<thead><tr><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold; font-size: 13pt;">Registered Owner</th><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold; font-size: 13pt;">Lot Number</th><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold; font-size: 13pt;">OCT/TCT No.</th><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold; font-size: 13pt;">Area Per Title (Ha)</th><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold; font-size: 13pt;">Area Applied for Conversion (Ha)</th><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold; font-size: 13pt;">Zone Classification</th><\/tr><\/thead>`;
+    if (landHoldingsArray.length === 0) {
+        let totalAreaNum = parseFloat(totalArea) || 0;
+        landHoldingsHtml = `<table class="land-holdings-table" style="width:100%; border-collapse:collapse; margin:0.5cm 0;">${headerRow}<tbody><tr><td style="border:1px solid #000; padding:0.3cm; color: black; font-size: 12pt;">______________________<\/td><td style="border:1px solid #000; padding:0.3cm; font-size: 12pt;">______________<\/td><td style="border:1px solid #000; padding:0.3cm; font-size: 12pt;">______________________<\/td><td style="border:1px solid #000; padding:0.3cm; text-align:right; font-size: 12pt;">${escapeHtml(totalArea)}<\/td><td style="border:1px solid #000; padding:0.3cm; font-size: 12pt;">___________<\/td><td style="border:1px solid #000; padding:0.3cm; font-size: 12pt;">${escapeHtml(proposedUse)}<\/td><\/tr>${buildTotalRow(totalAreaNum)}<\/tbody><\/table>`;
+    } else {
+        let totalAreaSum = 0;
+        let rowsHtml = '';
+        landHoldingsArray.forEach(h => { const area = h.areaPerTitle ? parseFloat(h.areaPerTitle) : 0; totalAreaSum += area; rowsHtml += `<tr><td style="border:1px solid #000; padding:0.3cm; color: black; font-size: 12pt;">${escapeHtml(h.registeredOwner || '______________________')}<\/td><td style="border:1px solid #000; padding:0.3cm; font-size: 12pt;">${escapeHtml(h.lotNo || '______________')}<\/td><td style="border:1px solid #000; padding:0.3cm; font-size: 12pt;">${escapeHtml(h.tctNo || '______________________')}<\/td><td style="border:1px solid #000; padding:0.3cm; text-align:right; font-size: 12pt;">${area.toFixed(4)}<\/td><td style="border:1px solid #000; padding:0.3cm; font-size: 12pt;">___________<\/td><td style="border:1px solid #000; padding:0.3cm; font-size: 12pt;">${escapeHtml(h.zoneclass || '______________________')}<\/td><\/tr>`; });
+        landHoldingsHtml = `<table class="land-holdings-table" style="width:100%; border-collapse:collapse; margin:0.5cm 0;">${headerRow}<tbody>${rowsHtml}${buildTotalRow(totalAreaSum)}<\/tbody><\/table>`;
+    }
+    const clupStatus = rec.clupStatus || 'approved';
+    const approvedBy = rec.approvedBy || '______________________';
+    const city = rec.city || '______________________';
+    const province = rec.province || '______________________';
+    const cityProvince = province && province !== '______________________' ? `${city}, ${province}` : city;
+    const circularNo = rec.circularNo || '___________';
+    const approvalDateRaw = rec.approvalDate || '___________';
+    // FORMATTED: Date as "May 21, 2022"
+    const approvalDateFormatted = formatMonthDayYear(approvalDateRaw);
+    const agriculturalLand = '___________';
+    const reclassified = '___________';
+    const reclassYear = '___________';
+    const resolutionNo = '___________';
+    const resolutionDateRaw = '___________';
+    const resolutionDateFormatted = formatMonthDayYear(resolutionDateRaw);
+    const isIloiloCity = city.toLowerCase().includes('iloilo city') || city.toLowerCase() === 'iloilo city';
+    let approvedByText = approvedBy || (isIloiloCity ? 'DHSUD' : 'Sangguniang Panlalawigan');
+    let throughText = '';
+    if (isIloiloCity || approvedBy === 'DHSUD') throughText = ` ${escapeHtml(circularNo)}`;
+    else throughText = `${escapeHtml(circularNo)}`;
+    const check1 = clupStatus === 'approved' ? '[✓]' : '[ ]';
+    const check2 = clupStatus === 'pending' ? '[✓]' : '[ ]';
+    const check3 = clupStatus === 'none' ? '[✓]' : '[ ]';
+    
+    // AUTO-DETECT: Determine if city/municipality
+    const cityLower = city.toLowerCase();
+    const isCity = cityLower.includes('city') || 
+                   cityLower === 'iloilo' || 
+                   cityLower === 'bacolod' || 
+                   cityLower === 'roxas' ||
+                   cityLower === 'passi' ||
+                   cityLower === 'san carlos' ||
+                   cityLower === 'himamaylan' ||
+                   cityLower === 'kabankalan' ||
+                   cityLower === 'sipalay' ||
+                   cityLower === 'la carlota' ||
+                   cityLower === 'bago' ||
+                   cityLower === 'talísay' ||
+                   cityLower === 'silay' ||
+                   cityLower === 'victorias' ||
+                   cityLower === 'cadiz' ||
+                   cityLower === 'sagay' ||
+                   cityLower === 'escarlante';
+    const lguType = isCity ? 'City' : 'Municipality';
+    const lguTerm = isCity ? 'city' : 'municipality';
+    
+    // Extra paragraph for Iloilo City with Conversion purpose
+    let extraParagraph = '';
+    if (isIloiloCity && rec.purpose === 'Conversion') {
+        let iloiloClup = clupRecords.find(r => r.LGU && r.LGU.toLowerCase().includes('iloilo city') && r.Province === 'Iloilo');
+        if (!iloiloClup) {
+            iloiloClup = clupRecords.find(r => r.LGU && r.LGU.toLowerCase().includes('iloilo city'));
         }
-
-        function printZoningRecord(id) {
-            const rec = zoningCertifications.find(r => r.id == id);
-            if (!rec) return;
-            
-            if (clupRecords.length === 0) {
-                const stored = localStorage.getItem('clupRecords');
-                if (stored) {
-                    clupRecords = JSON.parse(stored);
-                }
+        if (!iloiloClup) {
+            const stored = localStorage.getItem('clupRecords');
+            if (stored) {
+                const allRecords = JSON.parse(stored);
+                iloiloClup = allRecords.find(r => r.LGU && r.LGU.toLowerCase().includes('iloilo city'));
             }
-            
-            const certNo = rec.certificationNo;
-            const series = rec.series || '2002';
-            const parcels = rec.parcels || '______________________';
-            const location = rec.location || '______________________';
-            const totalArea = rec.totalArea || '__________';
-            const proposedUse = rec.proposedUse || '______________________';
-            const dateIssued = rec.dateIssued;
-            const requestedBy = rec.requestedBy || '______________________';
-            const amountPaid = rec.amountPaid || '___________';
-            const orNo = rec.orNo || '___________';
-            const orDate = rec.orDate || '';
-            let landHoldingsArray = Array.isArray(rec.landHoldings) ? rec.landHoldings : [];
-            let landHoldingsHtml = '';
-            const buildTotalRow = (totalAreaSum) => `<tr style="background-color: #f2f2f2;"><td style="border:1px solid #000; padding:0.3cm; color: black; font-weight: bold;"><strong>Total</strong><\/td><td style="border:1px solid #000; padding:0.3cm;"><\/td><td style="border:1px solid #000; padding:0.3cm;"><\/td><td style="border:1px solid #000; padding:0.3cm; text-align:right; color: black; font-weight: bold;"><strong>${totalAreaSum.toFixed(4)}</strong><\/td><td style="border:1px solid #000; padding:0.3cm;"><\/td><td style="border:1px solid #000; padding:0.3cm;"><\/td><\/tr>`;
-            const headerRow = `<thead><tr><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold; font-size: 13pt;">Registered Owner</th><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold; font-size: 13pt;">Lot Number</th><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold; font-size: 13pt;">OCT/TCT No.</th><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold; font-size: 13pt;">Area Per Title (Ha)</th><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold; font-size: 13pt;">Area Applied for Conversion (Ha)</th><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold; font-size: 13pt;">Zone Classification</th><\/tr><\/thead>`;
-            if (landHoldingsArray.length === 0) {
-                let totalAreaNum = parseFloat(totalArea) || 0;
-                landHoldingsHtml = `<table class="land-holdings-table" style="width:100%; border-collapse:collapse; margin:0.5cm 0;">${headerRow}<tbody><tr><td style="border:1px solid #000; padding:0.3cm; color: black; font-size: 12pt;">______________________<\/td><td style="border:1px solid #000; padding:0.3cm; font-size: 12pt;">______________<\/td><td style="border:1px solid #000; padding:0.3cm; font-size: 12pt;">______________________<\/td><td style="border:1px solid #000; padding:0.3cm; text-align:right; font-size: 12pt;">${escapeHtml(totalArea)}<\/td><td style="border:1px solid #000; padding:0.3cm; font-size: 12pt;">___________<\/td><td style="border:1px solid #000; padding:0.3cm; font-size: 12pt;">${escapeHtml(proposedUse)}<\/td><\/tr>${buildTotalRow(totalAreaNum)}<\/tbody><\/table>`;
-            } else {
-                let totalAreaSum = 0;
-                let rowsHtml = '';
-                landHoldingsArray.forEach(h => { const area = h.areaPerTitle ? parseFloat(h.areaPerTitle) : 0; totalAreaSum += area; rowsHtml += `<tr><td style="border:1px solid #000; padding:0.3cm; color: black; font-size: 12pt;">${escapeHtml(h.registeredOwner || '______________________')}<\/td><td style="border:1px solid #000; padding:0.3cm; font-size: 12pt;">${escapeHtml(h.lotNo || '______________')}<\/td><td style="border:1px solid #000; padding:0.3cm; font-size: 12pt;">${escapeHtml(h.tctNo || '______________________')}<\/td><td style="border:1px solid #000; padding:0.3cm; text-align:right; font-size: 12pt;">${area.toFixed(4)}<\/td><td style="border:1px solid #000; padding:0.3cm; font-size: 12pt;">___________<\/td><td style="border:1px solid #000; padding:0.3cm; font-size: 12pt;">${escapeHtml(h.zoneclass || '______________________')}<\/td><\/tr>`; });
-                landHoldingsHtml = `<table class="land-holdings-table" style="width:100%; border-collapse:collapse; margin:0.5cm 0;">${headerRow}<tbody>${rowsHtml}${buildTotalRow(totalAreaSum)}<\/tbody><\/table>`;
-            }
-            const clupStatus = rec.clupStatus || 'approved';
-            const approvedBy = rec.approvedBy || '______________________';
-            const city = rec.city || '______________________';
-            const province = rec.province || '______________________';
-            const cityProvince = province && province !== '______________________' ? `${city}, ${province}` : city;
-            const circularNo = rec.circularNo || '___________';
-            const approvalDateRaw = rec.approvalDate || '___________';
-            const approvalDateFormatted = formatMonthDayYear(approvalDateRaw);
-            const agriculturalLand = '___________';
-            const reclassified = '___________';
-            const reclassYear = '___________';
-            const resolutionNo = '___________';
-            const resolutionDateRaw = '___________';
-            const resolutionDateFormatted = formatMonthDayYear(resolutionDateRaw);
-            const isIloiloCity = city.toLowerCase().includes('iloilo city') || city.toLowerCase() === 'iloilo city';
-            let approvedByText = approvedBy || (isIloiloCity ? 'DHSUD' : 'Sangguniang Panlalawigan');
-            let throughText = '';
-            if (isIloiloCity || approvedBy === 'DHSUD') throughText = ` ${escapeHtml(circularNo)}`;
-            else throughText = `${escapeHtml(circularNo)}`;
-            const check1 = clupStatus === 'approved' ? '[✓]' : '[ ]';
-            const check2 = clupStatus === 'pending' ? '[✓]' : '[ ]';
-            const check3 = clupStatus === 'none' ? '[✓]' : '[ ]';
-            
-            const cityLower = city.toLowerCase();
-            const isCity = cityLower.includes('city') || 
-                           cityLower === 'iloilo' || 
-                           cityLower === 'bacolod' || 
-                           cityLower === 'roxas' ||
-                           cityLower === 'passi' ||
-                           cityLower === 'san carlos' ||
-                           cityLower === 'himamaylan' ||
-                           cityLower === 'kabankalan' ||
-                           cityLower === 'sipalay' ||
-                           cityLower === 'la carlota' ||
-                           cityLower === 'bago' ||
-                           cityLower === 'talísay' ||
-                           cityLower === 'silay' ||
-                           cityLower === 'victorias' ||
-                           cityLower === 'cadiz' ||
-                           cityLower === 'sagay' ||
-                           cityLower === 'escarlante';
-            const lguTerm = isCity ? 'city' : 'municipality';
-            
-            let extraParagraph = '';
-            if (isIloiloCity && rec.purpose === 'Conversion') {
-                let iloiloClup = clupRecords.find(r => r.LGU && r.LGU.toLowerCase().includes('iloilo city') && r.Province === 'Iloilo');
-                if (!iloiloClup) {
-                    iloiloClup = clupRecords.find(r => r.LGU && r.LGU.toLowerCase().includes('iloilo city'));
-                }
-                if (!iloiloClup) {
-                    const stored = localStorage.getItem('clupRecords');
-                    if (stored) {
-                        const allRecords = JSON.parse(stored);
-                        iloiloClup = allRecords.find(r => r.LGU && r.LGU.toLowerCase().includes('iloilo city'));
-                    }
-                }
-                if (iloiloClup) {
-                    const landClassText = rec.landClass || '___________';
-                    const firstPlanRes = iloiloClup.First_Plan_Res || 'Resolution No. ___________';
-                    const firstApprovalDateRaw = iloiloClup.First_Plan_Date_of_Approval || '';
-                    const firstApprovalFormatted = firstApprovalDateRaw ? formatMonthDayYear(firstApprovalDateRaw) : '___________';
-                    extraParagraph = `<p style="margin-top: 0.1cm; margin-left: 0.5cm; text-indent: 1.5cm; font-size: 13pt;">THIS IS TO CERTIFY that same tract of land was within a zone classified as <strong>${escapeHtml(landClassText)}</strong> per the <strong>Comprehensive Land Use Plan/Zoning Ordinance of ${escapeHtml(city)}</strong>, that was approved on <strong>${firstApprovalFormatted}</strong>, via <strong>${escapeHtml(firstPlanRes)}</strong> by then <strong>Human Settlements Regulatory Commission (HSRC)</strong>, now DHSUD.</p>`;
-                } else {
-                    const landClassText = rec.landClass || '___________';
-                    extraParagraph = `<p style="margin-top: 0.05cm; margin-left: 0.5cm; text-indent: 0.5cm; font-size: 13pt;"><strong>THIS IS TO CERTIFY</strong> that same tract of land was within a zone classified as <strong>${escapeHtml(landClassText)}</strong> per the <strong>Comprehensive Land Use Plan/Zoning Ordinance of ${escapeHtml(city)}</strong>.</p>`;
-                }
-            }
-            
-            const statusHtml = `
-            <p style="margin-left: 0cm; margin-top: 0.05cm; margin-bottom: 0.05cm; font-size: 13pt;"><strong>1. ${check1} WITH APPROVED CLUP/ZO</strong></p>
-            <p style="margin-left: 0.5cm; text-indent: 1.5cm; text-align: justify; margin-top: 0.05cm; margin-bottom: 0.05cm; font-size: 13pt;">THIS IS TO CERTIFY that the above-described landholdings is/are zoned for use/s specified in the above table per approved <strong>Comprehensive Land Use Plan/Zoning Ordinance</strong> of <strong>${escapeHtml(cityProvince)}</strong>, as approved by the <strong>${approvedByText}</strong> through <strong>${throughText}</strong> dated <strong>${escapeHtml(approvalDateFormatted)}</strong> in accordance with pertinent issuances;</p>
-            ${extraParagraph}
-            <p style="margin-left: 0.6cm; text-align: justify; margin-top: 0.05cm; margin-bottom: 0.05cm; font-size: 13pt;">Further, the proposed conversion:</p>
-            <p style="margin-left: 1.2cm; text-align: justify; margin-top: 0.05cm; margin-bottom: 0.05cm; font-size: 13pt;">[ ] Conforms/is compatible with the approved land use plan and/or Zoning Ordinance.</p>
-            <p style="margin-left: 1.2cm; text-align: justify; margin-top: 0.05cm; margin-bottom: 0.05cm; font-size: 13pt;">[ ] Does not conform/is not compatible with the approved land use plan and/or Zoning Ordinance.</p>
-            <p style="margin-left: 0.5cm; text-indent: 0.5cm; text-align: justify; margin-top: 0.05cm; margin-bottom: 0.05cm; font-size: 13pt;">Per record of this office, the ${lguTerm} of ${escapeHtml(city)} has a total zoned agricultural land of <strong>${agriculturalLand}</strong> hectares of which <strong>${reclassified}</strong> hectares have been reclassified since <strong>${reclassYear}</strong>, as approved by the DHSUD/SP per DHSUD/SP Resolution No. <strong>${resolutionNo}</strong> dated <strong>${escapeHtml(resolutionDateFormatted)}</strong>.</p>
-            <p style="margin-left: 0cm; margin-top: 0.1cm; margin-bottom: 0.05cm; font-size: 13pt;"><strong>2. ${check2} WITH CLUP/ZO PENDING APPROVAL BY HLURB/SP</strong></p>
-            <p style="margin-left: 0.5cm; text-indent: 1.5cm; text-align: justify; margin-top: 0.05cm; margin-bottom: 0.05cm; font-size: 13pt;">THIS IS TO CERTIFY that the above-described property/ies lie/s is/are located within the area zoned for ________ use per Comprehensive Land Use Plan/Zoning Ordinance No. ________ dated _____ submitted to HLURB/SP for approval on _____________ and same remains pending to date.</p>
-            <p style="margin-left: 0.5cm; text-indent: 1.5cm; text-align: justify; margin-top: 0.05cm; margin-bottom: 0.05cm; font-size: 13pt;">THIS IS TO CERTIFY FURTHER that per record of this office-said ${lguTerm} of _________ will have a total zoned agricultural land of ________ hectares.</p>
-            <p style="margin-left: 0cm; margin-top: 0.1cm; margin-bottom: 0.05cm; font-size: 13pt;"><strong>3. ${check3} WITHOUT CLUP/ZO</strong></p>
-            <p style="margin-left: 1.2cm; text-indent: 1.5cm; text-align: justify; margin-top: 0.05cm; margin-bottom: 0.05cm; font-size: 13pt;">THIS IS TO CERTIFY that the ${lguTerm} of _________ has not submitted its Comprehensive Land Use Plan/Zoning Ordinance to this Office.</p>
-        `;
-            
-            const formattedDateIssued = formatOrdinalDateLong(dateIssued);
-            const orDateFormatted = orDate ? formatMonthDayYear(orDate) : formatMonthDayYear(dateIssued);
-            
-            const printContent = `<div class="print-document" style="margin: 0; padding: 0; page-break-after: avoid;">
-                <div style="text-align: right; margin-bottom: 0.5cm;">
-                    <p style="margin: 0; font-size: 13pt;"><strong>DHSUD Certification No. ${escapeHtml(certNo)}</strong></p>
-                </div>
-                <div style="margin-bottom: 0.5cm;">
-                    <p style="margin: 0; font-size: 13pt;"><strong>LUC FORM NO. 5</strong></p>
-                    <p style="margin: 0; font-size: 13pt;">Series of ${escapeHtml(series)}</p>
-                    <p style="margin: 0; font-size: 12pt; font-style: italic;">(To be filled-up by the Regional DHSUD)</p>
-                </div>
-                <div style="text-align: center; margin: 0.5cm 0;">
-                    <h2 style="font-size: 22pt; margin: 0.2cm 0;">Republic of the Philippines</h2>
-                    <h3 style="font-size: 16pt; margin: 0.1cm 0;">DEPARTMENT OF HUMAN SETTLEMENTS AND URBAN DEVELOPMENT</h3>
-                    <h3 style="font-size: 15pt; margin: 0.1cm 0;">Region VI, Iloilo City</h3>
-                    <h2 style="text-decoration: underline; margin: 0.3cm 0; font-size: 22pt;">CERTIFICATION</h2>
-                </div>
-                <div style="text-align: left; margin: 0.3cm 0 0.2cm 0;">
-                    <h4 style="font-size: 18pt; font-weight: bold; margin: 0;">I. BASIC INFORMATION</h4>
-                </div>
-                <div class="basic-info" style="margin-left: 0.5cm; margin-bottom: 0.3cm;">
-                    <table style="width: 100%; border-collapse: collapse; font-size: 14pt; border: none;">
-                        <tr style="border: none;">
-                            <td style="width: 6cm; padding: 0.1cm 0; border: none; white-space: nowrap; font-size: 14pt;"><strong>A. No. of Parcels</strong></td>
-                            <td style="width: 0.5cm; padding: 0.1cm 0; border: none; white-space: nowrap; font-size: 14pt;"><strong>:</strong>
+        }
+        if (iloiloClup) {
+            const landClassText = rec.landClass || '___________';
+            const firstPlanRes = iloiloClup.First_Plan_Res || 'Resolution No. ___________';
+            const firstApprovalDateRaw = iloiloClup.First_Plan_Date_of_Approval || '';
+            const firstApprovalFormatted = firstApprovalDateRaw ? formatMonthDayYear(firstApprovalDateRaw) : '___________';
+            extraParagraph = `<p style="margin-top: 0.1cm; margin-left: 0.5cm; text-indent: 1.5cm; font-size: 13pt;">THIS IS TO CERTIFY that same tract of land was within a zone classified as <strong>${escapeHtml(landClassText)}</strong> per the <strong>Comprehensive Land Use Plan/Zoning Ordinance of ${escapeHtml(city)}</strong>, that was approved on <strong>${firstApprovalFormatted}</strong>, via <strong>${escapeHtml(firstPlanRes)}</strong> by then <strong>Human Settlements Regulatory Commission (HSRC)</strong>, now DHSUD.</p>`;
+        } else {
+            const landClassText = rec.landClass || '___________';
+            extraParagraph = `<p style="margin-top: 0.05cm; margin-left: 0.5cm; text-indent: 0.5cm; font-size: 13pt;"><strong>THIS IS TO CERTIFY</strong> that same tract of land was within a zone classified as <strong>${escapeHtml(landClassText)}</strong> per the <strong>Comprehensive Land Use Plan/Zoning Ordinance of ${escapeHtml(city)}</strong>.</p>`;
+        }
+    }
+    
+    // UPDATED: Status HTML with larger font size
+    const statusHtml = `
+    <p style="margin-left: 0cm; margin-top: 0.05cm; margin-bottom: 0.05cm; font-size: 13pt;"><strong>1. ${check1} WITH APPROVED CLUP/ZO</strong></p>
+    <p style="margin-left: 0.5cm; text-indent: 1.5cm; text-align: justify; margin-top: 0.05cm; margin-bottom: 0.05cm; font-size: 13pt;">THIS IS TO CERTIFY that the above-described landholdings is/are zoned for use/s specified in the above table per approved <strong>Comprehensive Land Use Plan/Zoning Ordinance</strong> of <strong>${escapeHtml(cityProvince)}</strong>, as approved by the <strong>${approvedByText}</strong> through <strong>${throughText}</strong> dated <strong>${escapeHtml(approvalDateFormatted)}</strong> in accordance with pertinent issuances;</p>
+    ${extraParagraph}
+    <p style="margin-left: 0.6cm; text-align: justify; margin-top: 0.05cm; margin-bottom: 0.05cm; font-size: 13pt;">Further, the proposed conversion:</p>
+    <p style="margin-left: 1.2cm; text-align: justify; margin-top: 0.05cm; margin-bottom: 0.05cm; font-size: 13pt;">[ ] Conforms/is compatible with the approved land use plan and/or Zoning Ordinance.</p>
+    <p style="margin-left: 1.2cm; text-align: justify; margin-top: 0.05cm; margin-bottom: 0.05cm; font-size: 13pt;">[ ] Does not conform/is not compatible with the approved land use plan and/or Zoning Ordinance.</p>
+    <p style="margin-left: 0.5cm; text-indent: 0.5cm; text-align: justify; margin-top: 0.05cm; margin-bottom: 0.05cm; font-size: 13pt;">Per record of this office, the ${lguTerm} of ${escapeHtml(city)} has a total zoned agricultural land of <strong>${agriculturalLand}</strong> hectares of which <strong>${reclassified}</strong> hectares have been reclassified since <strong>${reclassYear}</strong>, as approved by the DHSUD/SP per DHSUD/SP Resolution No. <strong>${resolutionNo}</strong> dated <strong>${escapeHtml(resolutionDateFormatted)}</strong>.</p>
+    <p style="margin-left: 0cm; margin-top: 0.1cm; margin-bottom: 0.05cm; font-size: 13pt;"><strong>2. ${check2} WITH CLUP/ZO PENDING APPROVAL BY HLURB/SP</strong></p>
+    <p style="margin-left: 0.5cm; text-indent: 1.5cm; text-align: justify; margin-top: 0.05cm; margin-bottom: 0.05cm; font-size: 13pt;">THIS IS TO CERTIFY that the above-described property/ies lie/s is/are located within the area zoned for ________ use per Comprehensive Land Use Plan/Zoning Ordinance No. ________ dated _____ submitted to HLURB/SP for approval on _____________ and same remains pending to date.</p>
+    <p style="margin-left: 0.5cm; text-indent: 1.5cm; text-align: justify; margin-top: 0.05cm; margin-bottom: 0.05cm; font-size: 13pt;">THIS IS TO CERTIFY FURTHER that per record of this office-said ${lguTerm} of _________ will have a total zoned agricultural land of ________ hectares.</p>
+    <p style="margin-left: 0cm; margin-top: 0.1cm; margin-bottom: 0.05cm; font-size: 13pt;"><strong>3. ${check3} WITHOUT CLUP/ZO</strong></p>
+    <p style="margin-left: 1.2cm; text-indent: 1.5cm; text-align: justify; margin-top: 0.05cm; margin-bottom: 0.05cm; font-size: 13pt;">THIS IS TO CERTIFY that the ${lguTerm} of _________ has not submitted its Comprehensive Land Use Plan/Zoning Ordinance to this Office.</p>
+`;
+    
+    // CHANGED: formattedDateIssued now uses ordinal format "28th day of April 2026"
+    const formattedDateIssued = formatOrdinalDateLong(dateIssued);
+    const orDateFormatted = orDate ? formatMonthDayYear(orDate) : formatMonthDayYear(dateIssued);
+    
+    const printContent = `<div class="print-document" style="margin: 0; padding: 0; page-break-after: avoid;">
+    <div style="text-align: right; margin-bottom: 0.5cm;">
+        <p style="margin: 0; font-size: 13pt;"><strong>DHSUD Certification No. ${escapeHtml(certNo)}</strong></p>
+    </div>
+    <div style="margin-bottom: 0.5cm;">
+        <p style="margin: 0; font-size: 13pt;"><strong>LUC FORM NO. 5</strong></p>
+        <p style="margin: 0; font-size: 13pt;">Series of ${escapeHtml(series)}</p>
+        <p style="margin: 0; font-size: 12pt; font-style: italic;">(To be filled-up by the Regional DHSUD)</p>
+    </div>
+    <div style="text-align: center; margin: 0.5cm 0;">
+        <h2 style="font-size: 22pt; margin: 0.2cm 0;">Republic of the Philippines</h2>
+        <h3 style="font-size: 16pt; margin: 0.1cm 0;">DEPARTMENT OF HUMAN SETTLEMENTS AND URBAN DEVELOPMENT</h3>
+        <h3 style="font-size: 15pt; margin: 0.1cm 0;">Region VI, Iloilo City</h3>
+        <h2 style="text-decoration: underline; margin: 0.3cm 0; font-size: 22pt;">CERTIFICATION</h2>
+    </div>
+    <div style="text-align: left; margin: 0.3cm 0 0.2cm 0;">
+        <h4 style="font-size: 18pt; font-weight: bold; margin: 0;">I. BASIC INFORMATION</h4>
+    </div>
+    <div class="basic-info" style="margin-left: 0.5cm; margin-bottom: 0.3cm;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 14pt; border: none;">
+            <tr style="border: none;">
+                <td style="width: 6cm; padding: 0.1cm 0; border: none; white-space: nowrap; font-size: 14pt;"><strong>A. No. of Parcels</strong></td>
+                <td style="width: 0.5cm; padding: 0.1cm 0; border: none; white-space: nowrap; font-size: 14pt;"><strong>:</strong></td>
                 <td style="padding: 0.1cm 0; border: none; font-size: 14pt;">${escapeHtml(parcels)}</td>
             </tr>
             <tr style="border: none;">
