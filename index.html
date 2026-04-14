@@ -9,7 +9,7 @@
     <script src="https://unpkg.com/shpjs@3.4.3/dist/shp.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
-        /* ===== Full CSS (updated with improved map GUI and modal) ===== */
+        /* ===== Full CSS (unchanged, only footer centering added) ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #e8f0f9; min-height: 100vh; }
         :root { --primary-dark: #1a4d5e; --primary: #2c6e8f; --primary-light-accessible: #1e7a9c; --secondary: #3a7b5c; --accent-accessible: #d4a017; --earth: #8B5A2B; --water: #3498db; --forest: #27ae60; --urban: #7f8c8d; --background: #f5f9ff; --card-bg: #ffffff; --cert-primary: #8B4513; --cert-secondary: #228B22; --cert-accent: #FFD700; }
@@ -358,6 +358,24 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
+        /* ===== FOOTER CENTERING ===== */
+        footer {
+            background: linear-gradient(135deg, var(--primary-dark), #0e2f3a);
+            color: white;
+            padding: 2rem;
+            margin-top: 3rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        footer p {
+            opacity: 0.9;
+            margin: 0.5rem 0;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -480,7 +498,7 @@
                 </div>
             </div>
 
-            <!-- Site Zoning Certification Section (with map button) -->
+            <!-- Site Zoning Certification Section -->
             <div id="zoning" class="section" style="display: none;" role="region" aria-labelledby="zoning-heading">
                 <h1 id="zoning-heading" class="visually-hidden">Site Zoning Certification</h1>
                 <div class="cert-section">
@@ -504,7 +522,6 @@
                             <div class="form-group"><label for="orNo">O.R. No.</label><input type="text" class="form-control" id="orNo" placeholder="Official Receipt Number"></div>
                             <div class="form-group"><label for="orDate">O.R. Date</label><input type="date" class="form-control" id="orDate"></div>
                             <div class="form-group full-width"><label for="remarks">Remarks/Notes</label><textarea class="form-control" id="remarks" rows="3"></textarea></div>
-                            <!-- Add Latitude/Longitude with Map Button -->
                             <div class="form-group"><label for="latitude">Latitude</label><input type="text" class="form-control" id="latitude" placeholder="e.g., 10.7202" readonly style="background:#f0f0f0"></div>
                             <div class="form-group"><label for="longitude">Longitude</label><div style="display: flex; gap: 5px;"><input type="text" class="form-control" id="longitude" placeholder="e.g., 122.5621" readonly style="background:#f0f0f0; flex: 1;"><button type="button" class="btn btn-map" onclick="openEnhancedMapPopup()" style="padding: 8px 10px; font-size: 20px; line-height: 1; border-radius: 8px; width: 42px;">🗺️</button></div></div>
                         </div>
@@ -546,7 +563,6 @@
                             <div id="approvalDatesRef" style="margin-top: 0.5rem; font-size: 0.85rem; color: #555; display: none;">
                                 <strong>Approval dates:</strong> <span id="firstApprovalDateRef"></span> (first) | <span id="latestApprovalDateRef"></span> (latest)
                             </div>
-                            <!-- Conditional fields for Iloilo City -->
                             <div id="iloiloConditionalFields" style="display: none; margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed #ccc;">
                                 <div class="form-group">
                                     <label for="purpose">Purpose</label>
@@ -665,6 +681,7 @@
         </div>
     </div>
 
+    <!-- Centered Footer -->
     <footer role="contentinfo">
         <p>Environmental Land Use and Urban Planning Development Division</p>
         <p>Department of Human Settlements and Urban Development - Region VI</p>
