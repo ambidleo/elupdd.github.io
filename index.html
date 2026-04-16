@@ -61,6 +61,7 @@
         .legend-color.review { background-color: #f39c12; opacity: 0.7; }
         .legend-color.pending { background-color: #e74c3c; opacity: 0.7; }
         .legend-color.shapefile { background-color: #8e44ad; opacity: 0.7; }
+        .legend-color.geojson { background-color: #ff6b6b; opacity: 0.7; }
         .upload-info { margin-top: 1rem; padding: 1rem; background: #e3f2fd; border-radius: 8px; font-size: 0.95rem; color: var(--primary-dark); display: none; }
         .upload-info.show { display: block; }
         .upload-info.error { background: #ffebee; color: #c62828; }
@@ -412,6 +413,61 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
+        /* Enhanced GeoJSON upload button styles */
+        .btn-geojson {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .btn-geojson:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            background: linear-gradient(135deg, #ee5a24, #ff6b6b);
+        }
+        .btn-geojson:active {
+            transform: translateY(0);
+        }
+        
+        .geo-upload-section {
+            background: #fff5f5;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border: 2px dashed #ff6b6b;
+        }
+        
+        .geo-upload-section h4 {
+            margin: 0 0 10px 0;
+            color: #ee5a24;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .zone-info-panel {
+            background: #e8f5e9;
+            border-left: 4px solid #27ae60;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+        }
+        
+        .zone-stat {
+            display: inline-block;
+            padding: 3px 8px;
+            background: #27ae60;
+            color: white;
+            border-radius: 12px;
+            font-size: 11px;
+            margin-left: 5px;
+        }
     </style>
 </head>
 <body>
@@ -469,6 +525,8 @@
                 <h1 id="map-heading" class="visually-hidden">Regional Navigation Map - Western Visayas</h1>
                 <div class="map-section">
                     <div class="map-title"><span aria-hidden="true">🗺️</span> Regional Navigation Map - Western Visayas (Region VI)</div>
+                    
+                    <!-- Enhanced Map Controls with GeoJSON Upload Button -->
                     <div class="map-controls">
                         <div class="layer-controls" id="baseMapControls">
                             <label for="baseMapSelect" style="margin-right: 10px; align-self: center;">Base Map:</label>
@@ -479,9 +537,22 @@
                                 <option value="cartodb">CartoDB Positron</option>
                             </select>
                         </div>
+                        
+                        <!-- Enhanced GeoJSON Upload Section -->
+                        <div class="geo-upload-section">
+                            <h4>📌 Site Zoning Upload</h4>
+                            <div class="file-upload">
+                                <input type="file" id="geojsonUpload" accept=".geojson,.json">
+                                <button class="btn-geojson" id="geojsonUploadBtn" onclick="document.getElementById('geojsonUpload').click()">
+                                    📁 Upload GeoJSON File
+                                </button>
+                                <span style="margin-left: 10px; font-size: 12px; color: #666;">(Zoning boundaries, land use areas)</span>
+                            </div>
+                        </div>
+                        
                         <div class="file-upload">
                             <input type="file" id="shapefileUpload" accept=".zip,.geojson,.json" multiple>
-                            <label for="shapefileUpload" id="uploadLabel"><span aria-hidden="true">📁</span> Upload GeoJSON or Shapefile (ZIP) (Max 50MB)</label>
+                            <label for="shapefileUpload" id="uploadLabel"><span aria-hidden="true">📁</span> Upload Shapefile (ZIP)</label>
                         </div>
                         <div class="layer-controls">
                             <button class="btn btn-danger" onclick="clearUploadedLayers()" style="display: none;" id="clearLayersBtn" aria-label="Clear all uploaded layers"><span aria-hidden="true">🗑️</span> Clear Layers</button>
@@ -497,6 +568,7 @@
                         <div class="legend-item"><div class="legend-color approved" aria-hidden="true"></div><span>Approved CLUP</span></div>
                         <div class="legend-item"><div class="legend-color review" aria-hidden="true"></div><span>For Review</span></div>
                         <div class="legend-item"><div class="legend-color shapefile" aria-hidden="true"></div><span>Uploaded Layer</span></div>
+                        <div class="legend-item"><div class="legend-color geojson" aria-hidden="true"></div><span>GeoJSON Zoning</span></div>
                     </div>
                     <div class="province-stats" id="provinceStats" role="region" aria-label="Province statistics"></div>
                 </div>
@@ -1684,7 +1756,7 @@
                 row.innerHTML = `
                     <td>${escapeHtml(rec.lgu)}</td>
                     <td>${escapeHtml(rec.reviewer)}</td>
-                    <td>${escapeHtml(rec.dates)}</td>
+                    <td>${escapeHtml(rec.dates)}</
                     <td><div class="action-btns"><button class="action-btn edit" onclick="openReviewModal(${rec.id})">✏️ Edit</button><button class="action-btn delete" onclick="deleteReviewRecord(${rec.id})">🗑️ Delete</button></div></td>
                 `;
             });
