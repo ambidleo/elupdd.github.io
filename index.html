@@ -1756,8 +1756,8 @@
                 row.innerHTML = `
                     <td>${escapeHtml(rec.lgu)}</td>
                     <td>${escapeHtml(rec.reviewer)}</td>
-                    <td>${escapeHtml(rec.dates)}</
-                    <td><div class="action-btns"><button class="action-btn edit" onclick="openReviewModal(${rec.id})">✏️ Edit</button><button class="action-btn delete" onclick="deleteReviewRecord(${rec.id})">🗑️ Delete</button></div></td>
+                                         <td>${escapeHtml(rec.dates)}</td>
+                     <td><div class="action-btns"><button class="action-btn edit" onclick="openReviewModal(${rec.id})">✏️ Edit</button><button class="action-btn delete" onclick="deleteReviewRecord(${rec.id})">🗑️ Delete</button></div></td>
                 `;
             });
         }
@@ -2276,6 +2276,443 @@
             }
         }
 
+        // ========== ENHANCED GEOJSON UPLOAD FOR SITE ZONING ==========
+        let geojsonZoningLayers = [];
+        
+        // Setup GeoJSON upload handler
+        function setupGeoJSONUpload() {
+            const geojsonInput = document.getElementById('geojsonUpload');
+            if (geojsonInput) {
+                geojsonInput.addEventListener('change', handleGeoJSONUpload);
+            }
+        }
+        
+        async function handleGeoJSONUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            // Validate file size (max 20MB for zoning files)
+            if (file.size > 20 * 1024 * 1024) {
+                showToast('File size exceeds 20MB limit', 'error');
+                return;
+            }
+            
+            // Validate file extension
+            if (!file.name.endsWith('.geojson') && !file.name.endsWith('.json')) {
+                showToast('Please upload a valid GeoJSON file (.geojson or .json)', 'error');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const geojsonData = JSON.parse(e.target.result);
+                    
+                    // Validate GeoJSON structure
+                    if (!geojsonData.type || geojsonData.type !== 'FeatureCollection') {
+                        throw new Error('Invalid GeoJSON: Expected FeatureCollection');
+                    }
+                    
+                    if (!geojsonData.features || !Array.isArray(geojsonData.features)) {
+                        throw new Error('Invalid GeoJSON: Missing features array');
+                    }
+                    
+                    // Process and display the GeoJSON
+                    await displayGeoJSONZoning(geojsonData, file.name);
+                    
+                    // Extract zoning information
+                    const zoneInfo = extractZoningInfo(geojsonData);
+                    displayZoningInfo(zoneInfo);
+                    
+                    showToast(`Successfully loaded ${geojsonData.features.length} zoning features`, 'success');
+                    
+                } catch (error) {
+                    console.error('Error parsing GeoJSON:', error);
+                    showToast(`Error: ${error.message}`, 'error');
+                    const infoDiv = document.getElementById('uploadInfo');
+                    infoDiv.className = 'upload-info show error';
+                    infoDiv.innerHTML = `❌ Failed to load GeoJSON: ${error.message}`;
+                }
+            };
+            
+            reader.onerror = function() {
+                showToast('Error reading file', 'error');
+            };
+            
+            reader.readAsText(file);
+            
+            // Show loading indicator
+            const infoDiv = document.getElementById('uploadInfo');
+            infoDiv.className = 'upload-info show';
+            infoDiv.innerHTML = '⏳ Loading GeoJSON file...';
+        }
+        
+        async function displayGeoJSONZoning(geojsonData, filename) {
+            if (!regionMap) {
+                initMap();
+            }
+            
+            // Generate a unique ID for this layer
+            const layerId = `zoning_${Date.now()}`;
+            const layerName = filename.replace(/\.(geojson|json)$/i, '');
+            
+            // Define zoning color scheme based on properties
+            function getZoneColor(feature) {
+                const zoneType = (feature.properties?.zone_type || feature.properties?.landuse || feature.properties?.classification || '').toLowerCase();
+                
+                if (zoneType.includes('residential')) return '#4CAF50';
+                if (zoneType.includes('commercial')) return '#FF9800';
+                if (zoneType.includes('industrial')) return '#9C27B0';
+                if (zoneType.includes('agricultural')) return '#8BC34A';
+                if (zoneType.includes('forest') || zoneType.includes('conservation')) return '#2E7D32';
+                if (zoneType.includes('water') || zoneType.includes('coastal')) return '#2196F3';
+                if (zoneType.includes('institutional')) return '#FF5722';
+                if (zoneType.includes('mixed')) return '#FFC107';
+                return '#FF6B6B'; // Default color for uploaded GeoJSON
+            }
+            
+            function getZoneOpacity(feature) {
+                // Different opacity for different statuses
+                const status = (feature.properties?.status || feature.properties?.approval_status || '').toLowerCase();
+                if (status.includes('approved')) return 0.6;
+                if (status.includes('pending')) return 0.4;
+                if (status.includes('review')) return 0.3;
+                return 0.5;
+            }
+            
+            // Create GeoJSON layer with styling
+            const zoningLayer = L.geoJSON(geojsonData, {
+                style: function(feature) {
+                    return {
+                        color: getZoneColor(feature),
+                        weight: 3,
+                        fillColor: getZoneColor(feature),
+                        fillOpacity: getZoneOpacity(feature),
+                        opacity: 0.8,
+                        dashArray: feature?.properties?.status === 'pending' ? '5, 5' : null
+                    };
+                },
+                onEachFeature: function(feature, layer) {
+                    // Create detailed popup with zoning information
+                    let popupContent = '<div style="max-width: 300px;">';
+                    popupContent += '<h4 style="margin: 0 0 10px 0; color: #2c6e8f;">📋 Zoning Information</h4>';
+                    
+                    // Display all properties
+                    if (feature.properties) {
+                        for (let [key, value] of Object.entries(feature.properties)) {
+                            if (value && value.toString().trim()) {
+                                popupContent += `<p style="margin: 5px 0;"><strong>${key.replace(/_/g, ' ').toUpperCase()}:</strong> ${escapeHtml(value.toString())}</p>`;
+                            }
+                        }
+                    }
+                    
+                    // Add area calculation if available
+                    if (layer.getBounds && layer.getBounds().isValid()) {
+                        const bounds = layer.getBounds();
+                        const area = calculatePolygonArea(layer);
+                        if (area > 0) {
+                            popupContent += `<p style="margin: 5px 0; color: #27ae60;"><strong>📐 Calculated Area:</strong> ${area.toFixed(2)} ha</p>`;
+                        }
+                    }
+                    
+                    popupContent += '</div>';
+                    layer.bindPopup(popupContent);
+                    
+                    // Add click handler for zoning details
+                    layer.on('click', function(e) {
+                        console.log('Zoning feature clicked:', feature.properties);
+                        if (feature.properties) {
+                            showZoningDetails(feature.properties);
+                        }
+                    });
+                }
+            }).addTo(regionMap);
+            
+            // Store layer information
+            geojsonZoningLayers.push({
+                id: layerId,
+                name: layerName,
+                layer: zoningLayer,
+                visible: true,
+                featureCount: geojsonData.features.length,
+                timestamp: new Date().toISOString()
+            });
+            
+            // Update layer selector
+            updateGeoJSONLayerSelect();
+            
+            // Fit map to bounds of the uploaded data
+            const bounds = zoningLayer.getBounds();
+            if (bounds.isValid()) {
+                regionMap.fitBounds(bounds);
+            }
+            
+            // Show success message
+            const infoDiv = document.getElementById('uploadInfo');
+            infoDiv.className = 'upload-info show success';
+            infoDiv.innerHTML = `✅ Successfully loaded zoning data: ${geojsonData.features.length} zones from "${layerName}"<br>
+                                <span class="zone-stat">📊 Total Zones: ${geojsonData.features.length}</span>
+                                <span class="zone-stat">🗺️ Zoning Layer Added</span>`;
+            
+            // Show clear layers button
+            document.getElementById('clearLayersBtn').style.display = 'inline-flex';
+            
+            // Save to localStorage for persistence
+            saveGeoJSONToLocalStorage(geojsonData, layerName);
+        }
+        
+        function calculatePolygonArea(layer) {
+            try {
+                // Get the layer's geometry
+                let area = 0;
+                if (layer.getBounds) {
+                    const bounds = layer.getBounds();
+                    const lat = bounds.getCenter().lat;
+                    const lngSpan = bounds.getEast() - bounds.getWest();
+                    const latSpan = bounds.getNorth() - bounds.getSouth();
+                    // Approximate area in square meters
+                    const metersPerDegree = 111320;
+                    const width = lngSpan * metersPerDegree * Math.cos(lat * Math.PI / 180);
+                    const height = latSpan * metersPerDegree;
+                    area = (width * height) / 10000; // Convert to hectares
+                }
+                return area;
+            } catch(e) {
+                return 0;
+            }
+        }
+        
+        function extractZoningInfo(geojsonData) {
+            const zones = {};
+            let totalArea = 0;
+            
+            geojsonData.features.forEach(feature => {
+                // Determine zone type
+                let zoneType = feature.properties?.zone_type || 
+                              feature.properties?.landuse || 
+                              feature.properties?.classification || 
+                              feature.properties?.zone || 
+                              'Unclassified';
+                
+                if (!zones[zoneType]) {
+                    zones[zoneType] = {
+                        count: 0,
+                        area: 0
+                    };
+                }
+                zones[zoneType].count++;
+                
+                // Calculate approximate area
+                if (feature.geometry) {
+                    // Simple area calculation would go here
+                    zones[zoneType].area += 1; // Placeholder
+                    totalArea += 1;
+                }
+            });
+            
+            return { zones, totalFeatures: geojsonData.features.length, totalArea };
+        }
+        
+        function displayZoningInfo(zoneInfo) {
+            const infoDiv = document.getElementById('uploadInfo');
+            const existingContent = infoDiv.innerHTML;
+            
+            let zoneDetails = '<div class="zone-info-panel">';
+            zoneDetails += '<strong>🏷️ Zoning Breakdown:</strong><br>';
+            for (let [zoneType, data] of Object.entries(zoneInfo.zones)) {
+                zoneDetails += `• ${zoneType}: ${data.count} zone(s)<br>`;
+            }
+            zoneDetails += `</div>`;
+            
+            // Append to existing info without replacing
+            infoDiv.innerHTML = existingContent + zoneDetails;
+        }
+        
+        function updateGeoJSONLayerSelect() {
+            const container = document.getElementById('layerListContainer');
+            const sel = document.getElementById('layerSelect');
+            
+            if (geojsonZoningLayers.length > 0 || uploadedLayers.length > 0) {
+                container.style.display = 'block';
+                sel.innerHTML = '<option value="">Select Layer to Toggle</option>';
+                
+                // Add regular uploaded layers
+                uploadedLayers.forEach(l => {
+                    const opt = document.createElement('option');
+                    opt.value = l.id;
+                    opt.textContent = `${l.visible ? '👁️' : '👁️‍🗨️'} ${l.name}`;
+                    sel.appendChild(opt);
+                });
+                
+                // Add GeoJSON zoning layers
+                geojsonZoningLayers.forEach(l => {
+                    const opt = document.createElement('option');
+                    opt.value = l.id;
+                    opt.textContent = `${l.visible ? '🏷️' : '🏷️‍🗨️'} ${l.name} (${l.featureCount} zones)`;
+                    sel.appendChild(opt);
+                });
+            } else {
+                container.style.display = 'none';
+            }
+        }
+        
+        function toggleGeoJSONLayerVisibility(layerId) {
+            const layer = geojsonZoningLayers.find(l => l.id === layerId);
+            if (layer) {
+                if (layer.visible) {
+                    regionMap.removeLayer(layer.layer);
+                    layer.visible = false;
+                } else {
+                    layer.layer.addTo(regionMap);
+                    layer.visible = true;
+                }
+                updateGeoJSONLayerSelect();
+            }
+        }
+        
+        function showZoningDetails(properties) {
+            let details = '<div style="padding: 1rem;">';
+            details += '<h3 style="color: #2c6e8f;">📋 Zoning Details</h3>';
+            
+            const importantFields = ['zone_type', 'landuse', 'classification', 'status', 'approval_status', 'area', 'owner', 'municipality', 'province'];
+            
+            importantFields.forEach(field => {
+                if (properties[field]) {
+                    details += `<p><strong>${field.replace(/_/g, ' ').toUpperCase()}:</strong> ${escapeHtml(properties[field])}</p>`;
+                }
+            });
+            
+            // Display all other properties
+            details += '<hr><h4>Additional Information:</h4>';
+            for (let [key, value] of Object.entries(properties)) {
+                if (!importantFields.includes(key) && value && value.toString().trim()) {
+                    details += `<p><strong>${key}:</strong> ${escapeHtml(value.toString())}</p>`;
+                }
+            }
+            
+            details += '</div><div style="text-align:right;"><button class="btn btn-primary" onclick="closeModal()">Close</button></div>';
+            
+            document.getElementById('modalTitle').textContent = 'Zoning Feature Details';
+            document.getElementById('modalBody').innerHTML = details;
+            document.getElementById('dataModal').classList.add('active');
+        }
+        
+        function saveGeoJSONToLocalStorage(geojsonData, layerName) {
+            const savedGeoJSONs = JSON.parse(localStorage.getItem('savedGeoJSONs') || '[]');
+            savedGeoJSONs.push({
+                id: Date.now(),
+                name: layerName,
+                data: geojsonData,
+                timestamp: new Date().toISOString(),
+                featureCount: geojsonData.features.length
+            });
+            // Keep only last 5 GeoJSONs to avoid storage issues
+            while (savedGeoJSONs.length > 5) {
+                savedGeoJSONs.shift();
+            }
+            localStorage.setItem('savedGeoJSONs', JSON.stringify(savedGeoJSONs));
+        }
+        
+        function loadSavedGeoJSONs() {
+            const savedGeoJSONs = JSON.parse(localStorage.getItem('savedGeoJSONs') || '[]');
+            if (savedGeoJSONs.length > 0) {
+                const infoDiv = document.getElementById('uploadInfo');
+                infoDiv.className = 'upload-info show';
+                infoDiv.innerHTML = `📦 Found ${savedGeoJSONs.length} previously uploaded zoning files. <button class="btn btn-sm" onclick="restoreLastGeoJSON()">Restore Last</button>`;
+            }
+        }
+        
+        function restoreLastGeoJSON() {
+            const savedGeoJSONs = JSON.parse(localStorage.getItem('savedGeoJSONs') || '[]');
+            if (savedGeoJSONs.length > 0) {
+                const lastGeoJSON = savedGeoJSONs[savedGeoJSONs.length - 1];
+                displayGeoJSONZoning(lastGeoJSON.data, lastGeoJSON.name);
+                showToast(`Restored ${lastGeoJSON.name} with ${lastGeoJSON.featureCount} zones`, 'success');
+            }
+        }
+        
+        // Override the existing clearUploadedLayers function to also clear GeoJSON layers
+        const originalClearUploadedLayers = clearUploadedLayers;
+        window.clearUploadedLayers = function() {
+            // Clear regular uploaded layers
+            if (originalClearUploadedLayers) {
+                originalClearUploadedLayers();
+            }
+            
+            // Clear GeoJSON zoning layers
+            geojsonZoningLayers.forEach(l => {
+                if (l.visible && regionMap) {
+                    regionMap.removeLayer(l.layer);
+                }
+            });
+            geojsonZoningLayers = [];
+            updateGeoJSONLayerSelect();
+            
+            // Optionally clear localStorage saved GeoJSONs
+            if (confirm('Clear saved GeoJSON files from local storage as well?')) {
+                localStorage.removeItem('savedGeoJSONs');
+                showToast('Cleared saved GeoJSON files', 'success');
+            }
+            
+            const infoDiv = document.getElementById('uploadInfo');
+            infoDiv.className = 'upload-info';
+            infoDiv.innerHTML = '';
+        };
+        
+        // Override toggleLayerVisibility to handle GeoJSON layers
+        const originalToggleLayerVisibility = toggleLayerVisibility;
+        window.toggleLayerVisibility = function() {
+            const id = document.getElementById('layerSelect').value;
+            if (!id) return;
+            
+            // Check if it's a GeoJSON layer
+            const geoLayer = geojsonZoningLayers.find(x => x.id === id);
+            if (geoLayer) {
+                toggleGeoJSONLayerVisibility(id);
+                return;
+            }
+            
+            // Otherwise use original function for regular layers
+            if (originalToggleLayerVisibility) {
+                originalToggleLayerVisibility();
+            }
+        };
+
+        // ========== REPORTS & GENERAL ==========
+        function generateReport(type) {
+            let title='', content='';
+            if(type==='annual') { title='Annual Report 2024'; content=`<p>Total Plans: ${clupRecords.length}</p><p>Approved: ${clupRecords.filter(p=>p.Status==='Approved').length}</p>`; }
+            else if(type==='quarterly') { title='Q1 2024 Progress'; content='<p>Plans Reviewed: 5</p><p>Projects Started: 3</p>'; }
+            else if(type==='project') { title='Project Status'; content='<p>Ongoing: 3</p><p>Planning: 2</p>'; }
+            else if(type==='environmental') { title='EIA Report'; content='<p>Approved: 2</p><p>Under Review: 1</p>'; }
+            document.getElementById('modalTitle').textContent=title;
+            document.getElementById('modalBody').innerHTML=`<div style="padding:1rem;">${content}</div><div style="text-align:right;"><button class="btn btn-primary" onclick="closeModal()">Close</button></div>`;
+            document.getElementById('dataModal').classList.add('active');
+        }
+
+        function openAboutModal() {
+            document.getElementById('modalTitle').textContent='About';
+            document.getElementById('modalBody').innerHTML=`<div><h3>ELUPDD Region VI</h3><p>Vision: Planned, resilient, sustainable communities.</p><p>Mission: Formulate CLUPs, protect environment, improve quality of life.</p><h4>Functions:</h4><ul><li>Review CLUPs</li><li>EIA monitoring</li><li>Urban development planning</li><li>Technical assistance to LGUs</li><li>Zoning implementation</li><li>Climate adaptation</li></ul></div><div style="text-align:right;"><button class="btn btn-primary" onclick="closeModal()">Close</button></div>`;
+            document.getElementById('dataModal').classList.add('active');
+        }
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+            document.getElementById(sectionId).style.display = 'block';
+            document.querySelectorAll('.nav-bar a').forEach(link => link.classList.remove('active'));
+            for (let link of document.querySelectorAll('.nav-bar a')) {
+                if (link.getAttribute('onclick')?.includes(sectionId)) link.classList.add('active');
+            }
+            if (sectionId === 'map') { 
+                initMap(); 
+                setTimeout(() => regionMap?.invalidateSize(), 100);
+                loadSavedGeoJSONs();
+            }
+        }
+
+        function showOnMap() { showSection('map'); setTimeout(() => regionMap?.invalidateSize(), 100); }
+
+        // ========== PRINT ZONING RECORD ==========
         function formatMonthDayYear(dateStr) {
             if (!dateStr || dateStr === '___________' || dateStr === 'Pending' || dateStr === 'N/A') return '___________';
             const d = new Date(dateStr);
@@ -2299,7 +2736,6 @@
         }
 
         function printBlankForm() {
-            // Print blank form functionality
             const blankForm = `<div class="print-document">
                 <h2>Republic of the Philippines</h2>
                 <h3>DEPARTMENT OF HUMAN SETTLEMENTS AND URBAN DEVELOPMENT</h3>
@@ -2349,6 +2785,7 @@
                 landHoldingsArray.forEach(h => { const area = h.areaPerTitle ? parseFloat(h.areaPerTitle) : 0; totalAreaSum += area; rowsHtml += `<tr><td style="border:1px solid #000; padding:0.3cm; color: black; font-size: 12pt;">${escapeHtml(h.registeredOwner || '______________________')}<\/td><td style="border:1px solid #000; padding:0.3cm; font-size: 12pt;">${escapeHtml(h.lotNo || '______________')}<\/td><td style="border:1px solid #000; padding:0.3cm; font-size: 12pt;">${escapeHtml(h.tctNo || '______________________')}<\/td><td style="border:1px solid #000; padding:0.3cm; text-align:right; font-size: 12pt;">${area.toFixed(4)}<\/td><td style="border:1px solid #000; padding:0.3cm; font-size: 12pt;">___________<\/td><td style="border:1px solid #000; padding:0.3cm; font-size: 12pt;">${escapeHtml(h.zoneclass || '______________________')}<\/td><\/tr>`; });
                 landHoldingsHtml = `<table class="land-holdings-table" style="width:100%; border-collapse:collapse; margin:0.5cm 0;">${headerRow}<tbody>${rowsHtml}${buildTotalRow(totalAreaSum)}<\/tbody><\/table>`;
             }
+            
             const clupStatus = rec.clupStatus || 'approved';
             const approvedBy = rec.approvedBy || '______________________';
             const city = rec.city || '______________________';
@@ -2457,78 +2894,72 @@
                     <table style="width: 100%; border-collapse: collapse; font-size: 14pt; border: none;">
                         <tr style="border: none;">
                             <td style="width: 6cm; padding: 0.1cm 0; border: none; white-space: nowrap; font-size: 14pt;"><strong>A. No. of Parcels</strong></td>
-                            <td style="width: 0.5cm; padding: 0.1cm 0; border: none; white-space: nowrap; font-size: 14pt;"><strong>:</strong>
-                <td style="padding: 0.1cm 0; border: none; font-size: 14pt;">${escapeHtml(parcels)}</td>
-            </tr>
-            <tr style="border: none;">
-                <td style="width: 6cm; padding: 0.1cm 0; border: none; white-space: nowrap; font-size: 14pt;"><strong>B. Location of the Property</strong></td>
-                <td style="width: 0.5cm; padding: 0.1cm 0; border: none; white-space: nowrap; font-size: 14pt;"><strong>:</strong></td>
-                <td style="padding: 0.1cm 0; border: none; font-size: 14pt;">${escapeHtml(location)}</td>
-            </tr>
-            <tr style="border: none;">
-                <td style="width: 6cm; padding: 0.1cm 0; border: none; white-space: nowrap; font-size: 14pt;"><strong>C. Total Area (ha.)</strong></td>
-                <td style="width: 0.5cm; padding: 0.1cm 0; border: none; white-space: nowrap; font-size: 14pt;"><strong>:</strong></td>
-                <td style="padding: 0.1cm 0; border: none; font-size: 14pt;">${escapeHtml(totalArea)} ha</td>
-            </tr>
-            <tr style="border: none;">
-                <td style="width: 6cm; padding: 0.1cm 0; border: none; white-space: nowrap; font-size: 14pt;"><strong>D. Proposed Use</strong></td>
-                <td style="width: 0.5cm; padding: 0.1cm 0; border: none; white-space: nowrap; font-size: 14pt;"><strong>:</strong></td>
-                <td style="padding: 0.1cm 0; border: none; font-size: 14pt;">${escapeHtml(proposedUse)}</td>
-            </tr>
-            <tr style="border: none;">
-                <td style="width: 6cm; padding: 0.1cm 0; border: none; white-space: nowrap; font-size: 14pt;"><strong>E. Description of Land Holdings</strong></td>
-                <td style="width: 0.5cm; padding: 0.1cm 0; border: none; white-space: nowrap; font-size: 14pt;"><strong>:</strong></td>
-                <td style="padding: 0.1cm 0; border: none; font-size: 14pt;"></td>
-            </tr>
-        </table>
-    </div>
-    ${landHoldingsHtml}
-    <h4 style="margin: 0.1cm 0 0.05cm 0; font-size: 18pt; font-weight: bold;">II. STATUS OF COMPREHENSIVE LAND USE PLAN (CLUP) ZONING ORDINANCE (ZO)</h4>
-    <div class="clup-status" style="margin: 0.05cm 0; white-space: pre-line; font-size: 13pt; line-height: 1.3;">${statusHtml}</div>
-    <div style="margin: 0.5cm 0; font-size: 14pt;">
-        <p style="margin: 0.2cm 0; font-size: 14pt;">This certification is issued upon the request of <strong>${escapeHtml(requestedBy)}</strong> for whatever legal purpose/s it may serve.</p>
-        <p style="margin: 0.2cm 0; font-size: 14pt;">Given this <strong>${formattedDateIssued}</strong> in Iloilo City, Philippines.</p>
-    </div>
-    <div class="signature-area" style="margin-top: 1.5cm; display: flex; justify-content: flex-end;">
-        <div class="signature-box" style="text-align: center; width: 9cm;">
-            <div class="signature-line" style="border-bottom: 2px solid #000; margin: 0.6cm 0 0.2cm 0; width: 100%;"></div>
-            <p style="margin: 0.1cm 0; font-size: 15pt;"><strong>EnP. EVA MARIA P. MARFIL, CSEE</strong></p>
-            <p style="margin: 0.1cm 0; font-size: 13pt;">Regional Director</p>
-        </div>
-    </div>
-    <div class="notices" style="margin-top: 1cm; font-size: 11pt; border-top: 1px dashed #000; padding-top: 0.3cm;">
-        <p style="margin: 0.1cm 0; font-size: 11pt;"><strong>Note:</strong></p>
-        <p style="margin: 0.1cm 0; font-size: 11pt;">1. This certification is issued relative to the requirement of DAR regarding the implementation of the Comprehensive Agrarian Reform Law and shall not be construed as a Certificate of Eligibility for conversion.</p>
-        <p style="margin: 0.1cm 0; font-size: 11pt;">2. This certification <strong>shall not</strong> be construed as a Locational Clearance/Certificate of Zoning Compliance/Development Permit or License to Sell.</p>
-        <p style="margin: 0.1cm 0; font-size: 11pt;">3. This <strong>shall not</strong> be construed as a certification as to the ownership by the applicant of the above listed parcel(s) of land.</p>
-        <p style="margin: 0.1cm 0; font-size: 11pt;">4. Any misrepresentation on the part of the requesting party shall be a ground for cancellation of this certification.</p>
-    </div>
-    <div style="margin-top: 1cm; display: flex; justify-content: space-between; font-size: 12pt;">
-        <div>
-            <p style="margin: 0.1cm 0; font-size: 12pt;"><strong>${escapeHtml(certNo)}</strong></p>
-            <p style="margin: 0.1cm 0; font-size: 12pt;"><strong>O.R. No. :</strong> ${escapeHtml(orNo)}</p>
-            <p style="margin: 0.1cm 0; font-size: 12pt;"><strong>Amount Paid :</strong> P ${escapeHtml(amountPaid)}</p>
-            <p style="margin: 0.1cm 0; font-size: 12pt;"><strong>Date :</strong> ${escapeHtml(orDateFormatted)}</p>
-        </div>
-    </div>
-</div>`;
-    const ps = document.getElementById('printSection');
-    ps.innerHTML = printContent;
-    ps.style.display = 'block';
-    setTimeout(() => window.print(), 200);
-    setTimeout(() => ps.style.display = 'none', 1000);
-}
-       // ========== MAP FUNCTIONS ==========
+                            <td style="width: 0.5cm; padding: 0.1cm 0; border: none; white-space: nowrap; font-size: 14pt;"><strong>:</strong></td>
+                            <td style="padding: 0.1cm 0; border: none; font-size: 14pt;">${escapeHtml(parcels)}</td>
+                        </tr>
+                        <tr style="border: none;">
+                            <td style="width: 6cm; padding: 0.1cm 0; border: none; white-space: nowrap; font-size: 14pt;"><strong>B. Location of the Property</strong></td>
+                            <td style="width: 0.5cm; padding: 0.1cm 0; border: none; white-space: nowrap; font-size: 14pt;"><strong>:</strong></td>
+                            <td style="padding: 0.1cm 0; border: none; font-size: 14pt;">${escapeHtml(location)}</td>
+                        </tr>
+                        <tr style="border: none;">
+                            <td style="width: 6cm; padding: 0.1cm 0; border: none; white-space: nowrap; font-size: 14pt;"><strong>C. Total Area (ha.)</strong></td>
+                            <td style="width: 0.5cm; padding: 0.1cm 0; border: none; white-space: nowrap; font-size: 14pt;"><strong>:</strong></td>
+                            <td style="padding: 0.1cm 0; border: none; font-size: 14pt;">${escapeHtml(totalArea)} ha</td>
+                        </tr>
+                        <tr style="border: none;">
+                            <td style="width: 6cm; padding: 0.1cm 0; border: none; white-space: nowrap; font-size: 14pt;"><strong>D. Proposed Use</strong></td>
+                            <td style="width: 0.5cm; padding: 0.1cm 0; border: none; white-space: nowrap; font-size: 14pt;"><strong>:</strong></td>
+                            <td style="padding: 0.1cm 0; border: none; font-size: 14pt;">${escapeHtml(proposedUse)}</td>
+                        </tr>
+                        <tr style="border: none;">
+                            <td style="width: 6cm; padding: 0.1cm 0; border: none; white-space: nowrap; font-size: 14pt;"><strong>E. Description of Land Holdings</strong></td>
+                            <td style="width: 0.5cm; padding: 0.1cm 0; border: none; white-space: nowrap; font-size: 14pt;"><strong>:</strong></td>
+                            <td style="padding: 0.1cm 0; border: none; font-size: 14pt;"></td>
+                        </tr>
+                    </table>
+                </div>
+                ${landHoldingsHtml}
+                <h4 style="margin: 0.1cm 0 0.05cm 0; font-size: 18pt; font-weight: bold;">II. STATUS OF COMPREHENSIVE LAND USE PLAN (CLUP) ZONING ORDINANCE (ZO)</h4>
+                <div class="clup-status" style="margin: 0.05cm 0; white-space: pre-line; font-size: 13pt; line-height: 1.3;">${statusHtml}</div>
+                <div style="margin: 0.5cm 0; font-size: 14pt;">
+                    <p style="margin: 0.2cm 0; font-size: 14pt;">This certification is issued upon the request of <strong>${escapeHtml(requestedBy)}</strong> for whatever legal purpose/s it may serve.</p>
+                    <p style="margin: 0.2cm 0; font-size: 14pt;">Given this <strong>${formattedDateIssued}</strong> in Iloilo City, Philippines.</p>
+                </div>
+                <div class="signature-area" style="margin-top: 1.5cm; display: flex; justify-content: flex-end;">
+                    <div class="signature-box" style="text-align: center; width: 9cm;">
+                        <div class="signature-line" style="border-bottom: 2px solid #000; margin: 0.6cm 0 0.2cm 0; width: 100%;"></div>
+                        <p style="margin: 0.1cm 0; font-size: 15pt;"><strong>EnP. EVA MARIA P. MARFIL, CSEE</strong></p>
+                        <p style="margin: 0.1cm 0; font-size: 13pt;">Regional Director</p>
+                    </div>
+                </div>
+                <div class="notices" style="margin-top: 1cm; font-size: 11pt; border-top: 1px dashed #000; padding-top: 0.3cm;">
+                    <p style="margin: 0.1cm 0; font-size: 11pt;"><strong>Note:</strong></p>
+                    <p style="margin: 0.1cm 0; font-size: 11pt;">1. This certification is issued relative to the requirement of DAR regarding the implementation of the Comprehensive Agrarian Reform Law and shall not be construed as a Certificate of Eligibility for conversion.</p>
+                    <p style="margin: 0.1cm 0; font-size: 11pt;">2. This certification <strong>shall not</strong> be construed as a Locational Clearance/Certificate of Zoning Compliance/Development Permit or License to Sell.</p>
+                    <p style="margin: 0.1cm 0; font-size: 11pt;">3. This <strong>shall not</strong> be construed as a certification as to the ownership by the applicant of the above listed parcel(s) of land.</p>
+                    <p style="margin: 0.1cm 0; font-size: 11pt;">4. Any misrepresentation on the part of the requesting party shall be a ground for cancellation of this certification.</p>
+                </div>
+                <div style="margin-top: 1cm; display: flex; justify-content: space-between; font-size: 12pt;">
+                    <div>
+                        <p style="margin: 0.1cm 0; font-size: 12pt;"><strong>${escapeHtml(certNo)}</strong></p>
+                        <p style="margin: 0.1cm 0; font-size: 12pt;"><strong>O.R. No. :</strong> ${escapeHtml(orNo)}</p>
+                        <p style="margin: 0.1cm 0; font-size: 12pt;"><strong>Amount Paid :</strong> P ${escapeHtml(amountPaid)}</p>
+                        <p style="margin: 0.1cm 0; font-size: 12pt;"><strong>Date :</strong> ${escapeHtml(orDateFormatted)}</p>
+                    </div>
+                </div>
+            </div>`;
+            const ps = document.getElementById('printSection');
+            ps.innerHTML = printContent;
+            ps.style.display = 'block';
+            setTimeout(() => window.print(), 200);
+            setTimeout(() => ps.style.display = 'none', 1000);
+        }
+
+        // ========== MAP FUNCTIONS ==========
         let regionMap = null;
         let mapInitialized = false;
         let uploadedLayers = [];
-        let baseLayers = {
-            "OpenStreetMap": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }),
-            "Humanitarian": L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }),
-            "Satellite": L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: 'Esri' }),
-            "CartoDB Positron": L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '© OpenStreetMap, CartoDB' })
-        };
-        let currentBaseLayer = baseLayers.OpenStreetMap;
 
         function initMap() {
             if (mapInitialized) return;
@@ -2548,6 +2979,7 @@
             });
             renderProvinceStats();
             setupFileUpload();
+            setupGeoJSONUpload(); // Initialize GeoJSON upload
             mapInitialized = true;
         }
 
@@ -2644,7 +3076,7 @@
             if (!regionMap) return;
             const layerId = `layer_${Date.now()}`;
             const display = name || `Layer ${uploadedLayers.length+1}`;
-            const color = ['#8e44ad','#2980b9','#16a085','#c0392b','#d35400','#27ae60'][Math.floor(Math.random()*6)];
+            const color = '#8e44ad';
             const layer = L.geoJSON(geojson, {
                 style: { color, weight:2, fillColor:color, fillOpacity:0.3 },
                 onEachFeature: (f,l) => {
@@ -2704,36 +3136,6 @@
             document.getElementById('uploadInfo').innerHTML = '';
             document.getElementById('shapefileUpload').value = '';
         }
-
-        // ========== REPORTS & GENERAL ==========
-        function generateReport(type) {
-            let title='', content='';
-            if(type==='annual') { title='Annual Report 2024'; content=`<p>Total Plans: ${clupRecords.length}</p><p>Approved: ${clupRecords.filter(p=>p.Status==='Approved').length}</p>`; }
-            else if(type==='quarterly') { title='Q1 2024 Progress'; content='<p>Plans Reviewed: 5</p><p>Projects Started: 3</p>'; }
-            else if(type==='project') { title='Project Status'; content='<p>Ongoing: 3</p><p>Planning: 2</p>'; }
-            else if(type==='environmental') { title='EIA Report'; content='<p>Approved: 2</p><p>Under Review: 1</p>'; }
-            document.getElementById('modalTitle').textContent=title;
-            document.getElementById('modalBody').innerHTML=`<div style="padding:1rem;">${content}</div><div style="text-align:right;"><button class="btn btn-primary" onclick="closeModal()">Close</button></div>`;
-            document.getElementById('dataModal').classList.add('active');
-        }
-
-        function openAboutModal() {
-            document.getElementById('modalTitle').textContent='About';
-            document.getElementById('modalBody').innerHTML=`<div><h3>ELUPDD Region VI</h3><p>Vision: Planned, resilient, sustainable communities.</p><p>Mission: Formulate CLUPs, protect environment, improve quality of life.</p><h4>Functions:</h4><ul><li>Review CLUPs</li><li>EIA monitoring</li><li>Urban development planning</li><li>Technical assistance to LGUs</li><li>Zoning implementation</li><li>Climate adaptation</li></ul></div><div style="text-align:right;"><button class="btn btn-primary" onclick="closeModal()">Close</button></div>`;
-            document.getElementById('dataModal').classList.add('active');
-        }
-
-        function showSection(sectionId) {
-            document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
-            document.getElementById(sectionId).style.display = 'block';
-            document.querySelectorAll('.nav-bar a').forEach(link => link.classList.remove('active'));
-            for (let link of document.querySelectorAll('.nav-bar a')) {
-                if (link.getAttribute('onclick')?.includes(sectionId)) link.classList.add('active');
-            }
-            if (sectionId === 'map') { initMap(); setTimeout(() => regionMap?.invalidateSize(), 100); }
-        }
-
-        function showOnMap() { showSection('map'); setTimeout(() => regionMap?.invalidateSize(), 100); }
 
         // ========== INITIAL LOAD ==========
         window.onload = async () => {
