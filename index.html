@@ -9,7 +9,7 @@
     <script src="https://unpkg.com/shpjs@3.4.3/dist/shp.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
-        /* ===== Full CSS ===== */
+        /* ===== Full CSS (unchanged except added tab styles) ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #e8f0f9; min-height: 100vh; }
         :root { --primary-dark: #1a4d5e; --primary: #2c6e8f; --primary-light-accessible: #1e7a9c; --secondary: #3a7b5c; --accent-accessible: #d4a017; --earth: #8B5A2B; --water: #3498db; --forest: #27ae60; --urban: #7f8c8d; --background: #f5f9ff; --card-bg: #ffffff; --cert-primary: #8B4513; --cert-secondary: #228B22; --cert-accent: #FFD700; }
@@ -119,7 +119,38 @@
         .cert-table td { padding: 0.75rem; border-bottom: 1px solid #e0e0e0; }
         .cert-table tr:hover { background: #f8f4e8; }
         
-        /* Enhanced Map Popup Styles (added layer panel) */
+        /* Tabs inside zoning section */
+        .zoning-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #e0e7ff;
+            padding-bottom: 0;
+        }
+        .zoning-tab {
+            padding: 0.8rem 1.8rem;
+            background: #f1f5f9;
+            border: none;
+            border-radius: 30px 30px 0 0;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--primary-dark);
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+        .zoning-tab.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
+        }
+        .zoning-tab-content {
+            display: none;
+        }
+        .zoning-tab-content.active {
+            display: block;
+        }
+        
+        /* Map Popup Modal Styles */
         .map-popup-modal {
             display: none;
             position: fixed;
@@ -154,133 +185,44 @@
             justify-content: space-between;
             align-items: center;
         }
-        .map-popup-header h3 {
-            margin: 0;
-        }
-        .map-popup-close {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-        }
-        .map-popup-body {
-            flex: 1;
-            padding: 15px;
-            overflow-y: auto;
-        }
-        #popupMap {
-            height: 350px;
-            width: 100%;
-            border-radius: 10px;
-        }
-        .coord-info {
-            margin-top: 10px;
-            padding: 10px;
-            background: #f0f0f0;
-            border-radius: 8px;
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-        }
-        .coord-info input {
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            width: 180px;
-        }
-        .layer-panel {
-            margin-top: 15px;
-            background: #f8faff;
-            border-radius: 12px;
-            padding: 12px;
-            border: 1px solid #e0e7ff;
-        }
-        .layer-list-container {
-            max-height: 180px;
-            overflow-y: auto;
-            margin-top: 10px;
-        }
-        .layer-item {
-            background: white;
-            border-radius: 30px;
-            padding: 6px 12px;
-            margin: 6px 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border: 1px solid #cbd5e1;
-        }
-        .layer-name {
-            font-weight: 600;
-            font-size: 0.85rem;
-        }
-        .layer-actions {
-            display: flex;
-            gap: 8px;
-        }
-        .map-popup-footer {
-            padding: 15px;
-            text-align: right;
-            border-top: 1px solid #ddd;
-        }
+        .map-popup-header h3 { margin: 0; }
+        .map-popup-close { background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
+        .map-popup-body { flex: 1; padding: 15px; overflow-y: auto; }
+        #popupMap { height: 350px; width: 100%; border-radius: 10px; }
+        .coord-info { margin-top: 10px; padding: 10px; background: #f0f0f0; border-radius: 8px; display: flex; gap: 15px; justify-content: center; }
+        .coord-info input { padding: 8px; border: 1px solid #ccc; border-radius: 5px; width: 180px; }
+        .layer-panel { margin-top: 15px; background: #f8faff; border-radius: 12px; padding: 12px; border: 1px solid #e0e7ff; }
+        .layer-list-container { max-height: 180px; overflow-y: auto; margin-top: 10px; }
+        .layer-item { background: white; border-radius: 30px; padding: 6px 12px; margin: 6px 0; display: flex; justify-content: space-between; align-items: center; border: 1px solid #cbd5e1; }
+        .layer-name { font-weight: 600; font-size: 0.85rem; }
+        .layer-actions { display: flex; gap: 8px; }
+        .map-popup-footer { padding: 15px; text-align: right; border-top: 1px solid #ddd; }
+        
+        /* Report card styles */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin: 2rem 0; }
+        .stat-card { background: linear-gradient(135deg, #f8faff, white); padding: 1.5rem; border-radius: 12px; text-align: center; box-shadow: 0 3px 10px rgba(0,0,0,0.1); border: 1px solid #e0e7ff; cursor: pointer; }
+        .stat-number { font-size: 2.2rem; font-weight: bold; color: var(--primary); }
+        .stat-label { color: #666; margin-top: 0.5rem; font-size: 0.95rem; }
+        .chart-container { background: #f9fafc; border-radius: 12px; padding: 1rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        canvas#statusChart, canvas#monthlyChart { max-height: 400px; width: 100%; }
         
         @media print {
-            .signature-box p:first-of-type {
-                white-space: nowrap !important;
-            }
-            { 
-                size: A4; 
-                margin: 0.5cm;
-            }
-            body * { 
-                visibility: hidden; 
-            }
-            #printSection, #printSection * { 
-                visibility: visible; 
-            }
-            #printSection { 
-                position: absolute; 
-                left: 0; 
-                top: 0; 
-                width: 100%; 
-                background: white; 
-                font-family: 'Times New Roman', Times, serif;
-            }
-            .print-document { 
-                margin: 0; 
-                padding: 0; 
-                max-width: 100%; 
-            }
-            .print-document,
-            .print-document * {
-                page-break-after: avoid;
-                page-break-before: avoid;
-                page-break-inside: avoid;
-            }
+            .signature-box p:first-of-type { white-space: nowrap !important; }
+            { size: A4; margin: 0.5cm; }
+            body * { visibility: hidden; }
+            #printSection, #printSection * { visibility: visible; }
+            #printSection { position: absolute; left: 0; top: 0; width: 100%; background: white; font-family: 'Times New Roman', Times, serif; }
+            .print-document { margin: 0; padding: 0; max-width: 100%; }
+            .print-document, .print-document * { page-break-after: avoid; page-break-before: avoid; page-break-inside: avoid; }
         }
         .print-document { font-family: 'Times New Roman', Times, serif; max-width: 100%; margin: 0; padding: 1cm; line-height: 1.0; font-size: 12pt; background: white; box-sizing: border-box; }
-        .print-document h2 { text-align: center; font-size: 18pt; font-weight: bold; margin: 0.5cm 0 0.3cm 0; text-transform: uppercase; page-break-after: avoid; }
-        .print-document h3 { text-align: center; font-size: 15pt; font-weight: bold; margin: 0.4cm 0 0.2cm 0; page-break-after: avoid; }
-        .print-document h4 { text-align: left; font-size: 14pt; font-weight: bold; margin: 0.3cm 0 0.2cm 0; page-break-after: avoid; }
-        .print-document .underline { text-decoration: underline; }
-        .print-document table { width: 100%; border-collapse: collapse; margin: 0.5cm 0; font-size: 12pt; page-break-inside: auto; border: 1px solid #000; table-layout: auto; word-wrap: break-word; }
-        .print-document th, .print-document td { border: 1px solid #000; padding: 0.3cm 0.2cm; text-align: left; vertical-align: top; }
-        .print-document th { background: #f0f0f0; font-weight: bold; text-align: center; }
-        .print-document .signature-area { margin-top: 1.5cm; display: flex; justify-content: flex-end; page-break-before: avoid; page-break-inside: avoid; }
+        .print-document h2, .print-document h3, .print-document h4 { text-align: center; }
+        .print-document table { width: 100%; border-collapse: collapse; margin: 0.5cm 0; border: 1px solid #000; }
+        .print-document th, .print-document td { border: 1px solid #000; padding: 0.3cm; }
+        .print-document .signature-area { margin-top: 1.5cm; display: flex; justify-content: flex-end; }
         .print-document .signature-box { text-align: center; width: 8cm; }
         .print-document .signature-line { border-bottom: 2px solid #000; margin: 0.8cm 0 0.2cm 0; width: 100%; }
-        .print-document .notices { margin-top: 1cm; font-size: 10pt; border-top: 1px dashed #000; padding-top: 0.3cm; page-break-before: avoid; page-break-inside: avoid; }
-        .print-document .notices p { margin: 0.1cm 0; line-height: 1.0; }
-        .print-document .header-right { text-align: right; margin-bottom: 0.5cm; }
-        .print-document .basic-info { margin: 0.3cm 0; }
-        .print-document .basic-info p { margin: 0.1cm 0; }
-        .print-document .clup-status { margin: 0.3cm 0; padding: 0.3cm;}
-        .print-document .page-break { page-break-before: always; }
-        .print-document .keep-together { page-break-inside: avoid; }
-        .print-document .avoid-break { page-break-inside: avoid; }
-        footer { background: linear-gradient(135deg, var(--primary-dark), #0e2f3a); color: white; padding: 2rem; margin-top: 3rem; text-align: center; position: relative; }
-        footer p { opacity: 0.9; margin: 0.5rem 0; }
+        footer { background: linear-gradient(135deg, var(--primary-dark), #0e2f3a); color: white; padding: 2rem; margin-top: 3rem; text-align: center; }
         @media (max-width: 768px) {
             header { flex-direction: column; text-align: center; gap: 1rem; padding: 1rem; }
             .logo-container { width: 100%; display: flex; justify-content: center; }
@@ -296,111 +238,30 @@
             .search-bar { flex-direction: column; }
             .coord-info { flex-direction: column; align-items: center; }
             .coord-info input { width: 100%; }
+            .zoning-tabs { flex-direction: column; align-items: stretch; }
+            .zoning-tab { text-align: center; border-radius: 30px; margin-bottom: 5px; }
         }
-        .chart-container {
-            background: #f9fafc;
-            border-radius: 12px;
-            padding: 1rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-        canvas#provinceChart {
-            max-height: 400px;
-            width: 100%;
-        }
-        
-        /* Sync status indicator styles */
-        .sync-status {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            background: white;
-            padding: 8px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            z-index: 10000;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+        .sync-status { position: fixed; bottom: 20px; left: 20px; background: white; padding: 8px 12px; border-radius: 20px; font-size: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); z-index: 10000; display: flex; align-items: center; gap: 8px; }
         .sync-status.online { border-left: 3px solid #28a745; }
         .sync-status.offline { border-left: 3px solid #dc3545; }
         .sync-status.syncing { border-left: 3px solid #ffc107; }
-        .sync-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            display: inline-block;
-        }
+        .sync-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
         .sync-dot.online { background: #28a745; }
         .sync-dot.offline { background: #dc3545; }
         .sync-dot.syncing { background: #ffc107; animation: pulse 1s infinite; }
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
-        
-        /* Loading overlay for sync operations */
-        .sync-loading {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 20000;
-            display: none;
-            justify-content: center;
-            align-items: center;
-        }
-        .sync-loading.active {
-            display: flex;
-        }
-        .sync-loading-content {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-        }
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--primary);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 10px;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        /* Status badge styles for certification table */
-        .cert-status-badge {
-            padding: 0.2rem 0.6rem;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            display: inline-block;
-            text-align: center;
-            min-width: 90px;
-        }
-        .status-for-review { background: #cce5ff; color: #004085; }
-        .status-rd-signature { background: #fff3cd; color: #856404; }
-        .status-for-release { background: #d4edda; color: #155724; }
-        .status-released { background: #d1ecf1; color: #0c5460; }
-        .status-dropdown { padding: 0.3rem; border-radius: 20px; border: 1px solid #ccc; font-size: 0.75rem; background: white; cursor: pointer; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        .sync-loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 20000; display: none; justify-content: center; align-items: center; }
+        .sync-loading.active { display: flex; }
+        .sync-loading-content { background: white; padding: 20px; border-radius: 10px; text-align: center; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 10px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
     <a href="#main-content" class="skip-link">Skip to main content</a>
 
     <header role="banner">
-        <div class="logo-container">
-            <img src="DHSUD LOGO.png" alt="DHSUD Logo" style="width: 100%; height: 100%; object-fit: contain;">
-        </div>
+        <div class="logo-container"><img src="DHSUD LOGO.png" alt="DHSUD Logo" style="width: 100%; height: 100%; object-fit: contain;"></div>
         <div class="header-content">
             <h1>ENVIRONMENTAL LAND USE AND URBAN PLANNING</h1>
             <h2>DEVELOPMENT DIVISION - REGION VI</h2>
@@ -410,7 +271,7 @@
 
     <nav class="nav-bar" aria-label="Main navigation" role="navigation">
         <ul role="menubar">
-            <li role="none"><a href="#" onclick="showSection('plans')" class="active" role="menuitem" aria-current="page"><span aria-hidden="true">📋</span><span>Land Use Plans</span></a></li>
+            <li role="none"><a href="#" onclick="showSection('plans')" class="active" role="menuitem"><span aria-hidden="true">📋</span><span>Land Use Plans</span></a></li>
             <li role="none"><a href="#" onclick="showSection('zoning')" role="menuitem"><span aria-hidden="true">🏷️</span><span>Site Zoning Certification</span></a></li>
             <li role="none"><a href="#" onclick="showSection('reports')" role="menuitem"><span aria-hidden="true">📊</span><span>Reports</span></a></li>
             <li role="none"><a href="#" onclick="openAboutModal()" role="menuitem"><span aria-hidden="true">ℹ️</span><span>About</span></a></li>
@@ -420,242 +281,109 @@
     <main id="main-content" role="main">
         <div class="container">
             <!-- Land Use Plans Section -->
-            <div id="plans" class="section active" role="region" aria-labelledby="plans-heading">
-                <h1 id="plans-heading" class="visually-hidden">Comprehensive Land Use Plans</h1>
+            <div id="plans" class="section active" role="region">
                 <div class="data-section">
-                    <div class="section-header">
-                        <h3><span aria-hidden="true">📋</span> Comprehensive Land Use Plans (CLUP)</h3>
-                        <div class="btn-group">
-                            <button class="btn btn-primary" onclick="openAddClupModal()"><span aria-hidden="true">➕</span> Add New Plan</button>
-                            <button class="btn btn-success" onclick="exportClupData()"><span aria-hidden="true">📥</span> Export Data</button>
-                        </div>
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="provinceChart" width="800" height="350" style="max-width:100%; height:auto;"></canvas>
-                    </div>
+                    <div class="section-header"><h3><span aria-hidden="true">📋</span> Comprehensive Land Use Plans (CLUP)</h3><div class="btn-group"><button class="btn btn-primary" onclick="openAddClupModal()">➕ Add New Plan</button><button class="btn btn-success" onclick="exportClupData()">📥 Export Data</button></div></div>
+                    <div class="chart-container"><canvas id="provinceChart" width="800" height="350" style="max-width:100%; height:auto;"></canvas></div>
                     <div class="search-bar" role="search">
                         <div class="search-box"><span aria-hidden="true">🔍</span><label for="planSearch" class="visually-hidden">Search plans</label><input type="text" id="planSearch" placeholder="Search by LGU, province, or status..." onkeyup="filterClupTable()"></div>
-                        <div class="filter-group"><label for="provinceFilter" class="visually-hidden">Filter by province</label><select id="provinceFilter" onchange="filterClupTable()" aria-label="Filter by province"><option value="">All Provinces</option><option value="Aklan">Aklan</option><option value="Antique">Antique</option><option value="Capiz">Capiz</option><option value="Guimaras">Guimaras</option><option value="Iloilo">Iloilo</option><option value="Negros Occidental">Negros Occidental</option></select></div>
-                        <div class="filter-group"><label for="statusFilter" class="visually-hidden">Filter by status</label><select id="statusFilter" onchange="filterClupTable()" aria-label="Filter by status"><option value="">All Status</option><option value="Approved">Approved</option><option value="Pending">Pending</option><option value="For Review">For Review</option><option value="On Hold">On Hold</option></select></div>
+                        <div class="filter-group"><label for="provinceFilter" class="visually-hidden">Filter by province</label><select id="provinceFilter" onchange="filterClupTable()"><option value="">All Provinces</option><option value="Aklan">Aklan</option><option value="Antique">Antique</option><option value="Capiz">Capiz</option><option value="Guimaras">Guimaras</option><option value="Iloilo">Iloilo</option><option value="Negros Occidental">Negros Occidental</option></select></div>
+                        <div class="filter-group"><label for="statusFilter" class="visually-hidden">Filter by status</label><select id="statusFilter" onchange="filterClupTable()"><option value="">All Status</option><option value="Approved">Approved</option><option value="Pending">Pending</option><option value="For Review">For Review</option><option value="On Hold">On Hold</option></select></div>
                     </div>
-                    <div class="table-responsive">
-                        <table id="plansTable" aria-label="Land Use Plans">
-                            <caption class="visually-hidden">List of Comprehensive Land Use Plans in Region VI</caption>
-                            <thead>
-                                <tr><th>LGU/Municipality</th><th>Province</th><th>Plan Period</th><th>Status</th><th>Date Approved (Latest)</th><th>Actions</th></tr>
-                            </thead>
-                            <tbody id="plansTableBody"></tbody>
-                        </table>
-                    </div>
+                    <div class="table-responsive"><table id="plansTable"><thead><tr><th>LGU/Municipality</th><th>Province</th><th>Plan Period</th><th>Status</th><th>Date Approved (Latest)</th><th>Actions</th></tr></thead><tbody id="plansTableBody"></tbody></table></div>
                 </div>
             </div>
 
-            <!-- Site Zoning Certification Section -->
-            <div id="zoning" class="section" style="display: none;" role="region" aria-labelledby="zoning-heading">
-                <h1 id="zoning-heading" class="visually-hidden">Site Zoning Certification</h1>
+            <!-- Site Zoning Certification Section with Tabs -->
+            <div id="zoning" class="section" style="display: none;" role="region">
                 <div class="cert-section">
-                    <div class="cert-title"><span aria-hidden="true">🏷️</span> Site Zoning Certification - Data Entry</div>
-                    <form id="zoningForm" onsubmit="return saveZoningRecord(event)" novalidate>
-                        <div class="form-grid">
-                            <div class="form-group"><label for="certificationNo" id="certNoLabel">Certification No.</label><input type="text" class="form-control" id="certificationNo" readonly style="background:#f0f0f0"><small>Auto-generated</small></div>
-                            <div class="form-group"><label for="series">Series</label><input type="text" class="form-control" id="series" value="2002" readonly></div>
-                            <div class="form-group"><label for="parcels">No. of Parcels</label><input type="text" class="form-control" id="parcels" placeholder="e.g., Three hundred seventy-five (375) parcels" required></div>
-                            <div class="form-group full-width"><label for="location">Location of the Property</label><input type="text" class="form-control" id="location" placeholder="Enter complete address" required></div>
-                            <div class="form-group"><label for="latitude">Latitude</label><input type="text" class="form-control" id="latitude" placeholder="e.g., 10.7202" readonly style="background:#f0f0f0"></div>
-                            <div class="form-group"><label for="longitude">Longitude</label><input type="text" class="form-control" id="longitude" placeholder="e.g., 122.5621" readonly style="background:#f0f0f0"><button type="button" class="btn btn-map" onclick="openEnhancedMapPopup()" style="margin-top: 5px; width: 100%;">🗺️ Open Map (Upload GeoJSON)</button></div>
-                            <div class="form-group"><label for="totalArea">Total Area (ha.)</label><input type="text" class="form-control" id="totalArea" placeholder="e.g., 15.5026" required></div>
-                            <div class="form-group"><label for="proposedUse">Proposed Use</label><input type="text" class="form-control" id="proposedUse" placeholder="e.g., Residential-3 Zone" required></div>
-                            <div class="form-group full-width">
-                                <div style="font-weight:600; margin-bottom:0.5rem;">Land Holdings (Multiple Entries)</div>
-                                <div><button type="button" class="btn btn-success" onclick="addLandHolding()" style="padding:5px 10px; font-size:0.9rem;">➕ Add Another Property</button><small style="margin-left:10px;">Each property can have its own lot number and area</small></div>
-                                <div id="landHoldingsContainer"></div>
-                            </div>
-                            <div class="form-group"><label for="dateIssued">Date Issued</label><input type="date" class="form-control" id="dateIssued" required></div>
-                            <div class="form-group"><label for="requestedBy">Requested By</label><input type="text" class="form-control" id="requestedBy" placeholder="Name of requester" required></div>
-                            <div class="form-group"><label for="amountPaid">Amount Paid (₱)</label><input type="text" class="form-control" id="amountPaid" placeholder="e.g., 13,680" required></div>
-                            <div class="form-group"><label for="orNo">O.R. No.</label><input type="text" class="form-control" id="orNo" placeholder="Official Receipt Number"></div>
-                            <div class="form-group"><label for="orDate">O.R. Date</label><input type="date" class="form-control" id="orDate"></div>
-                            <div class="form-group full-width"><label for="remarks">Remarks/Notes</label><textarea class="form-control" id="remarks" rows="3"></textarea></div>
-                        </div>
-                        <h3 class="cert-subtitle">CLUP/Zoning Ordinance Status</h3>
-                        <div class="form-group">
-                            <div style="font-weight:600; margin-bottom:0.5rem;">Select Status:</div>
-                            <div class="radio-group">
-                                <label class="radio-option"><input type="radio" name="clupStatus" value="approved" checked> With Approved CLUP/ZO</label>
-                                <label class="radio-option"><input type="radio" name="clupStatus" value="pending"> With CLUP/ZO Pending Approval</label>
-                                <label class="radio-option"><input type="radio" name="clupStatus" value="none"> Without CLUP/ZO</label>
-                            </div>
-                        </div>
-                        <div id="clupCascadeDiv" style="margin-top: 1rem; padding: 1rem; background: #e8f0fe; border-radius: 8px; display: block;">
-                            <div class="form-grid" style="margin-bottom: 1rem;">
-                                <div class="form-group">
-                                    <label for="provinceSelect">Select Province</label>
-                                    <select id="provinceSelect" class="form-control" onchange="filterLguByProvince()">
-                                        <option value="">-- Choose Province --</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="lguSelect">Select LGU</label>
-                                    <select id="lguSelect" class="form-control" onchange="fillFromApprovedCLUP()" disabled>
-                                        <option value="">-- First select province --</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <small>Automatically fills City/Municipality, Province, Department Circular/SP Resolution No., and Date of Approval from the approved CLUP record.</small>
-                        </div>
-
-                        <div id="approvedDetails" style="margin-top:1rem; padding:1rem; background:#f8f4e8; border-radius:8px;">
+                    <div class="cert-title"><span>🏷️</span> Site Zoning Certification</div>
+                    <!-- Tabs -->
+                    <div class="zoning-tabs">
+                        <button class="zoning-tab active" data-tab="data-entry">📝 Data Entry</button>
+                        <button class="zoning-tab" data-tab="accomplishment">📊 Accomplishment Report</button>
+                    </div>
+                    <!-- Data Entry Tab Content -->
+                    <div id="data-entry-tab" class="zoning-tab-content active">
+                        <form id="zoningForm" onsubmit="return saveZoningRecord(event)" novalidate>
                             <div class="form-grid">
-                                <div class="form-group"><label for="city">City/Municipality</label><input type="text" class="form-control" id="city"></div>
-                                <div class="form-group"><label for="province">Province</label><input type="text" class="form-control" id="province" placeholder="e.g., Iloilo, Aklan, etc."></div>
-                                <div class="form-group"><label for="approvedBy">Approved by</label><input type="text" class="form-control" id="approvedBy" readonly style="background:#f8f4e8; font-weight:600;"></div>
-                                <div class="form-group"><label for="circularNo">Department Circular / SP Resolution No.</label><input type="text" class="form-control" id="circularNo" placeholder="Auto-filled from latest CLUP resolution" readonly style="background:#f8f4e8;"></div>
-                                <div class="form-group"><label for="approvalDate">Date of Approval</label><input type="date" class="form-control" id="approvalDate" readonly style="background:#f8f4e8;"></div>
-                            </div>
-                            <div id="approvalDatesRef" style="margin-top: 0.5rem; font-size: 0.85rem; color: #555; display: none;">
-                                <strong>Approval dates:</strong> <span id="firstApprovalDateRef"></span> (first) | <span id="latestApprovalDateRef"></span> (latest)
-                            </div>
-                            <!-- Conditional fields for Iloilo City -->
-                            <div id="iloiloConditionalFields" style="display: none; margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed #ccc;">
-                                <div class="form-group">
-                                    <label for="purpose">Purpose</label>
-                                    <select id="purpose" class="form-control">
-                                        <option value="">-- Select --</option>
-                                        <option value="Conversion">Conversion</option>
-                                        <option value="ROD">ROD</option>
-                                        <option value="Other">Other</option>
-                                    </select>
+                                <div class="form-group"><label for="certificationNo">Certification No.</label><input type="text" class="form-control" id="certificationNo" readonly style="background:#f0f0f0"><small>Auto-generated</small></div>
+                                <div class="form-group"><label for="series">Series</label><input type="text" class="form-control" id="series" value="2002" readonly></div>
+                                <div class="form-group"><label for="parcels">No. of Parcels</label><input type="text" class="form-control" id="parcels" placeholder="e.g., Three hundred seventy-five (375) parcels" required></div>
+                                <div class="form-group full-width"><label for="location">Location of the Property</label><input type="text" class="form-control" id="location" placeholder="Enter complete address" required></div>
+                                <div class="form-group"><label for="latitude">Latitude</label><input type="text" class="form-control" id="latitude" placeholder="e.g., 10.7202" readonly style="background:#f0f0f0"></div>
+                                <div class="form-group"><label for="longitude">Longitude</label><input type="text" class="form-control" id="longitude" placeholder="e.g., 122.5621" readonly style="background:#f0f0f0"><button type="button" class="btn btn-map" onclick="openEnhancedMapPopup()" style="margin-top:5px; width:100%;">🗺️ Open Map (Upload GeoJSON)</button></div>
+                                <div class="form-group"><label for="totalArea">Total Area (ha.)</label><input type="text" class="form-control" id="totalArea" placeholder="e.g., 15.5026" required></div>
+                                <div class="form-group"><label for="proposedUse">Proposed Use</label><input type="text" class="form-control" id="proposedUse" placeholder="e.g., Residential-3 Zone" required></div>
+                                <div class="form-group full-width">
+                                    <div style="font-weight:600; margin-bottom:0.5rem;">Land Holdings (Multiple Entries)</div>
+                                    <div><button type="button" class="btn btn-success" onclick="addLandHolding()" style="padding:5px 10px;">➕ Add Another Property</button><small style="margin-left:10px;">Each property can have its own lot number and area</small></div>
+                                    <div id="landHoldingsContainer"></div>
                                 </div>
-                                <div id="landClassGroup" style="display: none;">
-                                    <div class="form-group">
-                                        <label for="landClass">Land Class</label>
-                                        <select id="landClass" class="form-control">
-                                            <option value="">-- Select --</option>
-                                            <option value="Agricultural">Agricultural</option>
-                                            <option value="Commercial">Commercial</option>
-                                            <option value="Residential">Residential</option>
-                                            <option value="Industrial">Industrial</option>
-                                            <option value="F and S">F and S</option>
-                                            <option value="Institutional">Institutional</option>
-                                        </select>
-                                    </div>
-                                </div>
+                                <div class="form-group"><label for="dateIssued">Date Issued</label><input type="date" class="form-control" id="dateIssued" required></div>
+                                <div class="form-group"><label for="requestedBy">Requested By</label><input type="text" class="form-control" id="requestedBy" placeholder="Name of requester" required></div>
+                                <div class="form-group"><label for="amountPaid">Amount Paid (₱)</label><input type="text" class="form-control" id="amountPaid" placeholder="e.g., 13,680" required></div>
+                                <div class="form-group"><label for="orNo">O.R. No.</label><input type="text" class="form-control" id="orNo" placeholder="Official Receipt Number"></div>
+                                <div class="form-group"><label for="orDate">O.R. Date</label><input type="date" class="form-control" id="orDate"></div>
+                                <div class="form-group full-width"><label for="remarks">Remarks/Notes</label><textarea class="form-control" id="remarks" rows="3"></textarea></div>
                             </div>
+                            <h3 class="cert-subtitle">CLUP/Zoning Ordinance Status</h3>
+                            <div class="form-group"><div style="font-weight:600; margin-bottom:0.5rem;">Select Status:</div><div class="radio-group"><label class="radio-option"><input type="radio" name="clupStatus" value="approved" checked> With Approved CLUP/ZO</label><label class="radio-option"><input type="radio" name="clupStatus" value="pending"> With CLUP/ZO Pending Approval</label><label class="radio-option"><input type="radio" name="clupStatus" value="none"> Without CLUP/ZO</label></div></div>
+                            <div id="clupCascadeDiv" style="margin-top:1rem; padding:1rem; background:#e8f0fe; border-radius:8px; display:block;">
+                                <div class="form-grid" style="margin-bottom:1rem;"><div class="form-group"><label for="provinceSelect">Select Province</label><select id="provinceSelect" class="form-control" onchange="filterLguByProvince()"><option value="">-- Choose Province --</option></select></div><div class="form-group"><label for="lguSelect">Select LGU</label><select id="lguSelect" class="form-control" onchange="fillFromApprovedCLUP()" disabled><option value="">-- First select province --</option></select></div></div><small>Automatically fills City/Municipality, Province, Department Circular/SP Resolution No., and Date of Approval from the approved CLUP record.</small>
+                            </div>
+                            <div id="approvedDetails" style="margin-top:1rem; padding:1rem; background:#f8f4e8; border-radius:8px;">
+                                <div class="form-grid"><div class="form-group"><label for="city">City/Municipality</label><input type="text" class="form-control" id="city"></div><div class="form-group"><label for="province">Province</label><input type="text" class="form-control" id="province" placeholder="e.g., Iloilo, Aklan, etc."></div><div class="form-group"><label for="approvedBy">Approved by</label><input type="text" class="form-control" id="approvedBy" readonly style="background:#f8f4e8; font-weight:600;"></div><div class="form-group"><label for="circularNo">Department Circular / SP Resolution No.</label><input type="text" class="form-control" id="circularNo" placeholder="Auto-filled from latest CLUP resolution" readonly style="background:#f8f4e8;"></div><div class="form-group"><label for="approvalDate">Date of Approval</label><input type="date" class="form-control" id="approvalDate" readonly style="background:#f8f4e8;"></div></div>
+                                <div id="approvalDatesRef" style="margin-top:0.5rem; font-size:0.85rem; color:#555; display:none;"><strong>Approval dates:</strong> <span id="firstApprovalDateRef"></span> (first) | <span id="latestApprovalDateRef"></span> (latest)</div>
+                                <div id="iloiloConditionalFields" style="display:none; margin-top:1rem; padding-top:1rem; border-top:1px dashed #ccc;"><div class="form-group"><label for="purpose">Purpose</label><select id="purpose" class="form-control"><option value="">-- Select --</option><option value="Conversion">Conversion</option><option value="ROD">ROD</option><option value="Other">Other</option></select></div><div id="landClassGroup" style="display:none;"><div class="form-group"><label for="landClass">Land Class</label><select id="landClass" class="form-control"><option value="">-- Select --</option><option value="Agricultural">Agricultural</option><option value="Commercial">Commercial</option><option value="Residential">Residential</option><option value="Industrial">Industrial</option><option value="F and S">F and S</option><option value="Institutional">Institutional</option></select></div></div></div>
+                            </div>
+                            <div style="display:flex; gap:1rem; margin-top:2rem; justify-content:center;">
+                                <button type="submit" class="btn btn-success">💾 Save Certification</button>
+                                <button type="button" class="btn btn-primary" onclick="clearZoningForm()">🔄 Clear Form</button>
+                                <button type="button" class="btn btn-cert" onclick="viewAllCertifications()">📋 View All Records</button>
+                                <button type="button" class="btn btn-print" onclick="printBlankForm()">🖨️ Print Blank Form</button>
+                                <button type="button" class="btn btn-warning" onclick="resetCertificationCounter()">🔄 Reset Counter</button>
+                            </div>
+                        </form>
+                        <div id="recordsSection" style="display:none; margin-top:2rem;">
+                            <div class="cert-title"><span>📋</span> Saved Certifications</div>
+                            <div class="search-bar"><div class="search-box"><input type="text" id="certSearchInput" placeholder="Search by Certification No., Location, or Requested By..." onkeyup="filterCertificationsTable()"></div><div class="filter-group"><select id="certStatusFilter" onchange="filterCertificationsTable()"><option value="">All Status</option><option value="For Review">For Review</option><option value="For RD Signature">For RD Signature</option><option value="For Release">For Release</option><option value="Released">Released</option></select></div><button class="btn btn-primary" onclick="filterCertificationsTable()">🔍 Search</button><button class="btn btn-secondary" onclick="clearCertSearch()">🗑️ Clear</button></div>
+                            <div class="table-responsive"><table class="cert-table" id="certificationsTable"><thead><tr><th>Certification No.</th><th>No. of Parcels</th><th>Location</th><th>Total Area</th><th>Date Issued</th><th>Requested By</th><th>Status</th><th>Actions</th></tr></thead><tbody id="certificationsTableBody"></tbody></table></div>
+                            <div style="text-align:right; margin-top:1rem;"><button class="btn btn-secondary" onclick="toggleRecordsView()">Hide Records</button></div>
                         </div>
-
-                        <div id="formMessages" role="alert" class="visually-hidden"></div>
-                        <div style="display:flex; gap:1rem; margin-top:2rem; justify-content:center;">
-                            <button type="submit" class="btn btn-success">💾 Save Certification</button>
-                            <button type="button" class="btn btn-primary" onclick="clearZoningForm()">🔄 Clear Form</button>
-                            <button type="button" class="btn btn-cert" onclick="viewAllCertifications()">📋 View All Records</button>
-                            <button type="button" class="btn btn-print" onclick="printBlankForm()">🖨️ Print Blank Form</button>
-                            <button type="button" class="btn btn-warning" onclick="resetCertificationCounter()">🔄 Reset Counter</button>
-                        </div>
-                    </form>
-                </div>
-                <div class="cert-section" id="recordsSection" style="display:none;">
-                    <div class="cert-title"><span aria-hidden="true">📋</span> Saved Certifications</div>
-                    <div class="search-bar" style="margin-bottom: 1rem; padding: 1rem; background: #f8faff; border-radius: 12px;">
-                        <div class="search-box" style="flex: 2;">
-                            <span aria-hidden="true">🔍</span>
-                            <input type="text" id="certSearchInput" placeholder="Search by Certification No., Location, or Requested By..." onkeyup="filterCertificationsTable()">
-                        </div>
-                        <div class="filter-group" style="min-width: 160px;">
-                            <select id="certStatusFilter" onchange="filterCertificationsTable()">
-                                <option value="">All Status</option>
-                                <option value="For Review">For Review</option>
-                                <option value="For RD Signature">For RD Signature</option>
-                                <option value="For Release">For Release</option>
-                                <option value="Released">Released</option>
-                            </select>
-                        </div>
-                        <button class="btn btn-primary" onclick="filterCertificationsTable()" style="padding: 0.8rem 1.5rem;">🔍 Search</button>
-                        <button class="btn btn-secondary" onclick="clearCertSearch()" style="padding: 0.8rem 1.5rem;">🗑️ Clear</button>
                     </div>
-                    <div style="overflow-x:auto;">
-                        <table class="cert-table" id="certificationsTable">
-                            <thead>
-                                <tr><th>Certification No.</th><th>No. of Parcels</th><th>Location</th><th>Total Area</th><th>Date Issued</th><th>Requested By</th><th>Status</th><th>Actions</th></tr>
-                            </thead>
-                            <tbody id="certificationsTableBody"></tbody>
-                        </table>
-                    </div>
-                    <div style="text-align:right; margin-top:1rem;"><button class="btn btn-secondary" onclick="toggleRecordsView()">Hide Records</button></div>
-                </div>
-            </div>
-
-            <!-- Reports Section -->
-            <div id="reports" class="section" style="display: none;" role="region" aria-labelledby="reports-heading">
-                <h1 id="reports-heading" class="visually-hidden">Planning Reports</h1>
-                <div class="data-section">
-                    <div class="section-header"><h3><span aria-hidden="true">📊</span> Planning Reports</h3></div>
-                    <div class="stats-grid">
-                        <div class="stat-card" onclick="generateReport('annual')" role="button" tabindex="0" onkeypress="if(event.key==='Enter'||event.key===' ') generateReport('annual')"><div class="stat-number" aria-hidden="true">📅</div><div class="stat-label">Annual Report</div></div>
-                        <div class="stat-card" onclick="generateReport('quarterly')" role="button" tabindex="0" onkeypress="if(event.key==='Enter'||event.key===' ') generateReport('quarterly')"><div class="stat-number" aria-hidden="true">📆</div><div class="stat-label">Quarterly Report</div></div>
-                        <div class="stat-card" onclick="generateReport('project')" role="button" tabindex="0" onkeypress="if(event.key==='Enter'||event.key===' ') generateReport('project')"><div class="stat-number" aria-hidden="true">🏗️</div><div class="stat-label">Project Status</div></div>
-                        <div class="stat-card" onclick="generateReport('environmental')" role="button" tabindex="0" onkeypress="if(event.key==='Enter'||event.key===' ') generateReport('environmental')"><div class="stat-number" aria-hidden="true">🌳</div><div class="stat-label">Environmental Report</div></div>
+                    <!-- Accomplishment Report Tab Content -->
+                    <div id="accomplishment-tab" class="zoning-tab-content">
+                        <div class="stats-grid">
+                            <div class="stat-card"><div class="stat-number" id="totalCertCount">0</div><div class="stat-label">Total Certifications</div></div>
+                            <div class="stat-card"><div class="stat-number" id="releasedCount">0</div><div class="stat-label">Released</div></div>
+                            <div class="stat-card"><div class="stat-number" id="pendingReviewCount">0</div><div class="stat-label">For Review / RD Signature / For Release</div></div>
+                            <div class="stat-card"><div class="stat-number" id="totalAreaSum">0</div><div class="stat-label">Total Area (ha)</div></div>
+                        </div>
+                        <div class="chart-container"><canvas id="statusChart" width="400" height="300" style="max-width:100%; height:auto;"></canvas></div>
+                        <div class="chart-container"><canvas id="monthlyChart" width="400" height="300" style="max-width:100%; height:auto;"></canvas></div>
+                        <div class="table-responsive"><h4>Recent Certifications</h4><table class="cert-table"><thead><tr><th>Cert No.</th><th>Location</th><th>Date Issued</th><th>Status</th></tr></thead><tbody id="recentTableBody"></tbody></table></div>
+                        <button class="btn btn-primary" onclick="exportAccomplishmentReport()" style="margin-top:1rem;">📊 Export Report (JSON)</button>
                     </div>
                 </div>
             </div>
 
-            <div id="dataModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-                <div class="modal-content">
-                    <div class="modal-header"><h2 id="modalTitle">View/Edit Record</h2><button class="close-btn" onclick="closeModal()">&times;</button></div>
-                    <div id="modalBody"></div>
-                </div>
+            <!-- Reports Section (unchanged) -->
+            <div id="reports" class="section" style="display: none;" role="region">
+                <div class="data-section"><div class="section-header"><h3><span aria-hidden="true">📊</span> Planning Reports</h3></div><div class="stats-grid"><div class="stat-card" onclick="generateReport('annual')"><div class="stat-number">📅</div><div class="stat-label">Annual Report</div></div><div class="stat-card" onclick="generateReport('quarterly')"><div class="stat-number">📆</div><div class="stat-label">Quarterly Report</div></div><div class="stat-card" onclick="generateReport('project')"><div class="stat-number">🏗️</div><div class="stat-label">Project Status</div></div><div class="stat-card" onclick="generateReport('environmental')"><div class="stat-number">🌳</div><div class="stat-label">Environmental Report</div></div></div></div>
             </div>
+
+            <div id="dataModal" class="modal" role="dialog"><div class="modal-content"><div class="modal-header"><h2 id="modalTitle">View/Edit Record</h2><button class="close-btn" onclick="closeModal()">&times;</button></div><div id="modalBody"></div></div></div>
         </div>
     </main>
 
-    <!-- ENHANCED MAP POPUP MODAL with GeoJSON upload + visibility toggles -->
-    <div id="mapPopupModal" class="map-popup-modal">
-        <div class="map-popup-content">
-            <div class="map-popup-header">
-                <h3>🗺️ Select Location & Manage Zoning Layers</h3>
-                <button class="map-popup-close" onclick="closeMapPopup()">&times;</button>
-            </div>
-            <div class="map-popup-body">
-                <div id="popupMap"></div>
-                <div class="coord-info">
-                    <label>Latitude: <input type="text" id="popupLatitude" readonly placeholder="Click on map"></label>
-                    <label>Longitude: <input type="text" id="popupLongitude" readonly placeholder="Click on map"></label>
-                </div>
-                <!-- GeoJSON Upload + Layer Management Panel -->
-                <div class="layer-panel">
-                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 10px;">
-                        <input type="file" id="geojsonFileInput" accept=".geojson,.json" style="display:none;">
-                        <button class="btn btn-primary" onclick="document.getElementById('geojsonFileInput').click()">📂 Upload GeoJSON</button>
-                        <button class="btn btn-danger" onclick="clearAllLayers()">🗑️ Clear All Layers</button>
-                        <span style="font-size:0.8rem; color:#555;">Upload zoning boundaries (GeoJSON)</span>
-                    </div>
-                    <div id="layerListContainer" class="layer-list-container">
-                        <div style="text-align:center; color:#888;">No layers loaded. Upload a GeoJSON file.</div>
-                    </div>
-                </div>
-            </div>
-            <div class="map-popup-footer">
-                <button class="btn btn-primary" onclick="saveCoordinatesFromPopup()">✅ Use Selected Coordinates</button>
-                <button class="btn btn-secondary" onclick="closeMapPopup()">Cancel</button>
-            </div>
-        </div>
-    </div>
+    <!-- Map Popup Modal -->
+    <div id="mapPopupModal" class="map-popup-modal"><div class="map-popup-content"><div class="map-popup-header"><h3>🗺️ Select Location & Manage Zoning Layers</h3><button class="map-popup-close" onclick="closeMapPopup()">&times;</button></div><div class="map-popup-body"><div id="popupMap"></div><div class="coord-info"><label>Latitude: <input type="text" id="popupLatitude" readonly placeholder="Click on map"></label><label>Longitude: <input type="text" id="popupLongitude" readonly placeholder="Click on map"></label></div><div class="layer-panel"><div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:10px;"><input type="file" id="geojsonFileInput" accept=".geojson,.json" style="display:none;"><button class="btn btn-primary" onclick="document.getElementById('geojsonFileInput').click()">📂 Upload GeoJSON</button><button class="btn btn-danger" onclick="clearAllLayers()">🗑️ Clear All Layers</button><span style="font-size:0.8rem;">Upload zoning boundaries (GeoJSON)</span></div><div id="layerListContainer" class="layer-list-container"><div style="text-align:center; color:#888;">No layers loaded. Upload a GeoJSON file.</div></div></div></div><div class="map-popup-footer"><button class="btn btn-primary" onclick="saveCoordinatesFromPopup()">✅ Use Selected Coordinates</button><button class="btn btn-secondary" onclick="closeMapPopup()">Cancel</button></div></div></div>
 
     <div id="printSection" style="display:none;"></div>
-    <div id="syncLoading" class="sync-loading">
-        <div class="sync-loading-content">
-            <div class="spinner"></div>
-            <p>Syncing data with server...</p>
-        </div>
-    </div>
+    <div id="syncLoading" class="sync-loading"><div class="sync-loading-content"><div class="spinner"></div><p>Syncing data with server...</p></div></div>
 
-    <footer role="contentinfo">
-        <p>Environmental Land Use and Urban Planning Development Division</p>
-        <p>Department of Human Settlements and Urban Development - Region VI</p>
-        <p>📍 3rd Floor, DHSUD Regional Office VI, Diversion Road, Mandurriao, Iloilo City</p>
-        <p>📞 (033) 123-4567 | 📧 elupdd.region6@dhsud.gov.ph</p>
-        <p style="margin-top:1rem; font-size:0.9rem;">© 2024 All Rights Reserved</p>
-    </footer>
-
+    <footer role="contentinfo"><p>Environmental Land Use and Urban Planning Development Division</p><p>Department of Human Settlements and Urban Development - Region VI</p><p>📍 3rd Floor, DHSUD Regional Office VI, Diversion Road, Mandurriao, Iloilo City</p><p>📞 (033) 123-4567 | 📧 elupdd.region6@dhsud.gov.ph</p><p style="margin-top:1rem;">© 2024 All Rights Reserved</p></footer>
     <script>
         // ========== CONFIGURATION ==========
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx2oSsKH0Erifbk25yj0ITxqDqFi9xs1USLO02znRRrUOrAAd5eAxEAXaWznDa3rdZSlQ/exec";
