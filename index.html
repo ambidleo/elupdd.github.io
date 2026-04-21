@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ELUPDD Region VI - Land Use & Zoning Certification</title>
+    <title>ELUPDD Region VI - Environmental Land Use & Urban Planning</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/shpjs@3.4.3/dist/shp.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
-        /* ===== Full CSS ===== */
+        /* ===== Full CSS (unchanged except map popup layer panel styles) ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #e8f0f9; min-height: 100vh; }
         :root { --primary-dark: #1a4d5e; --primary: #2c6e8f; --primary-light-accessible: #1e7a9c; --secondary: #3a7b5c; --accent-accessible: #d4a017; --earth: #8B5A2B; --water: #3498db; --forest: #27ae60; --urban: #7f8c8d; --background: #f5f9ff; --card-bg: #ffffff; --cert-primary: #8B4513; --cert-secondary: #228B22; --cert-accent: #FFD700; }
@@ -118,6 +118,8 @@
         .cert-table th { background: var(--cert-primary); color: white; padding: 0.75rem; text-align: left; }
         .cert-table td { padding: 0.75rem; border-bottom: 1px solid #e0e0e0; }
         .cert-table tr:hover { background: #f8f4e8; }
+        
+        /* Enhanced Map Popup Styles (added layer panel) */
         .map-popup-modal {
             display: none;
             position: fixed;
@@ -137,8 +139,8 @@
             background: white;
             border-radius: 20px;
             width: 90%;
-            max-width: 800px;
-            height: 80%;
+            max-width: 900px;
+            height: 85%;
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -165,6 +167,7 @@
         .map-popup-body {
             flex: 1;
             padding: 15px;
+            overflow-y: auto;
         }
         #popupMap {
             height: 350px;
@@ -185,6 +188,36 @@
             border: 1px solid #ccc;
             border-radius: 5px;
             width: 180px;
+        }
+        .layer-panel {
+            margin-top: 15px;
+            background: #f8faff;
+            border-radius: 12px;
+            padding: 12px;
+            border: 1px solid #e0e7ff;
+        }
+        .layer-list-container {
+            max-height: 180px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        .layer-item {
+            background: white;
+            border-radius: 30px;
+            padding: 6px 12px;
+            margin: 6px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #cbd5e1;
+        }
+        .layer-name {
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        .layer-actions {
+            display: flex;
+            gap: 8px;
         }
         .map-popup-footer {
             padding: 15px;
@@ -414,7 +447,7 @@
                             <div class="form-group"><label for="parcels">No. of Parcels</label><input type="text" class="form-control" id="parcels" placeholder="e.g., Three hundred seventy-five (375) parcels" required></div>
                             <div class="form-group full-width"><label for="location">Location of the Property</label><input type="text" class="form-control" id="location" placeholder="Enter complete address" required></div>
                             <div class="form-group"><label for="latitude">Latitude</label><input type="text" class="form-control" id="latitude" placeholder="e.g., 10.7202" readonly style="background:#f0f0f0"></div>
-                            <div class="form-group"><label for="longitude">Longitude</label><input type="text" class="form-control" id="longitude" placeholder="e.g., 122.5621" readonly style="background:#f0f0f0"><button type="button" class="btn btn-map" onclick="openMapPopup()" style="margin-top: 5px; width: 100%;">🗺️ Open Map</button></div>
+                            <div class="form-group"><label for="longitude">Longitude</label><input type="text" class="form-control" id="longitude" placeholder="e.g., 122.5621" readonly style="background:#f0f0f0"><button type="button" class="btn btn-map" onclick="openEnhancedMapPopup()" style="margin-top: 5px; width: 100%;">🗺️ Open Map (Upload GeoJSON)</button></div>
                             <div class="form-group"><label for="totalArea">Total Area (ha.)</label><input type="text" class="form-control" id="totalArea" placeholder="e.g., 15.5026" required></div>
                             <div class="form-group"><label for="proposedUse">Proposed Use</label><input type="text" class="form-control" id="proposedUse" placeholder="e.g., Residential-3 Zone" required></div>
                             <div class="form-group full-width">
@@ -550,22 +583,34 @@
         </div>
     </main>
 
-    <!-- Map Popup Modal for Coordinates -->
+    <!-- ENHANCED MAP POPUP MODAL with GeoJSON upload + visibility toggles -->
     <div id="mapPopupModal" class="map-popup-modal">
         <div class="map-popup-content">
             <div class="map-popup-header">
-                <h3>Select Location on Map</h3>
+                <h3>🗺️ Select Location & Manage Zoning Layers</h3>
                 <button class="map-popup-close" onclick="closeMapPopup()">&times;</button>
             </div>
             <div class="map-popup-body">
-                <div id="popupMap" style="height: 400px; width: 100%;"></div>
+                <div id="popupMap"></div>
                 <div class="coord-info">
                     <label>Latitude: <input type="text" id="popupLatitude" readonly placeholder="Click on map"></label>
                     <label>Longitude: <input type="text" id="popupLongitude" readonly placeholder="Click on map"></label>
                 </div>
+                <!-- GeoJSON Upload + Layer Management Panel -->
+                <div class="layer-panel">
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 10px;">
+                        <input type="file" id="geojsonFileInput" accept=".geojson,.json" style="display:none;">
+                        <button class="btn btn-primary" onclick="document.getElementById('geojsonFileInput').click()">📂 Upload GeoJSON</button>
+                        <button class="btn btn-danger" onclick="clearAllLayers()">🗑️ Clear All Layers</button>
+                        <span style="font-size:0.8rem; color:#555;">Upload zoning boundaries (GeoJSON)</span>
+                    </div>
+                    <div id="layerListContainer" class="layer-list-container">
+                        <div style="text-align:center; color:#888;">No layers loaded. Upload a GeoJSON file.</div>
+                    </div>
+                </div>
             </div>
             <div class="map-popup-footer">
-                <button class="btn btn-primary" onclick="saveCoordinatesFromPopup()">Use Selected Coordinates</button>
+                <button class="btn btn-primary" onclick="saveCoordinatesFromPopup()">✅ Use Selected Coordinates</button>
                 <button class="btn btn-secondary" onclick="closeMapPopup()">Cancel</button>
             </div>
         </div>
@@ -604,14 +649,15 @@
         let certNumberLock = false;
         let certNumberQueue = [];
 
-        // ========== MAP POPUP FOR COORDINATES ==========
+        // ========== ENHANCED MAP POPUP WITH GEOJSON LAYERS ==========
         let popupMap = null;
         let popupMapInitialized = false;
         let selectedLat = null;
         let selectedLng = null;
         let mapMarker = null;
+        let geoJsonLayers = []; // each { id, name, layer, visible, featureCount }
 
-        function openMapPopup() {
+        function openEnhancedMapPopup() {
             const modal = document.getElementById('mapPopupModal');
             modal.classList.add('active');
             
@@ -638,7 +684,7 @@
                     } else {
                         mapMarker = L.marker([selectedLat, selectedLng]).addTo(popupMap);
                     }
-                    mapMarker.bindPopup(`Selected Location<br>Lat: ${selectedLat.toFixed(6)}<br>Lng: ${selectedLng.toFixed(6)}`).openPopup();
+                    mapMarker.bindPopup(`📍 Selected Location<br>Lat: ${selectedLat.toFixed(6)}<br>Lng: ${selectedLng.toFixed(6)}`).openPopup();
                 });
                 
                 const existingLat = document.getElementById('latitude').value;
@@ -652,12 +698,15 @@
                     } else {
                         mapMarker = L.marker([lat, lng]).addTo(popupMap);
                     }
-                    mapMarker.bindPopup(`Selected Location<br>Lat: ${lat.toFixed(6)}<br>Lng: ${lng.toFixed(6)}`).openPopup();
+                    mapMarker.bindPopup(`📍 Selected Location<br>Lat: ${lat.toFixed(6)}<br>Lng: ${lng.toFixed(6)}`).openPopup();
                     document.getElementById('popupLatitude').value = lat.toFixed(6);
                     document.getElementById('popupLongitude').value = lng.toFixed(6);
                     selectedLat = lat;
                     selectedLng = lng;
                 }
+                
+                // Reload existing GeoJSON layers from localStorage? (optional)
+                loadSavedGeoJSONLayers();
             }, 100);
         }
 
@@ -672,6 +721,7 @@
                 popupMap.removeLayer(mapMarker);
                 mapMarker = null;
             }
+            // Do not clear geoJsonLayers to preserve layers for next open
         }
 
         function saveCoordinatesFromPopup() {
@@ -682,6 +732,157 @@
                 showToast('Coordinates saved to form!', 'success');
             } else {
                 alert('Please click on the map to select coordinates first.');
+            }
+        }
+
+        // GeoJSON Upload Handler
+        document.getElementById('geojsonFileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            if (!file.name.endsWith('.geojson') && !file.name.endsWith('.json')) {
+                alert('Please upload a valid .geojson or .json file.');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                try {
+                    const geojson = JSON.parse(ev.target.result);
+                    if (!geojson.type || geojson.type !== 'FeatureCollection') {
+                        throw new Error('Invalid GeoJSON: expected FeatureCollection');
+                    }
+                    const layerName = file.name.replace(/\.(geojson|json)$/i, '');
+                    addGeoJsonLayerToMap(geojson, layerName);
+                    showToast(`Loaded "${layerName}" with ${geojson.features.length} features.`, 'success');
+                    document.getElementById('geojsonFileInput').value = '';
+                } catch(err) {
+                    alert('Error parsing GeoJSON: ' + err.message);
+                }
+            };
+            reader.readAsText(file);
+        });
+
+        function addGeoJsonLayerToMap(geojson, name) {
+            if (!popupMap) return;
+            const layerId = 'layer_' + Date.now() + '_' + Math.random();
+            const randomColor = '#' + Math.floor(Math.random()*16777215).toString(16);
+            const geoLayer = L.geoJSON(geojson, {
+                style: { color: randomColor, weight: 3, fillColor: randomColor, fillOpacity: 0.4 },
+                onEachFeature: (feature, layer) => {
+                    let popupContent = '<div style="max-width:300px;"><b>Zoning Info</b>';
+                    if (feature.properties) {
+                        for (let [k, v] of Object.entries(feature.properties)) {
+                            if (v) popupContent += `<br>${escapeHtml(k)}: ${escapeHtml(String(v))}`;
+                        }
+                    }
+                    popupContent += '</div>';
+                    layer.bindPopup(popupContent);
+                }
+            }).addTo(popupMap);
+            
+            geoJsonLayers.push({
+                id: layerId,
+                name: name,
+                layer: geoLayer,
+                visible: true,
+                featureCount: geojson.features.length,
+                geojsonData: geojson
+            });
+            
+            renderLayerListUI();
+            
+            // Fit map to bounds
+            const bounds = geoLayer.getBounds();
+            if (bounds.isValid()) popupMap.fitBounds(bounds);
+            
+            // Save to localStorage for persistence
+            saveGeoJSONLayersToLocal();
+        }
+
+        function renderLayerListUI() {
+            const container = document.getElementById('layerListContainer');
+            if (!container) return;
+            if (geoJsonLayers.length === 0) {
+                container.innerHTML = '<div style="text-align:center; color:#888;">No layers loaded. Upload a GeoJSON file.</div>';
+                return;
+            }
+            let html = '';
+            geoJsonLayers.forEach((layer, idx) => {
+                html += `
+                    <div class="layer-item">
+                        <span class="layer-name">${escapeHtml(layer.name)} (${layer.featureCount} zones)</span>
+                        <div class="layer-actions">
+                            <button class="btn btn-primary" style="padding:4px 10px;" onclick="toggleLayerVisibility(${idx})">${layer.visible ? '👁️ Hide' : '👁️‍🗨️ Show'}</button>
+                            <button class="btn btn-danger" style="padding:4px 10px;" onclick="removeLayer(${idx})">✖️ Remove</button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function toggleLayerVisibility(index) {
+            if (!geoJsonLayers[index]) return;
+            const layer = geoJsonLayers[index];
+            if (layer.visible) {
+                popupMap.removeLayer(layer.layer);
+                layer.visible = false;
+            } else {
+                layer.layer.addTo(popupMap);
+                layer.visible = true;
+            }
+            renderLayerListUI();
+            saveGeoJSONLayersToLocal();
+        }
+
+        function removeLayer(index) {
+            if (!geoJsonLayers[index]) return;
+            const layer = geoJsonLayers[index];
+            if (layer.visible) popupMap.removeLayer(layer.layer);
+            geoJsonLayers.splice(index, 1);
+            renderLayerListUI();
+            saveGeoJSONLayersToLocal();
+            showToast('Layer removed.', 'info');
+        }
+
+        function clearAllLayers() {
+            geoJsonLayers.forEach(layer => {
+                if (layer.visible) popupMap.removeLayer(layer.layer);
+            });
+            geoJsonLayers = [];
+            renderLayerListUI();
+            localStorage.removeItem('geoJsonLayers');
+            showToast('All GeoJSON layers cleared.', 'info');
+        }
+
+        function saveGeoJSONLayersToLocal() {
+            // Store only necessary data (not the full Leaflet layers)
+            const layersToStore = geoJsonLayers.map(layer => ({
+                id: layer.id,
+                name: layer.name,
+                visible: layer.visible,
+                featureCount: layer.featureCount,
+                geojsonData: layer.geojsonData
+            }));
+            localStorage.setItem('geoJsonLayers', JSON.stringify(layersToStore));
+        }
+
+        function loadSavedGeoJSONLayers() {
+            const saved = localStorage.getItem('geoJsonLayers');
+            if (saved && popupMap) {
+                try {
+                    const layers = JSON.parse(saved);
+                    layers.forEach(savedLayer => {
+                        if (savedLayer.geojsonData) {
+                            addGeoJsonLayerToMap(savedLayer.geojsonData, savedLayer.name);
+                            // Set visibility after adding
+                            const addedLayer = geoJsonLayers[geoJsonLayers.length - 1];
+                            if (addedLayer && !savedLayer.visible) {
+                                popupMap.removeLayer(addedLayer.layer);
+                                addedLayer.visible = false;
+                            }
+                        }
+                    });
+                } catch(e) { console.warn('Failed to load saved layers', e); }
             }
         }
 
@@ -1981,16 +2182,16 @@
             const orDate = rec.orDate || '';
             let landHoldingsArray = Array.isArray(rec.landHoldings) ? rec.landHoldings : [];
             let landHoldingsHtml = '';
-            const buildTotalRow = (totalAreaSum) => `<tr style="background-color: #f2f2f2;"><td style="border:1px solid #000; padding:0.3cm; color: black; font-weight: bold;"><strong>Total</strong></td><td style="border:1px solid #000; padding:0.3cm;"></td><td style="border:1px solid #000; padding:0.3cm;"></td><td style="border:1px solid #000; padding:0.3cm; text-align:right; color: black; font-weight: bold;"><strong>${totalAreaSum.toFixed(4)}</strong></td><td style="border:1px solid #000; padding:0.3cm;"></td><td style="border:1px solid #000; padding:0.3cm;"></td></tr>`;
-            const headerRow = `<thead><tr><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold; font-size: 13pt;">Registered Owner</th><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold; font-size: 13pt;">Lot Number</th><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold; font-size: 13pt;">OCT/TCT No.</th><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold; font-size: 13pt;">Area Per Title (Ha)</th><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold; font-size: 13pt;">Area Applied for Conversion (Ha)</th><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold; font-size: 13pt;">Zone Classification</th></tr></thead>`;
+            const buildTotalRow = (totalAreaSum) => `<tr style="background-color: #f2f2f2;"><td style="border:1px solid #000; padding:0.3cm; color: black; font-weight: bold;"><strong>Total</strong><\/td><td style="border:1px solid #000; padding:0.3cm;"><\/td><td style="border:1px solid #000; padding:0.3cm;"><\/td><td style="border:1px solid #000; padding:0.3cm; text-align:right; color: black; font-weight: bold;"><strong>${totalAreaSum.toFixed(4)}</strong><\/td><td style="border:1px solid #000; padding:0.3cm;"><\/td><td style="border:1px solid #000; padding:0.3cm;"><\/td><\/tr>`;
+            const headerRow = `<thead><tr><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold; font-size: 13pt;">Registered Owner</th><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold; font-size: 13pt;">Lot Number</th><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold; font-size: 13pt;">OCT/TCT No.</th><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold; font-size: 13pt;">Area Per Title (Ha)</th><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold; font-size: 13pt;">Area Applied for Conversion (Ha)</th><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold; font-size: 13pt;">Zone Classification</th><\/tr><\/thead>`;
             if (landHoldingsArray.length === 0) {
                 let totalAreaNum = parseFloat(totalArea) || 0;
-                landHoldingsHtml = `<table class="land-holdings-table" style="width:100%; border-collapse:collapse; margin:0.5cm 0;">${headerRow}<tbody><tr><td style="border:1px solid #000; padding:0.3cm; color: black; font-size: 12pt;">______________________</td><td style="border:1px solid #000; padding:0.3cm; font-size: 12pt;">______________</td><td style="border:1px solid #000; padding:0.3cm; font-size: 12pt;">______________________</td><td style="border:1px solid #000; padding:0.3cm; text-align:right; font-size: 12pt;">${escapeHtml(totalArea)}</td><td style="border:1px solid #000; padding:0.3cm; font-size: 12pt;">___________</td><td style="border:1px solid #000; padding:0.3cm; font-size: 12pt;">${escapeHtml(proposedUse)}</td></tr>${buildTotalRow(totalAreaNum)}</tbody></table>`;
+                landHoldingsHtml = `<table class="land-holdings-table" style="width:100%; border-collapse:collapse; margin:0.5cm 0;">${headerRow}<tbody><tr><td style="border:1px solid #000; padding:0.3cm; color: black; font-size: 12pt;">______________________<\/td><td style="border:1px solid #000; padding:0.3cm; font-size: 12pt;">______________<\/td><td style="border:1px solid #000; padding:0.3cm; font-size: 12pt;">______________________<\/td><td style="border:1px solid #000; padding:0.3cm; text-align:right; font-size: 12pt;">${escapeHtml(totalArea)}<\/td><td style="border:1px solid #000; padding:0.3cm; font-size: 12pt;">___________<\/td><td style="border:1px solid #000; padding:0.3cm; font-size: 12pt;">${escapeHtml(proposedUse)}<\/td><\/tr>${buildTotalRow(totalAreaNum)}<\/tbody><\/table>`;
             } else {
                 let totalAreaSum = 0;
                 let rowsHtml = '';
-                landHoldingsArray.forEach(h => { const area = h.areaPerTitle ? parseFloat(h.areaPerTitle) : 0; totalAreaSum += area; rowsHtml += `<tr><td style="border:1px solid #000; padding:0.3cm; color: black; font-size: 12pt;">${escapeHtml(h.registeredOwner || '______________________')}</td><td style="border:1px solid #000; padding:0.3cm; font-size: 12pt;">${escapeHtml(h.lotNo || '______________')}</td><td style="border:1px solid #000; padding:0.3cm; font-size: 12pt;">${escapeHtml(h.tctNo || '______________________')}</td><td style="border:1px solid #000; padding:0.3cm; text-align:right; font-size: 12pt;">${area.toFixed(4)}</td><td style="border:1px solid #000; padding:0.3cm; font-size: 12pt;">___________</td><td style="border:1px solid #000; padding:0.3cm; font-size: 12pt;">${escapeHtml(h.zoneclass || '______________________')}</td></tr>`; });
-                landHoldingsHtml = `<table class="land-holdings-table" style="width:100%; border-collapse:collapse; margin:0.5cm 0;">${headerRow}<tbody>${rowsHtml}${buildTotalRow(totalAreaSum)}</tbody></table>`;
+                landHoldingsArray.forEach(h => { const area = h.areaPerTitle ? parseFloat(h.areaPerTitle) : 0; totalAreaSum += area; rowsHtml += `<tr><td style="border:1px solid #000; padding:0.3cm; color: black; font-size: 12pt;">${escapeHtml(h.registeredOwner || '______________________')}<\/td><td style="border:1px solid #000; padding:0.3cm; font-size: 12pt;">${escapeHtml(h.lotNo || '______________')}<\/td><td style="border:1px solid #000; padding:0.3cm; font-size: 12pt;">${escapeHtml(h.tctNo || '______________________')}<\/td><td style="border:1px solid #000; padding:0.3cm; text-align:right; font-size: 12pt;">${area.toFixed(4)}<\/td><td style="border:1px solid #000; padding:0.3cm; font-size: 12pt;">___________<\/td><td style="border:1px solid #000; padding:0.3cm; font-size: 12pt;">${escapeHtml(h.zoneclass || '______________________')}<\/td><\/tr>`; });
+                landHoldingsHtml = `<table class="land-holdings-table" style="width:100%; border-collapse:collapse; margin:0.5cm 0;">${headerRow}<tbody>${rowsHtml}${buildTotalRow(totalAreaSum)}<\/tbody><\/table>`;
             }
             const clupStatus = rec.clupStatus || 'approved';
             const approvedBy = rec.approvedBy || '______________________';
@@ -2117,12 +2318,12 @@
                 <td style="width: 6cm; padding: 0.1cm 0; border: none; white-space: nowrap; font-size: 14pt;"><strong>D. Proposed Use</strong></td>
                 <td style="width: 0.5cm; padding: 0.1cm 0; border: none; white-space: nowrap; font-size: 14pt;"><strong>:</strong></td>
                 <td style="padding: 0.1cm 0; border: none; font-size: 14pt;">${escapeHtml(proposedUse)}</td>
-             </tr>
+            </tr>
             <tr style="border: none;">
                 <td style="width: 6cm; padding: 0.1cm 0; border: none; white-space: nowrap; font-size: 14pt;"><strong>E. Description of Land Holdings</strong></td>
                 <td style="width: 0.5cm; padding: 0.1cm 0; border: none; white-space: nowrap; font-size: 14pt;"><strong>:</strong></td>
                 <td style="padding: 0.1cm 0; border: none; font-size: 14pt;"></td>
-             </tr>
+            </tr>
          </table>
     </div>
     ${landHoldingsHtml}
