@@ -9,7 +9,7 @@
     <script src="https://unpkg.com/shpjs@3.4.3/dist/shp.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
-        /* ===== Full CSS (unchanged except map popup layer panel styles) ===== */
+        /* ===== Full CSS ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #e8f0f9; min-height: 100vh; }
         :root { --primary-dark: #1a4d5e; --primary: #2c6e8f; --primary-light-accessible: #1e7a9c; --secondary: #3a7b5c; --accent-accessible: #d4a017; --earth: #8B5A2B; --water: #3498db; --forest: #27ae60; --urban: #7f8c8d; --background: #f5f9ff; --card-bg: #ffffff; --cert-primary: #8B4513; --cert-secondary: #228B22; --cert-accent: #FFD700; }
@@ -377,6 +377,21 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        /* Status badge styles for certification table */
+        .cert-status-badge {
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+            text-align: center;
+            min-width: 90px;
+        }
+        .status-for-review { background: #cce5ff; color: #004085; }
+        .status-rd-signature { background: #fff3cd; color: #856404; }
+        .status-for-release { background: #d4edda; color: #155724; }
+        .status-released { background: #d1ecf1; color: #0c5460; }
+        .status-dropdown { padding: 0.3rem; border-radius: 20px; border: 1px solid #ccc; font-size: 0.75rem; background: white; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -545,13 +560,22 @@
                             <span aria-hidden="true">🔍</span>
                             <input type="text" id="certSearchInput" placeholder="Search by Certification No., Location, or Requested By..." onkeyup="filterCertificationsTable()">
                         </div>
+                        <div class="filter-group" style="min-width: 160px;">
+                            <select id="certStatusFilter" onchange="filterCertificationsTable()">
+                                <option value="">All Status</option>
+                                <option value="For Review">For Review</option>
+                                <option value="For RD Signature">For RD Signature</option>
+                                <option value="For Release">For Release</option>
+                                <option value="Released">Released</option>
+                            </select>
+                        </div>
                         <button class="btn btn-primary" onclick="filterCertificationsTable()" style="padding: 0.8rem 1.5rem;">🔍 Search</button>
                         <button class="btn btn-secondary" onclick="clearCertSearch()" style="padding: 0.8rem 1.5rem;">🗑️ Clear</button>
                     </div>
                     <div style="overflow-x:auto;">
                         <table class="cert-table" id="certificationsTable">
                             <thead>
-                                <tr><th>Certification No.</th><th>No. of Parcels</th><th>Location</th><th>Total Area</th><th>Date Issued</th><th>Requested By</th><th>Actions</th></tr>
+                                <tr><th>Certification No.</th><th>No. of Parcels</th><th>Location</th><th>Total Area</th><th>Date Issued</th><th>Requested By</th><th>Status</th><th>Actions</th></tr>
                             </thead>
                             <tbody id="certificationsTableBody"></tbody>
                         </table>
@@ -705,7 +729,7 @@
                     selectedLng = lng;
                 }
                 
-                // Reload existing GeoJSON layers from localStorage? (optional)
+                // Reload existing GeoJSON layers from localStorage (optional)
                 loadSavedGeoJSONLayers();
             }, 100);
         }
@@ -1728,7 +1752,7 @@
             }
         }
 
-        // ========== ZONING CERTIFICATION ==========
+        // ========== ZONING CERTIFICATION WITH STATUS ==========
         let zoningCertifications = [];
         let certificationCounter = { lastCertNumber: 0, prefix: 'SZC-RVI', year: new Date().getFullYear().toString().slice(-2) };
         let currentEditingZoningId = null;
@@ -1738,12 +1762,15 @@
                 const response = await fetch(GOOGLE_SCRIPT_URL + '?action=get&data_type=zoning', { method: 'GET' });
                 const data = await response.json();
                 zoningCertifications = Array.isArray(data) ? data : [];
+                // Ensure each record has a status field (default "For Review")
+                zoningCertifications.forEach(rec => { if (!rec.status) rec.status = 'For Review'; });
                 localStorage.setItem('zoningCertifications', JSON.stringify(zoningCertifications));
                 await updateLocalCounterAfterSync();
                 renderCertificationsTable();
             } catch (error) {
                 console.warn("Zoning using localStorage", error);
                 zoningCertifications = JSON.parse(localStorage.getItem('zoningCertifications') || '[]');
+                zoningCertifications.forEach(rec => { if (!rec.status) rec.status = 'For Review'; });
                 updateCounterFromData();
                 renderCertificationsTable();
             }
@@ -1813,6 +1840,8 @@
                 const approvalDate = document.getElementById('approvalDate').value || '';
                 const purpose = document.getElementById('purpose').value || '';
                 const landClass = document.getElementById('landClass').value || '';
+                // Default status for new records
+                const status = 'For Review';
 
                 if (!parcels || !location || !totalArea || !proposedUse || !dateIssued || !requestedBy || !amountPaid) {
                     alert('Please fill all required fields.');
@@ -1848,7 +1877,7 @@
                     certificationNo, series, parcels, location, latitude, longitude, totalArea, proposedUse,
                     landHoldings, dateIssued, requestedBy, amountPaid, orNo, orDate, remarks, clupStatus,
                     city, province, approvedBy, circularNo, approvalDate,
-                    purpose, landClass,
+                    purpose, landClass, status,
                     timestamp: new Date().toLocaleString()
                 };
 
@@ -1918,14 +1947,62 @@
             return false;
         }
 
+        function updateCertificationStatus(recordId, newStatus) {
+            const record = zoningCertifications.find(r => r.id === recordId);
+            if (record) {
+                record.status = newStatus;
+                localStorage.setItem('zoningCertifications', JSON.stringify(zoningCertifications));
+                // Optionally sync to Google Sheets if online
+                checkGoogleSheetsConnection().then(isOnline => {
+                    if (isOnline) {
+                        const params = new URLSearchParams();
+                        params.append('action', 'update');
+                        params.append('data_type', 'zoning');
+                        params.append('data', JSON.stringify({ id: recordId, status: newStatus }));
+                        fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: params }).catch(console.warn);
+                    } else {
+                        addToPendingSync('zoning', 'update', { id: recordId, status: newStatus });
+                    }
+                });
+                renderCertificationsTable();
+                showToast(`Status updated to "${newStatus}"`, 'success');
+            }
+        }
+
         function renderCertificationsTable() {
             const tbody = document.getElementById('certificationsTableBody');
             if (!tbody) return;
             tbody.innerHTML = '';
-            if (!zoningCertifications.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No records found.</td></tr>'; return; }
-            const sorted = [...zoningCertifications].sort((a,b) => new Date(b.dateIssued) - new Date(a.dateIssued));
+            
+            const searchTerm = document.getElementById('certSearchInput')?.value.toLowerCase() || '';
+            const statusFilter = document.getElementById('certStatusFilter')?.value || '';
+            
+            let filtered = [...zoningCertifications];
+            if (searchTerm) {
+                filtered = filtered.filter(rec => 
+                    rec.certificationNo?.toLowerCase().includes(searchTerm) ||
+                    rec.location?.toLowerCase().includes(searchTerm) ||
+                    rec.requestedBy?.toLowerCase().includes(searchTerm)
+                );
+            }
+            if (statusFilter) {
+                filtered = filtered.filter(rec => rec.status === statusFilter);
+            }
+            
+            const sorted = filtered.sort((a,b) => new Date(b.dateIssued) - new Date(a.dateIssued));
+            
+            if (!sorted.length) { 
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No records found.</td></tr>'; 
+                return; 
+            }
+            
             sorted.forEach(rec => {
                 const row = tbody.insertRow();
+                const statusClass = 
+                    rec.status === 'For Review' ? 'status-for-review' :
+                    rec.status === 'For RD Signature' ? 'status-rd-signature' :
+                    rec.status === 'For Release' ? 'status-for-release' : 'status-released';
+                
                 row.innerHTML = `
                     <td>${escapeHtml(rec.certificationNo)}</td>
                     <td>${escapeHtml(rec.parcels)}</td>
@@ -1933,7 +2010,20 @@
                     <td>${escapeHtml(rec.totalArea)} ha</td>
                     <td>${formatDate(rec.dateIssued)}</td>
                     <td>${escapeHtml(rec.requestedBy)}</td>
-                    <td><div class="action-btns"><button class="action-btn view" onclick="viewZoningRecord(${rec.id})">👁️ View</button><button class="action-btn edit" onclick="editZoningRecord(${rec.id})">✏️ Edit</button><button class="action-btn print" onclick="printZoningRecord(${rec.id})">🖨️ Print</button><button class="action-btn delete" onclick="deleteZoningRecord(${rec.id})">🗑️ Delete</button></div></td>
+                    <td>
+                        <select class="status-dropdown" data-id="${rec.id}" onchange="updateCertificationStatus(${rec.id}, this.value)">
+                            <option value="For Review" ${rec.status === 'For Review' ? 'selected' : ''}>For Review</option>
+                            <option value="For RD Signature" ${rec.status === 'For RD Signature' ? 'selected' : ''}>For RD Signature</option>
+                            <option value="For Release" ${rec.status === 'For Release' ? 'selected' : ''}>For Release</option>
+                            <option value="Released" ${rec.status === 'Released' ? 'selected' : ''}>Released</option>
+                        </select>
+                    </td>
+                    <td><div class="action-btns">
+                        <button class="action-btn view" onclick="viewZoningRecord(${rec.id})">👁️ View</button>
+                        <button class="action-btn edit" onclick="editZoningRecord(${rec.id})">✏️ Edit</button>
+                        <button class="action-btn print" onclick="printZoningRecord(${rec.id})">🖨️ Print</button>
+                        <button class="action-btn delete" onclick="deleteZoningRecord(${rec.id})">🗑️ Delete</button>
+                    </div></td>
                 `;
             });
         }
@@ -2086,29 +2176,12 @@
         function toggleRecordsView() { document.getElementById('recordsSection').style.display = 'none'; }
         
         function filterCertificationsTable() {
-            const searchTerm = document.getElementById('certSearchInput')?.value.toLowerCase() || '';
-            const tbody = document.getElementById('certificationsTableBody');
-            if (!tbody) return;
-            const rows = tbody.getElementsByTagName('tr');
-            for (let i = 0; i < rows.length; i++) {
-                const row = rows[i];
-                const cells = row.getElementsByTagName('td');
-                if (cells.length === 0) continue;
-                const certNo = cells[0]?.innerText.toLowerCase() || '';
-                const location = cells[2]?.innerText.toLowerCase() || '';
-                const requestedBy = cells[5]?.innerText.toLowerCase() || '';
-                const matchesSearch = searchTerm === '' || certNo.includes(searchTerm) || location.includes(searchTerm) || requestedBy.includes(searchTerm);
-                if (matchesSearch) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            }
+            renderCertificationsTable(); // re-render with current filters
         }
 
         function clearCertSearch() {
-            const searchInput = document.getElementById('certSearchInput');
-            if (searchInput) searchInput.value = '';
+            document.getElementById('certSearchInput').value = '';
+            document.getElementById('certStatusFilter').value = '';
             filterCertificationsTable();
         }
 
@@ -2324,7 +2397,7 @@
                 <td style="width: 0.5cm; padding: 0.1cm 0; border: none; white-space: nowrap; font-size: 14pt;"><strong>:</strong></td>
                 <td style="padding: 0.1cm 0; border: none; font-size: 14pt;"></td>
             </tr>
-         </table>
+          </table>
     </div>
     ${landHoldingsHtml}
     <h4 style="margin: 0.1cm 0 0.05cm 0; font-size: 18pt; font-weight: bold;">II. STATUS OF COMPREHENSIVE LAND USE PLAN (CLUP) ZONING ORDINANCE (ZO)</h4>
