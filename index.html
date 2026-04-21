@@ -545,15 +545,144 @@
         function showToast(msg, type) { const toast = document.createElement('div'); toast.className = 'toast'; toast.style.cssText = 'position:fixed; bottom:20px; right:20px; background:white; border-left:4px solid ' + (type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#17a2b8') + '; padding:12px 20px; border-radius:8px; z-index:10001; animation: slideInRight 0.3s ease;'; toast.innerHTML = `<span>${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'} ${escapeHtml(msg)}</span>`; document.body.appendChild(toast); setTimeout(() => toast.remove(), 3000); }
 
         // ========== CLUP DATA (kept for cascade selects, no UI) ==========
-        let clupRecords = [];
-        async function fetchClupRecords() {
-            try { const res = await fetch(GOOGLE_SCRIPT_URL + '?action=get&data_type=clup'); const data = await res.json(); clupRecords = Array.isArray(data) ? data : []; localStorage.setItem('clupRecords', JSON.stringify(clupRecords)); populateProvinceSelect(); return clupRecords; } catch(e) { console.warn(e); const local = localStorage.getItem('clupRecords'); clupRecords = local ? JSON.parse(local) : []; populateProvinceSelect(); return clupRecords; } }
-        function populateProvinceSelect() { const sel = document.getElementById('provinceSelect'); if (!sel) return; sel.innerHTML = '<option value="">-- Choose Province --</option>'; const provinces = new Set(); clupRecords.forEach(p => { if (p.Province) provinces.add(p.Province); }); if (provinces.size === 0) ['Aklan','Antique','Capiz','Guimaras','Iloilo','Negros Occidental'].forEach(p => provinces.add(p)); Array.from(provinces).sort().forEach(p => { const opt = document.createElement('option'); opt.value = p; opt.textContent = p; sel.appendChild(opt); }); if (sel.options.length > 1) sel.disabled = false; }
-        function filterLguByProvince() { const prov = document.getElementById('provinceSelect').value; const lguSel = document.getElementById('lguSelect'); lguSel.innerHTML = '<option value="">-- Select LGU --</option>'; lguSel.disabled = !prov; if (!prov) return; const lgus = clupRecords.filter(p => p.Province === prov); const unique = new Map(); lgus.forEach(p => { const key = `${p.LGU}|${p.Province}`; if (!unique.has(key)) unique.set(key, { lgu: p.LGU, record: p }); }); unique.forEach((val) => { const opt = document.createElement('option'); opt.value = val.lgu; opt.textContent = val.lgu + (val.record.Status === 'Approved' ? ' ✅' : val.record.Status === 'For Review' ? ' 📝' : val.record.Status === 'Pending' ? ' ⏳' : ''); opt.dataset.record = JSON.stringify(val.record); lguSel.appendChild(opt); }); if (lguSel.options.length > 1) lguSel.disabled = false; else lguSel.innerHTML = '<option value="">-- No LGUs found --</option>'; }
-        function fillFromApprovedCLUP() { const sel = document.getElementById('lguSelect'); const opt = sel.options[sel.selectedIndex]; if (!opt.value) return; const plan = JSON.parse(opt.dataset.record); document.getElementById('city').value = plan.LGU || ''; document.getElementById('province').value = plan.Province || ''; const isIloiloCity = (plan.LGU || '').toLowerCase().includes('iloilo city'); if (isIloiloCity) { document.getElementById('approvedBy').value = 'DHSUD'; document.getElementById('circularNo').value = plan.Latest_Plan_Res || 'No Department Circular on file'; document.getElementById('iloiloConditionalFields').style.display = 'block'; } else { document.getElementById('approvedBy').value = 'Sangguniang Panlalawigan'; document.getElementById('circularNo').value = plan.Latest_Plan_Res || 'No SP Resolution on file'; document.getElementById('iloiloConditionalFields').style.display = 'none'; document.getElementById('landClassGroup').style.display = 'none'; } const latestDate = plan.Latest_Date_of_Approval || ''; document.getElementById('approvalDate').value = formatDateForInput(latestDate); const firstDate = plan.First_Plan_Date_of_Approval || ''; document.getElementById('firstApprovalDateRef').textContent = firstDate ? formatDate(firstDate) : '—'; document.getElementById('latestApprovalDateRef').textContent = latestDate ? formatDate(latestDate) : '—'; document.getElementById('approvalDatesRef').style.display = 'block'; alert(`CLUP data for ${plan.LGU} loaded.`); }
-        function toggleClupCascade() { const approved = document.querySelector('input[name="clupStatus"][value="approved"]')?.checked; const div = document.getElementById('clupCascadeDiv'); if (div) div.style.display = approved ? 'block' : 'none'; if (approved) { populateProvinceSelect(); document.getElementById('lguSelect').innerHTML = '<option value="">-- First select province --</option>'; document.getElementById('lguSelect').disabled = true; clearApprovedDetailsFields(); } else { document.getElementById('approvalDatesRef').style.display = 'none'; clearApprovedDetailsFields(); document.getElementById('iloiloConditionalFields').style.display = 'none'; } }
-        function clearApprovedDetailsFields() { ['city','province','approvedBy','circularNo','approvalDate'].forEach(id => { const f = document.getElementById(id); if (f) f.value = ''; }); document.getElementById('firstApprovalDateRef').textContent = '—'; document.getElementById('latestApprovalDateRef').textContent = '—'; document.getElementById('purpose').value = ''; document.getElementById('landClass').value = ''; document.getElementById('landClassGroup').style.display = 'none'; document.getElementById('iloiloConditionalFields').style.display = 'none'; }
-        function setupClupCascadeEvents() { document.querySelectorAll('input[name="clupStatus"]').forEach(r => r.addEventListener('change', toggleClupCascade)); toggleClupCascade(); document.getElementById('purpose')?.addEventListener('change', function() { document.getElementById('landClassGroup').style.display = this.value === 'Conversion' ? 'block' : 'none'; }); }
+        // ========== CASCADING SELECTS WITH AUTOMATED APPROVED BY ==========
+        function populateProvinceSelect() {
+            const select = document.getElementById('provinceSelect');
+            if (!select) return;
+            select.innerHTML = '<option value="">-- Choose Province --</option>';
+            const provinces = new Set();
+            if (clupRecords && clupRecords.length > 0) {
+                clupRecords.forEach(plan => { if (plan.Province) provinces.add(plan.Province); });
+            } else {
+                ['Aklan','Antique','Capiz','Guimaras','Iloilo','Negros Occidental'].forEach(p => provinces.add(p));
+            }
+            Array.from(provinces).sort().forEach(prov => {
+                const opt = document.createElement('option');
+                opt.value = prov;
+                opt.textContent = prov;
+                select.appendChild(opt);
+            });
+            if (select.options.length > 1) select.disabled = false;
+        }
+
+        function filterLguByProvince() {
+            const provinceSelect = document.getElementById('provinceSelect');
+            const lguSelect = document.getElementById('lguSelect');
+            const selectedProvince = provinceSelect.value;
+            lguSelect.innerHTML = '<option value="">-- Select LGU --</option>';
+            lguSelect.disabled = !selectedProvince;
+            if (!selectedProvince) return;
+
+            const lgus = clupRecords.filter(plan => plan.Province === selectedProvince);
+            const unique = new Map();
+            lgus.forEach(plan => {
+                const key = `${plan.LGU}|${plan.Province}`;
+                if (!unique.has(key)) unique.set(key, { lgu: plan.LGU, province: plan.Province, record: plan });
+            });
+            unique.forEach((val) => {
+                const opt = document.createElement('option');
+                opt.value = val.lgu;
+                let statusIndicator = '';
+                if (val.record.Status === 'Approved') statusIndicator = ' ✅';
+                else if (val.record.Status === 'For Review') statusIndicator = ' 📝';
+                else if (val.record.Status === 'Pending') statusIndicator = ' ⏳';
+                opt.textContent = val.lgu + statusIndicator;
+                opt.dataset.record = JSON.stringify(val.record);
+                lguSelect.appendChild(opt);
+            });
+            if (lguSelect.options.length > 1) lguSelect.disabled = false;
+            else { lguSelect.innerHTML = '<option value="">-- No LGUs found --</option>'; lguSelect.disabled = true; }
+        }
+
+        function updateApprovedByFields(plan) {
+            document.getElementById('city').value = plan.LGU || '';
+            document.getElementById('province').value = plan.Province || '';
+            
+            const lguName = (plan.LGU || '').toLowerCase();
+            const isIloiloCity = lguName.includes('iloilo city') || lguName === 'iloilo city';
+            
+            if (isIloiloCity) {
+                document.getElementById('approvedBy').value = 'DHSUD';
+                document.getElementById('circularNo').value = plan.Latest_Plan_Res || 'No Department Circular on file';
+                document.getElementById('iloiloConditionalFields').style.display = 'block';
+            } else {
+                document.getElementById('approvedBy').value = 'Sangguniang Panlalawigan';
+                document.getElementById('circularNo').value = plan.Latest_Plan_Res || 'No SP Resolution on file';
+                document.getElementById('iloiloConditionalFields').style.display = 'none';
+                document.getElementById('landClassGroup').style.display = 'none';
+                document.getElementById('purpose').value = '';
+                document.getElementById('landClass').value = '';
+            }
+            
+            const latestDateRaw = plan.Latest_Date_of_Approval || '';
+            document.getElementById('approvalDate').value = formatDateForInput(latestDateRaw);
+            
+            const firstDateRaw = plan.First_Plan_Date_of_Approval || '';
+            document.getElementById('firstApprovalDateRef').textContent = firstDateRaw ? formatDate(firstDateRaw) : '—';
+            document.getElementById('latestApprovalDateRef').textContent = latestDateRaw ? formatDate(latestDateRaw) : '—';
+            document.getElementById('approvalDatesRef').style.display = 'block';
+        }
+
+        function fillFromApprovedCLUP() {
+            const lguSelect = document.getElementById('lguSelect');
+            const selectedOption = lguSelect.options[lguSelect.selectedIndex];
+            if (!selectedOption || !selectedOption.value) return;
+            const recordData = selectedOption.dataset.record;
+            if (!recordData) return;
+            const plan = JSON.parse(recordData);
+            
+            updateApprovedByFields(plan);
+            
+            alert(`CLUP data for ${plan.LGU} loaded successfully!\n\nApproved by: ${document.getElementById('approvedBy').value}\nDocument: ${document.getElementById('circularNo').value}`);
+        }
+
+        function toggleClupCascade() {
+            const approvedRadio = document.querySelector('input[name="clupStatus"][value="approved"]');
+            const cascadeDiv = document.getElementById('clupCascadeDiv');
+            if (approvedRadio && cascadeDiv) {
+                cascadeDiv.style.display = approvedRadio.checked ? 'block' : 'none';
+                if (approvedRadio.checked) {
+                    populateProvinceSelect();
+                    document.getElementById('lguSelect').innerHTML = '<option value="">-- First select province --</option>';
+                    document.getElementById('lguSelect').disabled = true;
+                    clearApprovedDetailsFields();
+                } else {
+                    document.getElementById('approvalDatesRef').style.display = 'none';
+                    clearApprovedDetailsFields();
+                    document.getElementById('iloiloConditionalFields').style.display = 'none';
+                }
+            }
+        }
+        
+        function clearApprovedDetailsFields() {
+            ['city', 'province', 'approvedBy', 'circularNo', 'approvalDate'].forEach(id => {
+                const field = document.getElementById(id);
+                if (field) field.value = '';
+            });
+            document.getElementById('firstApprovalDateRef').textContent = '—';
+            document.getElementById('latestApprovalDateRef').textContent = '—';
+            document.getElementById('purpose').value = '';
+            document.getElementById('landClass').value = '';
+            document.getElementById('landClassGroup').style.display = 'none';
+            document.getElementById('iloiloConditionalFields').style.display = 'none';
+        }
+
+        function setupClupCascadeEvents() {
+            document.querySelectorAll('input[name="clupStatus"]').forEach(radio => radio.addEventListener('change', toggleClupCascade));
+            toggleClupCascade();
+            const purposeSelect = document.getElementById('purpose');
+            if (purposeSelect) {
+                purposeSelect.addEventListener('change', function() {
+                    const landClassGroup = document.getElementById('landClassGroup');
+                    if (this.value === 'Conversion') {
+                        landClassGroup.style.display = 'block';
+                    } else {
+                        landClassGroup.style.display = 'none';
+                        document.getElementById('landClass').value = '';
+                    }
+                });
+            }
+        }
 
         // ========== ZONING CERTIFICATION WITH STATUS ==========
         let zoningCertifications = [];
