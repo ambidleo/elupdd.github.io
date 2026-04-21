@@ -9,7 +9,7 @@
     <script src="https://unpkg.com/shpjs@3.4.3/dist/shp.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
-        /* ===== Full CSS (unchanged) ===== */
+        /* ===== Full CSS (with added subnav styles) ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #e8f0f9; min-height: 100vh; }
         :root { --primary-dark: #1a4d5e; --primary: #2c6e8f; --primary-light-accessible: #1e7a9c; --secondary: #3a7b5c; --accent-accessible: #d4a017; --earth: #8B5A2B; --water: #3498db; --forest: #27ae60; --urban: #7f8c8d; --background: #f5f9ff; --card-bg: #ffffff; --cert-primary: #8B4513; --cert-secondary: #228B22; --cert-accent: #FFD700; }
@@ -119,7 +119,47 @@
         .cert-table td { padding: 0.75rem; border-bottom: 1px solid #e0e0e0; }
         .cert-table tr:hover { background: #f8f4e8; }
         
-        /* Enhanced Map Popup Styles (unchanged) */
+        /* Zoning Subnav Styles */
+        .zoning-subnav {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--primary-light-accessible);
+            padding-bottom: 0.5rem;
+        }
+        .zoning-subnav .subnav-link {
+            background: none;
+            border: none;
+            padding: 0.8rem 1.8rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary-dark);
+            cursor: pointer;
+            border-radius: 30px 30px 0 0;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            opacity: 0.7;
+        }
+        .zoning-subnav .subnav-link:hover {
+            opacity: 1;
+            background: rgba(44, 110, 143, 0.1);
+        }
+        .zoning-subnav .subnav-link.active {
+            opacity: 1;
+            color: var(--primary);
+            border-bottom: 3px solid var(--accent-accessible);
+            background: rgba(212, 160, 23, 0.1);
+        }
+        .zoning-view {
+            display: none;
+        }
+        .zoning-view.active {
+            display: block;
+        }
+
+        /* Enhanced Map Popup Styles */
         .map-popup-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 30000; justify-content: center; align-items: center; }
         .map-popup-modal.active { display: flex; }
         .map-popup-content { background: white; border-radius: 20px; width: 90%; max-width: 900px; height: 85%; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
@@ -183,8 +223,10 @@
             .search-bar { flex-direction: column; }
             .coord-info { flex-direction: column; align-items: center; }
             .coord-info input { width: 100%; }
+            .zoning-subnav { flex-direction: column; gap: 0.5rem; }
+            .zoning-subnav .subnav-link { border-radius: 30px; justify-content: center; }
         }
-        /* Sync status indicator styles (unchanged) */
+        /* Sync status indicator styles */
         .sync-status { position: fixed; bottom: 20px; left: 20px; background: white; padding: 8px 12px; border-radius: 20px; font-size: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); z-index: 10000; display: flex; align-items: center; gap: 8px; }
         .sync-status.online { border-left: 3px solid #28a745; }
         .sync-status.offline { border-left: 3px solid #dc3545; }
@@ -205,7 +247,6 @@
         .status-for-release { background: #d4edda; color: #155724; }
         .status-released { background: #d1ecf1; color: #0c5460; }
         .status-dropdown { padding: 0.3rem; border-radius: 20px; border: 1px solid #ccc; font-size: 0.75rem; background: white; cursor: pointer; }
-        /* Stats grid for reports */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; }
         .stat-card { background: white; border-radius: 12px; padding: 2rem; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.1); cursor: pointer; transition: all 0.3s; border: 2px solid var(--primary-light-accessible); }
         .stat-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
@@ -229,7 +270,6 @@
 
     <nav class="nav-bar" aria-label="Main navigation" role="navigation">
         <ul role="menubar">
-            <!-- Land Use Plans menu item removed -->
             <li role="none"><a href="#" onclick="showSection('zoning')" class="active" role="menuitem" aria-current="page"><span aria-hidden="true">🏷️</span><span>Site Zoning Certification</span></a></li>
             <li role="none"><a href="#" onclick="showSection('reports')" role="menuitem"><span aria-hidden="true">📊</span><span>Reports</span></a></li>
             <li role="none"><a href="#" onclick="openAboutModal()" role="menuitem"><span aria-hidden="true">ℹ️</span><span>About</span></a></li>
@@ -238,137 +278,163 @@
 
     <main id="main-content" role="main">
         <div class="container">
-            <!-- Site Zoning Certification Section (active by default) -->
+            <!-- Site Zoning Certification Section with Submenu -->
             <div id="zoning" class="section active" role="region" aria-labelledby="zoning-heading">
                 <h1 id="zoning-heading" class="visually-hidden">Site Zoning Certification</h1>
-                <div class="cert-section">
-                    <div class="cert-title"><span aria-hidden="true">🏷️</span> Site Zoning Certification - Data Entry</div>
-                    <form id="zoningForm" onsubmit="return saveZoningRecord(event)" novalidate>
-                        <div class="form-grid">
-                            <div class="form-group"><label for="certificationNo" id="certNoLabel">Certification No.</label><input type="text" class="form-control" id="certificationNo" readonly style="background:#f0f0f0"><small>Auto-generated</small></div>
-                            <div class="form-group"><label for="series">Series</label><input type="text" class="form-control" id="series" value="2002" readonly></div>
-                            <div class="form-group"><label for="parcels">No. of Parcels</label><input type="text" class="form-control" id="parcels" placeholder="e.g., Three hundred seventy-five (375) parcels" required></div>
-                            <div class="form-group full-width"><label for="location">Location of the Property</label><input type="text" class="form-control" id="location" placeholder="Enter complete address" required></div>
-                            <div class="form-group"><label for="latitude">Latitude</label><input type="text" class="form-control" id="latitude" placeholder="e.g., 10.7202" readonly style="background:#f0f0f0"></div>
-                            <div class="form-group"><label for="longitude">Longitude</label><input type="text" class="form-control" id="longitude" placeholder="e.g., 122.5621" readonly style="background:#f0f0f0"><button type="button" class="btn btn-map" onclick="openEnhancedMapPopup()" style="margin-top: 5px; width: 100%;">🗺️ Open Map (Upload GeoJSON)</button></div>
-                            <div class="form-group"><label for="totalArea">Total Area (ha.)</label><input type="text" class="form-control" id="totalArea" placeholder="e.g., 15.5026" required></div>
-                            <div class="form-group"><label for="proposedUse">Proposed Use</label><input type="text" class="form-control" id="proposedUse" placeholder="e.g., Residential-3 Zone" required></div>
-                            <div class="form-group full-width">
-                                <div style="font-weight:600; margin-bottom:0.5rem;">Land Holdings (Multiple Entries)</div>
-                                <div><button type="button" class="btn btn-success" onclick="addLandHolding()" style="padding:5px 10px; font-size:0.9rem;">➕ Add Another Property</button><small style="margin-left:10px;">Each property can have its own lot number and area</small></div>
-                                <div id="landHoldingsContainer"></div>
-                            </div>
-                            <div class="form-group"><label for="dateIssued">Date Issued</label><input type="date" class="form-control" id="dateIssued" required></div>
-                            <div class="form-group"><label for="requestedBy">Requested By</label><input type="text" class="form-control" id="requestedBy" placeholder="Name of requester" required></div>
-                            <div class="form-group"><label for="amountPaid">Amount Paid (₱)</label><input type="text" class="form-control" id="amountPaid" placeholder="e.g., 13,680" required></div>
-                            <div class="form-group"><label for="orNo">O.R. No.</label><input type="text" class="form-control" id="orNo" placeholder="Official Receipt Number"></div>
-                            <div class="form-group"><label for="orDate">O.R. Date</label><input type="date" class="form-control" id="orDate"></div>
-                            <div class="form-group full-width"><label for="remarks">Remarks/Notes</label><textarea class="form-control" id="remarks" rows="3"></textarea></div>
-                        </div>
-                        <h3 class="cert-subtitle">CLUP/Zoning Ordinance Status</h3>
-                        <div class="form-group">
-                            <div style="font-weight:600; margin-bottom:0.5rem;">Select Status:</div>
-                            <div class="radio-group">
-                                <label class="radio-option"><input type="radio" name="clupStatus" value="approved" checked> With Approved CLUP/ZO</label>
-                                <label class="radio-option"><input type="radio" name="clupStatus" value="pending"> With CLUP/ZO Pending Approval</label>
-                                <label class="radio-option"><input type="radio" name="clupStatus" value="none"> Without CLUP/ZO</label>
-                            </div>
-                        </div>
-                        <div id="clupCascadeDiv" style="margin-top: 1rem; padding: 1rem; background: #e8f0fe; border-radius: 8px; display: block;">
-                            <div class="form-grid" style="margin-bottom: 1rem;">
-                                <div class="form-group">
-                                    <label for="provinceSelect">Select Province</label>
-                                    <select id="provinceSelect" class="form-control" onchange="filterLguByProvince()">
-                                        <option value="">-- Choose Province --</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="lguSelect">Select LGU</label>
-                                    <select id="lguSelect" class="form-control" onchange="fillFromApprovedCLUP()" disabled>
-                                        <option value="">-- First select province --</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <small>Automatically fills City/Municipality, Province, Department Circular/SP Resolution No., and Date of Approval from the approved CLUP record.</small>
-                        </div>
+                
+                <!-- Sub-navigation for Data Entry / Accomplishment -->
+                <div class="zoning-subnav" role="tablist">
+                    <button class="subnav-link active" onclick="switchZoningView('dataEntry')" role="tab" aria-selected="true" aria-controls="dataEntryView">
+                        <span aria-hidden="true">📝</span> Data Entry
+                    </button>
+                    <button class="subnav-link" onclick="switchZoningView('accomplishment')" role="tab" aria-selected="false" aria-controls="accomplishmentView">
+                        <span aria-hidden="true">📊</span> Accomplishment
+                    </button>
+                </div>
 
-                        <div id="approvedDetails" style="margin-top:1rem; padding:1rem; background:#f8f4e8; border-radius:8px;">
+                <!-- Data Entry View -->
+                <div id="dataEntryView" class="zoning-view active" role="tabpanel">
+                    <div class="cert-section">
+                        <div class="cert-title"><span aria-hidden="true">🏷️</span> Site Zoning Certification - Data Entry</div>
+                        <form id="zoningForm" onsubmit="return saveZoningRecord(event)" novalidate>
                             <div class="form-grid">
-                                <div class="form-group"><label for="city">City/Municipality</label><input type="text" class="form-control" id="city"></div>
-                                <div class="form-group"><label for="province">Province</label><input type="text" class="form-control" id="province" placeholder="e.g., Iloilo, Aklan, etc."></div>
-                                <div class="form-group"><label for="approvedBy">Approved by</label><input type="text" class="form-control" id="approvedBy" readonly style="background:#f8f4e8; font-weight:600;"></div>
-                                <div class="form-group"><label for="circularNo">Department Circular / SP Resolution No.</label><input type="text" class="form-control" id="circularNo" placeholder="Auto-filled from latest CLUP resolution" readonly style="background:#f8f4e8;"></div>
-                                <div class="form-group"><label for="approvalDate">Date of Approval</label><input type="date" class="form-control" id="approvalDate" readonly style="background:#f8f4e8;"></div>
-                            </div>
-                            <div id="approvalDatesRef" style="margin-top: 0.5rem; font-size: 0.85rem; color: #555; display: none;">
-                                <strong>Approval dates:</strong> <span id="firstApprovalDateRef"></span> (first) | <span id="latestApprovalDateRef"></span> (latest)
-                            </div>
-                            <!-- Conditional fields for Iloilo City -->
-                            <div id="iloiloConditionalFields" style="display: none; margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed #ccc;">
-                                <div class="form-group">
-                                    <label for="purpose">Purpose</label>
-                                    <select id="purpose" class="form-control">
-                                        <option value="">-- Select --</option>
-                                        <option value="Conversion">Conversion</option>
-                                        <option value="ROD">ROD</option>
-                                        <option value="Other">Other</option>
-                                    </select>
+                                <div class="form-group"><label for="certificationNo" id="certNoLabel">Certification No.</label><input type="text" class="form-control" id="certificationNo" readonly style="background:#f0f0f0"><small>Auto-generated</small></div>
+                                <div class="form-group"><label for="series">Series</label><input type="text" class="form-control" id="series" value="2002" readonly></div>
+                                <div class="form-group"><label for="parcels">No. of Parcels</label><input type="text" class="form-control" id="parcels" placeholder="e.g., Three hundred seventy-five (375) parcels" required></div>
+                                <div class="form-group full-width"><label for="location">Location of the Property</label><input type="text" class="form-control" id="location" placeholder="Enter complete address" required></div>
+                                <div class="form-group"><label for="latitude">Latitude</label><input type="text" class="form-control" id="latitude" placeholder="e.g., 10.7202" readonly style="background:#f0f0f0"></div>
+                                <div class="form-group"><label for="longitude">Longitude</label><input type="text" class="form-control" id="longitude" placeholder="e.g., 122.5621" readonly style="background:#f0f0f0"><button type="button" class="btn btn-map" onclick="openEnhancedMapPopup()" style="margin-top: 5px; width: 100%;">🗺️ Open Map (Upload GeoJSON)</button></div>
+                                <div class="form-group"><label for="totalArea">Total Area (ha.)</label><input type="text" class="form-control" id="totalArea" placeholder="e.g., 15.5026" required></div>
+                                <div class="form-group"><label for="proposedUse">Proposed Use</label><input type="text" class="form-control" id="proposedUse" placeholder="e.g., Residential-3 Zone" required></div>
+                                <div class="form-group full-width">
+                                    <div style="font-weight:600; margin-bottom:0.5rem;">Land Holdings (Multiple Entries)</div>
+                                    <div><button type="button" class="btn btn-success" onclick="addLandHolding()" style="padding:5px 10px; font-size:0.9rem;">➕ Add Another Property</button><small style="margin-left:10px;">Each property can have its own lot number and area</small></div>
+                                    <div id="landHoldingsContainer"></div>
                                 </div>
-                                <div id="landClassGroup" style="display: none;">
+                                <div class="form-group"><label for="dateIssued">Date Issued</label><input type="date" class="form-control" id="dateIssued" required></div>
+                                <div class="form-group"><label for="requestedBy">Requested By</label><input type="text" class="form-control" id="requestedBy" placeholder="Name of requester" required></div>
+                                <div class="form-group"><label for="amountPaid">Amount Paid (₱)</label><input type="text" class="form-control" id="amountPaid" placeholder="e.g., 13,680" required></div>
+                                <div class="form-group"><label for="orNo">O.R. No.</label><input type="text" class="form-control" id="orNo" placeholder="Official Receipt Number"></div>
+                                <div class="form-group"><label for="orDate">O.R. Date</label><input type="date" class="form-control" id="orDate"></div>
+                                <div class="form-group full-width"><label for="remarks">Remarks/Notes</label><textarea class="form-control" id="remarks" rows="3"></textarea></div>
+                            </div>
+                            <h3 class="cert-subtitle">CLUP/Zoning Ordinance Status</h3>
+                            <div class="form-group">
+                                <div style="font-weight:600; margin-bottom:0.5rem;">Select Status:</div>
+                                <div class="radio-group">
+                                    <label class="radio-option"><input type="radio" name="clupStatus" value="approved" checked> With Approved CLUP/ZO</label>
+                                    <label class="radio-option"><input type="radio" name="clupStatus" value="pending"> With CLUP/ZO Pending Approval</label>
+                                    <label class="radio-option"><input type="radio" name="clupStatus" value="none"> Without CLUP/ZO</label>
+                                </div>
+                            </div>
+                            <div id="clupCascadeDiv" style="margin-top: 1rem; padding: 1rem; background: #e8f0fe; border-radius: 8px; display: block;">
+                                <div class="form-grid" style="margin-bottom: 1rem;">
                                     <div class="form-group">
-                                        <label for="landClass">Land Class</label>
-                                        <select id="landClass" class="form-control">
-                                            <option value="">-- Select --</option>
-                                            <option value="Agricultural">Agricultural</option>
-                                            <option value="Commercial">Commercial</option>
-                                            <option value="Residential">Residential</option>
-                                            <option value="Industrial">Industrial</option>
-                                            <option value="F and S">F and S</option>
-                                            <option value="Institutional">Institutional</option>
+                                        <label for="provinceSelect">Select Province</label>
+                                        <select id="provinceSelect" class="form-control" onchange="filterLguByProvince()">
+                                            <option value="">-- Choose Province --</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="lguSelect">Select LGU</label>
+                                        <select id="lguSelect" class="form-control" onchange="fillFromApprovedCLUP()" disabled>
+                                            <option value="">-- First select province --</option>
                                         </select>
                                     </div>
                                 </div>
+                                <small>Automatically fills City/Municipality, Province, Department Circular/SP Resolution No., and Date of Approval from the approved CLUP record.</small>
                             </div>
-                        </div>
 
-                        <div id="formMessages" role="alert" class="visually-hidden"></div>
-                        <div style="display:flex; gap:1rem; margin-top:2rem; justify-content:center;">
-                            <button type="submit" class="btn btn-success">💾 Save Certification</button>
-                            <button type="button" class="btn btn-primary" onclick="clearZoningForm()">🔄 Clear Form</button>
-                            <button type="button" class="btn btn-cert" onclick="viewAllCertifications()">📋 View All Records</button>
-                            <button type="button" class="btn btn-print" onclick="printBlankForm()">🖨️ Print Blank Form</button>
-                            <button type="button" class="btn btn-warning" onclick="resetCertificationCounter()">🔄 Reset Counter</button>
-                        </div>
-                    </form>
+                            <div id="approvedDetails" style="margin-top:1rem; padding:1rem; background:#f8f4e8; border-radius:8px;">
+                                <div class="form-grid">
+                                    <div class="form-group"><label for="city">City/Municipality</label><input type="text" class="form-control" id="city"></div>
+                                    <div class="form-group"><label for="province">Province</label><input type="text" class="form-control" id="province" placeholder="e.g., Iloilo, Aklan, etc."></div>
+                                    <div class="form-group"><label for="approvedBy">Approved by</label><input type="text" class="form-control" id="approvedBy" readonly style="background:#f8f4e8; font-weight:600;"></div>
+                                    <div class="form-group"><label for="circularNo">Department Circular / SP Resolution No.</label><input type="text" class="form-control" id="circularNo" placeholder="Auto-filled from latest CLUP resolution" readonly style="background:#f8f4e8;"></div>
+                                    <div class="form-group"><label for="approvalDate">Date of Approval</label><input type="date" class="form-control" id="approvalDate" readonly style="background:#f8f4e8;"></div>
+                                </div>
+                                <div id="approvalDatesRef" style="margin-top: 0.5rem; font-size: 0.85rem; color: #555; display: none;">
+                                    <strong>Approval dates:</strong> <span id="firstApprovalDateRef"></span> (first) | <span id="latestApprovalDateRef"></span> (latest)
+                                </div>
+                                <div id="iloiloConditionalFields" style="display: none; margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed #ccc;">
+                                    <div class="form-group">
+                                        <label for="purpose">Purpose</label>
+                                        <select id="purpose" class="form-control">
+                                            <option value="">-- Select --</option>
+                                            <option value="Conversion">Conversion</option>
+                                            <option value="ROD">ROD</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+                                    <div id="landClassGroup" style="display: none;">
+                                        <div class="form-group">
+                                            <label for="landClass">Land Class</label>
+                                            <select id="landClass" class="form-control">
+                                                <option value="">-- Select --</option>
+                                                <option value="Agricultural">Agricultural</option>
+                                                <option value="Commercial">Commercial</option>
+                                                <option value="Residential">Residential</option>
+                                                <option value="Industrial">Industrial</option>
+                                                <option value="F and S">F and S</option>
+                                                <option value="Institutional">Institutional</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="formMessages" role="alert" class="visually-hidden"></div>
+                            <div style="display:flex; gap:1rem; margin-top:2rem; justify-content:center; flex-wrap:wrap;">
+                                <button type="submit" class="btn btn-success">💾 Save Certification</button>
+                                <button type="button" class="btn btn-primary" onclick="clearZoningForm()">🔄 Clear Form</button>
+                                <button type="button" class="btn btn-cert" onclick="switchZoningView('accomplishment')">📋 View Accomplishment</button>
+                                <button type="button" class="btn btn-print" onclick="printBlankForm()">🖨️ Print Blank Form</button>
+                                <button type="button" class="btn btn-warning" onclick="resetCertificationCounter()">🔄 Reset Counter</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-                <div class="cert-section" id="recordsSection" style="display:none;">
-                    <div class="cert-title"><span aria-hidden="true">📋</span> Saved Certifications</div>
-                    <div class="search-bar" style="margin-bottom: 1rem; padding: 1rem; background: #f8faff; border-radius: 12px;">
-                        <div class="search-box" style="flex: 2;">
-                            <span aria-hidden="true">🔍</span>
-                            <input type="text" id="certSearchInput" placeholder="Search by Certification No., Location, or Requested By..." onkeyup="filterCertificationsTable()">
+
+                <!-- Accomplishment View (Records Table) -->
+                <div id="accomplishmentView" class="zoning-view" role="tabpanel">
+                    <div class="cert-section">
+                        <div class="cert-title"><span aria-hidden="true">📊</span> Certification Accomplishment</div>
+                        <div class="search-bar" style="margin-bottom: 1rem; padding: 1rem; background: #f8faff; border-radius: 12px;">
+                            <div class="search-box" style="flex: 2;">
+                                <span aria-hidden="true">🔍</span>
+                                <input type="text" id="certSearchInput" placeholder="Search by Certification No., Location, or Requested By..." onkeyup="filterCertificationsTable()">
+                            </div>
+                            <div class="filter-group" style="min-width: 160px;">
+                                <select id="certStatusFilter" onchange="filterCertificationsTable()">
+                                    <option value="">All Status</option>
+                                    <option value="For Review">For Review</option>
+                                    <option value="For RD Signature">For RD Signature</option>
+                                    <option value="For Release">For Release</option>
+                                    <option value="Released">Released</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary" onclick="filterCertificationsTable()" style="padding: 0.8rem 1.5rem;">🔍 Search</button>
+                            <button class="btn btn-secondary" onclick="clearCertSearch()" style="padding: 0.8rem 1.5rem;">🗑️ Clear</button>
                         </div>
-                        <div class="filter-group" style="min-width: 160px;">
-                            <select id="certStatusFilter" onchange="filterCertificationsTable()">
-                                <option value="">All Status</option>
-                                <option value="For Review">For Review</option>
-                                <option value="For RD Signature">For RD Signature</option>
-                                <option value="For Release">For Release</option>
-                                <option value="Released">Released</option>
-                            </select>
+                        <!-- Summary Stats -->
+                        <div style="display: flex; gap: 2rem; margin-bottom: 1.5rem; justify-content: space-around; background: #e9f2f9; padding: 1rem; border-radius: 12px;">
+                            <div style="text-align: center;"><span style="font-size: 2rem; font-weight: bold; color: var(--primary-dark);" id="totalCertCount">0</span><br>Total Certifications</div>
+                            <div style="text-align: center;"><span style="font-size: 2rem; font-weight: bold; color: var(--secondary);" id="releasedCertCount">0</span><br>Released</div>
+                            <div style="text-align: center;"><span style="font-size: 2rem; font-weight: bold; color: var(--accent-accessible);" id="pendingCertCount">0</span><br>Pending/Review</div>
                         </div>
-                        <button class="btn btn-primary" onclick="filterCertificationsTable()" style="padding: 0.8rem 1.5rem;">🔍 Search</button>
-                        <button class="btn btn-secondary" onclick="clearCertSearch()" style="padding: 0.8rem 1.5rem;">🗑️ Clear</button>
+                        <div style="overflow-x:auto;">
+                            <table class="cert-table" id="certificationsTable">
+                                <thead>
+                                    <tr><th>Certification No.</th><th>No. of Parcels</th><th>Location</th><th>Total Area</th><th>Date Issued</th><th>Requested By</th><th>Status</th><th>Actions</th></tr>
+                                </thead>
+                                <tbody id="certificationsTableBody"></tbody>
+                            </table>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 1rem;">
+                            <button class="btn btn-primary" onclick="switchZoningView('dataEntry')">⬅️ Back to Data Entry</button>
+                            <button class="btn btn-success" onclick="exportCertificationsToCSV()">📥 Export to CSV</button>
+                        </div>
                     </div>
-                    <div style="overflow-x:auto;">
-                        <table class="cert-table" id="certificationsTable">
-                            <thead>
-                                <tr><th>Certification No.</th><th>No. of Parcels</th><th>Location</th><th>Total Area</th><th>Date Issued</th><th>Requested By</th><th>Status</th><th>Actions</th></tr>
-                            </thead>
-                            <tbody id="certificationsTableBody"></tbody>
-                        </table>
-                    </div>
-                    <div style="text-align:right; margin-top:1rem;"><button class="btn btn-secondary" onclick="toggleRecordsView()">Hide Records</button></div>
                 </div>
             </div>
 
@@ -649,6 +715,46 @@
         function showLoadingOverlay() { document.getElementById('syncLoading').classList.add('active'); }
         function hideLoadingOverlay() { document.getElementById('syncLoading').classList.remove('active'); }
 
+        // ========== ZONING SUBNAV SWITCH ==========
+        function switchZoningView(view) {
+            // Update active tab styles
+            document.querySelectorAll('.zoning-subnav .subnav-link').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.zoning-view').forEach(v => v.classList.remove('active'));
+            
+            if (view === 'dataEntry') {
+                document.querySelector('.subnav-link[onclick*="dataEntry"]').classList.add('active');
+                document.getElementById('dataEntryView').classList.add('active');
+            } else {
+                document.querySelector('.subnav-link[onclick*="accomplishment"]').classList.add('active');
+                document.getElementById('accomplishmentView').classList.add('active');
+                renderCertificationsTable(); // refresh
+                updateAccomplishmentStats();
+            }
+        }
+
+        function updateAccomplishmentStats() {
+            const total = zoningCertifications.length;
+            const released = zoningCertifications.filter(r => r.status === 'Released').length;
+            const pending = total - released;
+            document.getElementById('totalCertCount').textContent = total;
+            document.getElementById('releasedCertCount').textContent = released;
+            document.getElementById('pendingCertCount').textContent = pending;
+        }
+
+        function exportCertificationsToCSV() {
+            if (!zoningCertifications.length) { alert('No data to export.'); return; }
+            const headers = ['Certification No.', 'Series', 'Parcels', 'Location', 'Total Area', 'Proposed Use', 'Date Issued', 'Requested By', 'Amount Paid', 'OR No.', 'OR Date', 'Status', 'City', 'Province', 'Approved By', 'Circular No.', 'Approval Date'];
+            const rows = zoningCertifications.map(r => [
+                r.certificationNo, r.series, r.parcels, r.location, r.totalArea, r.proposedUse, r.dateIssued, r.requestedBy, r.amountPaid, r.orNo, r.orDate, r.status, r.city, r.province, r.approvedBy, r.circularNo, r.approvalDate
+            ]);
+            const csvContent = [headers.join(','), ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g,'""')}"`).join(','))].join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `zoning_accomplishment_${new Date().toISOString().slice(0,10)}.csv`;
+            link.click();
+        }
+
         // ========== CERTIFICATION NUMBER MANAGEMENT ==========
         async function getNextCertificationNumberFromServer() {
             return new Promise(async (resolve, reject) => {
@@ -896,11 +1002,13 @@
                 localStorage.setItem('zoningCertifications', JSON.stringify(zoningCertifications));
                 await updateLocalCounterAfterSync();
                 renderCertificationsTable();
+                updateAccomplishmentStats();
             } catch (error) {
                 zoningCertifications = JSON.parse(localStorage.getItem('zoningCertifications') || '[]');
                 zoningCertifications.forEach(rec => { if (!rec.status) rec.status = 'For Review'; });
                 updateCounterFromData();
                 renderCertificationsTable();
+                updateAccomplishmentStats();
             }
         }
 
@@ -991,7 +1099,7 @@
                     const certNumber = parseInt(record.certificationNo.split('-')[1]);
                     if (certNumber > localCounter.lastCertNumber) { localCounter.lastCertNumber = certNumber; localStorage.setItem('certificationCounter', JSON.stringify(localCounter)); }
                     renderCertificationsTable(); clearZoningForm(); await refreshCertificationNumber();
-                    document.getElementById('recordsSection').style.display = 'block';
+                    updateAccomplishmentStats();
                     alert(`Saved locally! No: ${certificationNo}`);
                     saveBtn.innerHTML = originalText; saveBtn.disabled = false;
                     return false;
@@ -1006,8 +1114,9 @@
                     localStorage.setItem('zoningCertifications', JSON.stringify(zoningCertifications));
                     await updateLocalCounterAfterSync();
                     renderCertificationsTable(); clearZoningForm(); await refreshCertificationNumber();
-                    document.getElementById('recordsSection').style.display = 'block';
+                    updateAccomplishmentStats();
                     alert(`Saved to Google Sheets! No: ${certificationNo}`);
+                    switchZoningView('accomplishment'); // automatically show accomplishment after save
                 } else if (result.duplicate) { alert('Certification number conflict. Try again.'); await refreshCertificationNumber(); }
                 else throw new Error(result.error || 'Save failed');
             } catch (error) { alert('Failed to save: ' + error.message); }
@@ -1025,6 +1134,7 @@
                     else addToPendingSync('zoning', 'update', { id: recordId, status: newStatus });
                 });
                 renderCertificationsTable();
+                updateAccomplishmentStats();
                 showToast(`Status updated to "${newStatus}"`, 'success');
             }
         }
@@ -1062,6 +1172,7 @@
         async function editZoningRecord(id) {
             const rec = zoningCertifications.find(r => r.id === id); if (!rec) return;
             currentEditingZoningId = id;
+            switchZoningView('dataEntry');
             document.getElementById('certificationNo').value = rec.certificationNo;
             document.getElementById('parcels').value = rec.parcels;
             document.getElementById('location').value = rec.location;
@@ -1088,20 +1199,19 @@
                 container.appendChild(row); });
             } else addLandHolding();
             toggleClupCascade();
-            showSection('zoning');
         }
 
         async function deleteZoningRecord(id) {
             if (confirm('Delete this record?')) {
                 try {
                     const isOnline = await checkGoogleSheetsConnection();
-                    if (!isOnline) { addToPendingSync('zoning', 'delete', { id }); zoningCertifications = zoningCertifications.filter(r => r.id !== id); localStorage.setItem('zoningCertifications', JSON.stringify(zoningCertifications)); updateCounterFromData(); renderCertificationsTable(); alert('Deleted locally.'); return; }
+                    if (!isOnline) { addToPendingSync('zoning', 'delete', { id }); zoningCertifications = zoningCertifications.filter(r => r.id !== id); localStorage.setItem('zoningCertifications', JSON.stringify(zoningCertifications)); updateCounterFromData(); renderCertificationsTable(); updateAccomplishmentStats(); alert('Deleted locally.'); return; }
                     const params = new URLSearchParams(); params.append('action', 'delete'); params.append('data_type', 'zoning'); params.append('data', JSON.stringify({ id }));
                     const response = await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: params });
                     const result = await response.json();
-                    if (result.success) { zoningCertifications = zoningCertifications.filter(r => r.id !== id); localStorage.setItem('zoningCertifications', JSON.stringify(zoningCertifications)); updateCounterFromData(); renderCertificationsTable(); alert('Deleted.'); }
+                    if (result.success) { zoningCertifications = zoningCertifications.filter(r => r.id !== id); localStorage.setItem('zoningCertifications', JSON.stringify(zoningCertifications)); updateCounterFromData(); renderCertificationsTable(); updateAccomplishmentStats(); alert('Deleted.'); }
                     else alert('Failed to delete.');
-                } catch (error) { addToPendingSync('zoning', 'delete', { id }); zoningCertifications = zoningCertifications.filter(r => r.id !== id); localStorage.setItem('zoningCertifications', JSON.stringify(zoningCertifications)); updateCounterFromData(); renderCertificationsTable(); alert('Deleted locally. Will sync later.'); }
+                } catch (error) { addToPendingSync('zoning', 'delete', { id }); zoningCertifications = zoningCertifications.filter(r => r.id !== id); localStorage.setItem('zoningCertifications', JSON.stringify(zoningCertifications)); updateCounterFromData(); renderCertificationsTable(); updateAccomplishmentStats(); alert('Deleted locally. Will sync later.'); }
             }
         }
 
@@ -1133,9 +1243,7 @@
             else alert('At least one land holding is required.');
         }
 
-        function viewAllCertifications() { document.getElementById('recordsSection').style.display = 'block'; renderCertificationsTable(); }
-        function toggleRecordsView() { document.getElementById('recordsSection').style.display = 'none'; }
-        function filterCertificationsTable() { renderCertificationsTable(); }
+        function filterCertificationsTable() { renderCertificationsTable(); updateAccomplishmentStats(); }
         function clearCertSearch() { document.getElementById('certSearchInput').value = ''; document.getElementById('certStatusFilter').value = ''; filterCertificationsTable(); }
         function resetCertificationCounter() { if (confirm('Reset counter?')) { certificationCounter.lastCertNumber = 0; localStorage.setItem('certificationCounter', JSON.stringify(certificationCounter)); refreshCertificationNumber(); alert('Counter reset.'); } }
 
