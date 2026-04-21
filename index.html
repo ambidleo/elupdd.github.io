@@ -299,6 +299,7 @@
                         <form id="zoningForm" onsubmit="return saveZoningRecord(event)" novalidate>
                             <div class="form-grid">
                                 <div class="form-group"><label for="certificationNo" id="certNoLabel">Certification No.</label><input type="text" class="form-control" id="certificationNo" readonly style="background:#f0f0f0"><small>Auto-generated</small></div>
+                                <div class="form-group"><label for="certificationIssued">Certification Issued</label><select class="form-control" id="certificationIssued" required><option value="">-- Select --</option><option value="Zoning (Simple)">Zoning (Simple)</option><option value="Zoning DAR (Complex)">Zoning DAR (Complex)</option><option value="Zoning DAR (Simple)">Zoning DAR (Simple)</option><option value="Reclass Indorsement">Reclass Indorsement</option><option value="Locational Clearance">Locational Clearance</option><option value="Locational Clearance - National Significance">Locational Clearance - National Significance</option></select></div>
                                 <div class="form-group"><label for="series">Series</label><input type="text" class="form-control" id="series" value="2002" readonly></div>
                                 <div class="form-group"><label for="parcels">No. of Parcels</label><input type="text" class="form-control" id="parcels" placeholder="e.g., Three hundred seventy-five (375) parcels" required></div>
                                 <div class="form-group full-width"><label for="location">Location of the Property</label><input type="text" class="form-control" id="location" placeholder="Enter complete address" required></div>
@@ -387,6 +388,7 @@
                             <div style="display:flex; gap:1rem; margin-top:2rem; justify-content:center; flex-wrap:wrap;">
                                 <button type="submit" class="btn btn-success">💾 Save Certification</button>
                                 <button type="button" class="btn btn-primary" onclick="clearZoningForm()">🔄 Clear Form</button>
+                                <button type="button" class="btn btn-cert" onclick="switchZoningView('accomplishment')">📋 View Accomplishment</button>
                                 <button type="button" class="btn btn-print" onclick="printBlankForm()">🖨️ Print Blank Form</button>
                                 <button type="button" class="btn btn-warning" onclick="resetCertificationCounter()">🔄 Reset Counter</button>
                             </div>
@@ -424,7 +426,7 @@
                         <div style="overflow-x:auto;">
                             <table class="cert-table" id="certificationsTable">
                                 <thead>
-                                    <tr><th>Certification No.</th><th>No. of Parcels</th><th>Location</th><th>Total Area</th><th>Date Issued</th><th>Requested By</th><th>Status</th><th>Actions</th></tr>
+                                    <tr><th>Certification No.</th><th>Type</th><th>No. of Parcels</th><th>Location</th><th>Total Area</th><th>Date Issued</th><th>Requested By</th><th>Status</th><th>Actions</th></tr>
                                 </thead>
                                 <tbody id="certificationsTableBody"></tbody>
                             </table>
@@ -742,9 +744,9 @@
 
         function exportCertificationsToCSV() {
             if (!zoningCertifications.length) { alert('No data to export.'); return; }
-            const headers = ['Certification No.', 'Series', 'Parcels', 'Location', 'Total Area', 'Proposed Use', 'Date Issued', 'Requested By', 'Amount Paid', 'OR No.', 'OR Date', 'Status', 'City', 'Province', 'Approved By', 'Circular No.', 'Approval Date'];
+            const headers = ['Certification No.', 'Type', 'Series', 'Parcels', 'Location', 'Total Area', 'Proposed Use', 'Date Issued', 'Requested By', 'Amount Paid', 'OR No.', 'OR Date', 'Status', 'City', 'Province', 'Approved By', 'Circular No.', 'Approval Date'];
             const rows = zoningCertifications.map(r => [
-                r.certificationNo, r.series, r.parcels, r.location, r.totalArea, r.proposedUse, r.dateIssued, r.requestedBy, r.amountPaid, r.orNo, r.orDate, r.status, r.city, r.province, r.approvedBy, r.circularNo, r.approvalDate
+                r.certificationNo, r.certificationIssued || '', r.series, r.parcels, r.location, r.totalArea, r.proposedUse, r.dateIssued, r.requestedBy, r.amountPaid, r.orNo, r.orDate, r.status, r.city, r.province, r.approvedBy, r.circularNo, r.approvalDate
             ]);
             const csvContent = [headers.join(','), ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g,'""')}"`).join(','))].join('\n');
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -1043,6 +1045,7 @@
                 if (!currentEditingZoningId) { const certResult = await generateUniqueCertificationNumber(); certificationNo = certResult.certNumber; }
                 else certificationNo = zoningCertifications.find(r => r.id === currentEditingZoningId).certificationNo;
                 
+                const certificationIssued = document.getElementById('certificationIssued').value;
                 const parcels = document.getElementById('parcels').value;
                 const location = document.getElementById('location').value;
                 const latitude = document.getElementById('latitude').value || '';
@@ -1065,7 +1068,7 @@
                 const landClass = document.getElementById('landClass').value || '';
                 const status = 'For Review';
 
-                if (!parcels || !location || !totalArea || !proposedUse || !dateIssued || !requestedBy || !amountPaid) { alert('Please fill all required fields.'); saveBtn.innerHTML = originalText; saveBtn.disabled = false; return false; }
+                if (!certificationIssued || !parcels || !location || !totalArea || !proposedUse || !dateIssued || !requestedBy || !amountPaid) { alert('Please fill all required fields.'); saveBtn.innerHTML = originalText; saveBtn.disabled = false; return false; }
 
                 const landHoldings = [];
                 const owners = document.getElementsByName('registeredOwner[]');
@@ -1080,7 +1083,7 @@
 
                 const record = {
                     id: currentEditingZoningId || Date.now(),
-                    certificationNo, series: document.getElementById('series').value, parcels, location, latitude, longitude, totalArea, proposedUse,
+                    certificationNo, certificationIssued, series: document.getElementById('series').value, parcels, location, latitude, longitude, totalArea, proposedUse,
                     landHoldings, dateIssued, requestedBy, amountPaid, orNo, orDate, remarks, clupStatus,
                     city, province, approvedBy, circularNo, approvalDate, purpose, landClass, status,
                     timestamp: new Date().toLocaleString()
@@ -1148,10 +1151,10 @@
                 (!statusFilter || rec.status === statusFilter)
             );
             filtered.sort((a,b) => new Date(b.dateIssued) - new Date(a.dateIssued));
-            tbody.innerHTML = filtered.length ? '' : '<tr><td colspan="8" style="text-align:center;">No records found.</td></tr>';
+            tbody.innerHTML = filtered.length ? '' : '<tr><td colspan="9" style="text-align:center;">No records found.</td></tr>';
             filtered.forEach(rec => {
                 const row = tbody.insertRow();
-                row.innerHTML = `<td>${escapeHtml(rec.certificationNo)}</td><td>${escapeHtml(rec.parcels)}</td><td>${escapeHtml(rec.location)}</td><td>${escapeHtml(rec.totalArea)} ha</td><td>${formatDate(rec.dateIssued)}</td><td>${escapeHtml(rec.requestedBy)}</td>
+                row.innerHTML = `<td>${escapeHtml(rec.certificationNo)}</td><td>${escapeHtml(rec.certificationIssued || '—')}</td><td>${escapeHtml(rec.parcels)}</td><td>${escapeHtml(rec.location)}</td><td>${escapeHtml(rec.totalArea)} ha</td><td>${formatDate(rec.dateIssued)}</td><td>${escapeHtml(rec.requestedBy)}</td>
                 <td><select class="status-dropdown" onchange="updateCertificationStatus(${rec.id}, this.value)"><option value="For Review" ${rec.status==='For Review'?'selected':''}>For Review</option><option value="For RD Signature" ${rec.status==='For RD Signature'?'selected':''}>For RD Signature</option><option value="For Release" ${rec.status==='For Release'?'selected':''}>For Release</option><option value="Released" ${rec.status==='Released'?'selected':''}>Released</option></select></td>
                 <td><div class="action-btns"><button class="action-btn view" onclick="viewZoningRecord(${rec.id})">👁️</button><button class="action-btn edit" onclick="editZoningRecord(${rec.id})">✏️</button><button class="action-btn print" onclick="printZoningRecord(${rec.id})">🖨️</button><button class="action-btn delete" onclick="deleteZoningRecord(${rec.id})">🗑️</button></div></td>`;
             });
@@ -1173,6 +1176,7 @@
             currentEditingZoningId = id;
             switchZoningView('dataEntry');
             document.getElementById('certificationNo').value = rec.certificationNo;
+            document.getElementById('certificationIssued').value = rec.certificationIssued || '';
             document.getElementById('parcels').value = rec.parcels;
             document.getElementById('location').value = rec.location;
             document.getElementById('latitude').value = rec.latitude || '';
