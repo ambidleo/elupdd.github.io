@@ -9,7 +9,7 @@
     <script src="https://unpkg.com/shpjs@3.4.3/dist/shp.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
-        /* ===== Full CSS (unchanged except added tab styles) ===== */
+        /* ===== Full CSS ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #e8f0f9; min-height: 100vh; }
         :root { --primary-dark: #1a4d5e; --primary: #2c6e8f; --primary-light-accessible: #1e7a9c; --secondary: #3a7b5c; --accent-accessible: #d4a017; --earth: #8B5A2B; --water: #3498db; --forest: #27ae60; --urban: #7f8c8d; --background: #f5f9ff; --card-bg: #ffffff; --cert-primary: #8B4513; --cert-secondary: #228B22; --cert-accent: #FFD700; }
@@ -41,6 +41,45 @@
         .container { max-width: 1400px; margin: 2rem auto; padding: 0 2rem; }
         .section { display: none; }
         .section.active { display: block; }
+        .map-section { background: var(--card-bg); border-radius: 15px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 5px 20px rgba(0,0,0,0.1); border-left: 8px solid var(--primary); }
+        .map-title { color: var(--primary-dark); font-size: 1.8rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 1rem; }
+        .map-title span { background: var(--primary-light-accessible); color: white; padding: 0.3rem 1rem; border-radius: 30px; font-size: 0.9rem; }
+        .map-controls { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; align-items: center; background: #f8faff; padding: 1.5rem; border-radius: 12px; }
+        .file-upload { flex: 2; min-width: 300px; position: relative; }
+        .file-upload input[type="file"] { position: absolute; width: 0.1px; height: 0.1px; opacity: 0; overflow: hidden; z-index: -1; }
+        .file-upload label { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.8rem 1.5rem; background: var(--primary); color: white; border-radius: 30px; cursor: pointer; transition: all 0.3s; font-weight: 600; border: 2px solid transparent; }
+        .file-upload label:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(44, 110, 143, 0.3); }
+        .file-upload label.uploading { background: var(--accent-accessible); color: var(--primary-dark); pointer-events: none; }
+        .layer-controls { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .layer-list { flex: 1; min-width: 250px; background: white; border-radius: 30px; padding: 0.3rem 1rem; border: 2px solid #e0e7ff; }
+        .layer-list select { width: 100%; padding: 0.5rem; border: none; background: transparent; font-size: 0.95rem; outline: none; cursor: pointer; }
+        .map-container { height: 500px; width: 100%; border-radius: 12px; overflow: hidden; box-shadow: 0 3px 15px rgba(0,0,0,0.2); border: 2px solid var(--primary-light-accessible); margin-bottom: 1.5rem; }
+        .map-legend { display: flex; flex-wrap: wrap; gap: 2rem; padding: 1rem; background: #f8faff; border-radius: 10px; margin-top: 1rem; }
+        .legend-item { display: flex; align-items: center; gap: 0.5rem; }
+        .legend-color { width: 20px; height: 20px; border-radius: 4px; }
+        .legend-color.approved { background-color: #27ae60; opacity: 0.7; }
+        .legend-color.review { background-color: #f39c12; opacity: 0.7; }
+        .legend-color.pending { background-color: #e74c3c; opacity: 0.7; }
+        .legend-color.shapefile { background-color: #8e44ad; opacity: 0.7; }
+        .legend-color.geojson { background-color: #ff6b6b; opacity: 0.7; }
+        .upload-info { margin-top: 1rem; padding: 1rem; background: #e3f2fd; border-radius: 8px; font-size: 0.95rem; color: var(--primary-dark); display: none; }
+        .upload-info.show { display: block; }
+        .upload-info.error { background: #ffebee; color: #c62828; }
+        .upload-info.success { background: #e8f5e9; color: #2e7d32; }
+        .province-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1.5rem; }
+        .province-stat-card { background: linear-gradient(135deg, #f8faff, white); padding: 1rem; border-radius: 8px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border: 1px solid #e0e7ff; cursor: pointer; transition: all 0.3s; }
+        .province-stat-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(44, 110, 143, 0.2); border-color: var(--primary); }
+        .province-stat-card h4 { color: var(--primary-dark); margin-bottom: 0.5rem; font-size: 1.1rem; }
+        .province-stat-card .status { font-size: 0.9rem; padding: 0.2rem 0.8rem; border-radius: 20px; display: inline-block; margin-top: 0.3rem; }
+        .province-stat-card .status.approved { background: #d4edda; color: #155724; }
+        .province-stat-card .status.review { background: #fff3cd; color: #856404; }
+        .overview-section { background: var(--card-bg); border-radius: 15px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 5px 20px rgba(0,0,0,0.1); border-left: 8px solid var(--primary); }
+        .overview-title { color: var(--primary-dark); font-size: 1.8rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 1rem; }
+        .overview-title span { background: var(--primary-light-accessible); color: white; padding: 0.3rem 1rem; border-radius: 30px; font-size: 0.9rem; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin: 2rem 0; }
+        .stat-card { background: linear-gradient(135deg, #f8faff, white); padding: 1.5rem; border-radius: 12px; text-align: center; box-shadow: 0 3px 10px rgba(0,0,0,0.1); border: 1px solid #e0e7ff; }
+        .stat-number { font-size: 2.2rem; font-weight: bold; color: var(--primary); }
+        .stat-label { color: #666; margin-top: 0.5rem; font-size: 0.95rem; }
         .data-section { background: var(--card-bg); border-radius: 15px; padding: 2rem; margin: 2rem 0; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
         .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
         .section-header h3 { color: var(--primary-dark); font-size: 1.6rem; display: flex; align-items: center; gap: 0.5rem; }
@@ -114,41 +153,18 @@
         .cert-title { color: var(--cert-primary); font-size: 1.8rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 1rem; border-bottom: 3px solid var(--cert-accent); padding-bottom: 0.5rem; }
         .cert-title span { background: var(--cert-secondary); color: white; padding: 0.3rem 1rem; border-radius: 30px; font-size: 1rem; }
         .cert-subtitle { color: var(--cert-primary); font-size: 1.3rem; margin: 2rem 0 1rem; text-decoration: underline; }
+        .province-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin: 2rem 0; }
+        .province-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.1); border: 1px solid #e0e7ff; transition: all 0.3s; }
+        .province-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(44, 110, 143, 0.2); border-color: var(--primary); }
+        .province-header { background: linear-gradient(135deg, var(--primary), var(--primary-light-accessible)); color: white; padding: 1rem; font-size: 1.2rem; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+        .province-body { padding: 1.5rem; }
+        .province-stat { display: flex; justify-content: space-between; margin-bottom: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px dashed #e0e7ff; }
+        .province-stat span:first-child { color: #666; }
+        .province-stat span:last-child { font-weight: bold; color: var(--primary-dark); }
         .cert-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
         .cert-table th { background: var(--cert-primary); color: white; padding: 0.75rem; text-align: left; }
         .cert-table td { padding: 0.75rem; border-bottom: 1px solid #e0e0e0; }
         .cert-table tr:hover { background: #f8f4e8; }
-        
-        /* Tabs inside zoning section */
-        .zoning-tabs {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1.5rem;
-            border-bottom: 2px solid #e0e7ff;
-            padding-bottom: 0;
-        }
-        .zoning-tab {
-            padding: 0.8rem 1.8rem;
-            background: #f1f5f9;
-            border: none;
-            border-radius: 30px 30px 0 0;
-            cursor: pointer;
-            font-weight: 600;
-            color: var(--primary-dark);
-            transition: all 0.2s;
-            font-size: 1rem;
-        }
-        .zoning-tab.active {
-            background: var(--primary);
-            color: white;
-            box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
-        }
-        .zoning-tab-content {
-            display: none;
-        }
-        .zoning-tab-content.active {
-            display: block;
-        }
         
         /* Map Popup Modal Styles */
         .map-popup-modal {
@@ -170,8 +186,8 @@
             background: white;
             border-radius: 20px;
             width: 90%;
-            max-width: 900px;
-            height: 85%;
+            max-width: 800px;
+            height: 80%;
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -185,44 +201,102 @@
             justify-content: space-between;
             align-items: center;
         }
-        .map-popup-header h3 { margin: 0; }
-        .map-popup-close { background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
-        .map-popup-body { flex: 1; padding: 15px; overflow-y: auto; }
-        #popupMap { height: 350px; width: 100%; border-radius: 10px; }
-        .coord-info { margin-top: 10px; padding: 10px; background: #f0f0f0; border-radius: 8px; display: flex; gap: 15px; justify-content: center; }
-        .coord-info input { padding: 8px; border: 1px solid #ccc; border-radius: 5px; width: 180px; }
-        .layer-panel { margin-top: 15px; background: #f8faff; border-radius: 12px; padding: 12px; border: 1px solid #e0e7ff; }
-        .layer-list-container { max-height: 180px; overflow-y: auto; margin-top: 10px; }
-        .layer-item { background: white; border-radius: 30px; padding: 6px 12px; margin: 6px 0; display: flex; justify-content: space-between; align-items: center; border: 1px solid #cbd5e1; }
-        .layer-name { font-weight: 600; font-size: 0.85rem; }
-        .layer-actions { display: flex; gap: 8px; }
-        .map-popup-footer { padding: 15px; text-align: right; border-top: 1px solid #ddd; }
-        
-        /* Report card styles */
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin: 2rem 0; }
-        .stat-card { background: linear-gradient(135deg, #f8faff, white); padding: 1.5rem; border-radius: 12px; text-align: center; box-shadow: 0 3px 10px rgba(0,0,0,0.1); border: 1px solid #e0e7ff; cursor: pointer; }
-        .stat-number { font-size: 2.2rem; font-weight: bold; color: var(--primary); }
-        .stat-label { color: #666; margin-top: 0.5rem; font-size: 0.95rem; }
-        .chart-container { background: #f9fafc; border-radius: 12px; padding: 1rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        canvas#statusChart, canvas#monthlyChart { max-height: 400px; width: 100%; }
+        .map-popup-header h3 {
+            margin: 0;
+        }
+        .map-popup-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .map-popup-body {
+            flex: 1;
+            padding: 15px;
+        }
+        #popupMap {
+            height: 350px;
+            width: 100%;
+            border-radius: 10px;
+        }
+        .coord-info {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        .coord-info input {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 180px;
+        }
+        .map-popup-footer {
+            padding: 15px;
+            text-align: right;
+            border-top: 1px solid #ddd;
+        }
         
         @media print {
-            .signature-box p:first-of-type { white-space: nowrap !important; }
-            { size: A4; margin: 0.5cm; }
-            body * { visibility: hidden; }
-            #printSection, #printSection * { visibility: visible; }
-            #printSection { position: absolute; left: 0; top: 0; width: 100%; background: white; font-family: 'Times New Roman', Times, serif; }
-            .print-document { margin: 0; padding: 0; max-width: 100%; }
-            .print-document, .print-document * { page-break-after: avoid; page-break-before: avoid; page-break-inside: avoid; }
+            .signature-box p:first-of-type {
+                white-space: nowrap !important;
+            }
+            { 
+                size: A4; 
+                margin: 0.5cm;
+            }
+            body * { 
+                visibility: hidden; 
+            }
+            #printSection, #printSection * { 
+                visibility: visible; 
+            }
+            #printSection { 
+                position: absolute; 
+                left: 0; 
+                top: 0; 
+                width: 100%; 
+                background: white; 
+                font-family: 'Times New Roman', Times, serif;
+            }
+            .print-document { 
+                margin: 0; 
+                padding: 0; 
+                max-width: 100%; 
+            }
+            .print-document,
+            .print-document * {
+                page-break-after: avoid;
+                page-break-before: avoid;
+                page-break-inside: avoid;
+            }
         }
         .print-document { font-family: 'Times New Roman', Times, serif; max-width: 100%; margin: 0; padding: 1cm; line-height: 1.0; font-size: 12pt; background: white; box-sizing: border-box; }
-        .print-document h2, .print-document h3, .print-document h4 { text-align: center; }
-        .print-document table { width: 100%; border-collapse: collapse; margin: 0.5cm 0; border: 1px solid #000; }
-        .print-document th, .print-document td { border: 1px solid #000; padding: 0.3cm; }
-        .print-document .signature-area { margin-top: 1.5cm; display: flex; justify-content: flex-end; }
+        .print-document h2 { text-align: center; font-size: 18pt; font-weight: bold; margin: 0.5cm 0 0.3cm 0; text-transform: uppercase; page-break-after: avoid; }
+        .print-document h3 { text-align: center; font-size: 15pt; font-weight: bold; margin: 0.4cm 0 0.2cm 0; page-break-after: avoid; }
+        .print-document h4 { text-align: left; font-size: 14pt; font-weight: bold; margin: 0.3cm 0 0.2cm 0; page-break-after: avoid; }
+        .print-document .underline { text-decoration: underline; }
+        .print-document table { width: 100%; border-collapse: collapse; margin: 0.5cm 0; font-size: 12pt; page-break-inside: auto; border: 1px solid #000; table-layout: auto; word-wrap: break-word; }
+        .print-document th, .print-document td { border: 1px solid #000; padding: 0.3cm 0.2cm; text-align: left; vertical-align: top; }
+        .print-document th { background: #f0f0f0; font-weight: bold; text-align: center; }
+        .print-document .signature-area { margin-top: 1.5cm; display: flex; justify-content: flex-end; page-break-before: avoid; page-break-inside: avoid; }
         .print-document .signature-box { text-align: center; width: 8cm; }
         .print-document .signature-line { border-bottom: 2px solid #000; margin: 0.8cm 0 0.2cm 0; width: 100%; }
-        footer { background: linear-gradient(135deg, var(--primary-dark), #0e2f3a); color: white; padding: 2rem; margin-top: 3rem; text-align: center; }
+        .print-document .notices { margin-top: 1cm; font-size: 10pt; border-top: 1px dashed #000; padding-top: 0.3cm; page-break-before: avoid; page-break-inside: avoid; }
+        .print-document .notices p { margin: 0.1cm 0; line-height: 1.0; }
+        .print-document .header-right { text-align: right; margin-bottom: 0.5cm; }
+        .print-document .basic-info { margin: 0.3cm 0; }
+        .print-document .basic-info p { margin: 0.1cm 0; }
+        .print-document .clup-status { margin: 0.3cm 0; padding: 0.3cm;}
+        .print-document .page-break { page-break-before: always; }
+        .print-document .keep-together { page-break-inside: avoid; }
+        .print-document .avoid-break { page-break-inside: avoid; }
+        footer { background: linear-gradient(135deg, var(--primary-dark), #0e2f3a); color: white; padding: 2rem; margin-top: 3rem; text-align: center; position: relative; }
+        footer p { opacity: 0.9; margin: 0.5rem 0; }
         @media (max-width: 768px) {
             header { flex-direction: column; text-align: center; gap: 1rem; padding: 1rem; }
             .logo-container { width: 100%; display: flex; justify-content: center; }
@@ -236,32 +310,173 @@
             .form-grid { grid-template-columns: 1fr; }
             .form-group.full-width { grid-column: span 1; }
             .search-bar { flex-direction: column; }
+            .map-container { height: 350px; }
+            .map-controls { flex-direction: column; align-items: stretch; }
             .coord-info { flex-direction: column; align-items: center; }
             .coord-info input { width: 100%; }
-            .zoning-tabs { flex-direction: column; align-items: stretch; }
-            .zoning-tab { text-align: center; border-radius: 30px; margin-bottom: 5px; }
         }
-        .sync-status { position: fixed; bottom: 20px; left: 20px; background: white; padding: 8px 12px; border-radius: 20px; font-size: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); z-index: 10000; display: flex; align-items: center; gap: 8px; }
+        .review-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            border-left: 8px solid var(--accent-accessible);
+        }
+        .review-card .section-header {
+            margin-bottom: 1.5rem;
+        }
+        .review-card h3 {
+            font-size: 1.6rem;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .chart-container {
+            background: #f9fafc;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        canvas#provinceChart {
+            max-height: 400px;
+            width: 100%;
+        }
+        
+        /* Sync status indicator styles */
+        .sync-status {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
         .sync-status.online { border-left: 3px solid #28a745; }
         .sync-status.offline { border-left: 3px solid #dc3545; }
         .sync-status.syncing { border-left: 3px solid #ffc107; }
-        .sync-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+        .sync-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
         .sync-dot.online { background: #28a745; }
         .sync-dot.offline { background: #dc3545; }
         .sync-dot.syncing { background: #ffc107; animation: pulse 1s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-        .sync-loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 20000; display: none; justify-content: center; align-items: center; }
-        .sync-loading.active { display: flex; }
-        .sync-loading-content { background: white; padding: 20px; border-radius: 10px; text-align: center; }
-        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 10px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        /* Loading overlay for sync operations */
+        .sync-loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 20000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        .sync-loading.active {
+            display: flex;
+        }
+        .sync-loading-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Enhanced GeoJSON upload button styles */
+        .btn-geojson {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .btn-geojson:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            background: linear-gradient(135deg, #ee5a24, #ff6b6b);
+        }
+        .btn-geojson:active {
+            transform: translateY(0);
+        }
+        
+        .geo-upload-section {
+            background: #fff5f5;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border: 2px dashed #ff6b6b;
+        }
+        
+        .geo-upload-section h4 {
+            margin: 0 0 10px 0;
+            color: #ee5a24;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .zone-info-panel {
+            background: #e8f5e9;
+            border-left: 4px solid #27ae60;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+        }
+        
+        .zone-stat {
+            display: inline-block;
+            padding: 3px 8px;
+            background: #27ae60;
+            color: white;
+            border-radius: 12px;
+            font-size: 11px;
+            margin-left: 5px;
+        }
     </style>
 </head>
 <body>
     <a href="#main-content" class="skip-link">Skip to main content</a>
 
     <header role="banner">
-        <div class="logo-container"><img src="DHSUD LOGO.png" alt="DHSUD Logo" style="width: 100%; height: 100%; object-fit: contain;"></div>
+        <div class="logo-container">
+            <img src="DHSUD LOGO.png" alt="DHSUD Logo" style="width: 100%; height: 100%; object-fit: contain;">
+        </div>
         <div class="header-content">
             <h1>ENVIRONMENTAL LAND USE AND URBAN PLANNING</h1>
             <h2>DEVELOPMENT DIVISION - REGION VI</h2>
@@ -271,125 +486,239 @@
 
     <nav class="nav-bar" aria-label="Main navigation" role="navigation">
         <ul role="menubar">
-            <li role="none"><a href="#" onclick="showSection('plans')" class="active" role="menuitem"><span aria-hidden="true">📋</span><span>Land Use Plans</span></a></li>
+            <li role="none"><a href="#" onclick="showSection('dashboard')" class="active" role="menuitem" aria-current="page"><span aria-hidden="true">🏠</span><span>Dashboard</span></a></li>
+            <li role="none"><a href="#" onclick="showSection('plans')" role="menuitem"><span aria-hidden="true">📋</span><span>Land Use Plans</span></a></li>
             <li role="none"><a href="#" onclick="showSection('zoning')" role="menuitem"><span aria-hidden="true">🏷️</span><span>Site Zoning Certification</span></a></li>
-            <li role="none"><a href="#" onclick="showSection('reports')" role="menuitem"><span aria-hidden="true">📊</span><span>Reports</span></a></li>
             <li role="none"><a href="#" onclick="openAboutModal()" role="menuitem"><span aria-hidden="true">ℹ️</span><span>About</span></a></li>
         </ul>
     </nav>
 
     <main id="main-content" role="main">
         <div class="container">
+            <!-- Dashboard Section -->
+            <div id="dashboard" class="section active" role="region" aria-labelledby="dashboard-heading">
+                <h1 id="dashboard-heading" class="visually-hidden">Dashboard - CLUP & PDPFP Review</h1>
+                <div class="review-card">
+                    <div class="section-header">
+                        <h3><span aria-hidden="true">📋</span> CLUP and PDPFP REVIEW</h3>
+                        <div class="btn-group">
+                            <button class="btn btn-primary" onclick="openReviewModal()"><span aria-hidden="true">➕</span> Add Review Entry</button>
+                            <button class="btn btn-success" onclick="exportReviewData()"><span aria-hidden="true">📥</span> Export Data</button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table id="reviewTable" aria-label="CLUP and PDPFP review records">
+                            <caption class="visually-hidden">List of CLUP and PDPFP review entries</caption>
+                            <thead>
+                                <tr><th>LGU/Province</th><th>Reviewer</th><th>Dates</th><th>Actions</th></tr>
+                            </thead>
+                            <tbody id="reviewTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <!-- Land Use Plans Section -->
-            <div id="plans" class="section active" role="region">
+            <div id="plans" class="section" style="display: none;" role="region" aria-labelledby="plans-heading">
+                <h1 id="plans-heading" class="visually-hidden">Comprehensive Land Use Plans</h1>
                 <div class="data-section">
-                    <div class="section-header"><h3><span aria-hidden="true">📋</span> Comprehensive Land Use Plans (CLUP)</h3><div class="btn-group"><button class="btn btn-primary" onclick="openAddClupModal()">➕ Add New Plan</button><button class="btn btn-success" onclick="exportClupData()">📥 Export Data</button></div></div>
-                    <div class="chart-container"><canvas id="provinceChart" width="800" height="350" style="max-width:100%; height:auto;"></canvas></div>
+                    <div class="section-header">
+                        <h3><span aria-hidden="true">📋</span> Comprehensive Land Use Plans (CLUP)</h3>
+                        <div class="btn-group">
+                            <button class="btn btn-primary" onclick="openAddClupModal()"><span aria-hidden="true">➕</span> Add New Plan</button>
+                            <button class="btn btn-success" onclick="exportClupData()"><span aria-hidden="true">📥</span> Export Data</button>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="provinceChart" width="800" height="350" style="max-width:100%; height:auto;"></canvas>
+                    </div>
                     <div class="search-bar" role="search">
                         <div class="search-box"><span aria-hidden="true">🔍</span><label for="planSearch" class="visually-hidden">Search plans</label><input type="text" id="planSearch" placeholder="Search by LGU, province, or status..." onkeyup="filterClupTable()"></div>
-                        <div class="filter-group"><label for="provinceFilter" class="visually-hidden">Filter by province</label><select id="provinceFilter" onchange="filterClupTable()"><option value="">All Provinces</option><option value="Aklan">Aklan</option><option value="Antique">Antique</option><option value="Capiz">Capiz</option><option value="Guimaras">Guimaras</option><option value="Iloilo">Iloilo</option><option value="Negros Occidental">Negros Occidental</option></select></div>
-                        <div class="filter-group"><label for="statusFilter" class="visually-hidden">Filter by status</label><select id="statusFilter" onchange="filterClupTable()"><option value="">All Status</option><option value="Approved">Approved</option><option value="Pending">Pending</option><option value="For Review">For Review</option><option value="On Hold">On Hold</option></select></div>
+                        <div class="filter-group"><label for="provinceFilter" class="visually-hidden">Filter by province</label><select id="provinceFilter" onchange="filterClupTable()" aria-label="Filter by province"><option value="">All Provinces</option><option value="Aklan">Aklan</option><option value="Antique">Antique</option><option value="Capiz">Capiz</option><option value="Guimaras">Guimaras</option><option value="Iloilo">Iloilo</option><option value="Negros Occidental">Negros Occidental</option></select></div>
+                        <div class="filter-group"><label for="statusFilter" class="visually-hidden">Filter by status</label><select id="statusFilter" onchange="filterClupTable()" aria-label="Filter by status"><option value="">All Status</option><option value="Approved">Approved</option><option value="Pending">Pending</option><option value="For Review">For Review</option><option value="On Hold">On Hold</option></select></div>
                     </div>
-                    <div class="table-responsive"><table id="plansTable"><thead><tr><th>LGU/Municipality</th><th>Province</th><th>Plan Period</th><th>Status</th><th>Date Approved (Latest)</th><th>Actions</th></tr></thead><tbody id="plansTableBody"></tbody></table></div>
+                    <div class="table-responsive">
+                        <table id="plansTable" aria-label="Land Use Plans">
+                            <caption class="visually-hidden">List of Comprehensive Land Use Plans in Region VI</caption>
+                            <thead>
+                                <tr><th>LGU/Municipality</th><th>Province</th><th>Plan Period</th><th>Status</th><th>Date Approved (Latest)</th><th>Actions</th></tr>
+                            </thead>
+                            <tbody id="plansTableBody"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
-            <!-- Site Zoning Certification Section with Tabs -->
-            <div id="zoning" class="section" style="display: none;" role="region">
+            <!-- Site Zoning Certification Section -->
+            <div id="zoning" class="section" style="display: none;" role="region" aria-labelledby="zoning-heading">
+                <h1 id="zoning-heading" class="visually-hidden">Site Zoning Certification</h1>
                 <div class="cert-section">
-                    <div class="cert-title"><span>🏷️</span> Site Zoning Certification</div>
-                    <!-- Tabs -->
-                    <div class="zoning-tabs">
-                        <button class="zoning-tab active" data-tab="data-entry">📝 Data Entry</button>
-                        <button class="zoning-tab" data-tab="accomplishment">📊 Accomplishment Report</button>
-                    </div>
-                    <!-- Data Entry Tab Content -->
-                    <div id="data-entry-tab" class="zoning-tab-content active">
-                        <form id="zoningForm" onsubmit="return saveZoningRecord(event)" novalidate>
-                            <div class="form-grid">
-                                <div class="form-group"><label for="certificationNo">Certification No.</label><input type="text" class="form-control" id="certificationNo" readonly style="background:#f0f0f0"><small>Auto-generated</small></div>
-                                <div class="form-group"><label for="series">Series</label><input type="text" class="form-control" id="series" value="2002" readonly></div>
-                                <div class="form-group"><label for="parcels">No. of Parcels</label><input type="text" class="form-control" id="parcels" placeholder="e.g., Three hundred seventy-five (375) parcels" required></div>
-                                <div class="form-group full-width"><label for="location">Location of the Property</label><input type="text" class="form-control" id="location" placeholder="Enter complete address" required></div>
-                                <div class="form-group"><label for="latitude">Latitude</label><input type="text" class="form-control" id="latitude" placeholder="e.g., 10.7202" readonly style="background:#f0f0f0"></div>
-                                <div class="form-group"><label for="longitude">Longitude</label><input type="text" class="form-control" id="longitude" placeholder="e.g., 122.5621" readonly style="background:#f0f0f0"><button type="button" class="btn btn-map" onclick="openEnhancedMapPopup()" style="margin-top:5px; width:100%;">🗺️ Open Map (Upload GeoJSON)</button></div>
-                                <div class="form-group"><label for="totalArea">Total Area (ha.)</label><input type="text" class="form-control" id="totalArea" placeholder="e.g., 15.5026" required></div>
-                                <div class="form-group"><label for="proposedUse">Proposed Use</label><input type="text" class="form-control" id="proposedUse" placeholder="e.g., Residential-3 Zone" required></div>
-                                <div class="form-group full-width">
-                                    <div style="font-weight:600; margin-bottom:0.5rem;">Land Holdings (Multiple Entries)</div>
-                                    <div><button type="button" class="btn btn-success" onclick="addLandHolding()" style="padding:5px 10px;">➕ Add Another Property</button><small style="margin-left:10px;">Each property can have its own lot number and area</small></div>
-                                    <div id="landHoldingsContainer"></div>
+                    <div class="cert-title"><span aria-hidden="true">🏷️</span> Site Zoning Certification - Data Entry</div>
+                    <form id="zoningForm" onsubmit="return saveZoningRecord(event)" novalidate>
+                        <div class="form-grid">
+                            <div class="form-group"><label for="certificationNo" id="certNoLabel">Certification No.</label><input type="text" class="form-control" id="certificationNo" readonly style="background:#f0f0f0"><small>Auto-generated</small></div>
+                            <div class="form-group"><label for="series">Series</label><input type="text" class="form-control" id="series" value="2002" readonly></div>
+                            <div class="form-group"><label for="parcels">No. of Parcels</label><input type="text" class="form-control" id="parcels" placeholder="e.g., Three hundred seventy-five (375) parcels" required></div>
+                            <div class="form-group full-width"><label for="location">Location of the Property</label><input type="text" class="form-control" id="location" placeholder="Enter complete address" required></div>
+                            <div class="form-group"><label for="latitude">Latitude</label><input type="text" class="form-control" id="latitude" placeholder="e.g., 10.7202" readonly style="background:#f0f0f0"></div>
+                            <div class="form-group"><label for="longitude">Longitude</label><input type="text" class="form-control" id="longitude" placeholder="e.g., 122.5621" readonly style="background:#f0f0f0"><button type="button" class="btn btn-map" onclick="openMapPopup()" style="margin-top: 5px; width: 100%;">🗺️ Open Map</button></div>
+                            <div class="form-group"><label for="totalArea">Total Area (ha.)</label><input type="text" class="form-control" id="totalArea" placeholder="e.g., 15.5026" required></div>
+                            <div class="form-group"><label for="proposedUse">Proposed Use</label><input type="text" class="form-control" id="proposedUse" placeholder="e.g., Residential-3 Zone" required></div>
+                            <div class="form-group full-width">
+                                <div style="font-weight:600; margin-bottom:0.5rem;">Land Holdings (Multiple Entries)</div>
+                                <div><button type="button" class="btn btn-success" onclick="addLandHolding()" style="padding:5px 10px; font-size:0.9rem;">➕ Add Another Property</button><small style="margin-left:10px;">Each property can have its own lot number and area</small></div>
+                                <div id="landHoldingsContainer"></div>
+                            </div>
+                            <div class="form-group"><label for="dateIssued">Date Issued</label><input type="date" class="form-control" id="dateIssued" required></div>
+                            <div class="form-group"><label for="requestedBy">Requested By</label><input type="text" class="form-control" id="requestedBy" placeholder="Name of requester" required></div>
+                            <div class="form-group"><label for="amountPaid">Amount Paid (₱)</label><input type="text" class="form-control" id="amountPaid" placeholder="e.g., 13,680" required></div>
+                            <div class="form-group"><label for="orNo">O.R. No.</label><input type="text" class="form-control" id="orNo" placeholder="Official Receipt Number"></div>
+                            <div class="form-group"><label for="orDate">O.R. Date</label><input type="date" class="form-control" id="orDate"></div>
+                            <div class="form-group full-width"><label for="remarks">Remarks/Notes</label><textarea class="form-control" id="remarks" rows="3"></textarea></div>
+                        </div>
+                        <h3 class="cert-subtitle">CLUP/Zoning Ordinance Status</h3>
+                        <div class="form-group">
+                            <div style="font-weight:600; margin-bottom:0.5rem;">Select Status:</div>
+                            <div class="radio-group">
+                                <label class="radio-option"><input type="radio" name="clupStatus" value="approved" checked> With Approved CLUP/ZO</label>
+                                <label class="radio-option"><input type="radio" name="clupStatus" value="pending"> With CLUP/ZO Pending Approval</label>
+                                <label class="radio-option"><input type="radio" name="clupStatus" value="none"> Without CLUP/ZO</label>
+                            </div>
+                        </div>
+                        <div id="clupCascadeDiv" style="margin-top: 1rem; padding: 1rem; background: #e8f0fe; border-radius: 8px; display: block;">
+                            <div class="form-grid" style="margin-bottom: 1rem;">
+                                <div class="form-group">
+                                    <label for="provinceSelect">Select Province</label>
+                                    <select id="provinceSelect" class="form-control" onchange="filterLguByProvince()">
+                                        <option value="">-- Choose Province --</option>
+                                    </select>
                                 </div>
-                                <div class="form-group"><label for="dateIssued">Date Issued</label><input type="date" class="form-control" id="dateIssued" required></div>
-                                <div class="form-group"><label for="requestedBy">Requested By</label><input type="text" class="form-control" id="requestedBy" placeholder="Name of requester" required></div>
-                                <div class="form-group"><label for="amountPaid">Amount Paid (₱)</label><input type="text" class="form-control" id="amountPaid" placeholder="e.g., 13,680" required></div>
-                                <div class="form-group"><label for="orNo">O.R. No.</label><input type="text" class="form-control" id="orNo" placeholder="Official Receipt Number"></div>
-                                <div class="form-group"><label for="orDate">O.R. Date</label><input type="date" class="form-control" id="orDate"></div>
-                                <div class="form-group full-width"><label for="remarks">Remarks/Notes</label><textarea class="form-control" id="remarks" rows="3"></textarea></div>
+                                <div class="form-group">
+                                    <label for="lguSelect">Select LGU</label>
+                                    <select id="lguSelect" class="form-control" onchange="fillFromApprovedCLUP()" disabled>
+                                        <option value="">-- First select province --</option>
+                                    </select>
+                                </div>
                             </div>
-                            <h3 class="cert-subtitle">CLUP/Zoning Ordinance Status</h3>
-                            <div class="form-group"><div style="font-weight:600; margin-bottom:0.5rem;">Select Status:</div><div class="radio-group"><label class="radio-option"><input type="radio" name="clupStatus" value="approved" checked> With Approved CLUP/ZO</label><label class="radio-option"><input type="radio" name="clupStatus" value="pending"> With CLUP/ZO Pending Approval</label><label class="radio-option"><input type="radio" name="clupStatus" value="none"> Without CLUP/ZO</label></div></div>
-                            <div id="clupCascadeDiv" style="margin-top:1rem; padding:1rem; background:#e8f0fe; border-radius:8px; display:block;">
-                                <div class="form-grid" style="margin-bottom:1rem;"><div class="form-group"><label for="provinceSelect">Select Province</label><select id="provinceSelect" class="form-control" onchange="filterLguByProvince()"><option value="">-- Choose Province --</option></select></div><div class="form-group"><label for="lguSelect">Select LGU</label><select id="lguSelect" class="form-control" onchange="fillFromApprovedCLUP()" disabled><option value="">-- First select province --</option></select></div></div><small>Automatically fills City/Municipality, Province, Department Circular/SP Resolution No., and Date of Approval from the approved CLUP record.</small>
-                            </div>
-                            <div id="approvedDetails" style="margin-top:1rem; padding:1rem; background:#f8f4e8; border-radius:8px;">
-                                <div class="form-grid"><div class="form-group"><label for="city">City/Municipality</label><input type="text" class="form-control" id="city"></div><div class="form-group"><label for="province">Province</label><input type="text" class="form-control" id="province" placeholder="e.g., Iloilo, Aklan, etc."></div><div class="form-group"><label for="approvedBy">Approved by</label><input type="text" class="form-control" id="approvedBy" readonly style="background:#f8f4e8; font-weight:600;"></div><div class="form-group"><label for="circularNo">Department Circular / SP Resolution No.</label><input type="text" class="form-control" id="circularNo" placeholder="Auto-filled from latest CLUP resolution" readonly style="background:#f8f4e8;"></div><div class="form-group"><label for="approvalDate">Date of Approval</label><input type="date" class="form-control" id="approvalDate" readonly style="background:#f8f4e8;"></div></div>
-                                <div id="approvalDatesRef" style="margin-top:0.5rem; font-size:0.85rem; color:#555; display:none;"><strong>Approval dates:</strong> <span id="firstApprovalDateRef"></span> (first) | <span id="latestApprovalDateRef"></span> (latest)</div>
-                                <div id="iloiloConditionalFields" style="display:none; margin-top:1rem; padding-top:1rem; border-top:1px dashed #ccc;"><div class="form-group"><label for="purpose">Purpose</label><select id="purpose" class="form-control"><option value="">-- Select --</option><option value="Conversion">Conversion</option><option value="ROD">ROD</option><option value="Other">Other</option></select></div><div id="landClassGroup" style="display:none;"><div class="form-group"><label for="landClass">Land Class</label><select id="landClass" class="form-control"><option value="">-- Select --</option><option value="Agricultural">Agricultural</option><option value="Commercial">Commercial</option><option value="Residential">Residential</option><option value="Industrial">Industrial</option><option value="F and S">F and S</option><option value="Institutional">Institutional</option></select></div></div></div>
-                            </div>
-                            <div style="display:flex; gap:1rem; margin-top:2rem; justify-content:center;">
-                                <button type="submit" class="btn btn-success">💾 Save Certification</button>
-                                <button type="button" class="btn btn-primary" onclick="clearZoningForm()">🔄 Clear Form</button>
-                                <button type="button" class="btn btn-cert" onclick="viewAllCertifications()">📋 View All Records</button>
-                                <button type="button" class="btn btn-print" onclick="printBlankForm()">🖨️ Print Blank Form</button>
-                                <button type="button" class="btn btn-warning" onclick="resetCertificationCounter()">🔄 Reset Counter</button>
-                            </div>
-                        </form>
-                        <div id="recordsSection" style="display:none; margin-top:2rem;">
-                            <div class="cert-title"><span>📋</span> Saved Certifications</div>
-                            <div class="search-bar">
-                                <div class="search-box"><input type="text" id="certSearchInput" placeholder="Search by Certification No., Location, or Requested By..." onkeyup="filterCertificationsTable()"></div>
-                                <div class="filter-group"><select id="certStatusFilter" onchange="filterCertificationsTable()"><option value="">All Status</option><option value="For Review">For Review</option><option value="For RD Signature">For RD Signature</option><option value="For Release">For Release</option><option value="Released">Released</option></select></div>
-                                <div class="filter-group"><select id="certIssuedFilter" onchange="filterCertificationsTable()"><option value="">All Issued Types</option><option value="Zoning Simple">Zoning Simple</option><option value="Zoning - DAR (Simple)">Zoning - DAR (Simple)</option><option value="Zoning - DAR (Complex)">Zoning - DAR (Complex)</option><option value="Reclass Indorsement">Reclass Indorsement</option><option value="Locational Clearance">Locational Clearance</option><option value="Locational Clearance (National Significance)">Locational Clearance (National Significance)</option></select></div>
-                                <button class="btn btn-primary" onclick="filterCertificationsTable()">🔍 Search</button>
-                                <button class="btn btn-secondary" onclick="clearCertSearch()">🗑️ Clear</button>
-                            </div>
-                            <div class="table-responsive"><table class="cert-table" id="certificationsTable"><thead><tr><th>Certification No.</th><th>No. of Parcels</th><th>Location</th><th>Total Area</th><th>Date Issued</th><th>Requested By</th><th>Status</th><th>Certification Issued</th><th>Actions</th></tr></thead><tbody id="certificationsTableBody"></tbody></table></div>
-                            <div style="text-align:right; margin-top:1rem;"><button class="btn btn-secondary" onclick="toggleRecordsView()">Hide Records</button></div>
+                            <small>Automatically fills City/Municipality, Province, Department Circular/SP Resolution No., and Date of Approval from the approved CLUP record.</small>
                         </div>
-                    </div>
-                    <!-- Accomplishment Report Tab Content -->
-                    <div id="accomplishment-tab" class="zoning-tab-content">
-                        <div class="stats-grid">
-                            <div class="stat-card"><div class="stat-number" id="totalCertCount">0</div><div class="stat-label">Total Certifications</div></div>
-                            <div class="stat-card"><div class="stat-number" id="releasedCount">0</div><div class="stat-label">Released</div></div>
-                            <div class="stat-card"><div class="stat-number" id="pendingReviewCount">0</div><div class="stat-label">For Review / RD Signature / For Release</div></div>
-                            <div class="stat-card"><div class="stat-number" id="totalAreaSum">0</div><div class="stat-label">Total Area (ha)</div></div>
+
+                        <div id="approvedDetails" style="margin-top:1rem; padding:1rem; background:#f8f4e8; border-radius:8px;">
+                            <div class="form-grid">
+                                <div class="form-group"><label for="city">City/Municipality</label><input type="text" class="form-control" id="city"></div>
+                                <div class="form-group"><label for="province">Province</label><input type="text" class="form-control" id="province" placeholder="e.g., Iloilo, Aklan, etc."></div>
+                                <div class="form-group"><label for="approvedBy">Approved by</label><input type="text" class="form-control" id="approvedBy" readonly style="background:#f8f4e8; font-weight:600;"></div>
+                                <div class="form-group"><label for="circularNo">Department Circular / SP Resolution No.</label><input type="text" class="form-control" id="circularNo" placeholder="Auto-filled from latest CLUP resolution" readonly style="background:#f8f4e8;"></div>
+                                <div class="form-group"><label for="approvalDate">Date of Approval</label><input type="date" class="form-control" id="approvalDate" readonly style="background:#f8f4e8;"></div>
+                            </div>
+                            <div id="approvalDatesRef" style="margin-top: 0.5rem; font-size: 0.85rem; color: #555; display: none;">
+                                <strong>Approval dates:</strong> <span id="firstApprovalDateRef"></span> (first) | <span id="latestApprovalDateRef"></span> (latest)
+                            </div>
+                            <!-- Conditional fields for Iloilo City -->
+                            <div id="iloiloConditionalFields" style="display: none; margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed #ccc;">
+                                <div class="form-group">
+                                    <label for="purpose">Purpose</label>
+                                    <select id="purpose" class="form-control">
+                                        <option value="">-- Select --</option>
+                                        <option value="Conversion">Conversion</option>
+                                        <option value="ROD">ROD</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                <div id="landClassGroup" style="display: none;">
+                                    <div class="form-group">
+                                        <label for="landClass">Land Class</label>
+                                        <select id="landClass" class="form-control">
+                                            <option value="">-- Select --</option>
+                                            <option value="Agricultural">Agricultural</option>
+                                            <option value="Commercial">Commercial</option>
+                                            <option value="Residential">Residential</option>
+                                            <option value="Industrial">Industrial</option>
+                                            <option value="F and S">F and S</option>
+                                            <option value="Institutional">Institutional</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="chart-container"><canvas id="statusChart" width="400" height="300" style="max-width:100%; height:auto;"></canvas></div>
-                        <div class="chart-container"><canvas id="issuedChart" width="400" height="300" style="max-width:100%; height:auto;"></canvas></div>
-                        <div class="table-responsive"><h4>Recent Certifications</h4><table class="cert-table"><thead><tr><th>Cert No.</th><th>Location</th><th>Date Issued</th><th>Status</th><th>Certification Issued</th></tr></thead><tbody id="recentTableBody"></tbody></table></div>
-                        <button class="btn btn-primary" onclick="exportAccomplishmentReport()" style="margin-top:1rem;">📊 Export Report (JSON)</button>
+
+                        <div id="formMessages" role="alert" class="visually-hidden"></div>
+                        <div style="display:flex; gap:1rem; margin-top:2rem; justify-content:center;">
+                            <button type="submit" class="btn btn-success">💾 Save Certification</button>
+                            <button type="button" class="btn btn-primary" onclick="clearZoningForm()">🔄 Clear Form</button>
+                            <button type="button" class="btn btn-cert" onclick="viewAllCertifications()">📋 View All Records</button>
+                            <button type="button" class="btn btn-print" onclick="printBlankForm()">🖨️ Print Blank Form</button>
+                            <button type="button" class="btn btn-warning" onclick="resetCertificationCounter()">🔄 Reset Counter</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="cert-section" id="recordsSection" style="display:none;">
+                    <div class="cert-title"><span aria-hidden="true">📋</span> Saved Certifications</div>
+                    <div class="search-bar" style="margin-bottom: 1rem; padding: 1rem; background: #f8faff; border-radius: 12px;">
+                        <div class="search-box" style="flex: 2;">
+                            <span aria-hidden="true">🔍</span>
+                            <input type="text" id="certSearchInput" placeholder="Search by Certification No., Location, or Requested By..." onkeyup="filterCertificationsTable()">
+                        </div>
+                        <button class="btn btn-primary" onclick="filterCertificationsTable()" style="padding: 0.8rem 1.5rem;">🔍 Search</button>
+                        <button class="btn btn-secondary" onclick="clearCertSearch()" style="padding: 0.8rem 1.5rem;">🗑️ Clear</button>
                     </div>
+                    <div style="overflow-x:auto;">
+                        <table class="cert-table" id="certificationsTable">
+                            <thead>
+                                <tr><th>Certification No.</th><th>No. of Parcels</th><th>Location</th><th>Total Area</th><th>Date Issued</th><th>Requested By</th><th>Actions</th></tr>
+                            </thead>
+                            <tbody id="certificationsTableBody"></tbody>
+                        </table>
+                    </div>
+                    <div style="text-align:right; margin-top:1rem;"><button class="btn btn-secondary" onclick="toggleRecordsView()">Hide Records</button></div>
                 </div>
             </div>
 
-            <!-- Reports Section (unchanged) -->
-            <div id="reports" class="section" style="display: none;" role="region">
-                <div class="data-section"><div class="section-header"><h3><span aria-hidden="true">📊</span> Planning Reports</h3></div><div class="stats-grid"><div class="stat-card" onclick="generateReport('annual')"><div class="stat-number">📅</div><div class="stat-label">Annual Report</div></div><div class="stat-card" onclick="generateReport('quarterly')"><div class="stat-number">📆</div><div class="stat-label">Quarterly Report</div></div><div class="stat-card" onclick="generateReport('project')"><div class="stat-number">🏗️</div><div class="stat-label">Project Status</div></div><div class="stat-card" onclick="generateReport('environmental')"><div class="stat-number">🌳</div><div class="stat-label">Environmental Report</div></div></div></div>
+            <div id="dataModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+                <div class="modal-content">
+                    <div class="modal-header"><h2 id="modalTitle">View/Edit Record</h2><button class="close-btn" onclick="closeModal()">&times;</button></div>
+                    <div id="modalBody"></div>
+                </div>
             </div>
-
-            <div id="dataModal" class="modal" role="dialog"><div class="modal-content"><div class="modal-header"><h2 id="modalTitle">View/Edit Record</h2><button class="close-btn" onclick="closeModal()">&times;</button></div><div id="modalBody"></div></div></div>
         </div>
     </main>
 
-    <!-- Map Popup Modal -->
-    <div id="mapPopupModal" class="map-popup-modal"><div class="map-popup-content"><div class="map-popup-header"><h3>🗺️ Select Location & Manage Zoning Layers</h3><button class="map-popup-close" onclick="closeMapPopup()">&times;</button></div><div class="map-popup-body"><div id="popupMap"></div><div class="coord-info"><label>Latitude: <input type="text" id="popupLatitude" readonly placeholder="Click on map"></label><label>Longitude: <input type="text" id="popupLongitude" readonly placeholder="Click on map"></label></div><div class="layer-panel"><div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:10px;"><input type="file" id="geojsonFileInput" accept=".geojson,.json" style="display:none;"><button class="btn btn-primary" onclick="document.getElementById('geojsonFileInput').click()">📂 Upload GeoJSON</button><button class="btn btn-danger" onclick="clearAllLayers()">🗑️ Clear All Layers</button><span style="font-size:0.8rem;">Upload zoning boundaries (GeoJSON)</span></div><div id="layerListContainer" class="layer-list-container"><div style="text-align:center; color:#888;">No layers loaded. Upload a GeoJSON file.</div></div></div></div><div class="map-popup-footer"><button class="btn btn-primary" onclick="saveCoordinatesFromPopup()">✅ Use Selected Coordinates</button><button class="btn btn-secondary" onclick="closeMapPopup()">Cancel</button></div></div></div>
+    <!-- Map Popup Modal for Coordinates -->
+    <div id="mapPopupModal" class="map-popup-modal">
+        <div class="map-popup-content">
+            <div class="map-popup-header">
+                <h3>Select Location on Map</h3>
+                <button class="map-popup-close" onclick="closeMapPopup()">&times;</button>
+            </div>
+            <div class="map-popup-body">
+                <div id="popupMap" style="height: 400px; width: 100%;"></div>
+                <div class="coord-info">
+                    <label>Latitude: <input type="text" id="popupLatitude" readonly placeholder="Click on map"></label>
+                    <label>Longitude: <input type="text" id="popupLongitude" readonly placeholder="Click on map"></label>
+                </div>
+            </div>
+            <div class="map-popup-footer">
+                <button class="btn btn-primary" onclick="saveCoordinatesFromPopup()">Use Selected Coordinates</button>
+                <button class="btn btn-secondary" onclick="closeMapPopup()">Cancel</button>
+            </div>
+        </div>
+    </div>
 
     <div id="printSection" style="display:none;"></div>
-    <div id="syncLoading" class="sync-loading"><div class="sync-loading-content"><div class="spinner"></div><p>Syncing data with server...</p></div></div>
+    <div id="syncLoading" class="sync-loading">
+        <div class="sync-loading-content">
+            <div class="spinner"></div>
+            <p>Syncing data with server...</p>
+        </div>
+    </div>
 
-    <footer role="contentinfo"><p>Environmental Land Use and Urban Planning Development Division</p><p>Department of Human Settlements and Urban Development - Region VI</p><p>📍 3rd Floor, DHSUD Regional Office VI, Diversion Road, Mandurriao, Iloilo City</p><p>📞 (033) 123-4567 | 📧 elupdd.region6@dhsud.gov.ph</p><p style="margin-top:1rem;">© 2024 All Rights Reserved</p></footer>
+    <footer role="contentinfo">
+        <p>Environmental Land Use and Urban Planning Development Division</p>
+        <p>Department of Human Settlements and Urban Development - Region VI</p>
+        <p>📍 3rd Floor, DHSUD Regional Office VI, Diversion Road, Mandurriao, Iloilo City</p>
+        <p>📞 (033) 123-4567 | 📧 elupdd.region6@dhsud.gov.ph</p>
+        <p style="margin-top:1rem; font-size:0.9rem;">© 2024 All Rights Reserved</p>
+    </footer>
 
     <script>
         // ========== CONFIGURATION ==========
@@ -408,15 +737,14 @@
         let certNumberLock = false;
         let certNumberQueue = [];
 
-        // ========== ENHANCED MAP POPUP WITH GEOJSON LAYERS ==========
+        // ========== MAP POPUP FOR COORDINATES ==========
         let popupMap = null;
         let popupMapInitialized = false;
         let selectedLat = null;
         let selectedLng = null;
         let mapMarker = null;
-        let geoJsonLayers = []; // each { id, name, layer, visible, featureCount }
 
-        function openEnhancedMapPopup() {
+        function openMapPopup() {
             const modal = document.getElementById('mapPopupModal');
             modal.classList.add('active');
             
@@ -443,7 +771,7 @@
                     } else {
                         mapMarker = L.marker([selectedLat, selectedLng]).addTo(popupMap);
                     }
-                    mapMarker.bindPopup(`📍 Selected Location<br>Lat: ${selectedLat.toFixed(6)}<br>Lng: ${selectedLng.toFixed(6)}`).openPopup();
+                    mapMarker.bindPopup(`Selected Location<br>Lat: ${selectedLat.toFixed(6)}<br>Lng: ${selectedLng.toFixed(6)}`).openPopup();
                 });
                 
                 const existingLat = document.getElementById('latitude').value;
@@ -457,15 +785,12 @@
                     } else {
                         mapMarker = L.marker([lat, lng]).addTo(popupMap);
                     }
-                    mapMarker.bindPopup(`📍 Selected Location<br>Lat: ${lat.toFixed(6)}<br>Lng: ${lng.toFixed(6)}`).openPopup();
+                    mapMarker.bindPopup(`Selected Location<br>Lat: ${lat.toFixed(6)}<br>Lng: ${lng.toFixed(6)}`).openPopup();
                     document.getElementById('popupLatitude').value = lat.toFixed(6);
                     document.getElementById('popupLongitude').value = lng.toFixed(6);
                     selectedLat = lat;
                     selectedLng = lng;
                 }
-                
-                // Reload existing GeoJSON layers from localStorage (optional)
-                loadSavedGeoJSONLayers();
             }, 100);
         }
 
@@ -480,7 +805,6 @@
                 popupMap.removeLayer(mapMarker);
                 mapMarker = null;
             }
-            // Do not clear geoJsonLayers to preserve layers for next open
         }
 
         function saveCoordinatesFromPopup() {
@@ -491,157 +815,6 @@
                 showToast('Coordinates saved to form!', 'success');
             } else {
                 alert('Please click on the map to select coordinates first.');
-            }
-        }
-
-        // GeoJSON Upload Handler
-        document.getElementById('geojsonFileInput').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            if (!file.name.endsWith('.geojson') && !file.name.endsWith('.json')) {
-                alert('Please upload a valid .geojson or .json file.');
-                return;
-            }
-            const reader = new FileReader();
-            reader.onload = function(ev) {
-                try {
-                    const geojson = JSON.parse(ev.target.result);
-                    if (!geojson.type || geojson.type !== 'FeatureCollection') {
-                        throw new Error('Invalid GeoJSON: expected FeatureCollection');
-                    }
-                    const layerName = file.name.replace(/\.(geojson|json)$/i, '');
-                    addGeoJsonLayerToMap(geojson, layerName);
-                    showToast(`Loaded "${layerName}" with ${geojson.features.length} features.`, 'success');
-                    document.getElementById('geojsonFileInput').value = '';
-                } catch(err) {
-                    alert('Error parsing GeoJSON: ' + err.message);
-                }
-            };
-            reader.readAsText(file);
-        });
-
-        function addGeoJsonLayerToMap(geojson, name) {
-            if (!popupMap) return;
-            const layerId = 'layer_' + Date.now() + '_' + Math.random();
-            const randomColor = '#' + Math.floor(Math.random()*16777215).toString(16);
-            const geoLayer = L.geoJSON(geojson, {
-                style: { color: randomColor, weight: 3, fillColor: randomColor, fillOpacity: 0.4 },
-                onEachFeature: (feature, layer) => {
-                    let popupContent = '<div style="max-width:300px;"><b>Zoning Info</b>';
-                    if (feature.properties) {
-                        for (let [k, v] of Object.entries(feature.properties)) {
-                            if (v) popupContent += `<br>${escapeHtml(k)}: ${escapeHtml(String(v))}`;
-                        }
-                    }
-                    popupContent += '</div>';
-                    layer.bindPopup(popupContent);
-                }
-            }).addTo(popupMap);
-            
-            geoJsonLayers.push({
-                id: layerId,
-                name: name,
-                layer: geoLayer,
-                visible: true,
-                featureCount: geojson.features.length,
-                geojsonData: geojson
-            });
-            
-            renderLayerListUI();
-            
-            // Fit map to bounds
-            const bounds = geoLayer.getBounds();
-            if (bounds.isValid()) popupMap.fitBounds(bounds);
-            
-            // Save to localStorage for persistence
-            saveGeoJSONLayersToLocal();
-        }
-
-        function renderLayerListUI() {
-            const container = document.getElementById('layerListContainer');
-            if (!container) return;
-            if (geoJsonLayers.length === 0) {
-                container.innerHTML = '<div style="text-align:center; color:#888;">No layers loaded. Upload a GeoJSON file.</div>';
-                return;
-            }
-            let html = '';
-            geoJsonLayers.forEach((layer, idx) => {
-                html += `
-                    <div class="layer-item">
-                        <span class="layer-name">${escapeHtml(layer.name)} (${layer.featureCount} zones)</span>
-                        <div class="layer-actions">
-                            <button class="btn btn-primary" style="padding:4px 10px;" onclick="toggleLayerVisibility(${idx})">${layer.visible ? '👁️ Hide' : '👁️‍🗨️ Show'}</button>
-                            <button class="btn btn-danger" style="padding:4px 10px;" onclick="removeLayer(${idx})">✖️ Remove</button>
-                        </div>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
-        }
-
-        function toggleLayerVisibility(index) {
-            if (!geoJsonLayers[index]) return;
-            const layer = geoJsonLayers[index];
-            if (layer.visible) {
-                popupMap.removeLayer(layer.layer);
-                layer.visible = false;
-            } else {
-                layer.layer.addTo(popupMap);
-                layer.visible = true;
-            }
-            renderLayerListUI();
-            saveGeoJSONLayersToLocal();
-        }
-
-        function removeLayer(index) {
-            if (!geoJsonLayers[index]) return;
-            const layer = geoJsonLayers[index];
-            if (layer.visible) popupMap.removeLayer(layer.layer);
-            geoJsonLayers.splice(index, 1);
-            renderLayerListUI();
-            saveGeoJSONLayersToLocal();
-            showToast('Layer removed.', 'info');
-        }
-
-        function clearAllLayers() {
-            geoJsonLayers.forEach(layer => {
-                if (layer.visible) popupMap.removeLayer(layer.layer);
-            });
-            geoJsonLayers = [];
-            renderLayerListUI();
-            localStorage.removeItem('geoJsonLayers');
-            showToast('All GeoJSON layers cleared.', 'info');
-        }
-
-        function saveGeoJSONLayersToLocal() {
-            // Store only necessary data (not the full Leaflet layers)
-            const layersToStore = geoJsonLayers.map(layer => ({
-                id: layer.id,
-                name: layer.name,
-                visible: layer.visible,
-                featureCount: layer.featureCount,
-                geojsonData: layer.geojsonData
-            }));
-            localStorage.setItem('geoJsonLayers', JSON.stringify(layersToStore));
-        }
-
-        function loadSavedGeoJSONLayers() {
-            const saved = localStorage.getItem('geoJsonLayers');
-            if (saved && popupMap) {
-                try {
-                    const layers = JSON.parse(saved);
-                    layers.forEach(savedLayer => {
-                        if (savedLayer.geojsonData) {
-                            addGeoJsonLayerToMap(savedLayer.geojsonData, savedLayer.name);
-                            // Set visibility after adding
-                            const addedLayer = geoJsonLayers[geoJsonLayers.length - 1];
-                            if (addedLayer && !savedLayer.visible) {
-                                popupMap.removeLayer(addedLayer.layer);
-                                addedLayer.visible = false;
-                            }
-                        }
-                    });
-                } catch(e) { console.warn('Failed to load saved layers', e); }
             }
         }
 
@@ -1095,7 +1268,7 @@
             }, 2000);
         }
 
-       // ========== CLUP DATA ==========
+        // ========== CLUP DATA ==========
         let clupRecords = [];
         let clupChart = null;
         let currentEditingClupId = null;
@@ -1486,7 +1659,160 @@
                 });
             }
         }
-        // ========== ZONING CERTIFICATION WITH STATUS AND CERTIFICATION ISSUED ==========
+
+        // ========== REVIEW DATA ==========
+        let reviewRecords = [];
+        async function fetchReviewRecords() {
+            try {
+                const response = await fetch(GOOGLE_SCRIPT_URL + '?action=get&data_type=review', { method: 'GET' });
+                const data = await response.json();
+                reviewRecords = Array.isArray(data) ? data : [];
+                localStorage.setItem('clupPdpfpReviews', JSON.stringify(reviewRecords));
+                renderReviewTable();
+            } catch (error) {
+                console.warn("Reviews using localStorage", error);
+                reviewRecords = JSON.parse(localStorage.getItem('clupPdpfpReviews') || '[]');
+                renderReviewTable();
+            }
+        }
+
+        function renderReviewTable() {
+            const tbody = document.getElementById('reviewTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            reviewRecords.forEach(rec => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${escapeHtml(rec.lgu)}</td
+                    <td>${escapeHtml(rec.reviewer)}</td
+                    <td>${escapeHtml(rec.dates)}</td
+                    <td><div class="action-btns"><button class="action-btn edit" onclick="openReviewModal(${rec.id})">✏️ Edit</button><button class="action-btn delete" onclick="deleteReviewRecord(${rec.id})">🗑️ Delete</button></div></td
+                `;
+            });
+        }
+
+        async function saveReviewToSheet(record, action) {
+            try {
+                const isOnline = await checkGoogleSheetsConnection();
+                
+                if (!isOnline) {
+                    addToPendingSync('review', action, record);
+                    
+                    let stored = JSON.parse(localStorage.getItem('clupPdpfpReviews') || '[]');
+                    if (action === 'add') stored.push(record);
+                    else if (action === 'update') {
+                        const index = stored.findIndex(r => r.id == record.id);
+                        if (index !== -1) stored[index] = record;
+                    } else if (action === 'delete') stored = stored.filter(r => r.id != record.id);
+                    localStorage.setItem('clupPdpfpReviews', JSON.stringify(stored));
+                    reviewRecords = stored;
+                    
+                    showToast(`Saved locally. Will sync to Google Sheets when online.`, 'warning');
+                    return true;
+                }
+                
+                const params = new URLSearchParams();
+                params.append('action', action);
+                params.append('data_type', 'review');
+                params.append('data', JSON.stringify(record));
+                const response = await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: params.toString() });
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast(`Saved to Google Sheets successfully`, 'success');
+                    return true;
+                } else {
+                    throw new Error(result.error || 'Save failed');
+                }
+            } catch (error) {
+                console.warn("Google Sheets review save failed, using localStorage with pending sync", error);
+                addToPendingSync('review', action, record);
+                
+                let stored = JSON.parse(localStorage.getItem('clupPdpfpReviews') || '[]');
+                if (action === 'add') stored.push(record);
+                else if (action === 'update') {
+                    const index = stored.findIndex(r => r.id == record.id);
+                    if (index !== -1) stored[index] = record;
+                } else if (action === 'delete') stored = stored.filter(r => r.id != record.id);
+                localStorage.setItem('clupPdpfpReviews', JSON.stringify(stored));
+                reviewRecords = stored;
+                
+                showToast(`Saved locally. Will sync when connection restored.`, 'warning');
+                return true;
+            }
+        }
+
+        let currentReviewId = null;
+        function openReviewModal(id = null) {
+            currentReviewId = id;
+            const rec = id !== null ? reviewRecords.find(r => r.id === id) : null;
+            const modal = document.getElementById('dataModal');
+            document.getElementById('modalTitle').textContent = id ? 'Edit Review Entry' : 'Add Review Entry';
+            document.getElementById('modalBody').innerHTML = `
+                <form onsubmit="saveReviewEntry(event)">
+                    <div class="form-grid">
+                        <div class="form-group full-width"><label>LGU/Province</label><input type="text" class="form-control" name="lgu" value="${rec ? escapeHtml(rec.lgu) : ''}" required></div>
+                        <div class="form-group full-width"><label>Reviewer</label><input type="text" class="form-control" name="reviewer" value="${rec ? escapeHtml(rec.reviewer) : ''}" required></div>
+                        <div class="form-group full-width"><label>Dates</label><input type="text" class="form-control" name="dates" value="${rec ? escapeHtml(rec.dates) : ''}" required></div>
+                    </div>
+                    <div style="text-align:right; margin-top:1rem;"><button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button><button type="submit" class="btn btn-success">Save</button></div>
+                </form>
+            `;
+            modal.classList.add('active');
+        }
+
+        async function saveReviewEntry(event) {
+            event.preventDefault();
+            const form = event.target;
+            const lgu = form.lgu.value.trim();
+            const reviewer = form.reviewer.value.trim();
+            const dates = form.dates.value.trim();
+            if (!lgu || !reviewer || !dates) { alert('Please fill all fields.'); return false; }
+            let success = false;
+            if (currentReviewId !== null) {
+                const updatedRec = { id: currentReviewId, lgu, reviewer, dates };
+                success = await saveReviewToSheet(updatedRec, 'update');
+                if (success) {
+                    const idx = reviewRecords.findIndex(r => r.id === currentReviewId);
+                    if (idx !== -1) reviewRecords[idx] = updatedRec;
+                }
+            } else {
+                const newId = reviewRecords.length ? Math.max(...reviewRecords.map(r => r.id)) + 1 : 1;
+                const newRec = { id: newId, lgu, reviewer, dates };
+                success = await saveReviewToSheet(newRec, 'add');
+                if (success) reviewRecords.push(newRec);
+            }
+            if (success) {
+                localStorage.setItem('clupPdpfpReviews', JSON.stringify(reviewRecords));
+                renderReviewTable();
+                closeModal();
+                alert('Saved successfully.');
+            } else alert('Failed to save.');
+            return false;
+        }
+
+        async function deleteReviewRecord(id) {
+            if (confirm('Delete this review entry?')) {
+                const success = await saveReviewToSheet({ id }, 'delete');
+                if (success) {
+                    reviewRecords = reviewRecords.filter(r => r.id !== id);
+                    localStorage.setItem('clupPdpfpReviews', JSON.stringify(reviewRecords));
+                    renderReviewTable();
+                    alert('Deleted.');
+                } else alert('Failed to delete.');
+            }
+        }
+
+        function exportReviewData() {
+            const dataStr = JSON.stringify(reviewRecords, null, 2);
+            const a = document.createElement('a');
+            a.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+            a.download = 'clup_pdpfp_reviews.json';
+            a.click();
+            alert('Exported');
+        }
+
+        // ========== ZONING CERTIFICATION ==========
         let zoningCertifications = [];
         let certificationCounter = { lastCertNumber: 0, prefix: 'SZC-RVI', year: new Date().getFullYear().toString().slice(-2) };
         let currentEditingZoningId = null;
@@ -1496,25 +1822,14 @@
                 const response = await fetch(GOOGLE_SCRIPT_URL + '?action=get&data_type=zoning', { method: 'GET' });
                 const data = await response.json();
                 zoningCertifications = Array.isArray(data) ? data : [];
-                // Ensure each record has status and certificationIssued fields
-                zoningCertifications.forEach(rec => { 
-                    if (!rec.status) rec.status = 'For Review';
-                    if (!rec.certificationIssued) rec.certificationIssued = '';
-                });
                 localStorage.setItem('zoningCertifications', JSON.stringify(zoningCertifications));
                 await updateLocalCounterAfterSync();
                 renderCertificationsTable();
-                updateAccomplishmentReport();
             } catch (error) {
                 console.warn("Zoning using localStorage", error);
                 zoningCertifications = JSON.parse(localStorage.getItem('zoningCertifications') || '[]');
-                zoningCertifications.forEach(rec => { 
-                    if (!rec.status) rec.status = 'For Review';
-                    if (!rec.certificationIssued) rec.certificationIssued = '';
-                });
                 updateCounterFromData();
                 renderCertificationsTable();
-                updateAccomplishmentReport();
             }
         }
 
@@ -1544,91 +1859,165 @@
             }
         }
 
-        // Function to update both status and certificationIssued fields
-        function updateCertificationField(recordId, field, value) {
-            const record = zoningCertifications.find(r => r.id === recordId);
-            if (record) {
-                record[field] = value;
-                localStorage.setItem('zoningCertifications', JSON.stringify(zoningCertifications));
-                // Optionally sync to Google Sheets if online
-                checkGoogleSheetsConnection().then(isOnline => {
-                    if (isOnline) {
-                        const params = new URLSearchParams();
-                        params.append('action', 'update');
-                        params.append('data_type', 'zoning');
-                        params.append('data', JSON.stringify({ id: recordId, [field]: value }));
-                        fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: params }).catch(console.warn);
-                    } else {
-                        addToPendingSync('zoning', 'update', { id: recordId, [field]: value });
+        async function saveZoningRecord(event) {
+            event.preventDefault();
+            
+            const saveBtn = event.submitter;
+            const originalText = saveBtn.innerHTML;
+            saveBtn.innerHTML = '⏳ Saving...';
+            saveBtn.disabled = true;
+            
+            try {
+                let certificationNo;
+                if (!currentEditingZoningId) {
+                    const certResult = await generateUniqueCertificationNumber();
+                    certificationNo = certResult.certNumber;
+                } else {
+                    certificationNo = zoningCertifications.find(r => r.id === currentEditingZoningId).certificationNo;
+                }
+                
+                const series = document.getElementById('series').value;
+                const parcels = document.getElementById('parcels').value;
+                const location = document.getElementById('location').value;
+                const latitude = document.getElementById('latitude').value || '';
+                const longitude = document.getElementById('longitude').value || '';
+                const totalArea = document.getElementById('totalArea').value;
+                const proposedUse = document.getElementById('proposedUse').value;
+                const dateIssued = document.getElementById('dateIssued').value;
+                const requestedBy = document.getElementById('requestedBy').value;
+                const amountPaid = document.getElementById('amountPaid').value;
+                const orNo = document.getElementById('orNo').value || '';
+                const orDate = document.getElementById('orDate').value || '';
+                const remarks = document.getElementById('remarks').value || '';
+                const clupStatus = document.querySelector('input[name="clupStatus"]:checked')?.value || 'approved';
+                const city = document.getElementById('city').value || '';
+                const province = document.getElementById('province').value || '';
+                const approvedBy = document.getElementById('approvedBy').value || '';
+                const circularNo = document.getElementById('circularNo').value || '';
+                const approvalDate = document.getElementById('approvalDate').value || '';
+                const purpose = document.getElementById('purpose').value || '';
+                const landClass = document.getElementById('landClass').value || '';
+
+                if (!parcels || !location || !totalArea || !proposedUse || !dateIssued || !requestedBy || !amountPaid) {
+                    alert('Please fill all required fields.');
+                    saveBtn.innerHTML = originalText;
+                    saveBtn.disabled = false;
+                    return false;
+                }
+
+                const landHoldings = [];
+                const owners = document.getElementsByName('registeredOwner[]');
+                const tcts = document.getElementsByName('tctNo[]');
+                const lots = document.getElementsByName('lotNo[]');
+                const areas = document.getElementsByName('areaPerTitle[]');
+                const zones = document.getElementsByName('zoneclass[]');
+                for (let i = 0; i < owners.length; i++) {
+                    if (!owners[i]?.value || !tcts[i]?.value || !zones[i]?.value) {
+                        alert(`Row ${i+1}: fill all required fields.`);
+                        saveBtn.innerHTML = originalText;
+                        saveBtn.disabled = false;
+                        return false;
                     }
-                });
-                renderCertificationsTable();
-                updateAccomplishmentReport();
-                showToast(`${field === 'status' ? 'Status' : 'Certification Issued'} updated to "${value}"`, 'success');
+                    landHoldings.push({
+                        registeredOwner: owners[i].value,
+                        tctNo: tcts[i].value,
+                        lotNo: lots[i]?.value || '',
+                        areaPerTitle: areas[i]?.value ? parseFloat(areas[i].value) : 0,
+                        zoneclass: zones[i].value
+                    });
+                }
+
+                const record = {
+                    id: currentEditingZoningId || Date.now(),
+                    certificationNo, series, parcels, location, latitude, longitude, totalArea, proposedUse,
+                    landHoldings, dateIssued, requestedBy, amountPaid, orNo, orDate, remarks, clupStatus,
+                    city, province, approvedBy, circularNo, approvalDate,
+                    purpose, landClass,
+                    timestamp: new Date().toLocaleString()
+                };
+
+                const action = currentEditingZoningId ? 'update' : 'add';
+                
+                const isOnline = await checkGoogleSheetsConnection();
+                
+                if (!isOnline) {
+                    if (action === 'add') zoningCertifications.push(record);
+                    else {
+                        const idx = zoningCertifications.findIndex(r => r.id === record.id);
+                        if (idx !== -1) zoningCertifications[idx] = record;
+                    }
+                    localStorage.setItem('zoningCertifications', JSON.stringify(zoningCertifications));
+                    addToPendingSync('zoning', action, record);
+                    
+                    const localCounter = JSON.parse(localStorage.getItem('certificationCounter') || '{"lastCertNumber":0}');
+                    const certNumber = parseInt(record.certificationNo.split('-')[1]);
+                    if (certNumber > localCounter.lastCertNumber) {
+                        localCounter.lastCertNumber = certNumber;
+                        localStorage.setItem('certificationCounter', JSON.stringify(localCounter));
+                    }
+                    
+                    renderCertificationsTable();
+                    clearZoningForm();
+                    await refreshCertificationNumber();
+                    document.getElementById('recordsSection').style.display = 'block';
+                    alert(`Saved locally! Will sync when online. No: ${certificationNo}`);
+                    saveBtn.innerHTML = originalText;
+                    saveBtn.disabled = false;
+                    return false;
+                }
+                
+                const params = new URLSearchParams();
+                params.append('action', action);
+                params.append('data_type', 'zoning');
+                params.append('data', JSON.stringify(record));
+                const response = await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: params.toString() });
+                const result = await response.json();
+                
+                if (result.success) {
+                    if (action === 'add') zoningCertifications.push(record);
+                    else {
+                        const idx = zoningCertifications.findIndex(r => r.id === record.id);
+                        if (idx !== -1) zoningCertifications[idx] = record;
+                    }
+                    localStorage.setItem('zoningCertifications', JSON.stringify(zoningCertifications));
+                    await updateLocalCounterAfterSync();
+                    renderCertificationsTable();
+                    clearZoningForm();
+                    await refreshCertificationNumber();
+                    document.getElementById('recordsSection').style.display = 'block';
+                    alert(`Saved to Google Sheets! No: ${certificationNo}`);
+                } else if (result.duplicate) {
+                    alert('Certification number conflict detected. Please try saving again.');
+                    await refreshCertificationNumber();
+                } else {
+                    throw new Error(result.error || 'Save failed');
+                }
+            } catch (error) {
+                console.error('Zoning save error:', error);
+                alert('Failed to save: ' + error.message);
+            } finally {
+                saveBtn.innerHTML = originalText;
+                saveBtn.disabled = false;
             }
+            return false;
         }
 
         function renderCertificationsTable() {
             const tbody = document.getElementById('certificationsTableBody');
             if (!tbody) return;
             tbody.innerHTML = '';
-            
-            const searchTerm = document.getElementById('certSearchInput')?.value.toLowerCase() || '';
-            const statusFilter = document.getElementById('certStatusFilter')?.value || '';
-            const issuedFilter = document.getElementById('certIssuedFilter')?.value || '';
-            
-            let filtered = [...zoningCertifications];
-            if (searchTerm) {
-                filtered = filtered.filter(rec => 
-                    rec.certificationNo?.toLowerCase().includes(searchTerm) ||
-                    rec.location?.toLowerCase().includes(searchTerm) ||
-                    rec.requestedBy?.toLowerCase().includes(searchTerm)
-                );
-            }
-            if (statusFilter) filtered = filtered.filter(rec => rec.status === statusFilter);
-            if (issuedFilter) filtered = filtered.filter(rec => rec.certificationIssued === issuedFilter);
-            
-            const sorted = filtered.sort((a,b) => new Date(b.dateIssued) - new Date(a.dateIssued));
-            
-            if (!sorted.length) { 
-                tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">No records found.</td></tr>'; 
-                return; 
-            }
-            
+            if (!zoningCertifications.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No records found. </td></tr>'; return; }
+            const sorted = [...zoningCertifications].sort((a,b) => new Date(b.dateIssued) - new Date(a.dateIssued));
             sorted.forEach(rec => {
                 const row = tbody.insertRow();
                 row.innerHTML = `
-                    <td>${escapeHtml(rec.certificationNo)}</td>
-                    <td>${escapeHtml(rec.parcels)}</td>
-                    <td>${escapeHtml(rec.location)}</td>
-                    <td>${escapeHtml(rec.totalArea)} ha</td>
-                    <td>${formatDate(rec.dateIssued)}</td>
-                    <td>${escapeHtml(rec.requestedBy)}</td>
-                    <td>
-                        <select class="status-dropdown" data-id="${rec.id}" onchange="updateCertificationField(${rec.id}, 'status', this.value)">
-                            <option value="For Review" ${rec.status === 'For Review' ? 'selected' : ''}>For Review</option>
-                            <option value="For RD Signature" ${rec.status === 'For RD Signature' ? 'selected' : ''}>For RD Signature</option>
-                            <option value="For Release" ${rec.status === 'For Release' ? 'selected' : ''}>For Release</option>
-                            <option value="Released" ${rec.status === 'Released' ? 'selected' : ''}>Released</option>
-                        </select>
-                    </td>
-                    <td>
-                        <select class="issued-dropdown" data-id="${rec.id}" onchange="updateCertificationField(${rec.id}, 'certificationIssued', this.value)">
-                            <option value="">-- Select --</option>
-                            <option value="Zoning Simple" ${rec.certificationIssued === 'Zoning Simple' ? 'selected' : ''}>Zoning Simple</option>
-                            <option value="Zoning - DAR (Simple)" ${rec.certificationIssued === 'Zoning - DAR (Simple)' ? 'selected' : ''}>Zoning - DAR (Simple)</option>
-                            <option value="Zoning - DAR (Complex)" ${rec.certificationIssued === 'Zoning - DAR (Complex)' ? 'selected' : ''}>Zoning - DAR (Complex)</option>
-                            <option value="Reclass Indorsement" ${rec.certificationIssued === 'Reclass Indorsement' ? 'selected' : ''}>Reclass Indorsement</option>
-                            <option value="Locational Clearance" ${rec.certificationIssued === 'Locational Clearance' ? 'selected' : ''}>Locational Clearance</option>
-                            <option value="Locational Clearance (National Significance)" ${rec.certificationIssued === 'Locational Clearance (National Significance)' ? 'selected' : ''}>Locational Clearance (National Significance)</option>
-                        </select>
-                    </td>
-                    <td><div class="action-btns">
-                        <button class="action-btn view" onclick="viewZoningRecord(${rec.id})">👁️ View</button>
-                        <button class="action-btn edit" onclick="editZoningRecord(${rec.id})">✏️ Edit</button>
-                        <button class="action-btn print" onclick="printZoningRecord(${rec.id})">🖨️ Print</button>
-                        <button class="action-btn delete" onclick="deleteZoningRecord(${rec.id})">🗑️ Delete</button>
-                    </div></td>
+                    <td>${escapeHtml(rec.certificationNo)}</td
+                    <td>${escapeHtml(rec.parcels)}</td
+                    <td>${escapeHtml(rec.location)}</td
+                    <td>${escapeHtml(rec.totalArea)} ha</td
+                    <td>${formatDate(rec.dateIssued)}</td
+                    <td>${escapeHtml(rec.requestedBy)}</td
+                    <td><div class="action-btns"><button class="action-btn view" onclick="viewZoningRecord(${rec.id})">👁️ View</button><button class="action-btn edit" onclick="editZoningRecord(${rec.id})">✏️ Edit</button><button class="action-btn print" onclick="printZoningRecord(${rec.id})">🖨️ Print</button><button class="action-btn delete" onclick="deleteZoningRecord(${rec.id})">🗑️ Delete</button></div></td
                 `;
             });
         }
@@ -1709,7 +2098,6 @@
                         localStorage.setItem('zoningCertifications', JSON.stringify(zoningCertifications));
                         updateCounterFromData();
                         renderCertificationsTable();
-                        updateAccomplishmentReport();
                         alert('Deleted locally. Will sync when online.');
                         return;
                     }
@@ -1725,7 +2113,6 @@
                         localStorage.setItem('zoningCertifications', JSON.stringify(zoningCertifications));
                         updateCounterFromData();
                         renderCertificationsTable();
-                        updateAccomplishmentReport();
                         alert('Deleted.');
                     } else alert('Failed to delete.');
                 } catch (error) {
@@ -1735,157 +2122,9 @@
                     localStorage.setItem('zoningCertifications', JSON.stringify(zoningCertifications));
                     updateCounterFromData();
                     renderCertificationsTable();
-                    updateAccomplishmentReport();
                     alert('Deleted locally. Will sync when connection restored.');
                 }
             }
-        }
-
-        async function saveZoningRecord(event) {
-            event.preventDefault();
-            
-            const saveBtn = event.submitter;
-            const originalText = saveBtn.innerHTML;
-            saveBtn.innerHTML = '⏳ Saving...';
-            saveBtn.disabled = true;
-            
-            try {
-                let certificationNo;
-                if (!currentEditingZoningId) {
-                    const certResult = await generateUniqueCertificationNumber();
-                    certificationNo = certResult.certNumber;
-                } else {
-                    certificationNo = zoningCertifications.find(r => r.id === currentEditingZoningId).certificationNo;
-                }
-                
-                const series = document.getElementById('series').value;
-                const parcels = document.getElementById('parcels').value;
-                const location = document.getElementById('location').value;
-                const latitude = document.getElementById('latitude').value || '';
-                const longitude = document.getElementById('longitude').value || '';
-                const totalArea = document.getElementById('totalArea').value;
-                const proposedUse = document.getElementById('proposedUse').value;
-                const dateIssued = document.getElementById('dateIssued').value;
-                const requestedBy = document.getElementById('requestedBy').value;
-                const amountPaid = document.getElementById('amountPaid').value;
-                const orNo = document.getElementById('orNo').value || '';
-                const orDate = document.getElementById('orDate').value || '';
-                const remarks = document.getElementById('remarks').value || '';
-                const clupStatus = document.querySelector('input[name="clupStatus"]:checked')?.value || 'approved';
-                const city = document.getElementById('city').value || '';
-                const province = document.getElementById('province').value || '';
-                const approvedBy = document.getElementById('approvedBy').value || '';
-                const circularNo = document.getElementById('circularNo').value || '';
-                const approvalDate = document.getElementById('approvalDate').value || '';
-                const purpose = document.getElementById('purpose').value || '';
-                const landClass = document.getElementById('landClass').value || '';
-                const status = 'For Review';
-                const certificationIssued = '';
-
-                if (!parcels || !location || !totalArea || !proposedUse || !dateIssued || !requestedBy || !amountPaid) {
-                    alert('Please fill all required fields.');
-                    saveBtn.innerHTML = originalText;
-                    saveBtn.disabled = false;
-                    return false;
-                }
-
-                const landHoldings = [];
-                const owners = document.getElementsByName('registeredOwner[]');
-                const tcts = document.getElementsByName('tctNo[]');
-                const lots = document.getElementsByName('lotNo[]');
-                const areas = document.getElementsByName('areaPerTitle[]');
-                const zones = document.getElementsByName('zoneclass[]');
-                for (let i = 0; i < owners.length; i++) {
-                    if (!owners[i]?.value || !tcts[i]?.value || !zones[i]?.value) {
-                        alert(`Row ${i+1}: fill all required fields.`);
-                        saveBtn.innerHTML = originalText;
-                        saveBtn.disabled = false;
-                        return false;
-                    }
-                    landHoldings.push({
-                        registeredOwner: owners[i].value,
-                        tctNo: tcts[i].value,
-                        lotNo: lots[i]?.value || '',
-                        areaPerTitle: areas[i]?.value ? parseFloat(areas[i].value) : 0,
-                        zoneclass: zones[i].value
-                    });
-                }
-
-                const record = {
-                    id: currentEditingZoningId || Date.now(),
-                    certificationNo, series, parcels, location, latitude, longitude, totalArea, proposedUse,
-                    landHoldings, dateIssued, requestedBy, amountPaid, orNo, orDate, remarks, clupStatus,
-                    city, province, approvedBy, circularNo, approvalDate,
-                    purpose, landClass, status, certificationIssued,
-                    timestamp: new Date().toLocaleString()
-                };
-
-                const action = currentEditingZoningId ? 'update' : 'add';
-                
-                const isOnline = await checkGoogleSheetsConnection();
-                
-                if (!isOnline) {
-                    if (action === 'add') zoningCertifications.push(record);
-                    else {
-                        const idx = zoningCertifications.findIndex(r => r.id === record.id);
-                        if (idx !== -1) zoningCertifications[idx] = record;
-                    }
-                    localStorage.setItem('zoningCertifications', JSON.stringify(zoningCertifications));
-                    addToPendingSync('zoning', action, record);
-                    
-                    const localCounter = JSON.parse(localStorage.getItem('certificationCounter') || '{"lastCertNumber":0}');
-                    const certNumber = parseInt(record.certificationNo.split('-')[1]);
-                    if (certNumber > localCounter.lastCertNumber) {
-                        localCounter.lastCertNumber = certNumber;
-                        localStorage.setItem('certificationCounter', JSON.stringify(localCounter));
-                    }
-                    
-                    renderCertificationsTable();
-                    updateAccomplishmentReport();
-                    clearZoningForm();
-                    await refreshCertificationNumber();
-                    document.getElementById('recordsSection').style.display = 'block';
-                    alert(`Saved locally! Will sync when online. No: ${certificationNo}`);
-                    saveBtn.innerHTML = originalText;
-                    saveBtn.disabled = false;
-                    return false;
-                }
-                
-                const params = new URLSearchParams();
-                params.append('action', action);
-                params.append('data_type', 'zoning');
-                params.append('data', JSON.stringify(record));
-                const response = await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: params.toString() });
-                const result = await response.json();
-                
-                if (result.success) {
-                    if (action === 'add') zoningCertifications.push(record);
-                    else {
-                        const idx = zoningCertifications.findIndex(r => r.id === record.id);
-                        if (idx !== -1) zoningCertifications[idx] = record;
-                    }
-                    localStorage.setItem('zoningCertifications', JSON.stringify(zoningCertifications));
-                    await updateLocalCounterAfterSync();
-                    renderCertificationsTable();
-                    updateAccomplishmentReport();
-                    clearZoningForm();
-                    await refreshCertificationNumber();
-                    document.getElementById('recordsSection').style.display = 'block';
-                    alert(`Saved to Google Sheets! No: ${certificationNo}`);
-                } else if (result.duplicate) {
-                    alert('Certification number conflict detected. Please try saving again.');
-                    await refreshCertificationNumber();
-                } else {
-                    throw new Error(result.error || 'Save failed');
-                }
-            } catch (error) {
-                console.error('Zoning save error:', error);
-                alert('Failed to save: ' + error.message);
-            } finally {
-                saveBtn.innerHTML = originalText;
-                saveBtn.disabled = false;
-            }
-            return false;
         }
 
         function clearZoningForm() {
@@ -1931,14 +2170,30 @@
         function toggleRecordsView() { document.getElementById('recordsSection').style.display = 'none'; }
         
         function filterCertificationsTable() {
-            renderCertificationsTable();
+            const searchTerm = document.getElementById('certSearchInput')?.value.toLowerCase() || '';
+            const tbody = document.getElementById('certificationsTableBody');
+            if (!tbody) return;
+            const rows = tbody.getElementsByTagName('tr');
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                const cells = row.getElementsByTagName('td');
+                if (cells.length === 0) continue;
+                const certNo = cells[0]?.innerText.toLowerCase() || '';
+                const location = cells[2]?.innerText.toLowerCase() || '';
+                const requestedBy = cells[5]?.innerText.toLowerCase() || '';
+                const matchesSearch = searchTerm === '' || certNo.includes(searchTerm) || location.includes(searchTerm) || requestedBy.includes(searchTerm);
+                if (matchesSearch) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            }
         }
 
         function clearCertSearch() {
-            document.getElementById('certSearchInput').value = '';
-            document.getElementById('certStatusFilter').value = '';
-            document.getElementById('certIssuedFilter').value = '';
-            renderCertificationsTable();
+            const searchInput = document.getElementById('certSearchInput');
+            if (searchInput) searchInput.value = '';
+            filterCertificationsTable();
         }
 
         function resetCertificationCounter() {
@@ -1950,74 +2205,675 @@
             }
         }
 
-        // ========== ACCOMPLISHMENT REPORT FUNCTIONS ==========
-        function updateAccomplishmentReport() {
-            const total = zoningCertifications.length;
-            const released = zoningCertifications.filter(r => r.status === 'Released').length;
-            const pending = zoningCertifications.filter(r => r.status && r.status !== 'Released').length;
-            const totalArea = zoningCertifications.reduce((sum, r) => sum + (parseFloat(r.totalArea) || 0), 0);
-            document.getElementById('totalCertCount').innerText = total;
-            document.getElementById('releasedCount').innerText = released;
-            document.getElementById('pendingReviewCount').innerText = pending;
-            document.getElementById('totalAreaSum').innerText = totalArea.toFixed(2);
+        // ========== PRINT ZONING RECORD ==========
+        function formatMonthDayYear(dateStr) {
+            if (!dateStr || dateStr === '___________' || dateStr === 'Pending' || dateStr === 'N/A') return '___________';
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) return '___________';
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                                'July', 'August', 'September', 'October', 'November', 'December'];
+            return `${monthNames[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+        }
+
+        function formatOrdinalDateLong(dateStr) {
+            if (!dateStr || dateStr === '___________' || dateStr === 'Pending' || dateStr === 'N/A') return '___________';
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) return '___________';
+            const day = d.getDate();
+            const suffix = (day % 10 === 1 && day !== 11) ? 'st' :
+                           (day % 10 === 2 && day !== 12) ? 'nd' :
+                           (day % 10 === 3 && day !== 13) ? 'rd' : 'th';
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                                'July', 'August', 'September', 'October', 'November', 'December'];
+            return `${day}${suffix} day of ${monthNames[d.getMonth()]} ${d.getFullYear()}`;
+        }
+
+        function printBlankForm() {
+            const blankForm = `<div class="print-document">
+                <h2>Republic of the Philippines</h2>
+                <h3>DEPARTMENT OF HUMAN SETTLEMENTS AND URBAN DEVELOPMENT</h3>
+                <h3>Region VI, Iloilo City</h3>
+                <h2>CERTIFICATION</h2>
+                <p>This is a blank certification form. Fill in the details before printing.</p>
+            </div>`;
+            const ps = document.getElementById('printSection');
+            ps.innerHTML = blankForm;
+            ps.style.display = 'block';
+            setTimeout(() => window.print(), 200);
+            setTimeout(() => ps.style.display = 'none', 1000);
+        }
+
+        function printZoningRecord(id) {
+            const rec = zoningCertifications.find(r => r.id == id);
+            if (!rec) return;
             
-            // Status chart
-            const statusCtx = document.getElementById('statusChart')?.getContext('2d');
-            if (statusCtx) {
-                if (window.statusChart) window.statusChart.destroy();
-                window.statusChart = new Chart(statusCtx, {
-                    type: 'pie',
-                    data: { labels: ['Released', 'Pending'], datasets: [{ data: [released, pending], backgroundColor: ['#27ae60', '#e67e22'] }] }
-                });
+            if (clupRecords.length === 0) {
+                const stored = localStorage.getItem('clupRecords');
+                if (stored) {
+                    clupRecords = JSON.parse(stored);
+                }
             }
-            // Issued chart
-            const issuedCounts = {};
-            zoningCertifications.forEach(r => { const type = r.certificationIssued || 'Not Set'; issuedCounts[type] = (issuedCounts[type] || 0) + 1; });
-            const issuedCtx = document.getElementById('issuedChart')?.getContext('2d');
-            if (issuedCtx) {
-                if (window.issuedChart) window.issuedChart.destroy();
-                window.issuedChart = new Chart(issuedCtx, {
-                    type: 'bar',
-                    data: { labels: Object.keys(issuedCounts), datasets: [{ label: 'Count', data: Object.values(issuedCounts), backgroundColor: '#3498db' }] }
-                });
+            
+            const certNo = rec.certificationNo;
+            const series = rec.series || '2002';
+            const parcels = rec.parcels || '______________________';
+            const location = rec.location || '______________________';
+            const totalArea = rec.totalArea || '__________';
+            const proposedUse = rec.proposedUse || '______________________';
+            const dateIssued = rec.dateIssued;
+            const requestedBy = rec.requestedBy || '______________________';
+            const amountPaid = rec.amountPaid || '___________';
+            const orNo = rec.orNo || '___________';
+            const orDate = rec.orDate || '';
+            let landHoldingsArray = Array.isArray(rec.landHoldings) ? rec.landHoldings : [];
+            let landHoldingsHtml = '';
+            const buildTotalRow = (totalAreaSum) => `<tr style="background-color: #f2f2f2;"><td style="border:1px solid #000; padding:0.3cm; color: black; font-weight: bold;"><strong>Total</strong><\/td><td style="border:1px solid #000; padding:0.3cm;"><\/td><td style="border:1px solid #000; padding:0.3cm;"><\/td><td style="border:1px solid #000; padding:0.3cm; text-align:right; color: black; font-weight: bold;"><strong>${totalAreaSum.toFixed(4)}</strong><\/td><td style="border:1px solid #000; padding:0.3cm;"><\/td><td style="border:1px solid #000; padding:0.3cm;"><\/td><\/tr>`;
+            const headerRow = `<thead><tr><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold; font-size: 13pt;">Registered Owner</th><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold; font-size: 13pt;">Lot Number</th><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold; font-size: 13pt;">OCT/TCT No.</th><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold; font-size: 13pt;">Area Per Title (Ha)</th><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold; font-size: 13pt;">Area Applied for Conversion (Ha)</th><th style="border:1px solid #000; padding:0.3cm; background-color: #fff; color: #000; font-weight: bold; font-size: 13pt;">Zone Classification</th><\/tr><\/thead>`;
+            if (landHoldingsArray.length === 0) {
+                let totalAreaNum = parseFloat(totalArea) || 0;
+                landHoldingsHtml = `<table class="land-holdings-table" style="width:100%; border-collapse:collapse; margin:0.5cm 0;">${headerRow}<tbody><tr><td style="border:1px solid #000; padding:0.3cm; color: black; font-size: 12pt;">______________________<\/td><td style="border:1px solid #000; padding:0.3cm; font-size: 12pt;">______________<\/td><td style="border:1px solid #000; padding:0.3cm; font-size: 12pt;">______________________<\/td><td style="border:1px solid #000; padding:0.3cm; text-align:right; font-size: 12pt;">${escapeHtml(totalArea)}<\/td><td style="border:1px solid #000; padding:0.3cm; font-size: 12pt;">___________<\/td><td style="border:1px solid #000; padding:0.3cm; font-size: 12pt;">${escapeHtml(proposedUse)}<\/td><\/tr>${buildTotalRow(totalAreaNum)}<\/tbody><\/table>`;
+            } else {
+                let totalAreaSum = 0;
+                let rowsHtml = '';
+                landHoldingsArray.forEach(h => { const area = h.areaPerTitle ? parseFloat(h.areaPerTitle) : 0; totalAreaSum += area; rowsHtml += `<tr><td style="border:1px solid #000; padding:0.3cm; color: black; font-size: 12pt;">${escapeHtml(h.registeredOwner || '______________________')}<\/td><td style="border:1px solid #000; padding:0.3cm; font-size: 12pt;">${escapeHtml(h.lotNo || '______________')}<\/td><td style="border:1px solid #000; padding:0.3cm; font-size: 12pt;">${escapeHtml(h.tctNo || '______________________')}<\/td><td style="border:1px solid #000; padding:0.3cm; text-align:right; font-size: 12pt;">${area.toFixed(4)}<\/td><td style="border:1px solid #000; padding:0.3cm; font-size: 12pt;">___________<\/td><td style="border:1px solid #000; padding:0.3cm; font-size: 12pt;">${escapeHtml(h.zoneclass || '______________________')}<\/td><\/tr>`; });
+                landHoldingsHtml = `<table class="land-holdings-table" style="width:100%; border-collapse:collapse; margin:0.5cm 0;">${headerRow}<tbody>${rowsHtml}${buildTotalRow(totalAreaSum)}<\/tbody><\/table>`;
             }
-            // Recent table
-            const recentTbody = document.getElementById('recentTableBody');
-            if (recentTbody) {
-                recentTbody.innerHTML = '';
-                zoningCertifications.slice(-5).reverse().forEach(r => {
-                    const row = recentTbody.insertRow();
-                    row.innerHTML = `
-                        <td>${escapeHtml(r.certificationNo)}</td>
-                        <td>${escapeHtml(r.location)}</td>
-                        <td>${formatDate(r.dateIssued)}</td>
-                        <td>${escapeHtml(r.status || '')}</td>
-                        <td>${escapeHtml(r.certificationIssued || '')}</td>
-                    `;
-                });
+            
+            const clupStatus = rec.clupStatus || 'approved';
+            const approvedBy = rec.approvedBy || '______________________';
+            const city = rec.city || '______________________';
+            const province = rec.province || '______________________';
+            const cityProvince = province && province !== '______________________' ? `${city}, ${province}` : city;
+            const circularNo = rec.circularNo || '___________';
+            const approvalDateRaw = rec.approvalDate || '___________';
+            const approvalDateFormatted = formatMonthDayYear(approvalDateRaw);
+            const agriculturalLand = '___________';
+            const reclassified = '___________';
+            const reclassYear = '___________';
+            const resolutionNo = '___________';
+            const resolutionDateRaw = '___________';
+            const resolutionDateFormatted = formatMonthDayYear(resolutionDateRaw);
+            const isIloiloCity = city.toLowerCase().includes('iloilo city') || city.toLowerCase() === 'iloilo city';
+            let approvedByText = approvedBy || (isIloiloCity ? 'DHSUD' : 'Sangguniang Panlalawigan');
+            let throughText = '';
+            if (isIloiloCity || approvedBy === 'DHSUD') throughText = ` ${escapeHtml(circularNo)}`;
+            else throughText = `${escapeHtml(circularNo)}`;
+            const check1 = clupStatus === 'approved' ? '[✓]' : '[ ]';
+            const check2 = clupStatus === 'pending' ? '[✓]' : '[ ]';
+            const check3 = clupStatus === 'none' ? '[✓]' : '[ ]';
+            
+            const cityLower = city.toLowerCase();
+            const isCity = cityLower.includes('city') || 
+                           cityLower === 'iloilo' || 
+                           cityLower === 'bacolod' || 
+                           cityLower === 'roxas' ||
+                           cityLower === 'passi' ||
+                           cityLower === 'san carlos' ||
+                           cityLower === 'himamaylan' ||
+                           cityLower === 'kabankalan' ||
+                           cityLower === 'sipalay' ||
+                           cityLower === 'la carlota' ||
+                           cityLower === 'bago' ||
+                           cityLower === 'talísay' ||
+                           cityLower === 'silay' ||
+                           cityLower === 'victorias' ||
+                           cityLower === 'cadiz' ||
+                           cityLower === 'sagay' ||
+                           cityLower === 'escarlante';
+            const lguTerm = isCity ? 'city' : 'municipality';
+            
+            let extraParagraph = '';
+            if (isIloiloCity && rec.purpose === 'Conversion') {
+                let iloiloClup = clupRecords.find(r => r.LGU && r.LGU.toLowerCase().includes('iloilo city') && r.Province === 'Iloilo');
+                if (!iloiloClup) {
+                    iloiloClup = clupRecords.find(r => r.LGU && r.LGU.toLowerCase().includes('iloilo city'));
+                }
+                if (!iloiloClup) {
+                    const stored = localStorage.getItem('clupRecords');
+                    if (stored) {
+                        const allRecords = JSON.parse(stored);
+                        iloiloClup = allRecords.find(r => r.LGU && r.LGU.toLowerCase().includes('iloilo city'));
+                    }
+                }
+                if (iloiloClup) {
+                    const landClassText = rec.landClass || '___________';
+                    const firstPlanRes = iloiloClup.First_Plan_Res || 'Resolution No. ___________';
+                    const firstApprovalDateRaw = iloiloClup.First_Plan_Date_of_Approval || '';
+                    const firstApprovalFormatted = firstApprovalDateRaw ? formatMonthDayYear(firstApprovalDateRaw) : '___________';
+                    extraParagraph = `<p style="margin-top: 0.1cm; margin-left: 0.5cm; text-indent: 1.5cm; font-size: 13pt;">THIS IS TO CERTIFY that same tract of land was within a zone classified as <strong>${escapeHtml(landClassText)}</strong> per the <strong>Comprehensive Land Use Plan/Zoning Ordinance of ${escapeHtml(city)}</strong>, that was approved on <strong>${firstApprovalFormatted}</strong>, via <strong>${escapeHtml(firstPlanRes)}</strong> by then <strong>Human Settlements Regulatory Commission (HSRC)</strong>, now DHSUD.</p>`;
+                } else {
+                    const landClassText = rec.landClass || '___________';
+                    extraParagraph = `<p style="margin-top: 0.05cm; margin-left: 0.5cm; text-indent: 0.5cm; font-size: 13pt;"><strong>THIS IS TO CERTIFY</strong> that same tract of land was within a zone classified as <strong>${escapeHtml(landClassText)}</strong> per the <strong>Comprehensive Land Use Plan/Zoning Ordinance of ${escapeHtml(city)}</strong>.</p>`;
+                }
+            }
+            
+            const statusHtml = `
+            <p style="margin-left: 0cm; margin-top: 0.05cm; margin-bottom: 0.05cm; font-size: 13pt;"><strong>1. ${check1} WITH APPROVED CLUP/ZO</strong></p>
+            <p style="margin-left: 0.5cm; text-indent: 1.5cm; text-align: justify; margin-top: 0.05cm; margin-bottom: 0.05cm; font-size: 13pt;">THIS IS TO CERTIFY that the above-described landholdings is/are zoned for use/s specified in the above table per approved <strong>Comprehensive Land Use Plan/Zoning Ordinance</strong> of <strong>${escapeHtml(cityProvince)}</strong>, as approved by the <strong>${approvedByText}</strong> through <strong>${throughText}</strong> dated <strong>${escapeHtml(approvalDateFormatted)}</strong> in accordance with pertinent issuances;</p>
+            ${extraParagraph}
+            <p style="margin-left: 0.6cm; text-align: justify; margin-top: 0.05cm; margin-bottom: 0.05cm; font-size: 13pt;">Further, the proposed conversion:</p>
+            <p style="margin-left: 1.2cm; text-align: justify; margin-top: 0.05cm; margin-bottom: 0.05cm; font-size: 13pt;">[ ] Conforms/is compatible with the approved land use plan and/or Zoning Ordinance.</p>
+            <p style="margin-left: 1.2cm; text-align: justify; margin-top: 0.05cm; margin-bottom: 0.05cm; font-size: 13pt;">[ ] Does not conform/is not compatible with the approved land use plan and/or Zoning Ordinance.</p>
+            <p style="margin-left: 0.5cm; text-indent: 0.5cm; text-align: justify; margin-top: 0.05cm; margin-bottom: 0.05cm; font-size: 13pt;">Per record of this office, the ${lguTerm} of ${escapeHtml(city)} has a total zoned agricultural land of <strong>${agriculturalLand}</strong> hectares of which <strong>${reclassified}</strong> hectares have been reclassified since <strong>${reclassYear}</strong>, as approved by the DHSUD/SP per DHSUD/SP Resolution No. <strong>${resolutionNo}</strong> dated <strong>${escapeHtml(resolutionDateFormatted)}</strong>.</p>
+            <p style="margin-left: 0cm; margin-top: 0.1cm; margin-bottom: 0.05cm; font-size: 13pt;"><strong>2. ${check2} WITH CLUP/ZO PENDING APPROVAL BY HLURB/SP</strong></p>
+            <p style="margin-left: 0.5cm; text-indent: 1.5cm; text-align: justify; margin-top: 0.05cm; margin-bottom: 0.05cm; font-size: 13pt;">THIS IS TO CERTIFY that the above-described property/ies lie/s is/are located within the area zoned for ________ use per Comprehensive Land Use Plan/Zoning Ordinance No. ________ dated _____ submitted to HLURB/SP for approval on _____________ and same remains pending to date.</p>
+            <p style="margin-left: 0.5cm; text-indent: 1.5cm; text-align: justify; margin-top: 0.05cm; margin-bottom: 0.05cm; font-size: 13pt;">THIS IS TO CERTIFY FURTHER that per record of this office-said ${lguTerm} of _________ will have a total zoned agricultural land of ________ hectares.</p>
+            <p style="margin-left: 0cm; margin-top: 0.1cm; margin-bottom: 0.05cm; font-size: 13pt;"><strong>3. ${check3} WITHOUT CLUP/ZO</strong></p>
+            <p style="margin-left: 1.2cm; text-indent: 1.5cm; text-align: justify; margin-top: 0.05cm; margin-bottom: 0.05cm; font-size: 13pt;">THIS IS TO CERTIFY that the ${lguTerm} of _________ has not submitted its Comprehensive Land Use Plan/Zoning Ordinance to this Office.</p>
+        `;
+            
+            const formattedDateIssued = formatOrdinalDateLong(dateIssued);
+            const orDateFormatted = orDate ? formatMonthDayYear(orDate) : formatMonthDayYear(dateIssued);
+            
+            const printContent = `<div class="print-document" style="margin: 0; padding: 0; page-break-after: avoid;">
+                <div style="text-align: right; margin-bottom: 0.5cm;">
+                    <p style="margin: 0; font-size: 13pt;"><strong>DHSUD Certification No. ${escapeHtml(certNo)}</strong></p>
+                </div>
+                <div style="margin-bottom: 0.5cm;">
+                    <p style="margin: 0; font-size: 13pt;"><strong>LUC FORM NO. 5</strong></p>
+                    <p style="margin: 0; font-size: 13pt;">Series of ${escapeHtml(series)}</p>
+                    <p style="margin: 0; font-size: 12pt; font-style: italic;">(To be filled-up by the Regional DHSUD)</p>
+                </div>
+                <div style="text-align: center; margin: 0.5cm 0;">
+                    <h2 style="font-size: 22pt; margin: 0.2cm 0;">Republic of the Philippines</h2>
+                    <h3 style="font-size: 16pt; margin: 0.1cm 0;">DEPARTMENT OF HUMAN SETTLEMENTS AND URBAN DEVELOPMENT</h3>
+                    <h3 style="font-size: 15pt; margin: 0.1cm 0;">Region VI, Iloilo City</h3>
+                    <h2 style="text-decoration: underline; margin: 0.3cm 0; font-size: 22pt;">CERTIFICATION</h2>
+                </div>
+                <div style="text-align: left; margin: 0.3cm 0 0.2cm 0;">
+                    <h4 style="font-size: 18pt; font-weight: bold; margin: 0;">I. BASIC INFORMATION</h4>
+                </div>
+                <div class="basic-info" style="margin-left: 0.5cm; margin-bottom: 0.3cm;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 14pt; border: none;">
+                        <tr style="border: none;">
+                            <td style="width: 6cm; padding: 0.1cm 0; border: none; white-space: nowrap; font-size: 14pt;"><strong>A. No. of Parcels</strong></td>
+                            <td style="width: 0.5cm; padding: 0.1cm 0; border: none; white-space: nowrap; font-size: 14pt;"><strong>:</strong>                            <td style="padding: 0.1cm 0; border: none; font-size: 14pt;">${escapeHtml(parcels)}</td>
+                        </tr>
+                        <tr style="border: none;">
+                            <td style="width: 6cm; padding: 0.1cm 0; border: none; white-space: nowrap; font-size: 14pt;"><strong>B. Location of the Property</strong></td>
+                            <td style="width: 0.5cm; padding: 0.1cm 0; border: none; white-space: nowrap; font-size: 14pt;"><strong>:</strong></td>
+                            <td style="padding: 0.1cm 0; border: none; font-size: 14pt;">${escapeHtml(location)}</td>
+                        </tr>
+                        <tr style="border: none;">
+                            <td style="width: 6cm; padding: 0.1cm 0; border: none; white-space: nowrap; font-size: 14pt;"><strong>C. Total Area (ha.)</strong></td>
+                            <td style="width: 0.5cm; padding: 0.1cm 0; border: none; white-space: nowrap; font-size: 14pt;"><strong>:</strong></td>
+                            <td style="padding: 0.1cm 0; border: none; font-size: 14pt;">${escapeHtml(totalArea)} ha</td>
+                        </tr>
+                        <tr style="border: none;">
+                            <td style="width: 6cm; padding: 0.1cm 0; border: none; white-space: nowrap; font-size: 14pt;"><strong>D. Proposed Use</strong></td>
+                            <td style="width: 0.5cm; padding: 0.1cm 0; border: none; white-space: nowrap; font-size: 14pt;"><strong>:</strong></td>
+                            <td style="padding: 0.1cm 0; border: none; font-size: 14pt;">${escapeHtml(proposedUse)}</td>
+                        </tr>
+                        <tr style="border: none;">
+                            <td style="width: 6cm; padding: 0.1cm 0; border: none; white-space: nowrap; font-size: 14pt;"><strong>E. Description of Land Holdings</strong></td>
+                            <td style="width: 0.5cm; padding: 0.1cm 0; border: none; white-space: nowrap; font-size: 14pt;"><strong>:</strong></td>
+                            <td style="padding: 0.1cm 0; border: none; font-size: 14pt;"></td>
+                        </tr>
+                    </table>
+                </div>
+                ${landHoldingsHtml}
+                <h4 style="margin: 0.1cm 0 0.05cm 0; font-size: 18pt; font-weight: bold;">II. STATUS OF COMPREHENSIVE LAND USE PLAN (CLUP) ZONING ORDINANCE (ZO)</h4>
+                <div class="clup-status" style="margin: 0.05cm 0; white-space: pre-line; font-size: 13pt; line-height: 1.3;">${statusHtml}</div>
+                <div style="margin: 0.5cm 0; font-size: 14pt;">
+                    <p style="margin: 0.2cm 0; font-size: 14pt;">This certification is issued upon the request of <strong>${escapeHtml(requestedBy)}</strong> for whatever legal purpose/s it may serve.</p>
+                    <p style="margin: 0.2cm 0; font-size: 14pt;">Given this <strong>${formattedDateIssued}</strong> in Iloilo City, Philippines.</p>
+                </div>
+                <div class="signature-area" style="margin-top: 1.5cm; display: flex; justify-content: flex-end;">
+                    <div class="signature-box" style="text-align: center; width: 9cm;">
+                        <div class="signature-line" style="border-bottom: 2px solid #000; margin: 0.6cm 0 0.2cm 0; width: 100%;"></div>
+                        <p style="margin: 0.1cm 0; font-size: 15pt;"><strong>EnP. EVA MARIA P. MARFIL, CSEE</strong></p>
+                        <p style="margin: 0.1cm 0; font-size: 13pt;">Regional Director</p>
+                    </div>
+                </div>
+                <div class="notices" style="margin-top: 1cm; font-size: 11pt; border-top: 1px dashed #000; padding-top: 0.3cm;">
+                    <p style="margin: 0.1cm 0; font-size: 11pt;"><strong>Note:</strong></p>
+                    <p style="margin: 0.1cm 0; font-size: 11pt;">1. This certification is issued relative to the requirement of DAR regarding the implementation of the Comprehensive Agrarian Reform Law and shall not be construed as a Certificate of Eligibility for conversion.</p>
+                    <p style="margin: 0.1cm 0; font-size: 11pt;">2. This certification <strong>shall not</strong> be construed as a Locational Clearance/Certificate of Zoning Compliance/Development Permit or License to Sell.</p>
+                    <p style="margin: 0.1cm 0; font-size: 11pt;">3. This <strong>shall not</strong> be construed as a certification as to the ownership by the applicant of the above listed parcel(s) of land.</p>
+                    <p style="margin: 0.1cm 0; font-size: 11pt;">4. Any misrepresentation on the part of the requesting party shall be a ground for cancellation of this certification.</p>
+                </div>
+                <div style="margin-top: 1cm; display: flex; justify-content: space-between; font-size: 12pt;">
+                    <div>
+                        <p style="margin: 0.1cm 0; font-size: 12pt;"><strong>${escapeHtml(certNo)}</strong></p>
+                        <p style="margin: 0.1cm 0; font-size: 12pt;"><strong>O.R. No. :</strong> ${escapeHtml(orNo)}</p>
+                        <p style="margin: 0.1cm 0; font-size: 12pt;"><strong>Amount Paid :</strong> P ${escapeHtml(amountPaid)}</p>
+                        <p style="margin: 0.1cm 0; font-size: 12pt;"><strong>Date :</strong> ${escapeHtml(orDateFormatted)}</p>
+                    </div>
+                </div>
+            </div>`;
+            const ps = document.getElementById('printSection');
+            ps.innerHTML = printContent;
+            ps.style.display = 'block';
+            setTimeout(() => window.print(), 200);
+            setTimeout(() => ps.style.display = 'none', 1000);
+        }
+
+        // ========== MAP FUNCTIONS (FOR COORDINATE SELECTION ONLY) ==========
+        let regionMap = null;
+        let mapInitialized = false;
+        let uploadedLayers = [];
+        let geojsonZoningLayers = [];
+        let baseLayers = {
+            "OpenStreetMap": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }),
+            "Humanitarian": L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }),
+            "Satellite": L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: 'Esri' }),
+            "CartoDB Positron": L.tileLayer('https://{s}.basemaps.cartod            "CartoDB Positron": L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '© OpenStreetMap, CartoDB' })
+        };
+        let currentBaseLayer = baseLayers.OpenStreetMap;
+
+        // Initialize map for coordinate selection only (no province markers)
+        function initMap() {
+            if (mapInitialized) return;
+            regionMap = L.map('regionMap').setView([11.0,122.5],8);
+            currentBaseLayer.addTo(regionMap);
+            mapInitialized = true;
+        }
+
+        function changeBaseMap() {
+            const value = document.getElementById('baseMapSelect').value;
+            if (!regionMap) return;
+            regionMap.removeLayer(currentBaseLayer);
+            switch(value) {
+                case 'osm': currentBaseLayer = baseLayers.OpenStreetMap; break;
+                case 'osm_hot': currentBaseLayer = baseLayers.Humanitarian; break;
+                case 'satellite': currentBaseLayer = baseLayers.Satellite; break;
+                case 'cartodb': currentBaseLayer = baseLayers["CartoDB Positron"]; break;
+                default: currentBaseLayer = baseLayers.OpenStreetMap;
+            }
+            currentBaseLayer.addTo(regionMap);
+        }
+
+        function setupFileUpload() {
+            const shapefileInput = document.getElementById('shapefileUpload');
+            if (shapefileInput) {
+                shapefileInput.addEventListener('change', handleFileSelect);
             }
         }
 
-        function exportAccomplishmentReport() {
-            const dataStr = JSON.stringify(zoningCertifications, null, 2);
-            const a = document.createElement('a');
-            a.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
-            a.download = 'zoning_accomplishment_report.json';
-            a.click();
-            alert('Report exported.');
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            if (file.size > 50*1024*1024) { alert('File >50MB'); return; }
+            const label = document.getElementById('uploadLabel');
+            const info = document.getElementById('uploadInfo');
+            label.classList.add('uploading');
+            label.innerHTML = '⏳ Processing...';
+            info.className = 'upload-info show';
+            info.innerHTML = 'Reading...';
+            const reader = new FileReader();
+            reader.onload = ev => {
+                try {
+                    const content = ev.target.result;
+                    let geojson;
+                    if (file.name.endsWith('.geojson') || file.name.endsWith('.json')) geojson = JSON.parse(content);
+                    else if (file.name.endsWith('.zip') && typeof shp !== 'undefined') {
+                        info.innerHTML = 'Parsing shapefile...';
+                        shp(file).then(g => addGeoJSONToMap(g, file.name.replace('.zip',''))).catch(err => { throw new Error('Invalid shapefile: '+err.message); });
+                        return;
+                    } else throw new Error('Unsupported file');
+                    addGeoJSONToMap(geojson, file.name);
+                } catch(err) {
+                    label.classList.remove('uploading');
+                    label.innerHTML = '📁 Upload Shapefile (ZIP) (Max 50MB)';
+                    info.className = 'upload-info show error';
+                    info.innerHTML = '❌ '+err.message;
+                }
+            };
+            reader.onerror = () => {
+                label.classList.remove('uploading');
+                label.innerHTML = '📁 Upload Shapefile (ZIP) (Max 50MB)';
+                info.className = 'upload-info show error';
+                info.innerHTML = '❌ Error reading file';
+            };
+            if (file.name.endsWith('.geojson') || file.name.endsWith('.json')) reader.readAsText(file);
+            else reader.readAsArrayBuffer(file);
         }
 
-        // ========== REPORTS & GENERAL ==========
-        function generateReport(type) {
-            let title='', content='';
-            if(type==='annual') { title='Annual Report 2024'; content=`<p>Total Plans: ${clupRecords.length}</p><p>Approved: ${clupRecords.filter(p=>p.Status==='Approved').length}</p>`; }
-            else if(type==='quarterly') { title='Q1 2024 Progress'; content='<p>Plans Reviewed: 5</p><p>Projects Started: 3</p>'; }
-            else if(type==='project') { title='Project Status'; content='<p>Ongoing: 3</p><p>Planning: 2</p>'; }
-            else if(type==='environmental') { title='EIA Report'; content='<p>Approved: 2</p><p>Under Review: 1</p>'; }
-            document.getElementById('modalTitle').textContent=title;
-            document.getElementById('modalBody').innerHTML=`<div style="padding:1rem;">${content}</div><div style="text-align:right;"><button class="btn btn-primary" onclick="closeModal()">Close</button></div>`;
+        function addGeoJSONToMap(geojson, name) {
+            if (!regionMap) return;
+            const layerId = `layer_${Date.now()}`;
+            const display = name || `Layer ${uploadedLayers.length+1}`;
+            const color = '#8e44ad';
+            const layer = L.geoJSON(geojson, {
+                style: { color, weight:2, fillColor:color, fillOpacity:0.3 },
+                onEachFeature: (f,l) => {
+                    if (f.properties) {
+                        let pop = '<div><h4>Properties</h4>';
+                        for (let [k,v] of Object.entries(f.properties)) if (v) pop += `<p><strong>${escapeHtml(k)}:</strong> ${escapeHtml(String(v))}</p>`;
+                        pop += '</div>';
+                        l.bindPopup(pop);
+                    }
+                }
+            }).addTo(regionMap);
+            uploadedLayers.push({ id:layerId, name:display, layer, visible:true });
+            updateLayerSelect();
+            document.getElementById('clearLayersBtn').style.display = 'inline-flex';
+            const bounds = layer.getBounds();
+            if (bounds.isValid()) regionMap.fitBounds(bounds);
+            const label = document.getElementById('uploadLabel');
+            const info = document.getElementById('uploadInfo');
+            label.classList.remove('uploading');
+            label.innerHTML = '📁 Upload Shapefile (ZIP) (Max 50MB)';
+            info.className = 'upload-info show success';
+            info.innerHTML = `✅ Loaded: ${display}`;
+        }
+
+        function updateLayerSelect() {
+            const container = document.getElementById('layerListContainer');
+            const sel = document.getElementById('layerSelect');
+            if (uploadedLayers.length || geojsonZoningLayers.length) {
+                container.style.display = 'block';
+                sel.innerHTML = '<option value="">Select Layer to Toggle</option>';
+                uploadedLayers.forEach(l => {
+                    const opt = document.createElement('option');
+                    opt.value = l.id;
+                    opt.textContent = `${l.visible ? '👁️' : '👁️‍🗨️'} ${l.name}`;
+                    sel.appendChild(opt);
+                });
+                geojsonZoningLayers.forEach(l => {
+                    const opt = document.createElement('option');
+                    opt.value = l.id;
+                    opt.textContent = `${l.visible ? '🏷️' : '🏷️‍🗨️'} ${l.name} (${l.featureCount} zones)`;
+                    sel.appendChild(opt);
+                });
+            } else {
+                container.style.display = 'none';
+            }
+        }
+
+        function toggleLayerVisibility() {
+            const id = document.getElementById('layerSelect').value;
+            if (!id) return;
+            
+            // Check regular uploaded layers
+            const regularLayer = uploadedLayers.find(x => x.id === id);
+            if (regularLayer) {
+                if (regularLayer.visible) { 
+                    regionMap.removeLayer(regularLayer.layer); 
+                    regularLayer.visible = false; 
+                } else { 
+                    regularLayer.layer.addTo(regionMap); 
+                    regularLayer.visible = true; 
+                }
+                updateLayerSelect();
+                document.getElementById('layerSelect').value = id;
+                return;
+            }
+            
+            // Check GeoJSON zoning layers
+            const zoningLayer = geojsonZoningLayers.find(x => x.id === id);
+            if (zoningLayer) {
+                if (zoningLayer.visible) {
+                    regionMap.removeLayer(zoningLayer.layer);
+                    zoningLayer.visible = false;
+                } else {
+                    zoningLayer.layer.addTo(regionMap);
+                    zoningLayer.visible = true;
+                }
+                updateLayerSelect();
+                document.getElementById('layerSelect').value = id;
+            }
+        }
+
+        function clearUploadedLayers() {
+            uploadedLayers.forEach(l => { if (l.visible) regionMap.removeLayer(l.layer); });
+            uploadedLayers = [];
+            geojsonZoningLayers.forEach(l => { if (l.visible) regionMap.removeLayer(l.layer); });
+            geojsonZoningLayers = [];
+            updateLayerSelect();
+            document.getElementById('clearLayersBtn').style.display = 'none';
+            document.getElementById('uploadInfo').className = 'upload-info';
+            document.getElementById('uploadInfo').innerHTML = '';
+            document.getElementById('shapefileUpload').value = '';
+            document.getElementById('geojsonUpload').value = '';
+        }
+
+        // Setup GeoJSON upload handler
+        function setupGeoJSONUpload() {
+            const geojsonInput = document.getElementById('geojsonUpload');
+            if (geojsonInput) {
+                geojsonInput.addEventListener('change', handleGeoJSONUpload);
+            }
+        }
+        
+        async function handleGeoJSONUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            if (file.size > 20 * 1024 * 1024) {
+                showToast('File size exceeds 20MB limit', 'error');
+                return;
+            }
+            
+            if (!file.name.endsWith('.geojson') && !file.name.endsWith('.json')) {
+                showToast('Please upload a valid GeoJSON file (.geojson or .json)', 'error');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const geojsonData = JSON.parse(e.target.result);
+                    
+                    if (!geojsonData.type || geojsonData.type !== 'FeatureCollection') {
+                        throw new Error('Invalid GeoJSON: Expected FeatureCollection');
+                    }
+                    
+                    if (!geojsonData.features || !Array.isArray(geojsonData.features)) {
+                        throw new Error('Invalid GeoJSON: Missing features array');
+                    }
+                    
+                    await displayGeoJSONZoning(geojsonData, file.name);
+                    
+                    const zoneInfo = extractZoningInfo(geojsonData);
+                    displayZoningInfo(zoneInfo);
+                    
+                    showToast(`Successfully loaded ${geojsonData.features.length} zoning features`, 'success');
+                    
+                } catch (error) {
+                    console.error('Error parsing GeoJSON:', error);
+                    showToast(`Error: ${error.message}`, 'error');
+                    const infoDiv = document.getElementById('uploadInfo');
+                    infoDiv.className = 'upload-info show error';
+                    infoDiv.innerHTML = `❌ Failed to load GeoJSON: ${error.message}`;
+                }
+            };
+            
+            reader.onerror = function() {
+                showToast('Error reading file', 'error');
+            };
+            
+            reader.readAsText(file);
+            
+            const infoDiv = document.getElementById('uploadInfo');
+            infoDiv.className = 'upload-info show';
+            infoDiv.innerHTML = '⏳ Loading GeoJSON file...';
+        }
+        
+        async function displayGeoJSONZoning(geojsonData, filename) {
+            if (!regionMap) {
+                initMap();
+            }
+            
+            const layerId = `zoning_${Date.now()}`;
+            const layerName = filename.replace(/\.(geojson|json)$/i, '');
+            
+            function getZoneColor(feature) {
+                const zoneType = (feature.properties?.zone_type || feature.properties?.landuse || feature.properties?.classification || '').toLowerCase();
+                
+                if (zoneType.includes('residential')) return '#4CAF50';
+                if (zoneType.includes('commercial')) return '#FF9800';
+                if (zoneType.includes('industrial')) return '#9C27B0';
+                if (zoneType.includes('agricultural')) return '#8BC34A';
+                if (zoneType.includes('forest') || zoneType.includes('conservation')) return '#2E7D32';
+                if (zoneType.includes('water') || zoneType.includes('coastal')) return '#2196F3';
+                if (zoneType.includes('institutional')) return '#FF5722';
+                if (zoneType.includes('mixed')) return '#FFC107';
+                return '#FF6B6B';
+            }
+            
+            function getZoneOpacity(feature) {
+                const status = (feature.properties?.status || feature.properties?.approval_status || '').toLowerCase();
+                if (status.includes('approved')) return 0.6;
+                if (status.includes('pending')) return 0.4;
+                if (status.includes('review')) return 0.3;
+                return 0.5;
+            }
+            
+            const zoningLayer = L.geoJSON(geojsonData, {
+                style: function(feature) {
+                    return {
+                        color: getZoneColor(feature),
+                        weight: 3,
+                        fillColor: getZoneColor(feature),
+                        fillOpacity: getZoneOpacity(feature),
+                        opacity: 0.8,
+                        dashArray: feature?.properties?.status === 'pending' ? '5, 5' : null
+                    };
+                },
+                onEachFeature: function(feature, layer) {
+                    let popupContent = '<div style="max-width: 300px;">';
+                    popupContent += '<h4 style="margin: 0 0 10px 0; color: #2c6e8f;">📋 Zoning Information</h4>';
+                    
+                    if (feature.properties) {
+                        for (let [key, value] of Object.entries(feature.properties)) {
+                            if (value && value.toString().trim()) {
+                                popupContent += `<p style="margin: 5px 0;"><strong>${key.replace(/_/g, ' ').toUpperCase()}:</strong> ${escapeHtml(value.toString())}</p>`;
+                            }
+                        }
+                    }
+                    
+                    popupContent += '</div>';
+                    layer.bindPopup(popupContent);
+                    
+                    layer.on('click', function(e) {
+                        if (feature.properties) {
+                            showZoningDetails(feature.properties);
+                        }
+                    });
+                }
+            }).addTo(regionMap);
+            
+            geojsonZoningLayers.push({
+                id: layerId,
+                name: layerName,
+                layer: zoningLayer,
+                visible: true,
+                featureCount: geojsonData.features.length,
+                timestamp: new Date().toISOString()
+            });
+            
+            updateLayerSelect();
+            
+            const bounds = zoningLayer.getBounds();
+            if (bounds.isValid()) {
+                regionMap.fitBounds(bounds);
+            }
+            
+            const infoDiv = document.getElementById('uploadInfo');
+            infoDiv.className = 'upload-info show success';
+            infoDiv.innerHTML = `✅ Successfully loaded zoning data: ${geojsonData.features.length} zones from "${layerName}"<br>
+                                <span class="zone-stat">📊 Total Zones: ${geojsonData.features.length}</span>
+                                <span class="zone-stat">🗺️ Zoning Layer Added</span>`;
+            
+            document.getElementById('clearLayersBtn').style.display = 'inline-flex';
+            saveGeoJSONToLocalStorage(geojsonData, layerName);
+        }
+        
+        function extractZoningInfo(geojsonData) {
+            const zones = {};
+            
+            geojsonData.features.forEach(feature => {
+                let zoneType = feature.properties?.zone_type || 
+                              feature.properties?.landuse || 
+                              feature.properties?.classification || 
+                              feature.properties?.zone || 
+                              'Unclassified';
+                
+                if (!zones[zoneType]) {
+                    zones[zoneType] = { count: 0 };
+                }
+                zones[zoneType].count++;
+            });
+            
+            return { zones, totalFeatures: geojsonData.features.length };
+        }
+        
+        function displayZoningInfo(zoneInfo) {
+            const infoDiv = document.getElementById('uploadInfo');
+            const existingContent = infoDiv.innerHTML;
+            
+            let zoneDetails = '<div class="zone-info-panel">';
+            zoneDetails += '<strong>🏷️ Zoning Breakdown:</strong><br>';
+            for (let [zoneType, data] of Object.entries(zoneInfo.zones)) {
+                zoneDetails += `• ${zoneType}: ${data.count} zone(s)<br>`;
+            }
+            zoneDetails += `</div>`;
+            
+            infoDiv.innerHTML = existingContent + zoneDetails;
+        }
+        
+        function showZoningDetails(properties) {
+            let details = '<div style="padding: 1rem;">';
+            details += '<h3 style="color: #2c6e8f;">📋 Zoning Details</h3>';
+            
+            const importantFields = ['zone_type', 'landuse', 'classification', 'status', 'approval_status', 'area', 'owner', 'municipality', 'province'];
+            
+            importantFields.forEach(field => {
+                if (properties[field]) {
+                    details += `<p><strong>${field.replace(/_/g, ' ').toUpperCase()}:</strong> ${escapeHtml(properties[field])}</p>`;
+                }
+            });
+            
+            details += '<hr><h4>Additional Information:</h4>';
+            for (let [key, value] of Object.entries(properties)) {
+                if (!importantFields.includes(key) && value && value.toString().trim()) {
+                    details += `<p><strong>${key}:</strong> ${escapeHtml(value.toString())}</p>`;
+                }
+            }
+            
+            details += '</div><div style="text-align:right;"><button class="btn btn-primary" onclick="closeModal()">Close</button></div>';
+            
+            document.getElementById('modalTitle').textContent = 'Zoning Feature Details';
+            document.getElementById('modalBody').innerHTML = details;
             document.getElementById('dataModal').classList.add('active');
         }
+        
+        function saveGeoJSONToLocalStorage(geojsonData, layerName) {
+            const savedGeoJSONs = JSON.parse(localStorage.getItem('savedGeoJSONs') || '[]');
+            savedGeoJSONs.push({
+                id: Date.now(),
+                name: layerName,
+                data: geojsonData,
+                timestamp: new Date().toISOString(),
+                featureCount: geojsonData.features.length
+            });
+            while (savedGeoJSONs.length > 5) {
+                savedGeoJSONs.shift();
+            }
+            localStorage.setItem('savedGeoJSONs', JSON.stringify(savedGeoJSONs));
+        }
+        
+        function loadSavedGeoJSONs() {
+            const savedGeoJSONs = JSON.parse(localStorage.getItem('savedGeoJSONs') || '[]');
+            if (savedGeoJSONs.length > 0) {
+                const infoDiv = document.getElementById('uploadInfo');
+                infoDiv.className = 'upload-info show';
+                infoDiv.innerHTML = `📦 Found ${savedGeoJSONs.length} previously uploaded zoning files. <button class="btn btn-sm" onclick="restoreLastGeoJSON()" style="margin-left: 10px; padding: 5px 10px; background: #27ae60; color: white; border: none; border-radius: 5px; cursor: pointer;">Restore Last</button>`;
+            }
+        }
+        
+        function restoreLastGeoJSON() {
+            const savedGeoJSONs = JSON.parse(localStorage.getItem('savedGeoJSONs') || '[]');
+            if (savedGeoJSONs.length > 0) {
+                const lastGeoJSON = savedGeoJSONs[savedGeoJSONs.length - 1];
+                displayGeoJSONZoning(lastGeoJSON.data, lastGeoJSON.name);
+                showToast(`Restored ${lastGeoJSON.name} with ${lastGeoJSON.featureCount} zones`, 'success');
+            }
+        }
+
+        // ========== REPORTS FUNCTIONS (REMOVED - no longer used) ==========
+        // Reports functions have been removed as per request
 
         function openAboutModal() {
             document.getElementById('modalTitle').textContent='About';
@@ -2032,48 +2888,29 @@
             for (let link of document.querySelectorAll('.nav-bar a')) {
                 if (link.getAttribute('onclick')?.includes(sectionId)) link.classList.add('active');
             }
-            if (sectionId === 'zoning') updateAccomplishmentReport();
-        }
-
-        // Tab switching
-        document.querySelectorAll('.zoning-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                const target = tab.dataset.tab;
-                document.querySelectorAll('.zoning-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                document.querySelectorAll('.zoning-tab-content').forEach(c => c.classList.remove('active'));
-                document.getElementById(`${target}-tab`).classList.add('active');
-                if (target === 'accomplishment') updateAccomplishmentReport();
-            });
-        });
-
-        // Print functions (simplified)
-        function printBlankForm() {
-            const blankForm = `<div class="print-document"><h2>Republic of the Philippines</h2><h3>DHSUD Region VI</h3><h2>CERTIFICATION</h2><p>Blank form - fill details before printing.</p></div>`;
-            const ps = document.getElementById('printSection');
-            ps.innerHTML = blankForm;
-            ps.style.display = 'block';
-            setTimeout(() => { window.print(); setTimeout(() => ps.style.display = 'none', 500); }, 100);
-        }
-
-        function printZoningRecord(id) {
-            const rec = zoningCertifications.find(r => r.id == id);
-            if (!rec) return;
-            const printContent = `<div class="print-document"><h2>Republic of the Philippines</h2><h3>DHSUD Region VI</h3><h2>CERTIFICATION</h2><p><strong>No.:</strong> ${rec.certificationNo}</p><p><strong>Location:</strong> ${rec.location}</p><p><strong>Total Area:</strong> ${rec.totalArea} ha</p><p><strong>Proposed Use:</strong> ${rec.proposedUse}</p><p><strong>Requested By:</strong> ${rec.requestedBy}</p><p><strong>Date Issued:</strong> ${formatDate(rec.dateIssued)}</p><div class="signature-line" style="margin-top:40px; border-top:1px solid #000; width:250px;"></div><p>Regional Director</p></div>`;
-            const ps = document.getElementById('printSection');
-            ps.innerHTML = printContent;
-            ps.style.display = 'block';
-            setTimeout(() => { window.print(); setTimeout(() => ps.style.display = 'none', 500); }, 100);
+            if (sectionId === 'zoning') {
+                // Initialize map for coordinate selection if needed
+                setTimeout(() => {
+                    if (regionMap) regionMap.invalidateSize();
+                }, 100);
+            }
         }
 
         // ========== INITIAL LOAD ==========
         window.onload = async () => {
             loadCounter();
+            await fetchReviewRecords();
             await fetchCertifications();
             await fetchClupRecords();
             setupClupCascadeEvents();
             await refreshCertificationNumber();
             if (document.getElementById('landHoldingsContainer').children.length === 0) addLandHolding();
+            
+            // Initialize map (but don't show it since map section is removed)
+            // Only initialize when needed for coordinate selection
+            initMap();
+            setupGeoJSONUpload();
+            loadSavedGeoJSONs();
             
             // Initialize sync mechanism
             setupConnectionMonitoring();
