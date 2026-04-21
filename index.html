@@ -41,44 +41,6 @@
         .container { max-width: 1400px; margin: 2rem auto; padding: 0 2rem; }
         .section { display: none; }
         .section.active { display: block; }
-        .map-section { background: var(--card-bg); border-radius: 15px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 5px 20px rgba(0,0,0,0.1); border-left: 8px solid var(--primary); }
-        .map-title { color: var(--primary-dark); font-size: 1.8rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 1rem; }
-        .map-title span { background: var(--primary-light-accessible); color: white; padding: 0.3rem 1rem; border-radius: 30px; font-size: 0.9rem; }
-        .map-controls { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; align-items: center; background: #f8faff; padding: 1.5rem; border-radius: 12px; }
-        .file-upload { flex: 2; min-width: 300px; position: relative; }
-        .file-upload input[type="file"] { position: absolute; width: 0.1px; height: 0.1px; opacity: 0; overflow: hidden; z-index: -1; }
-        .file-upload label { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.8rem 1.5rem; background: var(--primary); color: white; border-radius: 30px; cursor: pointer; transition: all 0.3s; font-weight: 600; border: 2px solid transparent; }
-        .file-upload label:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(44, 110, 143, 0.3); }
-        .file-upload label.uploading { background: var(--accent-accessible); color: var(--primary-dark); pointer-events: none; }
-        .layer-controls { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-        .layer-list { flex: 1; min-width: 250px; background: white; border-radius: 30px; padding: 0.3rem 1rem; border: 2px solid #e0e7ff; }
-        .layer-list select { width: 100%; padding: 0.5rem; border: none; background: transparent; font-size: 0.95rem; outline: none; cursor: pointer; }
-        .map-container { height: 500px; width: 100%; border-radius: 12px; overflow: hidden; box-shadow: 0 3px 15px rgba(0,0,0,0.2); border: 2px solid var(--primary-light-accessible); margin-bottom: 1.5rem; }
-        .map-legend { display: flex; flex-wrap: wrap; gap: 2rem; padding: 1rem; background: #f8faff; border-radius: 10px; margin-top: 1rem; }
-        .legend-item { display: flex; align-items: center; gap: 0.5rem; }
-        .legend-color { width: 20px; height: 20px; border-radius: 4px; }
-        .legend-color.approved { background-color: #27ae60; opacity: 0.7; }
-        .legend-color.review { background-color: #f39c12; opacity: 0.7; }
-        .legend-color.pending { background-color: #e74c3c; opacity: 0.7; }
-        .legend-color.shapefile { background-color: #8e44ad; opacity: 0.7; }
-        .upload-info { margin-top: 1rem; padding: 1rem; background: #e3f2fd; border-radius: 8px; font-size: 0.95rem; color: var(--primary-dark); display: none; }
-        .upload-info.show { display: block; }
-        .upload-info.error { background: #ffebee; color: #c62828; }
-        .upload-info.success { background: #e8f5e9; color: #2e7d32; }
-        .province-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1.5rem; }
-        .province-stat-card { background: linear-gradient(135deg, #f8faff, white); padding: 1rem; border-radius: 8px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border: 1px solid #e0e7ff; cursor: pointer; transition: all 0.3s; }
-        .province-stat-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(44, 110, 143, 0.2); border-color: var(--primary); }
-        .province-stat-card h4 { color: var(--primary-dark); margin-bottom: 0.5rem; font-size: 1.1rem; }
-        .province-stat-card .status { font-size: 0.9rem; padding: 0.2rem 0.8rem; border-radius: 20px; display: inline-block; margin-top: 0.3rem; }
-        .province-stat-card .status.approved { background: #d4edda; color: #155724; }
-        .province-stat-card .status.review { background: #fff3cd; color: #856404; }
-        .overview-section { background: var(--card-bg); border-radius: 15px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 5px 20px rgba(0,0,0,0.1); border-left: 8px solid var(--primary); }
-        .overview-title { color: var(--primary-dark); font-size: 1.8rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 1rem; }
-        .overview-title span { background: var(--primary-light-accessible); color: white; padding: 0.3rem 1rem; border-radius: 30px; font-size: 0.9rem; }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin: 2rem 0; }
-        .stat-card { background: linear-gradient(135deg, #f8faff, white); padding: 1.5rem; border-radius: 12px; text-align: center; box-shadow: 0 3px 10px rgba(0,0,0,0.1); border: 1px solid #e0e7ff; }
-        .stat-number { font-size: 2.2rem; font-weight: bold; color: var(--primary); }
-        .stat-label { color: #666; margin-top: 0.5rem; font-size: 0.95rem; }
         .data-section { background: var(--card-bg); border-radius: 15px; padding: 2rem; margin: 2rem 0; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
         .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
         .section-header h3 { color: var(--primary-dark); font-size: 1.6rem; display: flex; align-items: center; gap: 0.5rem; }
@@ -152,20 +114,12 @@
         .cert-title { color: var(--cert-primary); font-size: 1.8rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 1rem; border-bottom: 3px solid var(--cert-accent); padding-bottom: 0.5rem; }
         .cert-title span { background: var(--cert-secondary); color: white; padding: 0.3rem 1rem; border-radius: 30px; font-size: 1rem; }
         .cert-subtitle { color: var(--cert-primary); font-size: 1.3rem; margin: 2rem 0 1rem; text-decoration: underline; }
-        .province-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin: 2rem 0; }
-        .province-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.1); border: 1px solid #e0e7ff; transition: all 0.3s; }
-        .province-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(44, 110, 143, 0.2); border-color: var(--primary); }
-        .province-header { background: linear-gradient(135deg, var(--primary), var(--primary-light-accessible)); color: white; padding: 1rem; font-size: 1.2rem; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
-        .province-body { padding: 1.5rem; }
-        .province-stat { display: flex; justify-content: space-between; margin-bottom: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px dashed #e0e7ff; }
-        .province-stat span:first-child { color: #666; }
-        .province-stat span:last-child { font-weight: bold; color: var(--primary-dark); }
         .cert-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
         .cert-table th { background: var(--cert-primary); color: white; padding: 0.75rem; text-align: left; }
         .cert-table td { padding: 0.75rem; border-bottom: 1px solid #e0e0e0; }
         .cert-table tr:hover { background: #f8f4e8; }
         
-        /* Map Popup Modal Styles */
+        /* Enhanced Map Popup Styles (added layer panel) */
         .map-popup-modal {
             display: none;
             position: fixed;
@@ -185,8 +139,8 @@
             background: white;
             border-radius: 20px;
             width: 90%;
-            max-width: 800px;
-            height: 80%;
+            max-width: 900px;
+            height: 85%;
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -213,6 +167,7 @@
         .map-popup-body {
             flex: 1;
             padding: 15px;
+            overflow-y: auto;
         }
         #popupMap {
             height: 350px;
@@ -233,6 +188,36 @@
             border: 1px solid #ccc;
             border-radius: 5px;
             width: 180px;
+        }
+        .layer-panel {
+            margin-top: 15px;
+            background: #f8faff;
+            border-radius: 12px;
+            padding: 12px;
+            border: 1px solid #e0e7ff;
+        }
+        .layer-list-container {
+            max-height: 180px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        .layer-item {
+            background: white;
+            border-radius: 30px;
+            padding: 6px 12px;
+            margin: 6px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #cbd5e1;
+        }
+        .layer-name {
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        .layer-actions {
+            display: flex;
+            gap: 8px;
         }
         .map-popup-footer {
             padding: 15px;
@@ -309,28 +294,8 @@
             .form-grid { grid-template-columns: 1fr; }
             .form-group.full-width { grid-column: span 1; }
             .search-bar { flex-direction: column; }
-            .map-container { height: 350px; }
-            .map-controls { flex-direction: column; align-items: stretch; }
             .coord-info { flex-direction: column; align-items: center; }
             .coord-info input { width: 100%; }
-        }
-        .review-card {
-            background: var(--card-bg);
-            border-radius: 15px;
-            padding: 2rem;
-            margin: 2rem 0;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-            border-left: 8px solid var(--accent-accessible);
-        }
-        .review-card .section-header {
-            margin-bottom: 1.5rem;
-        }
-        .review-card h3 {
-            font-size: 1.6rem;
-            color: var(--primary-dark);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
         }
         .chart-container {
             background: #f9fafc;
@@ -412,6 +377,21 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        /* Status badge styles for certification table */
+        .cert-status-badge {
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+            text-align: center;
+            min-width: 90px;
+        }
+        .status-for-review { background: #cce5ff; color: #004085; }
+        .status-rd-signature { background: #fff3cd; color: #856404; }
+        .status-for-release { background: #d4edda; color: #155724; }
+        .status-released { background: #d1ecf1; color: #0c5460; }
+        .status-dropdown { padding: 0.3rem; border-radius: 20px; border: 1px solid #ccc; font-size: 0.75rem; background: white; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -430,9 +410,7 @@
 
     <nav class="nav-bar" aria-label="Main navigation" role="navigation">
         <ul role="menubar">
-            <li role="none"><a href="#" onclick="showSection('dashboard')" class="active" role="menuitem" aria-current="page"><span aria-hidden="true">🏠</span><span>Dashboard</span></a></li>
-            <li role="none"><a href="#" onclick="showSection('map')" role="menuitem"><span aria-hidden="true">🗺️</span><span>Regional Map</span></a></li>
-            <li role="none"><a href="#" onclick="showSection('plans')" role="menuitem"><span aria-hidden="true">📋</span><span>Land Use Plans</span></a></li>
+            <li role="none"><a href="#" onclick="showSection('plans')" class="active" role="menuitem" aria-current="page"><span aria-hidden="true">📋</span><span>Land Use Plans</span></a></li>
             <li role="none"><a href="#" onclick="showSection('zoning')" role="menuitem"><span aria-hidden="true">🏷️</span><span>Site Zoning Certification</span></a></li>
             <li role="none"><a href="#" onclick="showSection('reports')" role="menuitem"><span aria-hidden="true">📊</span><span>Reports</span></a></li>
             <li role="none"><a href="#" onclick="openAboutModal()" role="menuitem"><span aria-hidden="true">ℹ️</span><span>About</span></a></li>
@@ -441,69 +419,8 @@
 
     <main id="main-content" role="main">
         <div class="container">
-            <!-- Dashboard Section -->
-            <div id="dashboard" class="section active" role="region" aria-labelledby="dashboard-heading">
-                <h1 id="dashboard-heading" class="visually-hidden">Dashboard - CLUP & PDPFP Review</h1>
-                <div class="review-card">
-                    <div class="section-header">
-                        <h3><span aria-hidden="true">📋</span> CLUP and PDPFP REVIEW</h3>
-                        <div class="btn-group">
-                            <button class="btn btn-primary" onclick="openReviewModal()"><span aria-hidden="true">➕</span> Add Review Entry</button>
-                            <button class="btn btn-success" onclick="exportReviewData()"><span aria-hidden="true">📥</span> Export Data</button>
-                        </div>
-                    </div>
-                    <div class="table-responsive">
-                        <table id="reviewTable" aria-label="CLUP and PDPFP review records">
-                            <caption class="visually-hidden">List of CLUP and PDPFP review entries</caption>
-                            <thead>
-                                <tr><th>LGU/Province</th><th>Reviewer</th><th>Dates</th><th>Actions</th></tr>
-                            </thead>
-                            <tbody id="reviewTableBody"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Map Section -->
-            <div id="map" class="section" style="display: none;" role="region" aria-labelledby="map-heading">
-                <h1 id="map-heading" class="visually-hidden">Regional Navigation Map - Western Visayas</h1>
-                <div class="map-section">
-                    <div class="map-title"><span aria-hidden="true">🗺️</span> Regional Navigation Map - Western Visayas (Region VI)</div>
-                    <div class="map-controls">
-                        <div class="layer-controls" id="baseMapControls">
-                            <label for="baseMapSelect" style="margin-right: 10px; align-self: center;">Base Map:</label>
-                            <select id="baseMapSelect" onchange="changeBaseMap()" style="padding: 0.5rem; border-radius: 30px; border: 2px solid #e0e7ff;">
-                                <option value="osm">OpenStreetMap</option>
-                                <option value="osm_hot">OpenStreetMap Humanitarian</option>
-                                <option value="satellite">Esri World Imagery</option>
-                                <option value="cartodb">CartoDB Positron</option>
-                            </select>
-                        </div>
-                        <div class="file-upload">
-                            <input type="file" id="shapefileUpload" accept=".zip,.geojson,.json" multiple>
-                            <label for="shapefileUpload" id="uploadLabel"><span aria-hidden="true">📁</span> Upload GeoJSON or Shapefile (ZIP) (Max 50MB)</label>
-                        </div>
-                        <div class="layer-controls">
-                            <button class="btn btn-danger" onclick="clearUploadedLayers()" style="display: none;" id="clearLayersBtn" aria-label="Clear all uploaded layers"><span aria-hidden="true">🗑️</span> Clear Layers</button>
-                        </div>
-                        <div class="layer-list" id="layerListContainer" style="display: none;">
-                            <label for="layerSelect" class="visually-hidden">Select layer to toggle visibility</label>
-                            <select id="layerSelect" onchange="toggleLayerVisibility()" aria-label="Layer visibility control"><option value="">Select Layer to Toggle</option></select>
-                        </div>
-                    </div>
-                    <div id="uploadInfo" class="upload-info" role="status" aria-live="polite"></div>
-                    <div id="regionMap" class="map-container" role="application" aria-label="Interactive map of Western Visayas region"></div>
-                    <div class="map-legend" role="complementary" aria-label="Map legend">
-                        <div class="legend-item"><div class="legend-color approved" aria-hidden="true"></div><span>Approved CLUP</span></div>
-                        <div class="legend-item"><div class="legend-color review" aria-hidden="true"></div><span>For Review</span></div>
-                        <div class="legend-item"><div class="legend-color shapefile" aria-hidden="true"></div><span>Uploaded Layer</span></div>
-                    </div>
-                    <div class="province-stats" id="provinceStats" role="region" aria-label="Province statistics"></div>
-                </div>
-            </div>
-
             <!-- Land Use Plans Section -->
-            <div id="plans" class="section" style="display: none;" role="region" aria-labelledby="plans-heading">
+            <div id="plans" class="section active" role="region" aria-labelledby="plans-heading">
                 <h1 id="plans-heading" class="visually-hidden">Comprehensive Land Use Plans</h1>
                 <div class="data-section">
                     <div class="section-header">
@@ -511,7 +428,6 @@
                         <div class="btn-group">
                             <button class="btn btn-primary" onclick="openAddClupModal()"><span aria-hidden="true">➕</span> Add New Plan</button>
                             <button class="btn btn-success" onclick="exportClupData()"><span aria-hidden="true">📥</span> Export Data</button>
-                            <button class="btn btn-map" onclick="showOnMap()"><span aria-hidden="true">🗺️</span> View on Map</button>
                         </div>
                     </div>
                     <div class="chart-container">
@@ -546,7 +462,7 @@
                             <div class="form-group"><label for="parcels">No. of Parcels</label><input type="text" class="form-control" id="parcels" placeholder="e.g., Three hundred seventy-five (375) parcels" required></div>
                             <div class="form-group full-width"><label for="location">Location of the Property</label><input type="text" class="form-control" id="location" placeholder="Enter complete address" required></div>
                             <div class="form-group"><label for="latitude">Latitude</label><input type="text" class="form-control" id="latitude" placeholder="e.g., 10.7202" readonly style="background:#f0f0f0"></div>
-                            <div class="form-group"><label for="longitude">Longitude</label><input type="text" class="form-control" id="longitude" placeholder="e.g., 122.5621" readonly style="background:#f0f0f0"><button type="button" class="btn btn-map" onclick="openMapPopup()" style="margin-top: 5px; width: 100%;">🗺️ Open Map</button></div>
+                            <div class="form-group"><label for="longitude">Longitude</label><input type="text" class="form-control" id="longitude" placeholder="e.g., 122.5621" readonly style="background:#f0f0f0"><button type="button" class="btn btn-map" onclick="openEnhancedMapPopup()" style="margin-top: 5px; width: 100%;">🗺️ Open Map (Upload GeoJSON)</button></div>
                             <div class="form-group"><label for="totalArea">Total Area (ha.)</label><input type="text" class="form-control" id="totalArea" placeholder="e.g., 15.5026" required></div>
                             <div class="form-group"><label for="proposedUse">Proposed Use</label><input type="text" class="form-control" id="proposedUse" placeholder="e.g., Residential-3 Zone" required></div>
                             <div class="form-group full-width">
@@ -644,13 +560,22 @@
                             <span aria-hidden="true">🔍</span>
                             <input type="text" id="certSearchInput" placeholder="Search by Certification No., Location, or Requested By..." onkeyup="filterCertificationsTable()">
                         </div>
+                        <div class="filter-group" style="min-width: 160px;">
+                            <select id="certStatusFilter" onchange="filterCertificationsTable()">
+                                <option value="">All Status</option>
+                                <option value="For Review">For Review</option>
+                                <option value="For RD Signature">For RD Signature</option>
+                                <option value="For Release">For Release</option>
+                                <option value="Released">Released</option>
+                            </select>
+                        </div>
                         <button class="btn btn-primary" onclick="filterCertificationsTable()" style="padding: 0.8rem 1.5rem;">🔍 Search</button>
                         <button class="btn btn-secondary" onclick="clearCertSearch()" style="padding: 0.8rem 1.5rem;">🗑️ Clear</button>
                     </div>
                     <div style="overflow-x:auto;">
                         <table class="cert-table" id="certificationsTable">
                             <thead>
-                                <tr><th>Certification No.</th><th>No. of Parcels</th><th>Location</th><th>Total Area</th><th>Date Issued</th><th>Requested By</th><th>Actions</th></tr>
+                                <tr><th>Certification No.</th><th>No. of Parcels</th><th>Location</th><th>Total Area</th><th>Date Issued</th><th>Requested By</th><th>Status</th><th>Actions</th></tr>
                             </thead>
                             <tbody id="certificationsTableBody"></tbody>
                         </table>
@@ -682,22 +607,34 @@
         </div>
     </main>
 
-    <!-- Map Popup Modal for Coordinates -->
+    <!-- ENHANCED MAP POPUP MODAL with GeoJSON upload + visibility toggles -->
     <div id="mapPopupModal" class="map-popup-modal">
         <div class="map-popup-content">
             <div class="map-popup-header">
-                <h3>Select Location on Map</h3>
+                <h3>🗺️ Select Location & Manage Zoning Layers</h3>
                 <button class="map-popup-close" onclick="closeMapPopup()">&times;</button>
             </div>
             <div class="map-popup-body">
-                <div id="popupMap" style="height: 400px; width: 100%;"></div>
+                <div id="popupMap"></div>
                 <div class="coord-info">
                     <label>Latitude: <input type="text" id="popupLatitude" readonly placeholder="Click on map"></label>
                     <label>Longitude: <input type="text" id="popupLongitude" readonly placeholder="Click on map"></label>
                 </div>
+                <!-- GeoJSON Upload + Layer Management Panel -->
+                <div class="layer-panel">
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 10px;">
+                        <input type="file" id="geojsonFileInput" accept=".geojson,.json" style="display:none;">
+                        <button class="btn btn-primary" onclick="document.getElementById('geojsonFileInput').click()">📂 Upload GeoJSON</button>
+                        <button class="btn btn-danger" onclick="clearAllLayers()">🗑️ Clear All Layers</button>
+                        <span style="font-size:0.8rem; color:#555;">Upload zoning boundaries (GeoJSON)</span>
+                    </div>
+                    <div id="layerListContainer" class="layer-list-container">
+                        <div style="text-align:center; color:#888;">No layers loaded. Upload a GeoJSON file.</div>
+                    </div>
+                </div>
             </div>
             <div class="map-popup-footer">
-                <button class="btn btn-primary" onclick="saveCoordinatesFromPopup()">Use Selected Coordinates</button>
+                <button class="btn btn-primary" onclick="saveCoordinatesFromPopup()">✅ Use Selected Coordinates</button>
                 <button class="btn btn-secondary" onclick="closeMapPopup()">Cancel</button>
             </div>
         </div>
@@ -736,14 +673,15 @@
         let certNumberLock = false;
         let certNumberQueue = [];
 
-        // ========== MAP POPUP FOR COORDINATES ==========
+        // ========== ENHANCED MAP POPUP WITH GEOJSON LAYERS ==========
         let popupMap = null;
         let popupMapInitialized = false;
         let selectedLat = null;
         let selectedLng = null;
         let mapMarker = null;
+        let geoJsonLayers = []; // each { id, name, layer, visible, featureCount }
 
-        function openMapPopup() {
+        function openEnhancedMapPopup() {
             const modal = document.getElementById('mapPopupModal');
             modal.classList.add('active');
             
@@ -770,7 +708,7 @@
                     } else {
                         mapMarker = L.marker([selectedLat, selectedLng]).addTo(popupMap);
                     }
-                    mapMarker.bindPopup(`Selected Location<br>Lat: ${selectedLat.toFixed(6)}<br>Lng: ${selectedLng.toFixed(6)}`).openPopup();
+                    mapMarker.bindPopup(`📍 Selected Location<br>Lat: ${selectedLat.toFixed(6)}<br>Lng: ${selectedLng.toFixed(6)}`).openPopup();
                 });
                 
                 const existingLat = document.getElementById('latitude').value;
@@ -784,12 +722,15 @@
                     } else {
                         mapMarker = L.marker([lat, lng]).addTo(popupMap);
                     }
-                    mapMarker.bindPopup(`Selected Location<br>Lat: ${lat.toFixed(6)}<br>Lng: ${lng.toFixed(6)}`).openPopup();
+                    mapMarker.bindPopup(`📍 Selected Location<br>Lat: ${lat.toFixed(6)}<br>Lng: ${lng.toFixed(6)}`).openPopup();
                     document.getElementById('popupLatitude').value = lat.toFixed(6);
                     document.getElementById('popupLongitude').value = lng.toFixed(6);
                     selectedLat = lat;
                     selectedLng = lng;
                 }
+                
+                // Reload existing GeoJSON layers from localStorage (optional)
+                loadSavedGeoJSONLayers();
             }, 100);
         }
 
@@ -804,6 +745,7 @@
                 popupMap.removeLayer(mapMarker);
                 mapMarker = null;
             }
+            // Do not clear geoJsonLayers to preserve layers for next open
         }
 
         function saveCoordinatesFromPopup() {
@@ -814,6 +756,157 @@
                 showToast('Coordinates saved to form!', 'success');
             } else {
                 alert('Please click on the map to select coordinates first.');
+            }
+        }
+
+        // GeoJSON Upload Handler
+        document.getElementById('geojsonFileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            if (!file.name.endsWith('.geojson') && !file.name.endsWith('.json')) {
+                alert('Please upload a valid .geojson or .json file.');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                try {
+                    const geojson = JSON.parse(ev.target.result);
+                    if (!geojson.type || geojson.type !== 'FeatureCollection') {
+                        throw new Error('Invalid GeoJSON: expected FeatureCollection');
+                    }
+                    const layerName = file.name.replace(/\.(geojson|json)$/i, '');
+                    addGeoJsonLayerToMap(geojson, layerName);
+                    showToast(`Loaded "${layerName}" with ${geojson.features.length} features.`, 'success');
+                    document.getElementById('geojsonFileInput').value = '';
+                } catch(err) {
+                    alert('Error parsing GeoJSON: ' + err.message);
+                }
+            };
+            reader.readAsText(file);
+        });
+
+        function addGeoJsonLayerToMap(geojson, name) {
+            if (!popupMap) return;
+            const layerId = 'layer_' + Date.now() + '_' + Math.random();
+            const randomColor = '#' + Math.floor(Math.random()*16777215).toString(16);
+            const geoLayer = L.geoJSON(geojson, {
+                style: { color: randomColor, weight: 3, fillColor: randomColor, fillOpacity: 0.4 },
+                onEachFeature: (feature, layer) => {
+                    let popupContent = '<div style="max-width:300px;"><b>Zoning Info</b>';
+                    if (feature.properties) {
+                        for (let [k, v] of Object.entries(feature.properties)) {
+                            if (v) popupContent += `<br>${escapeHtml(k)}: ${escapeHtml(String(v))}`;
+                        }
+                    }
+                    popupContent += '</div>';
+                    layer.bindPopup(popupContent);
+                }
+            }).addTo(popupMap);
+            
+            geoJsonLayers.push({
+                id: layerId,
+                name: name,
+                layer: geoLayer,
+                visible: true,
+                featureCount: geojson.features.length,
+                geojsonData: geojson
+            });
+            
+            renderLayerListUI();
+            
+            // Fit map to bounds
+            const bounds = geoLayer.getBounds();
+            if (bounds.isValid()) popupMap.fitBounds(bounds);
+            
+            // Save to localStorage for persistence
+            saveGeoJSONLayersToLocal();
+        }
+
+        function renderLayerListUI() {
+            const container = document.getElementById('layerListContainer');
+            if (!container) return;
+            if (geoJsonLayers.length === 0) {
+                container.innerHTML = '<div style="text-align:center; color:#888;">No layers loaded. Upload a GeoJSON file.</div>';
+                return;
+            }
+            let html = '';
+            geoJsonLayers.forEach((layer, idx) => {
+                html += `
+                    <div class="layer-item">
+                        <span class="layer-name">${escapeHtml(layer.name)} (${layer.featureCount} zones)</span>
+                        <div class="layer-actions">
+                            <button class="btn btn-primary" style="padding:4px 10px;" onclick="toggleLayerVisibility(${idx})">${layer.visible ? '👁️ Hide' : '👁️‍🗨️ Show'}</button>
+                            <button class="btn btn-danger" style="padding:4px 10px;" onclick="removeLayer(${idx})">✖️ Remove</button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function toggleLayerVisibility(index) {
+            if (!geoJsonLayers[index]) return;
+            const layer = geoJsonLayers[index];
+            if (layer.visible) {
+                popupMap.removeLayer(layer.layer);
+                layer.visible = false;
+            } else {
+                layer.layer.addTo(popupMap);
+                layer.visible = true;
+            }
+            renderLayerListUI();
+            saveGeoJSONLayersToLocal();
+        }
+
+        function removeLayer(index) {
+            if (!geoJsonLayers[index]) return;
+            const layer = geoJsonLayers[index];
+            if (layer.visible) popupMap.removeLayer(layer.layer);
+            geoJsonLayers.splice(index, 1);
+            renderLayerListUI();
+            saveGeoJSONLayersToLocal();
+            showToast('Layer removed.', 'info');
+        }
+
+        function clearAllLayers() {
+            geoJsonLayers.forEach(layer => {
+                if (layer.visible) popupMap.removeLayer(layer.layer);
+            });
+            geoJsonLayers = [];
+            renderLayerListUI();
+            localStorage.removeItem('geoJsonLayers');
+            showToast('All GeoJSON layers cleared.', 'info');
+        }
+
+        function saveGeoJSONLayersToLocal() {
+            // Store only necessary data (not the full Leaflet layers)
+            const layersToStore = geoJsonLayers.map(layer => ({
+                id: layer.id,
+                name: layer.name,
+                visible: layer.visible,
+                featureCount: layer.featureCount,
+                geojsonData: layer.geojsonData
+            }));
+            localStorage.setItem('geoJsonLayers', JSON.stringify(layersToStore));
+        }
+
+        function loadSavedGeoJSONLayers() {
+            const saved = localStorage.getItem('geoJsonLayers');
+            if (saved && popupMap) {
+                try {
+                    const layers = JSON.parse(saved);
+                    layers.forEach(savedLayer => {
+                        if (savedLayer.geojsonData) {
+                            addGeoJsonLayerToMap(savedLayer.geojsonData, savedLayer.name);
+                            // Set visibility after adding
+                            const addedLayer = geoJsonLayers[geoJsonLayers.length - 1];
+                            if (addedLayer && !savedLayer.visible) {
+                                popupMap.removeLayer(addedLayer.layer);
+                                addedLayer.visible = false;
+                            }
+                        }
+                    });
+                } catch(e) { console.warn('Failed to load saved layers', e); }
             }
         }
 
@@ -1659,159 +1752,7 @@
             }
         }
 
-        // ========== REVIEW DATA ==========
-        let reviewRecords = [];
-        async function fetchReviewRecords() {
-            try {
-                const response = await fetch(GOOGLE_SCRIPT_URL + '?action=get&data_type=review', { method: 'GET' });
-                const data = await response.json();
-                reviewRecords = Array.isArray(data) ? data : [];
-                localStorage.setItem('clupPdpfpReviews', JSON.stringify(reviewRecords));
-                renderReviewTable();
-            } catch (error) {
-                console.warn("Reviews using localStorage", error);
-                reviewRecords = JSON.parse(localStorage.getItem('clupPdpfpReviews') || '[]');
-                renderReviewTable();
-            }
-        }
-
-        function renderReviewTable() {
-            const tbody = document.getElementById('reviewTableBody');
-            if (!tbody) return;
-            tbody.innerHTML = '';
-            reviewRecords.forEach(rec => {
-                const row = tbody.insertRow();
-                row.innerHTML = `
-                    <td>${escapeHtml(rec.lgu)}</td>
-                    <td>${escapeHtml(rec.reviewer)}</td>
-                    <td>${escapeHtml(rec.dates)}</td>
-                    <td><div class="action-btns"><button class="action-btn edit" onclick="openReviewModal(${rec.id})">✏️ Edit</button><button class="action-btn delete" onclick="deleteReviewRecord(${rec.id})">🗑️ Delete</button></div></td>
-                `;
-            });
-        }
-
-        async function saveReviewToSheet(record, action) {
-            try {
-                const isOnline = await checkGoogleSheetsConnection();
-                
-                if (!isOnline) {
-                    addToPendingSync('review', action, record);
-                    
-                    let stored = JSON.parse(localStorage.getItem('clupPdpfpReviews') || '[]');
-                    if (action === 'add') stored.push(record);
-                    else if (action === 'update') {
-                        const index = stored.findIndex(r => r.id == record.id);
-                        if (index !== -1) stored[index] = record;
-                    } else if (action === 'delete') stored = stored.filter(r => r.id != record.id);
-                    localStorage.setItem('clupPdpfpReviews', JSON.stringify(stored));
-                    reviewRecords = stored;
-                    
-                    showToast(`Saved locally. Will sync to Google Sheets when online.`, 'warning');
-                    return true;
-                }
-                
-                const params = new URLSearchParams();
-                params.append('action', action);
-                params.append('data_type', 'review');
-                params.append('data', JSON.stringify(record));
-                const response = await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: params.toString() });
-                const result = await response.json();
-                
-                if (result.success) {
-                    showToast(`Saved to Google Sheets successfully`, 'success');
-                    return true;
-                } else {
-                    throw new Error(result.error || 'Save failed');
-                }
-            } catch (error) {
-                console.warn("Google Sheets review save failed, using localStorage with pending sync", error);
-                addToPendingSync('review', action, record);
-                
-                let stored = JSON.parse(localStorage.getItem('clupPdpfpReviews') || '[]');
-                if (action === 'add') stored.push(record);
-                else if (action === 'update') {
-                    const index = stored.findIndex(r => r.id == record.id);
-                    if (index !== -1) stored[index] = record;
-                } else if (action === 'delete') stored = stored.filter(r => r.id != record.id);
-                localStorage.setItem('clupPdpfpReviews', JSON.stringify(stored));
-                reviewRecords = stored;
-                
-                showToast(`Saved locally. Will sync when connection restored.`, 'warning');
-                return true;
-            }
-        }
-
-        let currentReviewId = null;
-        function openReviewModal(id = null) {
-            currentReviewId = id;
-            const rec = id !== null ? reviewRecords.find(r => r.id === id) : null;
-            const modal = document.getElementById('dataModal');
-            document.getElementById('modalTitle').textContent = id ? 'Edit Review Entry' : 'Add Review Entry';
-            document.getElementById('modalBody').innerHTML = `
-                <form onsubmit="saveReviewEntry(event)">
-                    <div class="form-grid">
-                        <div class="form-group full-width"><label>LGU/Province</label><input type="text" class="form-control" name="lgu" value="${rec ? escapeHtml(rec.lgu) : ''}" required></div>
-                        <div class="form-group full-width"><label>Reviewer</label><input type="text" class="form-control" name="reviewer" value="${rec ? escapeHtml(rec.reviewer) : ''}" required></div>
-                        <div class="form-group full-width"><label>Dates</label><input type="text" class="form-control" name="dates" value="${rec ? escapeHtml(rec.dates) : ''}" required></div>
-                    </div>
-                    <div style="text-align:right; margin-top:1rem;"><button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button><button type="submit" class="btn btn-success">Save</button></div>
-                </form>
-            `;
-            modal.classList.add('active');
-        }
-
-        async function saveReviewEntry(event) {
-            event.preventDefault();
-            const form = event.target;
-            const lgu = form.lgu.value.trim();
-            const reviewer = form.reviewer.value.trim();
-            const dates = form.dates.value.trim();
-            if (!lgu || !reviewer || !dates) { alert('Please fill all fields.'); return false; }
-            let success = false;
-            if (currentReviewId !== null) {
-                const updatedRec = { id: currentReviewId, lgu, reviewer, dates };
-                success = await saveReviewToSheet(updatedRec, 'update');
-                if (success) {
-                    const idx = reviewRecords.findIndex(r => r.id === currentReviewId);
-                    if (idx !== -1) reviewRecords[idx] = updatedRec;
-                }
-            } else {
-                const newId = reviewRecords.length ? Math.max(...reviewRecords.map(r => r.id)) + 1 : 1;
-                const newRec = { id: newId, lgu, reviewer, dates };
-                success = await saveReviewToSheet(newRec, 'add');
-                if (success) reviewRecords.push(newRec);
-            }
-            if (success) {
-                localStorage.setItem('clupPdpfpReviews', JSON.stringify(reviewRecords));
-                renderReviewTable();
-                closeModal();
-                alert('Saved successfully.');
-            } else alert('Failed to save.');
-            return false;
-        }
-
-        async function deleteReviewRecord(id) {
-            if (confirm('Delete this review entry?')) {
-                const success = await saveReviewToSheet({ id }, 'delete');
-                if (success) {
-                    reviewRecords = reviewRecords.filter(r => r.id !== id);
-                    localStorage.setItem('clupPdpfpReviews', JSON.stringify(reviewRecords));
-                    renderReviewTable();
-                    alert('Deleted.');
-                } else alert('Failed to delete.');
-            }
-        }
-
-        function exportReviewData() {
-            const dataStr = JSON.stringify(reviewRecords, null, 2);
-            const a = document.createElement('a');
-            a.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
-            a.download = 'clup_pdpfp_reviews.json';
-            a.click();
-            alert('Exported');
-        }
-
-        // ========== ZONING CERTIFICATION ==========
+        // ========== ZONING CERTIFICATION WITH STATUS ==========
         let zoningCertifications = [];
         let certificationCounter = { lastCertNumber: 0, prefix: 'SZC-RVI', year: new Date().getFullYear().toString().slice(-2) };
         let currentEditingZoningId = null;
@@ -1821,12 +1762,15 @@
                 const response = await fetch(GOOGLE_SCRIPT_URL + '?action=get&data_type=zoning', { method: 'GET' });
                 const data = await response.json();
                 zoningCertifications = Array.isArray(data) ? data : [];
+                // Ensure each record has a status field (default "For Review")
+                zoningCertifications.forEach(rec => { if (!rec.status) rec.status = 'For Review'; });
                 localStorage.setItem('zoningCertifications', JSON.stringify(zoningCertifications));
                 await updateLocalCounterAfterSync();
                 renderCertificationsTable();
             } catch (error) {
                 console.warn("Zoning using localStorage", error);
                 zoningCertifications = JSON.parse(localStorage.getItem('zoningCertifications') || '[]');
+                zoningCertifications.forEach(rec => { if (!rec.status) rec.status = 'For Review'; });
                 updateCounterFromData();
                 renderCertificationsTable();
             }
@@ -1896,6 +1840,8 @@
                 const approvalDate = document.getElementById('approvalDate').value || '';
                 const purpose = document.getElementById('purpose').value || '';
                 const landClass = document.getElementById('landClass').value || '';
+                // Default status for new records
+                const status = 'For Review';
 
                 if (!parcels || !location || !totalArea || !proposedUse || !dateIssued || !requestedBy || !amountPaid) {
                     alert('Please fill all required fields.');
@@ -1931,7 +1877,7 @@
                     certificationNo, series, parcels, location, latitude, longitude, totalArea, proposedUse,
                     landHoldings, dateIssued, requestedBy, amountPaid, orNo, orDate, remarks, clupStatus,
                     city, province, approvedBy, circularNo, approvalDate,
-                    purpose, landClass,
+                    purpose, landClass, status,
                     timestamp: new Date().toLocaleString()
                 };
 
@@ -2001,14 +1947,62 @@
             return false;
         }
 
+        function updateCertificationStatus(recordId, newStatus) {
+            const record = zoningCertifications.find(r => r.id === recordId);
+            if (record) {
+                record.status = newStatus;
+                localStorage.setItem('zoningCertifications', JSON.stringify(zoningCertifications));
+                // Optionally sync to Google Sheets if online
+                checkGoogleSheetsConnection().then(isOnline => {
+                    if (isOnline) {
+                        const params = new URLSearchParams();
+                        params.append('action', 'update');
+                        params.append('data_type', 'zoning');
+                        params.append('data', JSON.stringify({ id: recordId, status: newStatus }));
+                        fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: params }).catch(console.warn);
+                    } else {
+                        addToPendingSync('zoning', 'update', { id: recordId, status: newStatus });
+                    }
+                });
+                renderCertificationsTable();
+                showToast(`Status updated to "${newStatus}"`, 'success');
+            }
+        }
+
         function renderCertificationsTable() {
             const tbody = document.getElementById('certificationsTableBody');
             if (!tbody) return;
             tbody.innerHTML = '';
-            if (!zoningCertifications.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No records found.</td></tr>'; return; }
-            const sorted = [...zoningCertifications].sort((a,b) => new Date(b.dateIssued) - new Date(a.dateIssued));
+            
+            const searchTerm = document.getElementById('certSearchInput')?.value.toLowerCase() || '';
+            const statusFilter = document.getElementById('certStatusFilter')?.value || '';
+            
+            let filtered = [...zoningCertifications];
+            if (searchTerm) {
+                filtered = filtered.filter(rec => 
+                    rec.certificationNo?.toLowerCase().includes(searchTerm) ||
+                    rec.location?.toLowerCase().includes(searchTerm) ||
+                    rec.requestedBy?.toLowerCase().includes(searchTerm)
+                );
+            }
+            if (statusFilter) {
+                filtered = filtered.filter(rec => rec.status === statusFilter);
+            }
+            
+            const sorted = filtered.sort((a,b) => new Date(b.dateIssued) - new Date(a.dateIssued));
+            
+            if (!sorted.length) { 
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No records found.</td></tr>'; 
+                return; 
+            }
+            
             sorted.forEach(rec => {
                 const row = tbody.insertRow();
+                const statusClass = 
+                    rec.status === 'For Review' ? 'status-for-review' :
+                    rec.status === 'For RD Signature' ? 'status-rd-signature' :
+                    rec.status === 'For Release' ? 'status-for-release' : 'status-released';
+                
                 row.innerHTML = `
                     <td>${escapeHtml(rec.certificationNo)}</td>
                     <td>${escapeHtml(rec.parcels)}</td>
@@ -2016,7 +2010,20 @@
                     <td>${escapeHtml(rec.totalArea)} ha</td>
                     <td>${formatDate(rec.dateIssued)}</td>
                     <td>${escapeHtml(rec.requestedBy)}</td>
-                    <td><div class="action-btns"><button class="action-btn view" onclick="viewZoningRecord(${rec.id})">👁️ View</button><button class="action-btn edit" onclick="editZoningRecord(${rec.id})">✏️ Edit</button><button class="action-btn print" onclick="printZoningRecord(${rec.id})">🖨️ Print</button><button class="action-btn delete" onclick="deleteZoningRecord(${rec.id})">🗑️ Delete</button></div></td>
+                    <td>
+                        <select class="status-dropdown" data-id="${rec.id}" onchange="updateCertificationStatus(${rec.id}, this.value)">
+                            <option value="For Review" ${rec.status === 'For Review' ? 'selected' : ''}>For Review</option>
+                            <option value="For RD Signature" ${rec.status === 'For RD Signature' ? 'selected' : ''}>For RD Signature</option>
+                            <option value="For Release" ${rec.status === 'For Release' ? 'selected' : ''}>For Release</option>
+                            <option value="Released" ${rec.status === 'Released' ? 'selected' : ''}>Released</option>
+                        </select>
+                    </td>
+                    <td><div class="action-btns">
+                        <button class="action-btn view" onclick="viewZoningRecord(${rec.id})">👁️ View</button>
+                        <button class="action-btn edit" onclick="editZoningRecord(${rec.id})">✏️ Edit</button>
+                        <button class="action-btn print" onclick="printZoningRecord(${rec.id})">🖨️ Print</button>
+                        <button class="action-btn delete" onclick="deleteZoningRecord(${rec.id})">🗑️ Delete</button>
+                    </div></td>
                 `;
             });
         }
@@ -2169,29 +2176,12 @@
         function toggleRecordsView() { document.getElementById('recordsSection').style.display = 'none'; }
         
         function filterCertificationsTable() {
-            const searchTerm = document.getElementById('certSearchInput')?.value.toLowerCase() || '';
-            const tbody = document.getElementById('certificationsTableBody');
-            if (!tbody) return;
-            const rows = tbody.getElementsByTagName('tr');
-            for (let i = 0; i < rows.length; i++) {
-                const row = rows[i];
-                const cells = row.getElementsByTagName('td');
-                if (cells.length === 0) continue;
-                const certNo = cells[0]?.innerText.toLowerCase() || '';
-                const location = cells[2]?.innerText.toLowerCase() || '';
-                const requestedBy = cells[5]?.innerText.toLowerCase() || '';
-                const matchesSearch = searchTerm === '' || certNo.includes(searchTerm) || location.includes(searchTerm) || requestedBy.includes(searchTerm);
-                if (matchesSearch) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            }
+            renderCertificationsTable(); // re-render with current filters
         }
 
         function clearCertSearch() {
-            const searchInput = document.getElementById('certSearchInput');
-            if (searchInput) searchInput.value = '';
+            document.getElementById('certSearchInput').value = '';
+            document.getElementById('certStatusFilter').value = '';
             filterCertificationsTable();
         }
 
@@ -2227,7 +2217,6 @@
         }
 
         function printBlankForm() {
-            // Print blank form functionality
             const blankForm = `<div class="print-document">
                 <h2>Republic of the Philippines</h2>
                 <h3>DEPARTMENT OF HUMAN SETTLEMENTS AND URBAN DEVELOPMENT</h3>
@@ -2408,7 +2397,7 @@
                 <td style="width: 0.5cm; padding: 0.1cm 0; border: none; white-space: nowrap; font-size: 14pt;"><strong>:</strong></td>
                 <td style="padding: 0.1cm 0; border: none; font-size: 14pt;"></td>
             </tr>
-        </table>
+          </table>
     </div>
     ${landHoldingsHtml}
     <h4 style="margin: 0.1cm 0 0.05cm 0; font-size: 18pt; font-weight: bold;">II. STATUS OF COMPREHENSIVE LAND USE PLAN (CLUP) ZONING ORDINANCE (ZO)</h4>
@@ -2446,193 +2435,7 @@
     setTimeout(() => window.print(), 200);
     setTimeout(() => ps.style.display = 'none', 1000);
 }
-       // ========== MAP FUNCTIONS ==========
-        let regionMap = null;
-        let mapInitialized = false;
-        let uploadedLayers = [];
-        let baseLayers = {
-            "OpenStreetMap": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }),
-            "Humanitarian": L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }),
-            "Satellite": L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: 'Esri' }),
-            "CartoDB Positron": L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '© OpenStreetMap, CartoDB' })
-        };
-        let currentBaseLayer = baseLayers.OpenStreetMap;
-
-        function initMap() {
-            if (mapInitialized) return;
-            regionMap = L.map('regionMap').setView([11.0,122.5],8);
-            currentBaseLayer.addTo(regionMap);
-            const provinces = [
-                { name:"Aklan", coords:[11.7074,122.3630], color:"#27ae60" },
-                { name:"Antique", coords:[10.7435,121.9413], color:"#f39c12" },
-                { name:"Capiz", coords:[11.5853,122.7511], color:"#27ae60" },
-                { name:"Guimaras", coords:[10.6583,122.6233], color:"#27ae60" },
-                { name:"Iloilo", coords:[10.7202,122.5621], color:"#27ae60" },
-                { name:"Negros Occidental", coords:[10.6710,122.9494], color:"#f39c12" }
-            ];
-            provinces.forEach(p => {
-                const icon = L.divIcon({ html:`<div style="background:${p.color}; width:20px; height:20px; border-radius:50%; border:3px solid white;"></div>`, iconSize:[20,20] });
-                L.marker(p.coords, { icon }).addTo(regionMap).bindPopup(`<h3>${p.name}</h3><button onclick="focusProvince('${p.name}')">Details</button>`);
-            });
-            renderProvinceStats();
-            setupFileUpload();
-            mapInitialized = true;
-        }
-
-        function renderProvinceStats() {
-            const cont = document.getElementById('provinceStats');
-            if (!cont) return;
-            cont.innerHTML = '';
-            const data = [
-                { name:"Aklan", capital:"Kalibo", projects:15, status:"Approved" },
-                { name:"Antique", capital:"San Jose", projects:12, status:"For Review" },
-                { name:"Capiz", capital:"Roxas City", projects:18, status:"Approved" },
-                { name:"Guimaras", capital:"Jordan", projects:8, status:"Approved" },
-                { name:"Iloilo", capital:"Iloilo City", projects:25, status:"Approved" },
-                { name:"Negros Occidental", capital:"Bacolod City", projects:22, status:"For Review" }
-            ];
-            data.forEach(p => {
-                const card = document.createElement('div');
-                card.className = 'province-stat-card';
-                card.onclick = () => focusProvince(p.name);
-                card.innerHTML = `<h4>${p.name}</h4><p><strong>Capital:</strong> ${p.capital}</p><p><strong>Projects:</strong> ${p.projects}</p><span class="status ${p.status==='Approved'?'approved':'review'}">${p.status}</span>`;
-                cont.appendChild(card);
-            });
-        }
-
-        function focusProvince(name) {
-            const coords = { Aklan:[11.7074,122.3630], Antique:[10.7435,121.9413], Capiz:[11.5853,122.7511], Guimaras:[10.6583,122.6233], Iloilo:[10.7202,122.5621], "Negros Occidental":[10.6710,122.9494] };
-            if (coords[name] && regionMap) {
-                regionMap.setView(coords[name], 10);
-                const ui = document.getElementById('uploadInfo');
-                ui.innerHTML = `Focused on ${name}`;
-                ui.className = 'upload-info show';
-                setTimeout(() => ui.className = 'upload-info', 3000);
-            }
-        }
-
-        function changeBaseMap() {
-            const value = document.getElementById('baseMapSelect').value;
-            if (!regionMap) return;
-            regionMap.removeLayer(currentBaseLayer);
-            switch(value) {
-                case 'osm': currentBaseLayer = baseLayers.OpenStreetMap; break;
-                case 'osm_hot': currentBaseLayer = baseLayers.Humanitarian; break;
-                case 'satellite': currentBaseLayer = baseLayers.Satellite; break;
-                case 'cartodb': currentBaseLayer = baseLayers["CartoDB Positron"]; break;
-                default: currentBaseLayer = baseLayers.OpenStreetMap;
-            }
-            currentBaseLayer.addTo(regionMap);
-        }
-
-        function setupFileUpload() {
-            document.getElementById('shapefileUpload').addEventListener('change', handleFileSelect);
-        }
-
-        function handleFileSelect(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            if (file.size > 50*1024*1024) { alert('File >50MB'); return; }
-            const label = document.getElementById('uploadLabel');
-            const info = document.getElementById('uploadInfo');
-            label.classList.add('uploading');
-            label.innerHTML = '⏳ Processing...';
-            info.className = 'upload-info show';
-            info.innerHTML = 'Reading...';
-            const reader = new FileReader();
-            reader.onload = ev => {
-                try {
-                    const content = ev.target.result;
-                    let geojson;
-                    if (file.name.endsWith('.geojson') || file.name.endsWith('.json')) geojson = JSON.parse(content);
-                    else if (file.name.endsWith('.zip') && typeof shp !== 'undefined') {
-                        info.innerHTML = 'Parsing shapefile...';
-                        shp(file).then(g => addGeoJSONToMap(g, file.name.replace('.zip',''))).catch(err => { throw new Error('Invalid shapefile: '+err.message); });
-                        return;
-                    } else throw new Error('Unsupported file');
-                    addGeoJSONToMap(geojson, file.name);
-                } catch(err) {
-                    label.classList.remove('uploading');
-                    label.innerHTML = '📁 Upload GeoJSON or Shapefile (ZIP) (Max 50MB)';
-                    info.className = 'upload-info show error';
-                    info.innerHTML = '❌ '+err.message;
-                }
-            };
-            reader.onerror = () => {
-                label.classList.remove('uploading');
-                label.innerHTML = '📁 Upload GeoJSON or Shapefile (ZIP) (Max 50MB)';
-                info.className = 'upload-info show error';
-                info.innerHTML = '❌ Error reading file';
-            };
-            if (file.name.endsWith('.geojson') || file.name.endsWith('.json')) reader.readAsText(file);
-            else reader.readAsArrayBuffer(file);
-        }
-
-        function addGeoJSONToMap(geojson, name) {
-            if (!regionMap) return;
-            const layerId = `layer_${Date.now()}`;
-            const display = name || `Layer ${uploadedLayers.length+1}`;
-            const color = ['#8e44ad','#2980b9','#16a085','#c0392b','#d35400','#27ae60'][Math.floor(Math.random()*6)];
-            const layer = L.geoJSON(geojson, {
-                style: { color, weight:2, fillColor:color, fillOpacity:0.3 },
-                onEachFeature: (f,l) => {
-                    if (f.properties) {
-                        let pop = '<div><h4>Properties</h4>';
-                        for (let [k,v] of Object.entries(f.properties)) if (v) pop += `<p><strong>${escapeHtml(k)}:</strong> ${escapeHtml(String(v))}</p>`;
-                        pop += '</div>';
-                        l.bindPopup(pop);
-                    }
-                }
-            }).addTo(regionMap);
-            uploadedLayers.push({ id:layerId, name:display, layer, visible:true });
-            updateLayerSelect();
-            document.getElementById('clearLayersBtn').style.display = 'inline-flex';
-            const bounds = layer.getBounds();
-            if (bounds.isValid()) regionMap.fitBounds(bounds);
-            const label = document.getElementById('uploadLabel');
-            const info = document.getElementById('uploadInfo');
-            label.classList.remove('uploading');
-            label.innerHTML = '📁 Upload GeoJSON or Shapefile (ZIP) (Max 50MB)';
-            info.className = 'upload-info show success';
-            info.innerHTML = `✅ Loaded: ${display}`;
-        }
-
-        function updateLayerSelect() {
-            const container = document.getElementById('layerListContainer');
-            const sel = document.getElementById('layerSelect');
-            if (uploadedLayers.length) {
-                container.style.display = 'block';
-                sel.innerHTML = '<option value="">Select Layer to Toggle</option>';
-                uploadedLayers.forEach(l => {
-                    const opt = document.createElement('option');
-                    opt.value = l.id;
-                    opt.textContent = `${l.visible ? '👁️' : '👁️‍🗨️'} ${l.name}`;
-                    sel.appendChild(opt);
-                });
-            } else container.style.display = 'none';
-        }
-
-        function toggleLayerVisibility() {
-            const id = document.getElementById('layerSelect').value;
-            if (!id) return;
-            const l = uploadedLayers.find(x => x.id === id);
-            if (!l) return;
-            if (l.visible) { regionMap.removeLayer(l.layer); l.visible = false; }
-            else { l.layer.addTo(regionMap); l.visible = true; }
-            updateLayerSelect();
-            document.getElementById('layerSelect').value = id;
-        }
-
-        function clearUploadedLayers() {
-            uploadedLayers.forEach(l => { if (l.visible) regionMap.removeLayer(l.layer); });
-            uploadedLayers = [];
-            updateLayerSelect();
-            document.getElementById('clearLayersBtn').style.display = 'none';
-            document.getElementById('uploadInfo').className = 'upload-info';
-            document.getElementById('uploadInfo').innerHTML = '';
-            document.getElementById('shapefileUpload').value = '';
-        }
-
+       
         // ========== REPORTS & GENERAL ==========
         function generateReport(type) {
             let title='', content='';
@@ -2658,15 +2461,11 @@
             for (let link of document.querySelectorAll('.nav-bar a')) {
                 if (link.getAttribute('onclick')?.includes(sectionId)) link.classList.add('active');
             }
-            if (sectionId === 'map') { initMap(); setTimeout(() => regionMap?.invalidateSize(), 100); }
         }
-
-        function showOnMap() { showSection('map'); setTimeout(() => regionMap?.invalidateSize(), 100); }
 
         // ========== INITIAL LOAD ==========
         window.onload = async () => {
             loadCounter();
-            await fetchReviewRecords();
             await fetchCertifications();
             await fetchClupRecords();
             setupClupCascadeEvents();
