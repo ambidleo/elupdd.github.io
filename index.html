@@ -252,10 +252,10 @@
                 
                 <!-- Sub-navigation for Data Entry / Accomplishment -->
                 <div class="zoning-subnav" role="tablist">
-                    <button class="subnav-link active" onclick="switchZoningView('dataEntry')" role="tab" aria-selected="true" aria-controls="dataEntryView">
+                    <button id="dataEntryTab" class="subnav-link active" onclick="switchZoningView('dataEntry')" role="tab" aria-selected="true" aria-controls="dataEntryView">
                         <span aria-hidden="true">📝</span> Data Entry
                     </button>
-                    <button class="subnav-link" onclick="switchZoningView('accomplishment')" role="tab" aria-selected="false" aria-controls="accomplishmentView">
+                    <button id="accomplishmentTab" class="subnav-link" onclick="switchZoningView('accomplishment')" role="tab" aria-selected="false" aria-controls="accomplishmentView">
                         <span aria-hidden="true">📊</span> Accomplishment
                     </button>
                 </div>
@@ -264,7 +264,7 @@
                 <div id="dataEntryView" class="zoning-view active" role="tabpanel">
                     <div class="cert-section">
                         <div class="cert-title"><span aria-hidden="true">🏷️</span> Site Zoning Certification - Data Entry</div>
-                        <form id="zoningForm" onsubmit="return saveZoningRecord(event)" novalidate>
+                        <form id="zoningForm" onsubmit="saveZoningRecord(event); return false;" novalidate>
                             <div class="form-grid">
                                 <div class="form-group"><label for="certificationNo" id="certNoLabel">Certification No.</label><input type="text" class="form-control" id="certificationNo" readonly style="background:#f0f0f0"><small>Auto-generated</small></div>
                                 <div class="form-group"><label for="certificationIssued">Certification Issued</label><select class="form-control" id="certificationIssued" required><option value="">-- Select --</option><option value="Zoning (Simple)">Zoning (Simple)</option><option value="Zoning DAR (Complex)">Zoning DAR (Complex)</option><option value="Zoning DAR (Simple)">Zoning DAR (Simple)</option><option value="Reclass Indorsement">Reclass Indorsement</option><option value="Locational Clearance">Locational Clearance</option><option value="Locational Clearance - National Significance">Locational Clearance - National Significance</option></select></div>
@@ -520,7 +520,7 @@
 
     <script>
         // ========== CONFIGURATION ==========
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx2oSsKH0Erifbk25yj0ITxqDqFi9xs1USLO02znRRrUOrAAd5eAxEAXaWznDa3rdZSlQ/exec";
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx7LRcU7KtCoBf-XLy00Wo6CizI06XEotZFb-RdLD6Us92_jmi3Py9NLinEdb6IENj0Gw/exec";
 
         // ========== SYNC MECHANISM VARIABLES ==========
         let isGoogleSheetsOnline = true;
@@ -700,6 +700,7 @@
         }
 
         function saveGeoJSONLayersToLocal() {
+            // Warning: Storing large GeoJSON may exceed localStorage quota
             const layersToStore = geoJsonLayers.map(layer => ({ id: layer.id, name: layer.name, visible: layer.visible, featureCount: layer.featureCount, geojsonData: layer.geojsonData }));
             localStorage.setItem('geoJsonLayers', JSON.stringify(layersToStore));
         }
@@ -726,15 +727,21 @@
 
         // ========== ZONING SUBNAV SWITCH ==========
         function switchZoningView(view) {
-            document.querySelectorAll('.zoning-subnav .subnav-link').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.zoning-view').forEach(v => v.classList.remove('active'));
+            const dataEntryBtn = document.getElementById('dataEntryTab');
+            const accomplishmentBtn = document.getElementById('accomplishmentTab');
+            const dataEntryView = document.getElementById('dataEntryView');
+            const accomplishmentView = document.getElementById('accomplishmentView');
             
             if (view === 'dataEntry') {
-                document.querySelector('.subnav-link[onclick*="dataEntry"]').classList.add('active');
-                document.getElementById('dataEntryView').classList.add('active');
+                dataEntryBtn.classList.add('active');
+                accomplishmentBtn.classList.remove('active');
+                dataEntryView.classList.add('active');
+                accomplishmentView.classList.remove('active');
             } else {
-                document.querySelector('.subnav-link[onclick*="accomplishment"]').classList.add('active');
-                document.getElementById('accomplishmentView').classList.add('active');
+                accomplishmentBtn.classList.add('active');
+                dataEntryBtn.classList.remove('active');
+                accomplishmentView.classList.add('active');
+                dataEntryView.classList.remove('active');
                 renderCertificationsTable();
                 updateAccomplishmentStats();
             }
@@ -772,7 +779,7 @@
                         const localCounter = JSON.parse(localStorage.getItem('certificationCounter') || '{"lastCertNumber":0}');
                         const nextNumber = localCounter.lastCertNumber + 1;
                         const year = new Date().getFullYear().toString().slice(-2);
-                        const certNumber = `SZC${year}-${nextNumber.toString().padStart(3, '0')}`;
+                        const certNumber = `SZC-RVI${year}-${nextNumber.toString().padStart(3, '0')}`;
                         addToPendingSync('certNumber', 'reserve', { number: nextNumber, certNumber });
                         resolve({ number: nextNumber, certNumber, isOnline: false });
                         return;
@@ -1020,7 +1027,7 @@
                             totalArea: row[7] || '',
                             proposedUse: row[8] || '',
                             landHoldings: (() => { try { return JSON.parse(row[9] || '[]'); } catch { return []; } })(),
-                            dateReceived: row[10] || '',  // NEW
+                            dateReceived: row[10] || '',
                             dateIssued: row[11] || '',
                             requestedBy: row[12] || '',
                             amountPaid: row[13] || '',
@@ -1084,7 +1091,7 @@
         }
 
         async function saveZoningRecord(event) {
-            event.preventDefault();
+            event.preventDefault(); // Ensure default form submission is prevented
             const saveBtn = event.submitter;
             const originalText = saveBtn.innerHTML;
             saveBtn.innerHTML = '⏳ Saving...'; saveBtn.disabled = true;
@@ -1205,9 +1212,17 @@
                 const row = tbody.insertRow();
                 let displayDate = '—';
                 if (rec.dateIssued && typeof rec.dateIssued === 'string') displayDate = formatDate(rec.dateIssued);
-                row.innerHTML = `<td>${escapeHtml(rec.certificationNo)}</td><td>${escapeHtml(rec.certificationIssued || '—')}</td><td>${escapeHtml(rec.parcels)}</td><td>${escapeHtml(rec.location)}</td><td>${escapeHtml(rec.totalArea)} ha</td><td>${displayDate}</td><td>${escapeHtml(rec.requestedBy)}</td>
-                <td><select class="status-dropdown" onchange="updateCertificationStatus(${rec.id}, this.value)"><option value="For Review" ${rec.status==='For Review'?'selected':''}>For Review</option><option value="For RD Signature" ${rec.status==='For RD Signature'?'selected':''}>For RD Signature</option><option value="For Release" ${rec.status==='For Release'?'selected':''}>For Release</option><option value="Released" ${rec.status==='Released'?'selected':''}>Released</option></select></td>
-                <td><div class="action-btns"><button class="action-btn view" onclick="viewZoningRecord(${rec.id})">👁️</button><button class="action-btn edit" onclick="editZoningRecord(${rec.id})">✏️</button><button class="action-btn print" onclick="printZoningRecord(${rec.id})">🖨️</button><button class="action-btn delete" onclick="deleteZoningRecord(${rec.id})">🗑️</button></div></td>`;
+                row.innerHTML = `
+                    <td>${escapeHtml(rec.certificationNo)}</td>
+                    <td>${escapeHtml(rec.certificationIssued || '—')}</td>
+                    <td>${escapeHtml(rec.parcels)}</td>
+                    <td>${escapeHtml(rec.location)}</td>
+                    <td>${escapeHtml(rec.totalArea)} ha</td>
+                    <td>${displayDate}</td>
+                    <td>${escapeHtml(rec.requestedBy)}</td>
+                    <td><select class="status-dropdown" onchange="updateCertificationStatus(${rec.id}, this.value)"><option value="For Review" ${rec.status==='For Review'?'selected':''}>For Review</option><option value="For RD Signature" ${rec.status==='For RD Signature'?'selected':''}>For RD Signature</option><option value="For Release" ${rec.status==='For Release'?'selected':''}>For Release</option><option value="Released" ${rec.status==='Released'?'selected':''}>Released</option></select></td>
+                    <td><div class="action-btns"><button class="action-btn view" onclick="viewZoningRecord(${rec.id})">👁️</button><button class="action-btn edit" onclick="editZoningRecord(${rec.id})">✏️</button><button class="action-btn print" onclick="printZoningRecord(${rec.id})">🖨️</button><button class="action-btn delete" onclick="deleteZoningRecord(${rec.id})">🗑️</button></div></td>
+                `;
             });
         }
 
