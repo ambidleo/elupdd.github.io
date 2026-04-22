@@ -312,6 +312,7 @@
                                     <div><button type="button" class="btn btn-success" onclick="addLandHolding()" style="padding:5px 10px; font-size:0.9rem;">➕ Add Another Property</button><small style="margin-left:10px;">Each property can have its own lot number and area</small></div>
                                     <div id="landHoldingsContainer"></div>
                                 </div>
+                                <div class="form-group"><label for="dateReceived">Date Received</label><input type="date" class="form-control" id="dateReceived"></div>
                                 <div class="form-group"><label for="dateIssued">Date Issued</label><input type="date" class="form-control" id="dateIssued" required></div>
                                 <div class="form-group"><label for="requestedBy">Requested By</label><input type="text" class="form-control" id="requestedBy" placeholder="Name of requester" required></div>
                                 <div class="form-group"><label for="amountPaid">Amount Paid (₱)</label><input type="text" class="form-control" id="amountPaid" placeholder="e.g., 13,680" required></div>
@@ -1053,24 +1054,58 @@
         let certificationCounter = { lastCertNumber: 0 };
         let currentEditingZoningId = null;
 
-        async function fetchCertifications() {
-            try {
-                const response = await fetch(GOOGLE_SCRIPT_URL + '?action=get&data_type=zoning', { method: 'GET' });
-                const data = await response.json();
-                zoningCertifications = Array.isArray(data) ? data : [];
-                zoningCertifications.forEach(rec => { if (!rec.status) rec.status = 'For Review'; });
-                localStorage.setItem('zoningCertifications', JSON.stringify(zoningCertifications));
-                await updateLocalCounterAfterSync();
-                renderCertificationsTable();
-                updateAccomplishmentStats();
-            } catch (error) {
-                zoningCertifications = JSON.parse(localStorage.getItem('zoningCertifications') || '[]');
-                zoningCertifications.forEach(rec => { if (!rec.status) rec.status = 'For Review'; });
-                updateCounterFromData();
-                renderCertificationsTable();
-                updateAccomplishmentStats();
-            }
+       async function fetchCertifications() {
+    try {
+        const response = await fetch(GOOGLE_SCRIPT_URL + '?action=get&data_type=zoning', { method: 'GET' });
+        const data = await response.json();
+
+        // Check if data is a 2D array (rows of values)
+        if (Array.isArray(data) && data.length > 0 && Array.isArray(data[0])) {
+            // Expected column order (28 columns)
+            const headers = [
+                'id', 'certificationNo', 'certificationIssued', 'series', 'parcels', 'location',
+                'latitude', 'longitude', 'totalArea', 'proposedUse', 'landHoldings',
+                'dateReceived', 'dateIssued', 'requestedBy', 'amountPaid', 'orNo', 'orDate',
+                'remarks', 'clupStatus', 'city', 'province', 'approvedBy', 'circularNo',
+                'approvalDate', 'purpose', 'landClass', 'status', 'timestamp'
+            ];
+            zoningCertifications = data.map(row => {
+                let obj = {};
+                headers.forEach((h, idx) => { obj[h] = row[idx] || ''; });
+                // Parse landHoldings if it's a JSON string
+                if (obj.landHoldings && typeof obj.landHoldings === 'string') {
+                    try { obj.landHoldings = JSON.parse(obj.landHoldings); } catch(e) { obj.landHoldings = []; }
+                }
+                if (!obj.status) obj.status = 'For Review';
+                return obj;
+            });
+        } else if (Array.isArray(data)) {
+            // Already objects
+            zoningCertifications = data;
+        } else {
+            zoningCertifications = [];
         }
+
+        zoningCertifications.forEach(rec => {
+            if (!rec.status) rec.status = 'For Review';
+            if (!rec.dateReceived) rec.dateReceived = ''; // ensure field exists
+        });
+        localStorage.setItem('zoningCertifications', JSON.stringify(zoningCertifications));
+        await updateLocalCounterAfterSync();
+        renderCertificationsTable();
+        updateAccomplishmentStats();
+    } catch (error) {
+        console.warn('Falling back to localStorage', error);
+        zoningCertifications = JSON.parse(localStorage.getItem('zoningCertifications') || '[]');
+        zoningCertifications.forEach(rec => {
+            if (!rec.status) rec.status = 'For Review';
+            if (!rec.dateReceived) rec.dateReceived = '';
+        });
+        updateCounterFromData();
+        renderCertificationsTable();
+        updateAccomplishmentStats();
+    }
+}
 
         function updateCounterFromData() {
             let maxNum = 0;
@@ -1111,6 +1146,7 @@
                 const longitude = document.getElementById('longitude').value || '';
                 const totalArea = document.getElementById('totalArea').value;
                 const proposedUse = document.getElementById('proposedUse').value;
+                const dateReceived = document.getElementById('dateReceived').value || '';
                 const dateIssued = document.getElementById('dateIssued').value;
                 const requestedBy = document.getElementById('requestedBy').value;
                 const amountPaid = document.getElementById('amountPaid').value;
@@ -1143,7 +1179,7 @@
                 const record = {
                     id: currentEditingZoningId || Date.now(),
                     certificationNo, certificationIssued, series: document.getElementById('series').value, parcels, location, latitude, longitude, totalArea, proposedUse,
-                    landHoldings, dateIssued, requestedBy, amountPaid, orNo, orDate, remarks, clupStatus,
+                    landHoldings, dateReceived, dateIssued, requestedBy, amountPaid, orNo, orDate, remarks, clupStatus,
                     city, province, approvedBy, circularNo, approvalDate, purpose, landClass, status,
                     timestamp: new Date().toLocaleString()
                 };
@@ -1653,17 +1689,25 @@
         }
         
         // ========== REPORTS & GENERAL ==========
-        function generateReport(type) {
-            let title='', content='';
-            if(type==='annual') { title='Annual Report 2024'; content=`<p>Total Plans: ${clupRecords.length}</p><p>Approved: ${clupRecords.filter(p=>p.Status==='Approved').length}</p>`; }
-            else if(type==='quarterly') { title='Q1 2024 Progress'; content='<p>Plans Reviewed: 5</p><p>Projects Started: 3</p>'; }
-            else if(type==='project') { title='Project Status'; content='<p>Ongoing: 3</p><p>Planning: 2</p>'; }
-            else if(type==='environmental') { title='EIA Report'; content='<p>Approved: 2</p><p>Under Review: 1</p>'; }
-            document.getElementById('modalTitle').textContent=title;
-            document.getElementById('modalBody').innerHTML=`<div style="padding:1rem;">${content}</div><div style="text-align:right;"><button class="btn btn-primary" onclick="closeModal()">Close</button></div>`;
-            document.getElementById('dataModal').classList.add('active');
-        }
-
+        function generateSimpleReport(type) {
+    let title = '', content = '';
+    if (type === 'annual') {
+        title = 'Annual Report 2024';
+        content = `<p>Total Plans: ${clupRecords.length}</p><p>Approved: ${clupRecords.filter(p => p.Status === 'Approved').length}</p>`;
+    } else if (type === 'quarterly') {
+        title = 'Q1 2024 Progress';
+        content = '<p>Plans Reviewed: 5</p><p>Projects Started: 3</p>';
+    } else if (type === 'project') {
+        title = 'Project Status';
+        content = '<p>Ongoing: 3</p><p>Planning: 2</p>';
+    } else if (type === 'environmental') {
+        title = 'EIA Report';
+        content = '<p>Approved: 2</p><p>Under Review: 1</p>';
+    }
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalBody').innerHTML = `<div style="padding:1rem;">${content}</div><div style="text-align:right;"><button class="btn btn-primary" onclick="closeModal()">Close</button></div>`;
+    document.getElementById('dataModal').classList.add('active');
+}
         function openAboutModal() {
             document.getElementById('modalTitle').textContent='About';
             document.getElementById('modalBody').innerHTML=`<div><h3>ELUPDD Region VI</h3><p>Vision: Planned, resilient, sustainable communities.</p><p>Mission: Formulate CLUPs, protect environment, improve quality of life.</p><h4>Functions:</h4><ul><li>Review CLUPs</li><li>EIA monitoring</li><li>Urban development planning</li><li>Technical assistance to LGUs</li><li>Zoning implementation</li><li>Climate adaptation</li></ul></div><div style="text-align:right;"><button class="btn btn-primary" onclick="closeModal()">Close</button></div>`;
