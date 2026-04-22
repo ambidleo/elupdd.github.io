@@ -471,6 +471,7 @@
     </main>
 
     <!-- ENHANCED MAP POPUP MODAL -->
+     <!-- ENHANCED MAP POPUP MODAL with Clear Coordinates Button -->
     <div id="mapPopupModal" class="map-popup-modal">
         <div class="map-popup-content">
             <div class="map-popup-header">
@@ -482,6 +483,7 @@
                 <div class="coord-info">
                     <label>Latitude: <input type="text" id="popupLatitude" readonly placeholder="Click on map"></label>
                     <label>Longitude: <input type="text" id="popupLongitude" readonly placeholder="Click on map"></label>
+                    <button type="button" class="btn btn-danger" onclick="clearSelectedCoordinates()" style="padding: 5px 12px;">🗑️ Clear</button>
                 </div>
                 <div class="layer-panel">
                     <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 10px;">
@@ -495,12 +497,6 @@
                     </div>
                 </div>
             </div>
-            <div class="map-popup-footer">
-                <button class="btn btn-primary" onclick="saveCoordinatesFromPopup()">✅ Use Selected Coordinates</button>
-                <button class="btn btn-secondary" onclick="closeMapPopup()">Cancel</button>
-            </div>
-        </div>
-    </div>
 
     <div id="printSection" style="display:none;"></div>
     <div id="syncLoading" class="sync-loading">
