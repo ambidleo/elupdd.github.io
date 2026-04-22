@@ -136,7 +136,7 @@
         .map-popup-close { background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
         .map-popup-body { flex: 1; padding: 15px; overflow-y: auto; }
         #popupMap { height: 350px; width: 100%; border-radius: 10px; }
-        .coord-info { margin-top: 10px; padding: 10px; background: #f0f0f0; border-radius: 8px; display: flex; gap: 15px; justify-content: center; }
+        .coord-info { margin-top: 10px; padding: 10px; background: #f0f0f0; border-radius: 8px; display: flex; gap: 15px; justify-content: center; align-items: center; flex-wrap: wrap; }
         .coord-info input { padding: 8px; border: 1px solid #ccc; border-radius: 5px; width: 180px; }
         .layer-panel { margin-top: 15px; background: #f8faff; border-radius: 12px; padding: 12px; border: 1px solid #e0e7ff; }
         .layer-list-container { max-height: 180px; overflow-y: auto; margin-top: 10px; }
@@ -272,7 +272,12 @@
                                 <div class="form-group"><label for="parcels">No. of Parcels</label><input type="text" class="form-control" id="parcels" placeholder="e.g., Three hundred seventy-five (375) parcels" required></div>
                                 <div class="form-group full-width"><label for="location">Location of the Property</label><input type="text" class="form-control" id="location" placeholder="Enter complete address" required></div>
                                 <div class="form-group"><label for="latitude">Latitude</label><input type="text" class="form-control" id="latitude" placeholder="e.g., 10.7202" readonly style="background:#f0f0f0"></div>
-                                <div class="form-group"><label for="longitude">Longitude</label><input type="text" class="form-control" id="longitude" placeholder="e.g., 122.5621" readonly style="background:#f0f0f0"><button type="button" class="btn btn-map" onclick="openEnhancedMapPopup()" style="margin-top: 5px; width: 100%;">🗺️ Open Map (Upload GeoJSON)</button></div>
+                                <div class="form-group"><label for="longitude">Longitude</label><input type="text" class="form-control" id="longitude" placeholder="e.g., 122.5621" readonly style="background:#f0f0f0">
+                                    <div style="display: flex; gap: 5px; margin-top: 5px;">
+                                        <button type="button" class="btn btn-map" onclick="openEnhancedMapPopup()" style="flex:1;">🗺️ Open Map (Upload GeoJSON)</button>
+                                        <button type="button" class="btn btn-danger" onclick="clearFormCoordinates()" style="flex:0.4;">🗑️ Delete</button>
+                                    </div>
+                                </div>
                                 <div class="form-group"><label for="totalArea">Total Area (ha.)</label><input type="text" class="form-control" id="totalArea" placeholder="e.g., 15.5026" required></div>
                                 <div class="form-group"><label for="proposedUse">Proposed Use</label><input type="text" class="form-control" id="proposedUse" placeholder="e.g., Residential-3 Zone" required></div>
                                 <div class="form-group full-width">
@@ -470,7 +475,7 @@
         </div>
     </main>
 
-    <!-- ENHANCED MAP POPUP MODAL -->
+    <!-- ENHANCED MAP POPUP MODAL with Clear Coordinates Button -->
     <div id="mapPopupModal" class="map-popup-modal">
         <div class="map-popup-content">
             <div class="map-popup-header">
@@ -482,6 +487,7 @@
                 <div class="coord-info">
                     <label>Latitude: <input type="text" id="popupLatitude" readonly placeholder="Click on map"></label>
                     <label>Longitude: <input type="text" id="popupLongitude" readonly placeholder="Click on map"></label>
+                    <button type="button" class="btn btn-danger" onclick="clearSelectedCoordinates()" style="padding: 5px 12px;">🗑️ Clear</button>
                 </div>
                 <div class="layer-panel">
                     <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 10px;">
@@ -520,7 +526,7 @@
 
     <script>
         // ========== CONFIGURATION ==========
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbysRwBS2FDfmliEr9KFzmRKnkLThHUOSfPRIRwMDjeibJmfudPwxszgsdE7xSeJBSevCg/exec";
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx2oSsKH0Erifbk25yj0ITxqDqFi9xs1USLO02znRRrUOrAAd5eAxEAXaWznDa3rdZSlQ/exec";
 
         // ========== SYNC MECHANISM VARIABLES ==========
         let isGoogleSheetsOnline = true;
@@ -591,25 +597,46 @@
 
         function closeMapPopup() {
             document.getElementById('mapPopupModal').classList.remove('active');
+            // Do NOT clear coordinates here; let user decide with Clear button
+        }
+
+        // NEW: Clear coordinates inside popup and remove marker
+        function clearSelectedCoordinates() {
             document.getElementById('popupLatitude').value = '';
             document.getElementById('popupLongitude').value = '';
             selectedLat = null;
             selectedLng = null;
+            
             if (mapMarker && popupMap) {
                 popupMap.removeLayer(mapMarker);
                 mapMarker = null;
             }
+            showToast('Coordinates cleared', 'info');
         }
 
+        // NEW: Clear coordinates on the main form (Delete button)
+        function clearFormCoordinates() {
+            document.getElementById('latitude').value = '';
+            document.getElementById('longitude').value = '';
+            showToast('Coordinates removed from form', 'info');
+        }
+
+        // Enhanced save: if coordinates are empty in popup, clear main form fields as well
         function saveCoordinatesFromPopup() {
-            if (selectedLat !== null && selectedLng !== null) {
-                document.getElementById('latitude').value = selectedLat.toFixed(6);
-                document.getElementById('longitude').value = selectedLng.toFixed(6);
-                closeMapPopup();
+            const latField = document.getElementById('popupLatitude').value;
+            const lngField = document.getElementById('popupLongitude').value;
+            
+            if (latField && lngField) {
+                document.getElementById('latitude').value = latField;
+                document.getElementById('longitude').value = lngField;
                 showToast('Coordinates saved to form!', 'success');
             } else {
-                alert('Please click on the map to select coordinates first.');
+                // User cleared coordinates, so clear main form fields too
+                document.getElementById('latitude').value = '';
+                document.getElementById('longitude').value = '';
+                showToast('Coordinates cleared from form', 'info');
             }
+            closeMapPopup();
         }
 
         document.getElementById('geojsonFileInput').addEventListener('change', function(e) {
@@ -700,7 +727,6 @@
         }
 
         function saveGeoJSONLayersToLocal() {
-            // Warning: Storing large GeoJSON may exceed localStorage quota
             const layersToStore = geoJsonLayers.map(layer => ({ id: layer.id, name: layer.name, visible: layer.visible, featureCount: layer.featureCount, geojsonData: layer.geojsonData }));
             localStorage.setItem('geoJsonLayers', JSON.stringify(layersToStore));
         }
