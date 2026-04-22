@@ -1221,20 +1221,36 @@
             return false;
         }
 
-        function updateCertificationStatus(recordId, newStatus) {
-            const record = zoningCertifications.find(r => r.id === recordId);
-            if (record) {
-                record.status = newStatus;
-                localStorage.setItem('zoningCertifications', JSON.stringify(zoningCertifications));
-                checkGoogleSheetsConnection().then(isOnline => {
-                    if (isOnline) { const params = new URLSearchParams(); params.append('action', 'update'); params.append('data_type', 'zoning'); params.append('data', JSON.stringify({ id: recordId, status: newStatus })); fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: params }).catch(console.warn); }
-                    else addToPendingSync('zoning', 'update', { id: recordId, status: newStatus });
-                });
-                renderCertificationsTable();
-                updateAccomplishmentStats();
-                showToast(`Status updated to "${newStatus}"`, 'success');
+       function updateCertificationStatus(recordId, newStatus) {
+    const record = zoningCertifications.find(r => r.id === recordId);
+    if (record) {
+        // Update local status
+        record.status = newStatus;
+        localStorage.setItem('zoningCertifications', JSON.stringify(zoningCertifications));
+        
+        // Sync with Google Sheets if online, otherwise queue
+        checkGoogleSheetsConnection().then(isOnline => {
+            if (isOnline) {
+                const params = new URLSearchParams();
+                params.append('action', 'update');
+                params.append('data_type', 'zoning');
+                params.append('data', JSON.stringify({ id: recordId, status: newStatus }));
+                fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: params }).catch(console.warn);
+            } else {
+                addToPendingSync('zoning', 'update', { id: recordId, status: newStatus });
             }
-        }
+        });
+        
+        // Reset the status filter to "All" so the updated record remains visible
+        const statusFilter = document.getElementById('certStatusFilter');
+        if (statusFilter) statusFilter.value = '';
+        
+        // Re-render the table with no filter
+        renderCertificationsTable();
+        updateAccomplishmentStats();
+        showToast(`Status updated to "${newStatus}"`, 'success');
+    }
+}
 
         function renderCertificationsTable() {
             const tbody = document.getElementById('certificationsTableBody');
