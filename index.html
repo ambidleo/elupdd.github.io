@@ -9,7 +9,7 @@
     <script src="https://unpkg.com/shpjs@3.4.3/dist/shp.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
-        /* ===== Full CSS ===== */
+        /* ===== Full CSS (with added subnav styles) ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #e8f0f9; min-height: 100vh; }
         :root { --primary-dark: #1a4d5e; --primary: #2c6e8f; --primary-light-accessible: #1e7a9c; --secondary: #3a7b5c; --accent-accessible: #d4a017; --earth: #8B5A2B; --water: #3498db; --forest: #27ae60; --urban: #7f8c8d; --background: #f5f9ff; --card-bg: #ffffff; --cert-primary: #8B4513; --cert-secondary: #228B22; --cert-accent: #FFD700; }
@@ -120,12 +120,44 @@
         .cert-table tr:hover { background: #f8f4e8; }
         
         /* Zoning Subnav Styles */
-        .zoning-subnav { display: flex; gap: 1rem; margin-bottom: 2rem; border-bottom: 2px solid var(--primary-light-accessible); padding-bottom: 0.5rem; }
-        .zoning-subnav .subnav-link { background: none; border: none; padding: 0.8rem 1.8rem; font-size: 1.1rem; font-weight: 600; color: var(--primary-dark); cursor: pointer; border-radius: 30px 30px 0 0; transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem; opacity: 0.7; }
-        .zoning-subnav .subnav-link:hover { opacity: 1; background: rgba(44, 110, 143, 0.1); }
-        .zoning-subnav .subnav-link.active { opacity: 1; color: var(--primary); border-bottom: 3px solid var(--accent-accessible); background: rgba(212, 160, 23, 0.1); }
-        .zoning-view { display: none; }
-        .zoning-view.active { display: block; }
+        .zoning-subnav {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--primary-light-accessible);
+            padding-bottom: 0.5rem;
+        }
+        .zoning-subnav .subnav-link {
+            background: none;
+            border: none;
+            padding: 0.8rem 1.8rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary-dark);
+            cursor: pointer;
+            border-radius: 30px 30px 0 0;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            opacity: 0.7;
+        }
+        .zoning-subnav .subnav-link:hover {
+            opacity: 1;
+            background: rgba(44, 110, 143, 0.1);
+        }
+        .zoning-subnav .subnav-link.active {
+            opacity: 1;
+            color: var(--primary);
+            border-bottom: 3px solid var(--accent-accessible);
+            background: rgba(212, 160, 23, 0.1);
+        }
+        .zoning-view {
+            display: none;
+        }
+        .zoning-view.active {
+            display: block;
+        }
 
         /* Enhanced Map Popup Styles */
         .map-popup-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 30000; justify-content: center; align-items: center; }
@@ -136,7 +168,7 @@
         .map-popup-close { background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
         .map-popup-body { flex: 1; padding: 15px; overflow-y: auto; }
         #popupMap { height: 350px; width: 100%; border-radius: 10px; }
-        .coord-info { margin-top: 10px; padding: 10px; background: #f0f0f0; border-radius: 8px; display: flex; gap: 15px; justify-content: center; align-items: center; flex-wrap: wrap; }
+        .coord-info { margin-top: 10px; padding: 10px; background: #f0f0f0; border-radius: 8px; display: flex; gap: 15px; justify-content: center; }
         .coord-info input { padding: 8px; border: 1px solid #ccc; border-radius: 5px; width: 180px; }
         .layer-panel { margin-top: 15px; background: #f8faff; border-radius: 12px; padding: 12px; border: 1px solid #e0e7ff; }
         .layer-list-container { max-height: 180px; overflow-y: auto; margin-top: 10px; }
@@ -252,10 +284,10 @@
                 
                 <!-- Sub-navigation for Data Entry / Accomplishment -->
                 <div class="zoning-subnav" role="tablist">
-                    <button id="dataEntryTab" class="subnav-link active" onclick="switchZoningView('dataEntry')" role="tab" aria-selected="true" aria-controls="dataEntryView">
+                    <button class="subnav-link active" onclick="switchZoningView('dataEntry')" role="tab" aria-selected="true" aria-controls="dataEntryView">
                         <span aria-hidden="true">📝</span> Data Entry
                     </button>
-                    <button id="accomplishmentTab" class="subnav-link" onclick="switchZoningView('accomplishment')" role="tab" aria-selected="false" aria-controls="accomplishmentView">
+                    <button class="subnav-link" onclick="switchZoningView('accomplishment')" role="tab" aria-selected="false" aria-controls="accomplishmentView">
                         <span aria-hidden="true">📊</span> Accomplishment
                     </button>
                 </div>
@@ -264,7 +296,7 @@
                 <div id="dataEntryView" class="zoning-view active" role="tabpanel">
                     <div class="cert-section">
                         <div class="cert-title"><span aria-hidden="true">🏷️</span> Site Zoning Certification - Data Entry</div>
-                        <form id="zoningForm" onsubmit="saveZoningRecord(event); return false;" novalidate>
+                        <form id="zoningForm" onsubmit="return saveZoningRecord(event)" novalidate>
                             <div class="form-grid">
                                 <div class="form-group"><label for="certificationNo" id="certNoLabel">Certification No.</label><input type="text" class="form-control" id="certificationNo" readonly style="background:#f0f0f0"><small>Auto-generated</small></div>
                                 <div class="form-group"><label for="certificationIssued">Certification Issued</label><select class="form-control" id="certificationIssued" required><option value="">-- Select --</option><option value="Zoning (Simple)">Zoning (Simple)</option><option value="Zoning DAR (Complex)">Zoning DAR (Complex)</option><option value="Zoning DAR (Simple)">Zoning DAR (Simple)</option><option value="Reclass Indorsement">Reclass Indorsement</option><option value="Locational Clearance">Locational Clearance</option><option value="Locational Clearance - National Significance">Locational Clearance - National Significance</option></select></div>
@@ -272,12 +304,7 @@
                                 <div class="form-group"><label for="parcels">No. of Parcels</label><input type="text" class="form-control" id="parcels" placeholder="e.g., Three hundred seventy-five (375) parcels" required></div>
                                 <div class="form-group full-width"><label for="location">Location of the Property</label><input type="text" class="form-control" id="location" placeholder="Enter complete address" required></div>
                                 <div class="form-group"><label for="latitude">Latitude</label><input type="text" class="form-control" id="latitude" placeholder="e.g., 10.7202" readonly style="background:#f0f0f0"></div>
-                                <div class="form-group"><label for="longitude">Longitude</label><input type="text" class="form-control" id="longitude" placeholder="e.g., 122.5621" readonly style="background:#f0f0f0">
-                                    <div style="display: flex; gap: 5px; margin-top: 5px;">
-                                        <button type="button" class="btn btn-map" onclick="openEnhancedMapPopup()" style="flex:1;">🗺️ Open Map (Upload GeoJSON)</button>
-                                        <button type="button" class="btn btn-danger" onclick="clearFormCoordinates()" style="flex:0.4;">🗑️ Delete</button>
-                                    </div>
-                                </div>
+                                <div class="form-group"><label for="longitude">Longitude</label><input type="text" class="form-control" id="longitude" placeholder="e.g., 122.5621" readonly style="background:#f0f0f0"><button type="button" class="btn btn-map" onclick="openEnhancedMapPopup()" style="margin-top: 5px; width: 100%;">🗺️ Open Map (Upload GeoJSON)</button></div>
                                 <div class="form-group"><label for="totalArea">Total Area (ha.)</label><input type="text" class="form-control" id="totalArea" placeholder="e.g., 15.5026" required></div>
                                 <div class="form-group"><label for="proposedUse">Proposed Use</label><input type="text" class="form-control" id="proposedUse" placeholder="e.g., Residential-3 Zone" required></div>
                                 <div class="form-group full-width">
@@ -285,7 +312,6 @@
                                     <div><button type="button" class="btn btn-success" onclick="addLandHolding()" style="padding:5px 10px; font-size:0.9rem;">➕ Add Another Property</button><small style="margin-left:10px;">Each property can have its own lot number and area</small></div>
                                     <div id="landHoldingsContainer"></div>
                                 </div>
-                                <div class="form-group"><label for="dateReceived">Date Received</label><input type="date" class="form-control" id="dateReceived"></div>
                                 <div class="form-group"><label for="dateIssued">Date Issued</label><input type="date" class="form-control" id="dateIssued" required></div>
                                 <div class="form-group"><label for="requestedBy">Requested By</label><input type="text" class="form-control" id="requestedBy" placeholder="Name of requester" required></div>
                                 <div class="form-group"><label for="amountPaid">Amount Paid (₱)</label><input type="text" class="form-control" id="amountPaid" placeholder="e.g., 13,680" required></div>
@@ -362,8 +388,6 @@
                             <div style="display:flex; gap:1rem; margin-top:2rem; justify-content:center; flex-wrap:wrap;">
                                 <button type="submit" class="btn btn-success">💾 Save Certification</button>
                                 <button type="button" class="btn btn-primary" onclick="clearZoningForm()">🔄 Clear Form</button>
-                                <button type="button" class="btn btn-cert" onclick="switchZoningView('accomplishment')">📋 View Accomplishment</button>
-                                <button type="button" class="btn btn-print" onclick="printBlankForm()">🖨️ Print Blank Form</button>
                                 <button type="button" class="btn btn-warning" onclick="resetCertificationCounter()">🔄 Reset Counter</button>
                             </div>
                         </form>
@@ -407,10 +431,7 @@
                         </div>
                         <div style="display: flex; justify-content: space-between; margin-top: 1rem;">
                             <button class="btn btn-primary" onclick="switchZoningView('dataEntry')">⬅️ Back to Data Entry</button>
-                            <div>
-                                <button class="btn btn-success" onclick="exportCertificationsToCSV()">📥 Export to CSV</button>
-                                <button class="btn btn-warning" onclick="openReportModal()">📈 Generate Report</button>
-                            </div>
+                            <button class="btn btn-success" onclick="exportCertificationsToCSV()">📥 Export to CSV</button>
                         </div>
                     </div>
                 </div>
@@ -422,10 +443,10 @@
                 <div class="data-section">
                     <div class="section-header"><h3><span aria-hidden="true">📊</span> Planning Reports</h3></div>
                     <div class="stats-grid">
-                        <div class="stat-card" onclick="generateSimpleReport('annual')" role="button" tabindex="0" onkeypress="if(event.key==='Enter'||event.key===' ') generateSimpleReport('annual')"><div class="stat-number" aria-hidden="true">📅</div><div class="stat-label">Annual Report</div></div>
-                        <div class="stat-card" onclick="generateSimpleReport('quarterly')" role="button" tabindex="0" onkeypress="if(event.key==='Enter'||event.key===' ') generateSimpleReport('quarterly')"><div class="stat-number" aria-hidden="true">📆</div><div class="stat-label">Quarterly Report</div></div>
-                        <div class="stat-card" onclick="generateSimpleReport('project')" role="button" tabindex="0" onkeypress="if(event.key==='Enter'||event.key===' ') generateSimpleReport('project')"><div class="stat-number" aria-hidden="true">🏗️</div><div class="stat-label">Project Status</div></div>
-                        <div class="stat-card" onclick="generateSimpleReport('environmental')" role="button" tabindex="0" onkeypress="if(event.key==='Enter'||event.key===' ') generateSimpleReport('environmental')"><div class="stat-number" aria-hidden="true">🌳</div><div class="stat-label">Environmental Report</div></div>
+                        <div class="stat-card" onclick="generateReport('annual')" role="button" tabindex="0" onkeypress="if(event.key==='Enter'||event.key===' ') generateReport('annual')"><div class="stat-number" aria-hidden="true">📅</div><div class="stat-label">Annual Report</div></div>
+                        <div class="stat-card" onclick="generateReport('quarterly')" role="button" tabindex="0" onkeypress="if(event.key==='Enter'||event.key===' ') generateReport('quarterly')"><div class="stat-number" aria-hidden="true">📆</div><div class="stat-label">Quarterly Report</div></div>
+                        <div class="stat-card" onclick="generateReport('project')" role="button" tabindex="0" onkeypress="if(event.key==='Enter'||event.key===' ') generateReport('project')"><div class="stat-number" aria-hidden="true">🏗️</div><div class="stat-label">Project Status</div></div>
+                        <div class="stat-card" onclick="generateReport('environmental')" role="button" tabindex="0" onkeypress="if(event.key==='Enter'||event.key===' ') generateReport('environmental')"><div class="stat-number" aria-hidden="true">🌳</div><div class="stat-label">Environmental Report</div></div>
                     </div>
                 </div>
             </div>
@@ -436,46 +457,10 @@
                     <div id="modalBody"></div>
                 </div>
             </div>
-
-            <!-- Report Modal -->
-            <div id="reportModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="reportModalTitle">
-                <div class="modal-content" style="max-width: 1200px; width: 95%;">
-                    <div class="modal-header">
-                        <h2 id="reportModalTitle">📊 Certification Accomplishment Report</h2>
-                        <button class="close-btn" onclick="closeReportModal()">&times;</button>
-                    </div>
-                    <div id="reportModalBody">
-                        <div style="margin-bottom: 1.5rem;">
-                            <label for="reportMonthFilter">Select Month:</label>
-                            <select id="reportMonthFilter" class="form-control" style="width: auto; display: inline-block; margin-left: 1rem;" onchange="generateReportFromFilter()">
-                                <option value="all">All Months</option>
-                            </select>
-                            <button class="btn btn-primary" onclick="generateReportFromFilter()" style="margin-left: 1rem;">Generate</button>
-                            <button class="btn btn-secondary" onclick="printReport()" style="margin-left: 1rem;">🖨️ Print Report</button>
-                        </div>
-                        <div id="reportSummary" style="margin-bottom: 1rem; padding: 1rem; background: #e9f2f9; border-radius: 8px;">
-                            <!-- Summary will be inserted here -->
-                        </div>
-                        <div style="overflow-x: auto;">
-                            <table class="cert-table" id="reportTable">
-                                <thead>
-                                    <tr>
-                                        <th>Control No.</th><th>Requesting Party</th><th>Certification Issued</th><th>Date Issued</th><th>Report Month</th>
-                                        <th>Owner/Proponents</th><th>Location</th><th>No. of Parcels</th><th>Total Area (ha)</th>
-                                        <th>No. of Days Processed</th><th>On Time / Delayed</th><th>Count_Timeliness</th>
-                                        <th>Longitude</th><th>Latitude</th><th>Remarks</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="reportTableBody"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </main>
 
-    <!-- ENHANCED MAP POPUP MODAL with Clear Coordinates Button -->
+    <!-- ENHANCED MAP POPUP MODAL -->
     <div id="mapPopupModal" class="map-popup-modal">
         <div class="map-popup-content">
             <div class="map-popup-header">
@@ -487,7 +472,6 @@
                 <div class="coord-info">
                     <label>Latitude: <input type="text" id="popupLatitude" readonly placeholder="Click on map"></label>
                     <label>Longitude: <input type="text" id="popupLongitude" readonly placeholder="Click on map"></label>
-                    <button type="button" class="btn btn-danger" onclick="clearSelectedCoordinates()" style="padding: 5px 12px;">🗑️ Clear</button>
                 </div>
                 <div class="layer-panel">
                     <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 10px;">
@@ -526,7 +510,7 @@
 
     <script>
         // ========== CONFIGURATION ==========
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx2oSsKH0Erifbk25yj0ITxqDqFi9xs1USLO02znRRrUOrAAd5eAxEAXaWznDa3rdZSlQ/exec";
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx41FHqkbJumTQvlT5l-LLk8OiojtrW4LAwom6TJnuhzeOEHMg2kV5W4RPPFKE1scP-4w/exec";
 
         // ========== SYNC MECHANISM VARIABLES ==========
         let isGoogleSheetsOnline = true;
@@ -597,46 +581,25 @@
 
         function closeMapPopup() {
             document.getElementById('mapPopupModal').classList.remove('active');
-            // Do NOT clear coordinates here; let user decide with Clear button
-        }
-
-        // NEW: Clear coordinates inside popup and remove marker
-        function clearSelectedCoordinates() {
             document.getElementById('popupLatitude').value = '';
             document.getElementById('popupLongitude').value = '';
             selectedLat = null;
             selectedLng = null;
-            
             if (mapMarker && popupMap) {
                 popupMap.removeLayer(mapMarker);
                 mapMarker = null;
             }
-            showToast('Coordinates cleared', 'info');
         }
 
-        // NEW: Clear coordinates on the main form (Delete button)
-        function clearFormCoordinates() {
-            document.getElementById('latitude').value = '';
-            document.getElementById('longitude').value = '';
-            showToast('Coordinates removed from form', 'info');
-        }
-
-        // Enhanced save: if coordinates are empty in popup, clear main form fields as well
         function saveCoordinatesFromPopup() {
-            const latField = document.getElementById('popupLatitude').value;
-            const lngField = document.getElementById('popupLongitude').value;
-            
-            if (latField && lngField) {
-                document.getElementById('latitude').value = latField;
-                document.getElementById('longitude').value = lngField;
+            if (selectedLat !== null && selectedLng !== null) {
+                document.getElementById('latitude').value = selectedLat.toFixed(6);
+                document.getElementById('longitude').value = selectedLng.toFixed(6);
+                closeMapPopup();
                 showToast('Coordinates saved to form!', 'success');
             } else {
-                // User cleared coordinates, so clear main form fields too
-                document.getElementById('latitude').value = '';
-                document.getElementById('longitude').value = '';
-                showToast('Coordinates cleared from form', 'info');
+                alert('Please click on the map to select coordinates first.');
             }
-            closeMapPopup();
         }
 
         document.getElementById('geojsonFileInput').addEventListener('change', function(e) {
@@ -753,22 +716,17 @@
 
         // ========== ZONING SUBNAV SWITCH ==========
         function switchZoningView(view) {
-            const dataEntryBtn = document.getElementById('dataEntryTab');
-            const accomplishmentBtn = document.getElementById('accomplishmentTab');
-            const dataEntryView = document.getElementById('dataEntryView');
-            const accomplishmentView = document.getElementById('accomplishmentView');
+            // Update active tab styles
+            document.querySelectorAll('.zoning-subnav .subnav-link').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.zoning-view').forEach(v => v.classList.remove('active'));
             
             if (view === 'dataEntry') {
-                dataEntryBtn.classList.add('active');
-                accomplishmentBtn.classList.remove('active');
-                dataEntryView.classList.add('active');
-                accomplishmentView.classList.remove('active');
+                document.querySelector('.subnav-link[onclick*="dataEntry"]').classList.add('active');
+                document.getElementById('dataEntryView').classList.add('active');
             } else {
-                accomplishmentBtn.classList.add('active');
-                dataEntryBtn.classList.remove('active');
-                accomplishmentView.classList.add('active');
-                dataEntryView.classList.remove('active');
-                renderCertificationsTable();
+                document.querySelector('.subnav-link[onclick*="accomplishment"]').classList.add('active');
+                document.getElementById('accomplishmentView').classList.add('active');
+                renderCertificationsTable(); // refresh
                 updateAccomplishmentStats();
             }
         }
@@ -784,9 +742,9 @@
 
         function exportCertificationsToCSV() {
             if (!zoningCertifications.length) { alert('No data to export.'); return; }
-            const headers = ['Certification No.', 'Type', 'Series', 'Parcels', 'Location', 'Total Area', 'Proposed Use', 'Date Issued', 'Date Received', 'Requested By', 'Amount Paid', 'OR No.', 'OR Date', 'Status', 'City', 'Province', 'Approved By', 'Circular No.', 'Approval Date'];
+            const headers = ['Certification No.', 'Type', 'Series', 'Parcels', 'Location', 'Total Area', 'Proposed Use', 'Date Issued', 'Requested By', 'Amount Paid', 'OR No.', 'OR Date', 'Status', 'City', 'Province', 'Approved By', 'Circular No.', 'Approval Date'];
             const rows = zoningCertifications.map(r => [
-                r.certificationNo, r.certificationIssued || '', r.series, r.parcels, r.location, r.totalArea, r.proposedUse, r.dateIssued, r.dateReceived || '', r.requestedBy, r.amountPaid, r.orNo, r.orDate, r.status, r.city, r.province, r.approvedBy, r.circularNo, r.approvalDate
+                r.certificationNo, r.certificationIssued || '', r.series, r.parcels, r.location, r.totalArea, r.proposedUse, r.dateIssued, r.requestedBy, r.amountPaid, r.orNo, r.orDate, r.status, r.city, r.province, r.approvedBy, r.circularNo, r.approvalDate
             ]);
             const csvContent = [headers.join(','), ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g,'""')}"`).join(','))].join('\n');
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -805,7 +763,7 @@
                         const localCounter = JSON.parse(localStorage.getItem('certificationCounter') || '{"lastCertNumber":0}');
                         const nextNumber = localCounter.lastCertNumber + 1;
                         const year = new Date().getFullYear().toString().slice(-2);
-                        const certNumber = `SZC-RVI${year}-${nextNumber.toString().padStart(3, '0')}`;
+                        const certNumber = `SZC${year}-${nextNumber.toString().padStart(3, '0')}`;
                         addToPendingSync('certNumber', 'reserve', { number: nextNumber, certNumber });
                         resolve({ number: nextNumber, certNumber, isOnline: false });
                         return;
@@ -1038,54 +996,13 @@
             try {
                 const response = await fetch(GOOGLE_SCRIPT_URL + '?action=get&data_type=zoning', { method: 'GET' });
                 const data = await response.json();
-                // Handle both object array and 2D array responses
-                if (Array.isArray(data)) {
-                    if (data.length > 0 && Array.isArray(data[0])) {
-                        // 2D array mapping - updated column order with dateReceived
-                        zoningCertifications = data.map(row => ({
-                            certificationNo: row[0] || '',
-                            certificationIssued: row[1] || '',
-                            series: row[2] || '2002',
-                            parcels: row[3] || '',
-                            location: row[4] || '',
-                            latitude: row[5] || '',
-                            longitude: row[6] || '',
-                            totalArea: row[7] || '',
-                            proposedUse: row[8] || '',
-                            landHoldings: (() => { try { return JSON.parse(row[9] || '[]'); } catch { return []; } })(),
-                            dateReceived: row[10] || '',
-                            dateIssued: row[11] || '',
-                            requestedBy: row[12] || '',
-                            amountPaid: row[13] || '',
-                            orNo: row[14] || '',
-                            orDate: row[15] || '',
-                            remarks: row[16] || '',
-                            clupStatus: row[17] || 'approved',
-                            city: row[18] || '',
-                            province: row[19] || '',
-                            approvedBy: row[20] || '',
-                            circularNo: row[21] || '',
-                            approvalDate: row[22] || '',
-                            purpose: row[23] || '',
-                            landClass: row[24] || '',
-                            status: row[25] || 'For Review',
-                            id: row[26] || Date.now(),
-                            timestamp: row[27] || new Date().toLocaleString()
-                        }));
-                    } else {
-                        zoningCertifications = data;
-                    }
-                } else {
-                    zoningCertifications = [];
-                }
-                
+                zoningCertifications = Array.isArray(data) ? data : [];
                 zoningCertifications.forEach(rec => { if (!rec.status) rec.status = 'For Review'; });
                 localStorage.setItem('zoningCertifications', JSON.stringify(zoningCertifications));
                 await updateLocalCounterAfterSync();
                 renderCertificationsTable();
                 updateAccomplishmentStats();
             } catch (error) {
-                console.warn('Falling back to localStorage', error);
                 zoningCertifications = JSON.parse(localStorage.getItem('zoningCertifications') || '[]');
                 zoningCertifications.forEach(rec => { if (!rec.status) rec.status = 'For Review'; });
                 updateCounterFromData();
@@ -1117,7 +1034,7 @@
         }
 
         async function saveZoningRecord(event) {
-            event.preventDefault(); // Ensure default form submission is prevented
+            event.preventDefault();
             const saveBtn = event.submitter;
             const originalText = saveBtn.innerHTML;
             saveBtn.innerHTML = '⏳ Saving...'; saveBtn.disabled = true;
@@ -1133,7 +1050,6 @@
                 const longitude = document.getElementById('longitude').value || '';
                 const totalArea = document.getElementById('totalArea').value;
                 const proposedUse = document.getElementById('proposedUse').value;
-                const dateReceived = document.getElementById('dateReceived').value || '';
                 const dateIssued = document.getElementById('dateIssued').value;
                 const requestedBy = document.getElementById('requestedBy').value;
                 const amountPaid = document.getElementById('amountPaid').value;
@@ -1166,7 +1082,7 @@
                 const record = {
                     id: currentEditingZoningId || Date.now(),
                     certificationNo, certificationIssued, series: document.getElementById('series').value, parcels, location, latitude, longitude, totalArea, proposedUse,
-                    landHoldings, dateReceived, dateIssued, requestedBy, amountPaid, orNo, orDate, remarks, clupStatus,
+                    landHoldings, dateIssued, requestedBy, amountPaid, orNo, orDate, remarks, clupStatus,
                     city, province, approvedBy, circularNo, approvalDate, purpose, landClass, status,
                     timestamp: new Date().toLocaleString()
                 };
@@ -1200,7 +1116,7 @@
                     renderCertificationsTable(); clearZoningForm(); await refreshCertificationNumber();
                     updateAccomplishmentStats();
                     alert(`Saved to Google Sheets! No: ${certificationNo}`);
-                    switchZoningView('accomplishment');
+                    switchZoningView('accomplishment'); // automatically show accomplishment after save
                 } else if (result.duplicate) { alert('Certification number conflict. Try again.'); await refreshCertificationNumber(); }
                 else throw new Error(result.error || 'Save failed');
             } catch (error) { alert('Failed to save: ' + error.message); }
@@ -1236,19 +1152,9 @@
             tbody.innerHTML = filtered.length ? '' : '<tr><td colspan="9" style="text-align:center;">No records found.</td></tr>';
             filtered.forEach(rec => {
                 const row = tbody.insertRow();
-                let displayDate = '—';
-                if (rec.dateIssued && typeof rec.dateIssued === 'string') displayDate = formatDate(rec.dateIssued);
-                row.innerHTML = `
-                    <td>${escapeHtml(rec.certificationNo)}</td>
-                    <td>${escapeHtml(rec.certificationIssued || '—')}</td>
-                    <td>${escapeHtml(rec.parcels)}</td>
-                    <td>${escapeHtml(rec.location)}</td>
-                    <td>${escapeHtml(rec.totalArea)} ha</td>
-                    <td>${displayDate}</td>
-                    <td>${escapeHtml(rec.requestedBy)}</td>
-                    <td><select class="status-dropdown" onchange="updateCertificationStatus(${rec.id}, this.value)"><option value="For Review" ${rec.status==='For Review'?'selected':''}>For Review</option><option value="For RD Signature" ${rec.status==='For RD Signature'?'selected':''}>For RD Signature</option><option value="For Release" ${rec.status==='For Release'?'selected':''}>For Release</option><option value="Released" ${rec.status==='Released'?'selected':''}>Released</option></select></td>
-                    <td><div class="action-btns"><button class="action-btn view" onclick="viewZoningRecord(${rec.id})">👁️</button><button class="action-btn edit" onclick="editZoningRecord(${rec.id})">✏️</button><button class="action-btn print" onclick="printZoningRecord(${rec.id})">🖨️</button><button class="action-btn delete" onclick="deleteZoningRecord(${rec.id})">🗑️</button></div></td>
-                `;
+                row.innerHTML = `<td>${escapeHtml(rec.certificationNo)}</td><td>${escapeHtml(rec.certificationIssued || '—')}</td><td>${escapeHtml(rec.parcels)}</td><td>${escapeHtml(rec.location)}</td><td>${escapeHtml(rec.totalArea)} ha</td><td>${formatDate(rec.dateIssued)}</td><td>${escapeHtml(rec.requestedBy)}</td>
+                <td><select class="status-dropdown" onchange="updateCertificationStatus(${rec.id}, this.value)"><option value="For Review" ${rec.status==='For Review'?'selected':''}>For Review</option><option value="For RD Signature" ${rec.status==='For RD Signature'?'selected':''}>For RD Signature</option><option value="For Release" ${rec.status==='For Release'?'selected':''}>For Release</option><option value="Released" ${rec.status==='Released'?'selected':''}>Released</option></select></td>
+                <td><div class="action-btns"><button class="action-btn view" onclick="viewZoningRecord(${rec.id})">👁️</button><button class="action-btn edit" onclick="editZoningRecord(${rec.id})">✏️</button><button class="action-btn print" onclick="printZoningRecord(${rec.id})">🖨️</button><button class="action-btn delete" onclick="deleteZoningRecord(${rec.id})">🗑️</button></div></td>`;
             });
         }
 
@@ -1275,7 +1181,6 @@
             document.getElementById('longitude').value = rec.longitude || '';
             document.getElementById('totalArea').value = rec.totalArea;
             document.getElementById('proposedUse').value = rec.proposedUse;
-            document.getElementById('dateReceived').value = rec.dateReceived || '';
             document.getElementById('dateIssued').value = rec.dateIssued;
             document.getElementById('requestedBy').value = rec.requestedBy;
             document.getElementById('amountPaid').value = rec.amountPaid;
@@ -1507,188 +1412,8 @@
             setTimeout(() => ps.style.display = 'none', 1000);
         }
 
-        // ========== REPORT GENERATION ==========
-        const PRESCRIBED_DAYS = {
-            'Zoning (Simple)': 5, 'Zoning - Simple': 5,
-            'Zoning DAR (Simple)': 7, 'Zoning - DAR (Simple)': 7,
-            'Zoning DAR (Complex)': 15, 'Zoning - DAR (Complex)': 15,
-            'Locational Clearance': 10,
-            'Reclass Indorsement': 30,
-            'Others': 3
-        };
-        
-        function getPrescribedDays(certType) {
-            if (!certType) return 3;
-            const normalized = certType.trim();
-            if (PRESCRIBED_DAYS.hasOwnProperty(normalized)) return PRESCRIBED_DAYS[normalized];
-            if (normalized.includes('Zoning DAR (Complex)') || normalized.includes('Zoning - DAR (Complex)')) return 15;
-            if (normalized.includes('Zoning DAR (Simple)') || normalized.includes('Zoning - DAR (Simple)')) return 7;
-            if (normalized.includes('Zoning (Simple)') || normalized.includes('Zoning - Simple')) return 5;
-            if (normalized.includes('Locational Clearance')) return 10;
-            if (normalized.includes('Reclass Indorsement')) return 30;
-            return 3;
-        }
-        
-        function openReportModal() {
-            const modal = document.getElementById('reportModal');
-            const monthSelect = document.getElementById('reportMonthFilter');
-            
-            const months = new Set();
-            zoningCertifications.forEach(cert => {
-                if (cert.dateIssued) {
-                    const date = new Date(cert.dateIssued);
-                    if (!isNaN(date.getTime())) {
-                        const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-                        months.add(monthKey);
-                    }
-                }
-            });
-            
-            const sortedMonths = Array.from(months).sort((a,b) => b.localeCompare(a));
-            monthSelect.innerHTML = '<option value="all">All Months</option>';
-            sortedMonths.forEach(monthKey => {
-                const [year, month] = monthKey.split('-');
-                const monthName = new Date(year, month-1).toLocaleString('default', { month: 'long', year: 'numeric' });
-                const option = document.createElement('option');
-                option.value = monthKey;
-                option.textContent = monthName;
-                monthSelect.appendChild(option);
-            });
-            
-            modal.classList.add('active');
-            generateReportFromFilter();
-        }
-        
-        function closeReportModal() {
-            document.getElementById('reportModal').classList.remove('active');
-        }
-        
-        function generateReportFromFilter() {
-            const monthFilter = document.getElementById('reportMonthFilter').value;
-            generateReport(monthFilter);
-        }
-        
-        function generateReport(monthFilter) {
-            let filtered = [...zoningCertifications];
-            if (monthFilter !== 'all') {
-                filtered = filtered.filter(cert => {
-                    if (!cert.dateIssued) return false;
-                    const date = new Date(cert.dateIssued);
-                    if (isNaN(date.getTime())) return false;
-                    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-                    return monthKey === monthFilter;
-                });
-            }
-            
-            filtered.sort((a,b) => new Date(b.dateIssued) - new Date(a.dateIssued));
-            
-            const tbody = document.getElementById('reportTableBody');
-            tbody.innerHTML = '';
-            
-            let totalProcessed = 0;
-            let onTimeCount = 0;
-            
-            filtered.forEach(cert => {
-                const row = tbody.insertRow();
-                
-                const controlNo = cert.certificationNo || '';
-                const requestingParty = cert.requestedBy || '';
-                const certIssued = cert.certificationIssued || '';
-                const dateIssued = cert.dateIssued ? formatDate(cert.dateIssued) : '';
-                const reportMonth = cert.dateIssued ? new Date(cert.dateIssued).toLocaleString('default', { month: 'long', year: 'numeric' }) : '';
-                
-                let owners = '';
-                if (cert.landHoldings && Array.isArray(cert.landHoldings)) {
-                    owners = cert.landHoldings.map(h => h.registeredOwner).filter(Boolean).join(', ');
-                }
-                
-                const location = cert.location || '';
-                const parcels = cert.parcels || '';
-                const totalArea = cert.totalArea || '';
-                
-                let daysProcessed = '';
-                let onTimeDelayed = '';
-                let countTimeliness = '';
-                
-                if (cert.dateReceived && cert.dateIssued) {
-                    const received = new Date(cert.dateReceived);
-                    const issued = new Date(cert.dateIssued);
-                    if (!isNaN(received) && !isNaN(issued) && issued >= received) {
-                        const diffTime = issued - received;
-                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                        daysProcessed = diffDays;
-                        
-                        const prescribed = getPrescribedDays(cert.certificationIssued);
-                        const isOnTime = diffDays <= prescribed;
-                        onTimeDelayed = isOnTime ? 'On Time' : 'Delayed';
-                        countTimeliness = isOnTime ? 1 : 0;
-                        
-                        totalProcessed++;
-                        if (isOnTime) onTimeCount++;
-                    }
-                }
-                
-                const longitude = cert.longitude || '';
-                const latitude = cert.latitude || '';
-                const remarks = cert.remarks || '';
-                
-                row.innerHTML = `
-                    <td>${escapeHtml(controlNo)}</td>
-                    <td>${escapeHtml(requestingParty)}</td>
-                    <td>${escapeHtml(certIssued)}</td>
-                    <td>${dateIssued}</td>
-                    <td>${reportMonth}</td>
-                    <td>${escapeHtml(owners)}</td>
-                    <td>${escapeHtml(location)}</td>
-                    <td>${escapeHtml(parcels)}</td>
-                    <td>${escapeHtml(totalArea)}</td>
-                    <td>${daysProcessed}</td>
-                    <td>${onTimeDelayed}</td>
-                    <td>${countTimeliness}</td>
-                    <td>${escapeHtml(longitude)}</td>
-                    <td>${escapeHtml(latitude)}</td>
-                    <td>${escapeHtml(remarks)}</td>
-                `;
-            });
-            
-            const summaryDiv = document.getElementById('reportSummary');
-            const totalCerts = filtered.length;
-            const percentage = totalProcessed > 0 ? ((onTimeCount / totalProcessed) * 100).toFixed(1) : '0.0';
-            summaryDiv.innerHTML = `
-                <strong>Total Certifications Issued:</strong> ${totalCerts} &nbsp;|&nbsp;
-                <strong>Percentage processed within prescribed period:</strong> ${percentage}% (${onTimeCount} out of ${totalProcessed} with complete data)
-            `;
-        }
-        
-        function printReport() {
-            const reportContent = document.getElementById('reportModalBody').cloneNode(true);
-            const printWindow = window.open('', '_blank', 'width=1200,height=800');
-            printWindow.document.write(`
-                <html>
-                    <head>
-                        <title>Certification Accomplishment Report</title>
-                        <style>
-                            body { font-family: Arial, sans-serif; margin: 20px; }
-                            table { border-collapse: collapse; width: 100%; font-size: 10pt; }
-                            th, td { border: 1px solid #000; padding: 5px; text-align: left; }
-                            th { background: #f2f2f2; }
-                            .summary { margin-bottom: 20px; padding: 10px; background: #e9f2f9; }
-                        </style>
-                    </head>
-                    <body>
-                        <h2>Certification Accomplishment Report</h2>
-                        <div class="summary">${document.getElementById('reportSummary').innerHTML}</div>
-                        ${reportContent.querySelector('table').outerHTML}
-                    </body>
-                </html>
-            `);
-            printWindow.document.close();
-            printWindow.focus();
-            printWindow.print();
-        }
-
         // ========== REPORTS & GENERAL ==========
-        function generateSimpleReport(type) {
+        function generateReport(type) {
             let title='', content='';
             if(type==='annual') { title='Annual Report 2024'; content=`<p>Total Plans: ${clupRecords.length}</p><p>Approved: ${clupRecords.filter(p=>p.Status==='Approved').length}</p>`; }
             else if(type==='quarterly') { title='Q1 2024 Progress'; content='<p>Plans Reviewed: 5</p><p>Projects Started: 3</p>'; }
