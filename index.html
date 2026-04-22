@@ -1472,7 +1472,186 @@
             setTimeout(() => window.print(), 200);
             setTimeout(() => ps.style.display = 'none', 1000);
         }
-
+// ========== REPORT GENERATION ==========
+        const PRESCRIBED_DAYS = {
+            'Zoning (Simple)': 5, 'Zoning - Simple': 5,
+            'Zoning DAR (Simple)': 7, 'Zoning - DAR (Simple)': 7,
+            'Zoning DAR (Complex)': 15, 'Zoning - DAR (Complex)': 15,
+            'Locational Clearance': 10,
+            'Reclass Indorsement': 30,
+            'Others': 3
+        };
+        
+        function getPrescribedDays(certType) {
+            if (!certType) return 3;
+            const normalized = certType.trim();
+            if (PRESCRIBED_DAYS.hasOwnProperty(normalized)) return PRESCRIBED_DAYS[normalized];
+            if (normalized.includes('Zoning DAR (Complex)') || normalized.includes('Zoning - DAR (Complex)')) return 15;
+            if (normalized.includes('Zoning DAR (Simple)') || normalized.includes('Zoning - DAR (Simple)')) return 7;
+            if (normalized.includes('Zoning (Simple)') || normalized.includes('Zoning - Simple')) return 5;
+            if (normalized.includes('Locational Clearance')) return 10;
+            if (normalized.includes('Reclass Indorsement')) return 30;
+            return 3;
+        }
+        
+        function openReportModal() {
+            const modal = document.getElementById('reportModal');
+            const monthSelect = document.getElementById('reportMonthFilter');
+            
+            const months = new Set();
+            zoningCertifications.forEach(cert => {
+                if (cert.dateIssued) {
+                    const date = new Date(cert.dateIssued);
+                    if (!isNaN(date.getTime())) {
+                        const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                        months.add(monthKey);
+                    }
+                }
+            });
+            
+            const sortedMonths = Array.from(months).sort((a,b) => b.localeCompare(a));
+            monthSelect.innerHTML = '<option value="all">All Months</option>';
+            sortedMonths.forEach(monthKey => {
+                const [year, month] = monthKey.split('-');
+                const monthName = new Date(year, month-1).toLocaleString('default', { month: 'long', year: 'numeric' });
+                const option = document.createElement('option');
+                option.value = monthKey;
+                option.textContent = monthName;
+                monthSelect.appendChild(option);
+            });
+            
+            modal.classList.add('active');
+            generateReportFromFilter();
+        }
+        
+        function closeReportModal() {
+            document.getElementById('reportModal').classList.remove('active');
+        }
+        
+        function generateReportFromFilter() {
+            const monthFilter = document.getElementById('reportMonthFilter').value;
+            generateReport(monthFilter);
+        }
+        
+        function generateReport(monthFilter) {
+            let filtered = [...zoningCertifications];
+            if (monthFilter !== 'all') {
+                filtered = filtered.filter(cert => {
+                    if (!cert.dateIssued) return false;
+                    const date = new Date(cert.dateIssued);
+                    if (isNaN(date.getTime())) return false;
+                    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                    return monthKey === monthFilter;
+                });
+            }
+            
+            filtered.sort((a,b) => new Date(b.dateIssued) - new Date(a.dateIssued));
+            
+            const tbody = document.getElementById('reportTableBody');
+            tbody.innerHTML = '';
+            
+            let totalProcessed = 0;
+            let onTimeCount = 0;
+            
+            filtered.forEach(cert => {
+                const row = tbody.insertRow();
+                
+                const controlNo = cert.certificationNo || '';
+                const requestingParty = cert.requestedBy || '';
+                const certIssued = cert.certificationIssued || '';
+                const dateIssued = cert.dateIssued ? formatDate(cert.dateIssued) : '';
+                const reportMonth = cert.dateIssued ? new Date(cert.dateIssued).toLocaleString('default', { month: 'long', year: 'numeric' }) : '';
+                
+                let owners = '';
+                if (cert.landHoldings && Array.isArray(cert.landHoldings)) {
+                    owners = cert.landHoldings.map(h => h.registeredOwner).filter(Boolean).join(', ');
+                }
+                
+                const location = cert.location || '';
+                const parcels = cert.parcels || '';
+                const totalArea = cert.totalArea || '';
+                
+                let daysProcessed = '';
+                let onTimeDelayed = '';
+                let countTimeliness = '';
+                
+                if (cert.dateReceived && cert.dateIssued) {
+                    const received = new Date(cert.dateReceived);
+                    const issued = new Date(cert.dateIssued);
+                    if (!isNaN(received) && !isNaN(issued) && issued >= received) {
+                        const diffTime = issued - received;
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        daysProcessed = diffDays;
+                        
+                        const prescribed = getPrescribedDays(cert.certificationIssued);
+                        const isOnTime = diffDays <= prescribed;
+                        onTimeDelayed = isOnTime ? 'On Time' : 'Delayed';
+                        countTimeliness = isOnTime ? 1 : 0;
+                        
+                        totalProcessed++;
+                        if (isOnTime) onTimeCount++;
+                    }
+                }
+                
+                const longitude = cert.longitude || '';
+                const latitude = cert.latitude || '';
+                const remarks = cert.remarks || '';
+                
+                row.innerHTML = `
+                    <td>${escapeHtml(controlNo)}</td>
+                    <td>${escapeHtml(requestingParty)}</td>
+                    <td>${escapeHtml(certIssued)}</td>
+                    <td>${dateIssued}</td>
+                    <td>${reportMonth}</td>
+                    <td>${escapeHtml(owners)}</td>
+                    <td>${escapeHtml(location)}</td>
+                    <td>${escapeHtml(parcels)}</td>
+                    <td>${escapeHtml(totalArea)}</td>
+                    <td>${daysProcessed}</td>
+                    <td>${onTimeDelayed}</td>
+                    <td>${countTimeliness}</td>
+                    <td>${escapeHtml(longitude)}</td>
+                    <td>${escapeHtml(latitude)}</td>
+                    <td>${escapeHtml(remarks)}</td>
+                `;
+            });
+            
+            const summaryDiv = document.getElementById('reportSummary');
+            const totalCerts = filtered.length;
+            const percentage = totalProcessed > 0 ? ((onTimeCount / totalProcessed) * 100).toFixed(1) : '0.0';
+            summaryDiv.innerHTML = `
+                <strong>Total Certifications Issued:</strong> ${totalCerts} &nbsp;|&nbsp;
+                <strong>Percentage processed within prescribed period:</strong> ${percentage}% (${onTimeCount} out of ${totalProcessed} with complete data)
+            `;
+        }
+        
+        function printReport() {
+            const reportContent = document.getElementById('reportModalBody').cloneNode(true);
+            const printWindow = window.open('', '_blank', 'width=1200,height=800');
+            printWindow.document.write(`
+                <html>
+                    <head>
+                        <title>Certification Accomplishment Report</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; margin: 20px; }
+                            table { border-collapse: collapse; width: 100%; font-size: 10pt; }
+                            th, td { border: 1px solid #000; padding: 5px; text-align: left; }
+                            th { background: #f2f2f2; }
+                            .summary { margin-bottom: 20px; padding: 10px; background: #e9f2f9; }
+                        </style>
+                    </head>
+                    <body>
+                        <h2>Certification Accomplishment Report</h2>
+                        <div class="summary">${document.getElementById('reportSummary').innerHTML}</div>
+                        ${reportContent.querySelector('table').outerHTML}
+                    </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.focus();
+            printWindow.print();
+        }
+        
         // ========== REPORTS & GENERAL ==========
         function generateReport(type) {
             let title='', content='';
