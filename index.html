@@ -461,7 +461,7 @@
     </main>
 
     <!-- ENHANCED MAP POPUP MODAL -->
-    <div id="mapPopupModal" class="map-popup-modal">
+   <div id="mapPopupModal" class="map-popup-modal">
         <div class="map-popup-content">
             <div class="map-popup-header">
                 <h3>🗺️ Select Location & Manage Zoning Layers</h3>
@@ -472,6 +472,7 @@
                 <div class="coord-info">
                     <label>Latitude: <input type="text" id="popupLatitude" readonly placeholder="Click on map"></label>
                     <label>Longitude: <input type="text" id="popupLongitude" readonly placeholder="Click on map"></label>
+                    <button type="button" class="btn btn-danger" onclick="clearSelectedCoordinates()" style="padding: 5px 12px;">🗑️ Clear</button>
                 </div>
                 <div class="layer-panel">
                     <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 10px;">
@@ -491,6 +492,7 @@
             </div>
         </div>
     </div>
+
 
     <div id="printSection" style="display:none;"></div>
     <div id="syncLoading" class="sync-loading">
@@ -581,25 +583,46 @@
 
         function closeMapPopup() {
             document.getElementById('mapPopupModal').classList.remove('active');
+            // Do NOT clear coordinates here; let user decide with Clear button
+        }
+
+        // NEW: Clear coordinates inside popup and remove marker
+        function clearSelectedCoordinates() {
             document.getElementById('popupLatitude').value = '';
             document.getElementById('popupLongitude').value = '';
             selectedLat = null;
             selectedLng = null;
+            
             if (mapMarker && popupMap) {
                 popupMap.removeLayer(mapMarker);
                 mapMarker = null;
             }
+            showToast('Coordinates cleared', 'info');
         }
 
+        // NEW: Clear coordinates on the main form (Delete button)
+        function clearFormCoordinates() {
+            document.getElementById('latitude').value = '';
+            document.getElementById('longitude').value = '';
+            showToast('Coordinates removed from form', 'info');
+        }
+
+        // Enhanced save: if coordinates are empty in popup, clear main form fields as well
         function saveCoordinatesFromPopup() {
-            if (selectedLat !== null && selectedLng !== null) {
-                document.getElementById('latitude').value = selectedLat.toFixed(6);
-                document.getElementById('longitude').value = selectedLng.toFixed(6);
-                closeMapPopup();
+            const latField = document.getElementById('popupLatitude').value;
+            const lngField = document.getElementById('popupLongitude').value;
+            
+            if (latField && lngField) {
+                document.getElementById('latitude').value = latField;
+                document.getElementById('longitude').value = lngField;
                 showToast('Coordinates saved to form!', 'success');
             } else {
-                alert('Please click on the map to select coordinates first.');
+                // User cleared coordinates, so clear main form fields too
+                document.getElementById('latitude').value = '';
+                document.getElementById('longitude').value = '';
+                showToast('Coordinates cleared from form', 'info');
             }
+            closeMapPopup();
         }
 
         document.getElementById('geojsonFileInput').addEventListener('change', function(e) {
@@ -703,7 +726,6 @@
                 } catch(e) {}
             }
         }
-
         // ========== HELPER FUNCTIONS ==========
         function escapeHtml(str) { if (str == null) return ''; return String(str).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]); }
         function formatDate(dateStr) { if (!dateStr || dateStr === 'Pending') return dateStr; const clean = dateStr.split(' ')[0]; if (clean.match(/^\d{4}-\d{2}-\d{2}$/)) { const d = new Date(clean); if (!isNaN(d.getTime())) return d.toLocaleDateString('en-US', {year:'numeric', month:'short', day:'numeric'}); } return dateStr; }
