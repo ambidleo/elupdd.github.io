@@ -720,9 +720,320 @@ body {
         z-index: 10000;
     }
 }
+        /* ===== LOGIN/REGISTRATION MODAL STYLES ===== */
+.auth-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    z-index: 20000;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(5px);
+}
+
+.auth-modal.active {
+    display: flex;
+}
+
+.auth-container {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    max-width: 450px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    animation: modalSlideIn 0.3s ease;
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.auth-header h2 {
+    color: var(--primary-dark);
+    font-size: 1.8rem;
+}
+
+.auth-header p {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.auth-tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid #e0e7ff;
+}
+
+.auth-tab {
+    flex: 1;
+    padding: 0.8rem;
+    background: none;
+    border: none;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    color: #666;
+    transition: all 0.3s;
+}
+
+.auth-tab.active {
+    color: var(--primary);
+    border-bottom: 3px solid var(--accent-accessible);
+}
+
+.auth-form {
+    display: none;
+}
+
+.auth-form.active {
+    display: block;
+}
+
+.auth-form .form-group {
+    margin-bottom: 1.5rem;
+}
+
+.auth-form label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--primary-dark);
+    font-weight: 600;
+}
+
+.auth-form input {
+    width: 100%;
+    padding: 0.8rem;
+    border: 2px solid #e0e7ff;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: all 0.3s;
+}
+
+.auth-form input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.auth-btn {
+    width: 100%;
+    padding: 0.8rem;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.auth-btn:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+}
+
+.auth-footer {
+    text-align: center;
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+}
+
+.auth-footer a {
+    color: var(--primary);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.auth-footer a:hover {
+    text-decoration: underline;
+}
+
+/* User info bar */
+.user-info-bar {
+    position: fixed;
+    top: 10px;
+    right: 20px;
+    background: white;
+    padding: 8px 15px;
+    border-radius: 30px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 1001;
+    font-size: 0.9rem;
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    background: var(--primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+}
+
+.user-name {
+    font-weight: 600;
+    color: var(--primary-dark);
+}
+
+.user-role {
+    font-size: 0.75rem;
+    color: #666;
+}
+
+.logout-btn {
+    background: none;
+    border: none;
+    color: #dc3545;
+    cursor: pointer;
+    font-size: 0.85rem;
+    padding: 4px 8px;
+    border-radius: 5px;
+    transition: all 0.2s;
+}
+
+.logout-btn:hover {
+    background: #dc3545;
+    color: white;
+}
+
+/* Role-based visibility */
+.role-admin, .role-staff, .role-viewer {
+    display: none;
+}
+
+body[data-role="admin"] .role-admin,
+body[data-role="staff"] .role-staff,
+body[data-role="viewer"] .role-viewer {
+    display: inline-flex;
+}
+
+/* Protect sections based on role */
+body[data-role="viewer"] .btn-delete,
+body[data-role="viewer"] .action-btn.delete,
+body[data-role="viewer"] #dataEntryView .btn-danger {
+    display: none !important;
+}
+
+body[data-role="viewer"] .btn-success[onclick*="addLandHolding"],
+body[data-role="viewer"] .btn-warning,
+body[data-role="viewer"] .reset-counter-btn {
+    display: none !important;
+}
+
+@media (max-width: 768px) {
+    .user-info-bar {
+        top: 5px;
+        right: 10px;
+        padding: 5px 10px;
+        font-size: 0.75rem;
+    }
+    
+    .user-avatar {
+        width: 28px;
+        height: 28px;
+        font-size: 0.75rem;
+    }
+    
+    .auth-container {
+        padding: 1.5rem;
+        margin: 1rem;
+    }
+}
     </style>
 </head>
 <body>
+    <!-- User Info Bar (hidden until logged in) -->
+<div id="userInfoBar" class="user-info-bar" style="display: none;">
+    <div class="user-avatar" id="userAvatar"></div>
+    <div>
+        <div class="user-name" id="userName"></div>
+        <div class="user-role" id="userRole"></div>
+    </div>
+    <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+</div>
+
+<!-- Login/Register Modal -->
+<div id="authModal" class="auth-modal">
+    <div class="auth-container">
+        <div class="auth-header">
+            <h2>🏛️ ELUPDD Region VI</h2>
+            <p>Environmental Land Use and Urban Planning Development Division</p>
+        </div>
+        
+        <div class="auth-tabs">
+            <button class="auth-tab active" onclick="switchAuthTab('login')">🔐 Login</button>
+            <button class="auth-tab" onclick="switchAuthTab('register')">📝 Register</button>
+        </div>
+        
+        <!-- Login Form -->
+        <div id="loginForm" class="auth-form active">
+            <form onsubmit="return loginUser(event)">
+                <div class="form-group">
+                    <label>📧 Email Address</label>
+                    <input type="email" id="loginEmail" required placeholder="Enter your email">
+                </div>
+                <div class="form-group">
+                    <label>🔒 Password</label>
+                    <input type="password" id="loginPassword" required placeholder="Enter your password">
+                </div>
+                <button type="submit" class="auth-btn">Login</button>
+            </form>
+        </div>
+        
+        <!-- Register Form -->
+        <div id="registerForm" class="auth-form">
+            <form onsubmit="return registerUser(event)">
+                <div class="form-group">
+                    <label>👤 Full Name</label>
+                    <input type="text" id="regFullName" required placeholder="Enter your full name">
+                </div>
+                <div class="form-group">
+                    <label>📧 Email Address</label>
+                    <input type="email" id="regEmail" required placeholder="Enter your email">
+                </div>
+                <div class="form-group">
+                    <label>🔒 Password</label>
+                    <input type="password" id="regPassword" required placeholder="Min. 6 characters">
+                </div>
+                <div class="form-group">
+                    <label>🔒 Confirm Password</label>
+                    <input type="password" id="regConfirmPassword" required placeholder="Confirm your password">
+                </div>
+                <div class="form-group">
+                    <label>👔 Role</label>
+                    <select id="regRole" class="form-control">
+                        <option value="viewer">Viewer (View Only)</option>
+                        <option value="staff">Staff (Can Add/Edit)</option>
+                        <option value="admin">Admin (Full Access)</option>
+                    </select>
+                </div>
+                <div class="form-group" id="adminCodeGroup" style="display: none;">
+                    <label>🔑 Admin Registration Code</label>
+                    <input type="password" id="adminCode" placeholder="Enter admin code">
+                    <small>Required for admin registration</small>
+                </div>
+                <button type="submit" class="auth-btn">Create Account</button>
+            </form>
+        </div>
+        
+        <div class="auth-footer">
+            <a onclick="showForgotPassword()">Forgot Password?</a>
+        </div>
+    </div>
+</div>
     <a href="#main-content" class="skip-link">Skip to main content</a>
 
     <header role="banner">
@@ -2289,29 +2600,310 @@ function exportCertificationsToExcel() {
         }
 
         // ========== INITIAL LOAD ==========
-        window.onload = async () => {
-            loadCounter();
-            await fetchCertifications();
-            await fetchClupRecords();
-            setupClupCascadeEvents();
-            await refreshCertificationNumber();
-            if (document.getElementById('landHoldingsContainer').children.length === 0) addLandHolding();
-            setupConnectionMonitoring();
-            addSyncStatusIndicator();
-            loadPendingSyncData();
-            setTimeout(() => { if (isGoogleSheetsOnline) syncAllPendingData(); }, 3000);
+        // Update your existing window.onload
+window.onload = async () => {
+    loadCounter();
+    await fetchCertifications();
+    await fetchClupRecords();
+    setupClupCascadeEvents();
+    await refreshCertificationNumber();
+    if (document.getElementById('landHoldingsContainer').children.length === 0) addLandHolding();
+    setupConnectionMonitoring();
+    addSyncStatusIndicator();
+    loadPendingSyncData();
+    setTimeout(() => { if (isGoogleSheetsOnline) syncAllPendingData(); }, 3000);
+    
+    // Check authentication
+    checkSession();
+};
+        // ========== AUTHENTICATION SYSTEM ==========
+const ADMIN_REGISTRATION_CODE = "ELUPDD2024"; // Change this to your secret code
+
+// Load users from localStorage or initialize default admin
+let users = [];
+
+function initializeUsers() {
+    const storedUsers = localStorage.getItem('elupdd_users');
+    if (storedUsers) {
+        users = JSON.parse(storedUsers);
+    } else {
+        // Create default admin account
+        const defaultAdmin = {
+            id: Date.now(),
+            fullName: "Administrator",
+            email: "admin@elupdd.gov.ph",
+            password: btoa("admin123"), // Base64 encoded
+            role: "admin",
+            createdAt: new Date().toISOString()
         };
+        users = [defaultAdmin];
+        localStorage.setItem('elupdd_users', JSON.stringify(users));
+    }
+}
 
-        function loadCounter() {
-            const saved = localStorage.getItem('certificationCounter');
-            if (saved) { try { certificationCounter = JSON.parse(saved); } catch(e) { certificationCounter.lastCertNumber = 0; } }
-            else certificationCounter.lastCertNumber = 0;
-            localStorage.setItem('certificationCounter', JSON.stringify(certificationCounter));
+function showAuthModal() {
+    document.getElementById('authModal').classList.add('active');
+}
+
+function closeAuthModal() {
+    document.getElementById('authModal').classList.remove('active');
+}
+
+function switchAuthTab(tab) {
+    const tabs = document.querySelectorAll('.auth-tab');
+    const forms = document.querySelectorAll('.auth-form');
+    
+    tabs.forEach(t => t.classList.remove('active'));
+    forms.forEach(f => f.classList.remove('active'));
+    
+    if (tab === 'login') {
+        tabs[0].classList.add('active');
+        document.getElementById('loginForm').classList.add('active');
+    } else {
+        tabs[1].classList.add('active');
+        document.getElementById('registerForm').classList.add('active');
+    }
+}
+
+// Show/hide admin code field based on role selection
+document.getElementById('regRole')?.addEventListener('change', function() {
+    const adminCodeGroup = document.getElementById('adminCodeGroup');
+    if (this.value === 'admin') {
+        adminCodeGroup.style.display = 'block';
+    } else {
+        adminCodeGroup.style.display = 'none';
+    }
+});
+
+function registerUser(event) {
+    event.preventDefault();
+    
+    const fullName = document.getElementById('regFullName').value.trim();
+    const email = document.getElementById('regEmail').value.trim();
+    const password = document.getElementById('regPassword').value;
+    const confirmPassword = document.getElementById('regConfirmPassword').value;
+    let role = document.getElementById('regRole').value;
+    const adminCode = document.getElementById('adminCode')?.value;
+    
+    // Validation
+    if (!fullName || !email || !password) {
+        showToast('All fields are required', 'error');
+        return false;
+    }
+    
+    if (password !== confirmPassword) {
+        showToast('Passwords do not match', 'error');
+        return false;
+    }
+    
+    if (password.length < 6) {
+        showToast('Password must be at least 6 characters', 'error');
+        return false;
+    }
+    
+    // Check if email already exists
+    if (users.find(u => u.email === email)) {
+        showToast('Email already registered', 'error');
+        return false;
+    }
+    
+    // Verify admin code if trying to register as admin
+    if (role === 'admin' && adminCode !== ADMIN_REGISTRATION_CODE) {
+        showToast('Invalid admin registration code', 'error');
+        return false;
+    }
+    
+    // Create new user
+    const newUser = {
+        id: Date.now(),
+        fullName: fullName,
+        email: email,
+        password: btoa(password), // Simple encoding (in production, use proper hashing)
+        role: role,
+        createdAt: new Date().toISOString()
+    };
+    
+    users.push(newUser);
+    localStorage.setItem('elupdd_users', JSON.stringify(users));
+    
+    showToast('Registration successful! Please login.', 'success');
+    switchAuthTab('login');
+    
+    // Clear form
+    document.getElementById('regFullName').value = '';
+    document.getElementById('regEmail').value = '';
+    document.getElementById('regPassword').value = '';
+    document.getElementById('regConfirmPassword').value = '';
+    
+    return false;
+}
+
+function loginUser(event) {
+    event.preventDefault();
+    
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    
+    const user = users.find(u => u.email === email);
+    
+    if (!user || atob(user.password) !== password) {
+        showToast('Invalid email or password', 'error');
+        return false;
+    }
+    
+    // Store session
+    const session = {
+        userId: user.id,
+        fullName: user.fullName,
+        email: user.email,
+        role: user.role,
+        loginTime: new Date().toISOString()
+    };
+    
+    localStorage.setItem('elupdd_session', JSON.stringify(session));
+    sessionStorage.setItem('elupdd_session', JSON.stringify(session));
+    
+    // Update UI
+    updateUserInterface(session);
+    closeAuthModal();
+    showToast(`Welcome back, ${user.fullName}!`, 'success');
+    
+    // Clear login form
+    document.getElementById('loginEmail').value = '';
+    document.getElementById('loginPassword').value = '';
+    
+    return false;
+}
+
+function updateUserInterface(session) {
+    document.getElementById('userInfoBar').style.display = 'flex';
+    document.getElementById('userAvatar').textContent = session.fullName.charAt(0).toUpperCase();
+    document.getElementById('userName').textContent = session.fullName;
+    document.getElementById('userRole').textContent = session.role === 'admin' ? 'Administrator' : (session.role === 'staff' ? 'Staff' : 'Viewer');
+    
+    // Set role attribute on body for CSS-based visibility
+    document.body.setAttribute('data-role', session.role);
+    
+    // Hide/show elements based on role
+    applyRoleRestrictions(session.role);
+}
+
+function applyRoleRestrictions(role) {
+    // For viewers: hide delete buttons and edit controls
+    if (role === 'viewer') {
+        // Disable editing in forms
+        const formControls = document.querySelectorAll('#zoningForm .form-control:not([readonly])');
+        formControls.forEach(ctrl => {
+            if (ctrl.id !== 'certificationNo' && ctrl.id !== 'series' && ctrl.id !== 'latitude' && ctrl.id !== 'longitude') {
+                ctrl.readOnly = true;
+                ctrl.disabled = true;
+            }
+        });
+        
+        // Hide delete buttons
+        const deleteBtns = document.querySelectorAll('.action-btn.delete, .btn-danger:not(.map-popup-close)');
+        deleteBtns.forEach(btn => btn.style.display = 'none');
+        
+        // Disable status dropdown
+        const statusDropdowns = document.querySelectorAll('.status-dropdown');
+        statusDropdowns.forEach(dropdown => dropdown.disabled = true);
+        
+        // Hide add buttons
+        const addButtons = document.querySelectorAll('[onclick*="addLandHolding"], [onclick*="resetCertificationCounter"]');
+        addButtons.forEach(btn => btn.style.display = 'none');
+        
+        // Hide save button
+        const saveBtn = document.querySelector('button[type="submit"]');
+        if (saveBtn) saveBtn.style.display = 'none';
+    } else if (role === 'staff') {
+        // Staff can edit but not delete
+        const deleteBtns = document.querySelectorAll('.action-btn.delete');
+        deleteBtns.forEach(btn => btn.style.display = 'none');
+    }
+}
+
+function logout() {
+    localStorage.removeItem('elupdd_session');
+    sessionStorage.removeItem('elupdd_session');
+    document.getElementById('userInfoBar').style.display = 'none';
+    document.body.removeAttribute('data-role');
+    
+    // Re-enable all controls
+    const formControls = document.querySelectorAll('#zoningForm .form-control');
+    formControls.forEach(ctrl => {
+        ctrl.readOnly = false;
+        ctrl.disabled = false;
+    });
+    
+    const saveBtn = document.querySelector('button[type="submit"]');
+    if (saveBtn) saveBtn.style.display = 'flex';
+    
+    const deleteBtns = document.querySelectorAll('.action-btn.delete, .btn-danger');
+    deleteBtns.forEach(btn => btn.style.display = 'flex');
+    
+    const statusDropdowns = document.querySelectorAll('.status-dropdown');
+    statusDropdowns.forEach(dropdown => dropdown.disabled = false);
+    
+    const addButtons = document.querySelectorAll('[onclick*="addLandHolding"], [onclick*="resetCertificationCounter"]');
+    addButtons.forEach(btn => btn.style.display = 'flex');
+    
+    showToast('Logged out successfully', 'info');
+    showAuthModal();
+}
+
+function checkSession() {
+    const session = localStorage.getItem('elupdd_session') || sessionStorage.getItem('elupdd_session');
+    if (session) {
+        try {
+            const userSession = JSON.parse(session);
+            updateUserInterface(userSession);
+            return true;
+        } catch(e) {}
+    }
+    showAuthModal();
+    return false;
+}
+
+function showForgotPassword() {
+    showToast('Please contact administrator to reset your password', 'info');
+}
+
+// Protect sensitive functions
+const originalDeleteZoningRecord = deleteZoningRecord;
+window.deleteZoningRecord = function(id) {
+    const session = localStorage.getItem('elupdd_session');
+    if (session) {
+        const user = JSON.parse(session);
+        if (user.role === 'admin' || user.role === 'staff') {
+            originalDeleteZoningRecord(id);
+        } else {
+            showToast('You do not have permission to delete records', 'error');
         }
+    } else {
+        showAuthModal();
+    }
+};
 
-        const styleSheet = document.createElement('style');
-        styleSheet.textContent = `@keyframes slideInRight{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}@keyframes slideOutRight{from{transform:translateX(0);opacity:1}to{transform:translateX(100%);opacity:0}}`;
-        document.head.appendChild(styleSheet);
+// Override save function to check permissions
+const originalSaveZoningRecord = saveZoningRecord;
+window.saveZoningRecord = function(event) {
+    const session = localStorage.getItem('elupdd_session');
+    if (session) {
+        const user = JSON.parse(session);
+        if (user.role === 'admin' || user.role === 'staff') {
+            return originalSaveZoningRecord(event);
+        } else {
+            showToast('You do not have permission to save records', 'error');
+            return false;
+        }
+    } else {
+        showAuthModal();
+        return false;
+    }
+};
+
+// Initialize on page load
+initializeUsers();
     </script>
 </body>
 </html>
