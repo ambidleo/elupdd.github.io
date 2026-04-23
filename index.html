@@ -28,7 +28,13 @@
         .btn-warning { background: var(--accent-accessible); color: var(--primary-dark); }
         .btn-warning:hover { background: #b88914; }
         header { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); color: white; padding: 1.5rem 2rem; border-bottom: 5px solid var(--accent-accessible); position: relative; overflow: hidden; display: flex; align-items: center; gap: 2rem; }
-        .logo-container { flex-shrink: 0; }
+       .logo-container { 
+    flex-shrink: 0; 
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
         .logo { background: white; border-radius: 12px; padding: 0.8rem 1.5rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); border: 2px solid var(--accent-accessible); width: 180px; height: 90px; }
         .logo span { font-size: 1.2rem; font-weight: bold; color: var(--primary-dark); }
         .header-content { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
@@ -212,7 +218,7 @@
         @media (max-width: 768px) {
             header { flex-direction: column; text-align: center; gap: 1rem; padding: 1rem; }
             .logo-container { width: 100%; display: flex; justify-content: center; }
-            .logo { width: 150px; height: 75px; }
+         .logo { width: 60px; height: 60px; }
             .header-content h1 { font-size: 1.5rem; }
             .header-content h2 { font-size: 1rem; }
             .nav-bar ul { flex-direction: column; gap: 0.5rem; }
@@ -1005,6 +1011,10 @@ body:not([data-role]) .auth-modal {
     display: flex !important;
     z-index: 99999;
 }
+        .logo-container img {
+    background: transparent !important;
+    mix-blend-mode: multiply;
+}
     </style>
 </head>
 <body>
@@ -1090,9 +1100,9 @@ body:not([data-role]) .auth-modal {
     <a href="#main-content" class="skip-link">Skip to main content</a>
 
     <header role="banner">
-        <div class="logo-container">
-           <img src="DHSUD LOGO.png" alt="DHSUD Logo" style="width: 100px; height: 100px; object-fit: contain;">
-        </div>
+       <div class="logo-container" style="background: transparent; display: flex; align-items: center; justify-content: center;">
+   <img src="DHSUD LOGO.png" alt="DHSUD Logo" style="width: 70px; height: 70px; object-fit: contain; filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.15)); background: transparent;">
+</div>
         <div class="header-content">
             <h1>ENVIRONMENTAL LAND USE AND URBAN PLANNING</h1>
             <h2>DEVELOPMENT DIVISION - REGION VI</h2>
