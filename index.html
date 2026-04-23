@@ -552,7 +552,7 @@
 
     <script>
         // ========== CONFIGURATION ==========
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxvWRZyzYB64jGMikEmsGsHVDJoQ5uM9JFdd94PUq8LLOH3VrpmiDScc8taicSPGF_q/exec";
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyuDV872TKqVd0o2ZBGOf38wqM6lWfIGcxhjlWjWEkPrSl6swVeEf1flsrPQue7s1oSuw/exec";
 
         // ========== SYNC MECHANISM VARIABLES ==========
         let isGoogleSheetsOnline = true;
@@ -1221,7 +1221,7 @@
             return false;
         }
 
-       function updateCertificationStatus(recordId, newStatus) {
+      function updateCertificationStatus(recordId, newStatus) {
     const record = zoningCertifications.find(r => r.id === recordId);
     if (record) {
         // Update local status
@@ -1231,13 +1231,14 @@
         // Sync with Google Sheets if online, otherwise queue
         checkGoogleSheetsConnection().then(isOnline => {
             if (isOnline) {
+                // Send the FULL record for update, not just status
                 const params = new URLSearchParams();
                 params.append('action', 'update');
                 params.append('data_type', 'zoning');
-                params.append('data', JSON.stringify({ id: recordId, status: newStatus }));
+                params.append('data', JSON.stringify(record)); // Send full record
                 fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: params }).catch(console.warn);
             } else {
-                addToPendingSync('zoning', 'update', { id: recordId, status: newStatus });
+                addToPendingSync('zoning', 'update', record); // Send full record
             }
         });
         
@@ -1251,7 +1252,6 @@
         showToast(`Status updated to "${newStatus}"`, 'success');
     }
 }
-
         function renderCertificationsTable() {
             const tbody = document.getElementById('certificationsTableBody');
             if (!tbody) return;
