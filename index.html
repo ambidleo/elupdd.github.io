@@ -963,6 +963,48 @@ body[data-role] .container {
     pointer-events: auto;
     transition: opacity 0.3s ease;
 }
+        /* Completely hide main content until authenticated */
+body:not([data-role]) .container,
+body:not([data-role]) header,
+body:not([data-role]) .nav-bar,
+body:not([data-role]) footer {
+    display: none !important;
+}
+
+/* Show only the auth modal overlay when not logged in */
+body:not([data-role]) .auth-modal {
+    display: flex !important;
+}
+
+/* When logged in, show everything normally */
+body[data-role] .auth-modal {
+    display: none !important;
+}
+
+body[data-role] .container,
+body[data-role] header,
+body[data-role] .nav-bar,
+body[data-role] footer {
+    display: block;
+}
+
+/* Fix for nav-bar display when logged in */
+body[data-role] .nav-bar {
+    display: block;
+}
+
+body[data-role] .container {
+    display: block;
+}
+        /* Ensure auth modal is visible when not logged in */
+.auth-modal {
+    display: none;
+}
+
+body:not([data-role]) .auth-modal {
+    display: flex !important;
+    z-index: 99999;
+}
     </style>
 </head>
 <body>
@@ -2775,15 +2817,15 @@ function loginUser(event) {
     localStorage.setItem('elupdd_session', JSON.stringify(session));
     sessionStorage.setItem('elupdd_session', JSON.stringify(session));
     
+    // Set the data-role attribute to show content
+    document.body.setAttribute('data-role', user.role);
+    
     updateUserInterface(session);
     closeAuthModal();
     showToast(`Welcome back, ${user.fullName}!`, 'success');
     
     document.getElementById('loginEmail').value = '';
     document.getElementById('loginPassword').value = '';
-    
-    // Refresh the page to show all content
-    setTimeout(() => location.reload(), 500);
     
     return false;
 }
@@ -2831,9 +2873,10 @@ function applyRoleRestrictions(role) {
 function logout() {
     localStorage.removeItem('elupdd_session');
     sessionStorage.removeItem('elupdd_session');
+    document.body.removeAttribute('data-role'); // This hides the content
     document.getElementById('userInfoBar').style.display = 'none';
-    document.body.removeAttribute('data-role');
     
+    // Reset form controls
     const formControls = document.querySelectorAll('#zoningForm .form-control');
     formControls.forEach(ctrl => {
         ctrl.readOnly = false;
@@ -2855,7 +2898,6 @@ function logout() {
     showToast('Logged out successfully', 'info');
     showAuthModal();
 }
-
 function checkSession() {
     initializeUsers();
     const session = localStorage.getItem('elupdd_session') || sessionStorage.getItem('elupdd_session');
@@ -2863,16 +2905,17 @@ function checkSession() {
         try {
             const userSession = JSON.parse(session);
             updateUserInterface(userSession);
+            // Show all content
+            document.body.setAttribute('data-role', userSession.role);
             return true;
         } catch(e) {}
     }
-    // Hide main content until login
-    const container = document.querySelector('.container');
-    if (container) container.style.opacity = '0.5';
+    // Remove data-role to hide content
+    document.body.removeAttribute('data-role');
+    // Show auth modal
     showAuthModal();
     return false;
 }
-
 function showForgotPassword() {
     showToast('Please contact administrator to reset your password', 'info');
 }
