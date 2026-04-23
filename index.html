@@ -433,7 +433,7 @@
                         <div style="display: flex; justify-content: space-between; margin-top: 1rem;">
                             <button class="btn btn-primary" onclick="switchZoningView('dataEntry')">⬅️ Back to Data Entry</button>
                             <div>
-                                <button class="btn btn-success" onclick="exportCertificationsToCSV()">📥 Export to CSV</button>
+                               <button class="btn btn-success" onclick="exportCertificationsToExcel()">📥 Export to Excel</button>
                                 <button class="btn btn-warning" onclick="openReportModal()">📈 Generate Report</button>
                             </div>
                         </div>
@@ -802,19 +802,89 @@
             document.getElementById('pendingCertCount').textContent = pending;
         }
 
-        function exportCertificationsToCSV() {
-            if (!zoningCertifications.length) { alert('No data to export.'); return; }
-            const headers = ['Certification No.', 'Type', 'Series', 'Parcels', 'Location', 'Total Area', 'Proposed Use', 'Date Issued', 'Requested By', 'Amount Paid', 'OR No.', 'OR Date', 'Status', 'City', 'Province', 'Approved By', 'Circular No.', 'Approval Date'];
-            const rows = zoningCertifications.map(r => [
-                r.certificationNo, r.certificationIssued || '', r.series, r.parcels, r.location, r.totalArea, r.proposedUse, r.dateIssued, r.requestedBy, r.amountPaid, r.orNo, r.orDate, r.status, r.city, r.province, r.approvedBy, r.circularNo, r.approvalDate
-            ]);
-            const csvContent = [headers.join(','), ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g,'""')}"`).join(','))].join('\n');
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `zoning_accomplishment_${new Date().toISOString().slice(0,10)}.csv`;
-            link.click();
-        }
+       function exportCertificationsToExcel() {
+    if (!zoningCertifications.length) { 
+        alert('No data to export.'); 
+        return; 
+    }
+    
+    // Headers with proper formatting
+    const headers = [
+        'Certification No.', 'Type', 'Series', 'No. of Parcels', 'Location', 
+        'Latitude', 'Longitude', 'Total Area (ha)', 'Proposed Use', 
+        'Date Received', 'Date Issued', 'Requested By', 'Amount Paid (₱)', 
+        'OR No.', 'OR Date', 'Status', 'City/Municipality', 'Province', 
+        'Approved By', 'Circular/Res. No.', 'Approval Date', 'Purpose', 
+        'Land Class', 'Remarks'
+    ];
+    
+    // Map certification data to rows
+    const rows = zoningCertifications.map(r => [
+        r.certificationNo || '',
+        r.certificationIssued || '',
+        r.series || '',
+        r.parcels || '',
+        r.location || '',
+        r.latitude || '',
+        r.longitude || '',
+        r.totalArea || '',
+        r.proposedUse || '',
+        r.dateReceived || '',
+        r.dateIssued || '',
+        r.requestedBy || '',
+        r.amountPaid || '',
+        r.orNo || '',
+        r.orDate || '',
+        r.status || 'For Review',
+        r.city || '',
+        r.province || '',
+        r.approvedBy || '',
+        r.circularNo || '',
+        r.approvalDate || '',
+        r.purpose || '',
+        r.landClass || '',
+        r.remarks || ''
+    ]);
+    
+    // Create worksheet
+    const wsData = [headers, ...rows];
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    
+    // Set column widths for better readability
+    ws['!cols'] = [
+        { wch: 18 }, // Cert No.
+        { wch: 25 }, // Type
+        { wch: 8 },  // Series
+        { wch: 15 }, // Parcels
+        { wch: 40 }, // Location
+        { wch: 12 }, // Latitude
+        { wch: 12 }, // Longitude
+        { wch: 12 }, // Total Area
+        { wch: 20 }, // Proposed Use
+        { wch: 12 }, // Date Received
+        { wch: 12 }, // Date Issued
+        { wch: 25 }, // Requested By
+        { wch: 12 }, // Amount Paid
+        { wch: 15 }, // OR No.
+        { wch: 12 }, // OR Date
+        { wch: 12 }, // Status
+        { wch: 25 }, // City
+        { wch: 18 }, // Province
+        { wch: 20 }, // Approved By
+        { wch: 25 }, // Circular No.
+        { wch: 12 }, // Approval Date
+        { wch: 15 }, // Purpose
+        { wch: 15 }, // Land Class
+        { wch: 30 }  // Remarks
+    ];
+    
+    // Add to workbook and download
+    XLSX.utils.book_append_sheet(wb, ws, 'Zoning_Certifications');
+    XLSX.writeFile(wb, `Zoning_Accomplishment_${new Date().toISOString().slice(0,10)}.xlsx`);
+    
+    showToast(`Exported ${zoningCertifications.length} records to Excel`, 'success');
+}
 
         // ========== CERTIFICATION NUMBER MANAGEMENT ==========
         async function getNextCertificationNumberFromServer() {
