@@ -817,116 +817,82 @@ function exportCertificationsToExcel() {
     }
     
     try {
-        // Headers matching the Generated Report format
+        // Headers with proper formatting
         const headers = [
-            'Control No.',
-            'Requesting Party',
-            'Certification Issued',
-            'Date Issued',
-            'Report Month',
-            'Owner/Proponents',
-            'Location',
-            'No. of Parcels',
-            'Total Area (ha)',
-            'No. of Days Processed',
-            'On Time / Delayed',
-            'Count_Timeliness',
-            'Longitude',
-            'Latitude',
-            'Remarks'
+            'Certification No.', 'Type', 'Series', 'No. of Parcels', 'Location', 
+            'Latitude', 'Longitude', 'Total Area (ha)', 'Proposed Use', 
+            'Date Received', 'Date Issued', 'Requested By', 'Amount Paid (₱)', 
+            'OR No.', 'OR Date', 'Status', 'City/Municipality', 'Province', 
+            'Approved By', 'Circular/Res. No.', 'Approval Date', 'Purpose', 
+            'Land Class', 'Remarks'
         ];
         
-        // Map certification data to rows matching report format
-        const rows = zoningCertifications.map(cert => {
-            // Calculate days processed and timeliness
-            let daysProcessed = '';
-            let onTimeDelayed = '';
-            let countTimeliness = '';
-            
-            if (cert.dateReceived && cert.dateIssued) {
-                const received = new Date(cert.dateReceived);
-                const issued = new Date(cert.dateIssued);
-                if (!isNaN(received) && !isNaN(issued) && issued >= received) {
-                    const diffTime = issued - received;
-                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                    daysProcessed = diffDays;
-                    
-                    const prescribed = getPrescribedDays(cert.certificationIssued);
-                    const isOnTime = diffDays <= prescribed;
-                    onTimeDelayed = isOnTime ? 'On Time' : 'Delayed';
-                    countTimeliness = isOnTime ? 1 : 0;
-                }
-            }
-            
-            // Get owners/proponents from landHoldings
-            let owners = '';
-            if (cert.landHoldings && Array.isArray(cert.landHoldings)) {
-                owners = cert.landHoldings.map(h => h.registeredOwner).filter(Boolean).join(', ');
-            }
-            
-            // Format report month
-            const reportMonth = cert.dateIssued ? 
-                new Date(cert.dateIssued).toLocaleString('default', { month: 'long', year: 'numeric' }) : '';
-            
-            return [
-                cert.certificationNo || '',
-                cert.requestedBy || '',
-                cert.certificationIssued || '',
-                cert.dateIssued ? formatDate(cert.dateIssued) : '',
-                reportMonth,
-                owners,
-                cert.location || '',
-                cert.parcels || '',
-                cert.totalArea || '',
-                daysProcessed,
-                onTimeDelayed,
-                countTimeliness,
-                cert.longitude || '',
-                cert.latitude || '',
-                cert.remarks || ''
-            ];
-        });
+        // Map certification data to rows
+        const rows = zoningCertifications.map(r => [
+            r.certificationNo || '',
+            r.certificationIssued || '',
+            r.series || '',
+            r.parcels || '',
+            r.location || '',
+            r.latitude || '',
+            r.longitude || '',
+            r.totalArea || '',
+            r.proposedUse || '',
+            r.dateReceived || '',
+            r.dateIssued || '',
+            r.requestedBy || '',
+            r.amountPaid || '',
+            r.orNo || '',
+            r.orDate || '',
+            r.status || 'For Review',
+            r.city || '',
+            r.province || '',
+            r.approvedBy || '',
+            r.circularNo || '',
+            r.approvalDate || '',
+            r.purpose || '',
+            r.landClass || '',
+            r.remarks || ''
+        ]);
         
         // Create worksheet
         const wsData = [headers, ...rows];
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.aoa_to_sheet(wsData);
         
-        // Set column widths for better readability (matching report)
+        // Set column widths for better readability
         ws['!cols'] = [
-            { wch: 18 }, // Control No.
-            { wch: 25 }, // Requesting Party
-            { wch: 28 }, // Certification Issued
-            { wch: 12 }, // Date Issued
-            { wch: 15 }, // Report Month
-            { wch: 30 }, // Owner/Proponents
+            { wch: 18 }, // Cert No.
+            { wch: 25 }, // Type
+            { wch: 8 },  // Series
+            { wch: 15 }, // Parcels
             { wch: 40 }, // Location
-            { wch: 15 }, // No. of Parcels
-            { wch: 14 }, // Total Area
-            { wch: 18 }, // No. of Days Processed
-            { wch: 16 }, // On Time / Delayed
-            { wch: 16 }, // Count_Timeliness
-            { wch: 12 }, // Longitude
             { wch: 12 }, // Latitude
+            { wch: 12 }, // Longitude
+            { wch: 12 }, // Total Area
+            { wch: 20 }, // Proposed Use
+            { wch: 12 }, // Date Received
+            { wch: 12 }, // Date Issued
+            { wch: 25 }, // Requested By
+            { wch: 12 }, // Amount Paid
+            { wch: 15 }, // OR No.
+            { wch: 12 }, // OR Date
+            { wch: 12 }, // Status
+            { wch: 25 }, // City
+            { wch: 18 }, // Province
+            { wch: 20 }, // Approved By
+            { wch: 25 }, // Circular No.
+            { wch: 12 }, // Approval Date
+            { wch: 15 }, // Purpose
+            { wch: 15 }, // Land Class
             { wch: 30 }  // Remarks
         ];
         
-        // Freeze the header row
-        ws['!freeze'] = { xSplit: 0, ySplit: 1 };
-        
-        // Style the header row (bold)
-        const headerRange = XLSX.utils.decode_range(ws['!ref']);
-        for (let C = headerRange.s.c; C <= headerRange.e.c; ++C) {
-            const address = XLSX.utils.encode_cell({ r: 0, c: C });
-            if (!ws[address]) continue;
-            ws[address].s = { font: { bold: true, sz: 11 }, fill: { fgColor: { rgb: "2c6e8f" } }, font: { color: { rgb: "FFFFFF" } } };
-        }
-        
         // Add to workbook and download
-        XLSX.utils.book_append_sheet(wb, ws, 'Certification_Report');
-        XLSX.writeFile(wb, `Certification_Report_${new Date().toISOString().slice(0,10)}.xlsx`);
+        XLSX.utils.book_append_sheet(wb, ws, 'Zoning_Certifications');
+        XLSX.writeFile(wb, `Zoning_Accomplishment_${new Date().toISOString().slice(0,10)}.xlsx`);
         
-        showToast(`Exported ${zoningCertifications.length} records to Excel Report`, 'success');
+        showToast(`Exported ${zoningCertifications.length} records to Excel`, 'success');
     } catch (error) {
         console.error('Export error:', error);
         alert('Failed to export Excel file: ' + error.message);
