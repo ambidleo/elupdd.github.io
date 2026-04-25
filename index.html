@@ -1402,8 +1402,7 @@ body:not([data-role]) .auth-modal {
         let isGoogleSheetsOnline = true;
         let syncInProgress = false;
         let pendingSyncData = { clup: [], review: [], zoning: [] };
-        let certNumberLock = false;
-        let certNumberQueue = [];
+
 
         // ========== ENHANCED MAP POPUP WITH GEOJSON LAYERS ==========
         let popupMap = null;
@@ -1742,58 +1741,65 @@ function exportCertificationsToExcel() {
     }
 }
         // ========== CERTIFICATION NUMBER MANAGEMENT ==========
-        async function getNextCertificationNumberFromServer() {
-            return new Promise(async (resolve, reject) => {
-                try {
-                    const isOnline = await checkGoogleSheetsConnection();
-                    if (!isOnline) {
-                        const localCounter = JSON.parse(localStorage.getItem('certificationCounter') || '{"lastCertNumber":0}');
-                        const nextNumber = localCounter.lastCertNumber + 1;
-                        const year = new Date().getFullYear().toString().slice(-2);
-                        const certNumber = `SZC${year}-${nextNumber.toString().padStart(3, '0')}`;
-                        addToPendingSync('certNumber', 'reserve', { number: nextNumber, certNumber });
-                        resolve({ number: nextNumber, certNumber, isOnline: false });
-                        return;
-                    }
-                    const params = new URLSearchParams(); params.append('action', 'getNextCertNumber'); params.append('data_type', 'zoning');
-                    const response = await fetch(GOOGLE_SCRIPT_URL + '?' + params.toString(), { method: 'GET' });
-                    const result = await response.json();
-                    if (result.success && result.nextNumber) {
-                        const year = new Date().getFullYear().toString().slice(-2);
-                        const certNumber = `SZC-RVI${year}-${result.nextNumber.toString().padStart(3, '0')}`;
-                        resolve({ number: result.nextNumber, certNumber, isOnline: true });
-                    } else reject(new Error('Failed to get certification number'));
-                } catch (error) { reject(error); }
-            });
+        // ========== SIMPLE, RELIABLE CERTIFICATION NUMBER MANAGEMENT ==========
+// Get the highest number from existing records (including pending offline adds)
+function getMaxCertNumberFromRecords(records) {
+    let max = 0;
+    records.forEach(rec => {
+        const match = rec.certificationNo?.match(/-(\d+)$/);
+        if (match) {
+            const num = parseInt(match[1], 10);
+            if (!isNaN(num) && num > max) max = num;
         }
+    });
+    return max;
+}
 
-        async function generateUniqueCertificationNumber() {
-            return new Promise(async (resolve, reject) => {
-                const requestId = Date.now();
-                certNumberQueue.push({ id: requestId, resolve, reject });
-                if (certNumberLock) return;
-                certNumberLock = true;
-                try {
-                    while (certNumberQueue.length > 0) {
-                        const request = certNumberQueue[0];
-                        try { const result = await getNextCertificationNumberFromServer(); request.resolve(result); } catch (error) { request.reject(error); }
-                        certNumberQueue.shift();
-                    }
-                } finally { certNumberLock = false; }
-            });
-        }
+// Calculate next number based on current data + pending adds
+function getNextCertificationNumber() {
+    // Start with existing records
+    let allRecords = [...zoningCertifications];
+    
+    // Also include pending 'add' operations (offline)
+    if (pendingSyncData.zoning) {
+        pendingSyncData.zoning.forEach(item => {
+            if (item.action === 'add' && item.data && item.data.certificationNo) {
+                allRecords.push(item.data);
+            }
+        });
+    }
+    
+    const maxNum = getMaxCertNumberFromRecords(allRecords);
+    const nextNum = maxNum + 1;
+    const year = new Date().getFullYear().toString().slice(-2);
+    const certNumber = `SZC-RVI${year}-${nextNum.toString().padStart(3, '0')}`;
+    return { number: nextNum, certNumber };
+}
 
-        async function updateLocalCounterAfterSync() {
-            try {
-                const isOnline = await checkGoogleSheetsConnection();
-                if (!isOnline) return;
-                const params = new URLSearchParams(); params.append('action', 'getCurrentMaxNumber'); params.append('data_type', 'zoning');
-                const response = await fetch(GOOGLE_SCRIPT_URL + '?' + params.toString(), { method: 'GET' });
-                const result = await response.json();
-                if (result.success && result.maxNumber) localStorage.setItem('certificationCounter', JSON.stringify({ lastCertNumber: result.maxNumber, lastSync: new Date().toISOString() }));
-            } catch (error) {}
-        }
+// Refresh the displayed number in the form
+async function refreshCertificationNumber() {
+    const { certNumber } = getNextCertificationNumber();
+    const certField = document.getElementById('certificationNo');
+    if (certField) certField.value = certNumber;
+    return certNumber;
+}
 
+// Update local counter after changes (called after save/delete)
+function updateLocalCounter() {
+    const maxNum = getMaxCertNumberFromRecords(zoningCertifications);
+    certificationCounter.lastCertNumber = maxNum;
+    localStorage.setItem('certificationCounter', JSON.stringify(certificationCounter));
+}
+
+// Reset counter to zero so next number becomes 001
+function resetCertificationCounter() {
+    if (confirm('⚠️ Reset certification number counter?\n\nThis will set the NEXT number to 001 (e.g., SZC-RVI25-001).\n\nWARNING: If you already have records, this may cause duplicate numbers later. Only use if you want to start a fresh numbering sequence.')) {
+        certificationCounter.lastCertNumber = 0;
+        localStorage.setItem('certificationCounter', JSON.stringify(certificationCounter));
+        refreshCertificationNumber();
+        showToast('Counter reset. Next number will be 001.', 'success');
+    }
+}
         // ========== SYNC MECHANISM ==========
         function showToast(message, type = 'info') {
             const toast = document.createElement('div');
@@ -2390,9 +2396,13 @@ async function manualRefresh() {
             const originalText = saveBtn.innerHTML;
             saveBtn.innerHTML = '⏳ Saving...'; saveBtn.disabled = true;
             try {
-                let certificationNo;
-                if (!currentEditingZoningId) { const certResult = await generateUniqueCertificationNumber(); certificationNo = certResult.certNumber; }
-                else certificationNo = zoningCertifications.find(r => r.id === currentEditingZoningId).certificationNo;
+               let certificationNo;
+if (!currentEditingZoningId) {
+    const { certNumber } = getNextCertificationNumber();
+    certificationNo = certNumber;
+} else {
+    certificationNo = zoningCertifications.find(r => r.id === currentEditingZoningId).certificationNo;
+}
                 
                 const certificationIssued = document.getElementById('certificationIssued').value;
                 const parcels = document.getElementById('parcels').value;
@@ -2446,6 +2456,7 @@ async function manualRefresh() {
                     if (action === 'add') zoningCertifications.push(record);
                     else { const idx = zoningCertifications.findIndex(r => r.id === record.id); if (idx !== -1) zoningCertifications[idx] = record; }
                     localStorage.setItem('zoningCertifications', JSON.stringify(zoningCertifications));
+                    updateLocalCounter();
                     addToPendingSync('zoning', action, record);
                     const localCounter = JSON.parse(localStorage.getItem('certificationCounter') || '{"lastCertNumber":0}');
                     const certNumber = parseInt(record.certificationNo.split('-')[1]);
@@ -2464,6 +2475,7 @@ async function manualRefresh() {
                     if (action === 'add') zoningCertifications.push(record);
                     else { const idx = zoningCertifications.findIndex(r => r.id === record.id); if (idx !== -1) zoningCertifications[idx] = record; }
                     localStorage.setItem('zoningCertifications', JSON.stringify(zoningCertifications));
+                     updateLocalCounter();
                     await updateLocalCounterAfterSync();
                     renderCertificationsTable(); clearZoningForm(); await refreshCertificationNumber();
                     updateAccomplishmentStats();
