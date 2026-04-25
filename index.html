@@ -125,7 +125,11 @@
         .cert-table th { background: var(--cert-primary); color: white; padding: 0.75rem; text-align: left; }
         .cert-table td { padding: 0.75rem; border-bottom: 1px solid #e0e0e0; }
         .cert-table tr:hover { background: #f8f4e8; }
-        
+        .dropdown { position: relative; display: inline-block; }
+        .dropdown-content { display: none; position: absolute; background-color: white; min-width: 220px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); z-index: 1001; border-radius: 8px; overflow: hidden; }
+        .dropdown-content a { color: var(--primary-dark); padding: 12px 16px; text-decoration: none; display: block; font-weight: 500; }
+        .dropdown-content a:hover { background-color: #f1f1f1; }
+        .dropdown:hover .dropdown-content { display: block; }
         /* Zoning Subnav Styles */
         .zoning-subnav {
             display: flex;
@@ -1111,11 +1115,18 @@ body:not([data-role]) .auth-modal {
     </header>
 
     <nav class="nav-bar" aria-label="Main navigation" role="navigation">
-        <ul role="menubar">
-            <li role="none"><a href="#" onclick="showSection('zoning')" class="active" role="menuitem" aria-current="page"><span aria-hidden="true">🏷️</span><span>Site Zoning Certification</span></a></li>
-            <li role="none"><a href="#" onclick="showSection('reports')" role="menuitem"><span aria-hidden="true">📊</span><span>Reports</span></a></li>
-            <li role="none"><a href="#" onclick="openAboutModal()" role="menuitem"><span aria-hidden="true">ℹ️</span><span>About</span></a></li>
-        </ul>
+       <ul role="menubar">
+    <li role="none"><a href="#" onclick="showSection('home')" role="menuitem">🏠 Home</a></li>
+    <li class="dropdown" role="none">
+        <a href="#" role="menuitem" style="cursor: pointer;">🏛️ ELUPDD</a>
+        <div class="dropdown-content">
+            <a href="#" onclick="switchELUPDDModule('locational'); return false;">📍 Locational Clearance</a>
+            <a href="#" onclick="switchELUPDDModule('zoning'); return false;">🏷️ Site Zoning Certification</a>
+        </div>
+    </li>
+    <li role="none"><a href="#" onclick="showSection('reports')" role="menuitem">📊 Reports</a></li>
+    <li role="none"><a href="#" onclick="openAboutModal()" role="menuitem">ℹ️ About</a></li>
+</ul>
     </nav>
 
     <main id="main-content" role="main">
@@ -1133,7 +1144,54 @@ body:not([data-role]) .auth-modal {
                         <span aria-hidden="true">📊</span> Accomplishment
                     </button>
                 </div>
-
+<!-- Locational Clearance Section -->
+<div id="locational" class="section" style="display: none;">
+    <div class="zoning-subnav">
+        <button class="subnav-link active" onclick="switchLocationalView('dataEntry')">📝 Data Entry</button>
+        <button class="subnav-link" onclick="switchLocationalView('accomplishment')">📊 Accomplishment</button>
+    </div>
+    <!-- Data Entry View -->
+    <div id="locationalDataEntryView" class="zoning-view active">
+        <div class="cert-section">
+            <div class="cert-title"><span>📍 Locational Clearance - Data Entry</span></div>
+            <form id="locationalForm" onsubmit="return saveLocationalRecord(event)">
+                <!-- Reuse same form fields as zoning, but with different IDs -->
+                <div class="form-grid">
+                    <div class="form-group"><label>Clearance No.</label><input type="text" id="lcCertificationNo" readonly style="background:#f0f0f0"><small>Auto-generated</small></div>
+                    <div class="form-group"><label>Type</label><select id="lcCertificationIssued" required><option value="">-- Select --</option><option value="Locational Clearance">Locational Clearance</option><option value="Locational Clearance - National Significance">Locational Clearance - National Significance</option></select></div>
+                    <div class="form-group"><label>Series</label><input type="text" id="lcSeries" value="2024" readonly></div>
+                    <div class="form-group"><label>No. of Parcels</label><input type="text" id="lcParcels" required></div>
+                    <div class="form-group full-width"><label>Location</label><input type="text" id="lcLocation" required></div>
+                    <div class="form-group"><label>Latitude</label><input type="text" id="lcLatitude" readonly></div>
+                    <div class="form-group"><label>Longitude</label><input type="text" id="lcLongitude" readonly><button type="button" class="btn btn-map" onclick="openMapForLocational()">🗺️ Open Map</button></div>
+                    <div class="form-group"><label>Total Area (ha)</label><input type="text" id="lcTotalArea" required></div>
+                    <div class="form-group"><label>Proposed Use</label><input type="text" id="lcProposedUse" required></div>
+                    <div class="form-group full-width"><label>Land Holdings</label><button type="button" class="btn btn-success" onclick="addLocationalLandHolding()">➕ Add Property</button><div id="lcLandHoldingsContainer"></div></div>
+                    <div class="form-group"><label>Date Received</label><input type="date" id="lcDateReceived"></div>
+                    <div class="form-group"><label>Date Issued</label><input type="date" id="lcDateIssued" required></div>
+                    <div class="form-group"><label>Requested By</label><input type="text" id="lcRequestedBy" required></div>
+                    <div class="form-group"><label>Amount Paid (₱)</label><input type="text" id="lcAmountPaid" required></div>
+                    <div class="form-group"><label>O.R. No.</label><input type="text" id="lcOrNo"></div>
+                    <div class="form-group"><label>O.R. Date</label><input type="date" id="lcOrDate"></div>
+                    <div class="form-group full-width"><label>Remarks</label><textarea id="lcRemarks" rows="2"></textarea></div>
+                </div>
+                <div style="display:flex; gap:1rem; justify-content:center; margin-top:2rem;">
+                    <button type="submit" class="btn btn-success">💾 Save Clearance</button>
+                    <button type="button" class="btn btn-primary" onclick="clearLocationalForm()">🔄 Clear Form</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Accomplishment View -->
+    <div id="locationalAccomplishmentView" class="zoning-view">
+        <div class="cert-section">
+            <div class="cert-title"><span>📊 Locational Clearance Accomplishment</span></div>
+            <div class="search-bar"><input type="text" id="lcSearchInput" placeholder="Search..." onkeyup="filterLocationalTable()"><select id="lcStatusFilter" onchange="filterLocationalTable()"><option value="">All Status</option><option value="For Review">For Review</option><option value="For RD Signature">For RD Signature</option><option value="For Release">For Release</option><option value="Released">Released</option></select><button class="btn btn-primary" onclick="filterLocationalTable()">Search</button><button class="btn btn-secondary" onclick="clearLocationalSearch()">Clear</button><button class="btn btn-success" onclick="refreshLocationalData()">Refresh</button></div>
+            <div style="overflow-x:auto;"><table class="cert-table"><thead><tr><th>Clearance No.</th><th>Type</th><th>Parcels</th><th>Location</th><th>Area</th><th>Date Issued</th><th>Requested By</th><th>Status</th><th>Actions</th></tr></thead><tbody id="locationalTableBody"></tbody></table></div>
+            <div style="margin-top:1rem;"><button class="btn btn-primary" onclick="switchLocationalView('dataEntry')">⬅️ Back to Data Entry</button><button class="btn btn-success" onclick="exportLocationalToExcel()">📥 Export Excel</button></div>
+        </div>
+    </div>
+</div>
                 <!-- Data Entry View -->
                 <div id="dataEntryView" class="zoning-view active" role="tabpanel">
                     <div class="cert-section">
@@ -3033,7 +3091,57 @@ async function initApp() {
     
     checkSession();
 }
+// ========== LOCATIONAL CLEARANCE MODULE ==========
+let locationalCertifications = [];
+let currentEditingLocationalId = null;
 
+// Generate number for locational (separate counter)
+function getNextLocationalNumber() {
+    let max = 0;
+    locationalCertifications.forEach(rec => {
+        const match = rec.certificationNo?.match(/LC-RVI\d{2}-(\d+)$/);
+        if (match) max = Math.max(max, parseInt(match[1]));
+    });
+    const next = max + 1;
+    const year = new Date().getFullYear().toString().slice(-2);
+    return `LC-RVI${year}-${next.toString().padStart(3,'0')}`;
+}
+
+async function fetchLocationalCertifications() {
+    try {
+        const resp = await fetch(GOOGLE_SCRIPT_URL + '?action=get&data_type=locational');
+        const data = await resp.json();
+        if (Array.isArray(data)) locationalCertifications = data.map(r => ({ ...r, landHoldings: typeof r.landHoldings === 'string' ? JSON.parse(r.landHoldings||'[]') : (r.landHoldings||[]), status: r.status||'For Review' }));
+        else locationalCertifications = [];
+        localStorage.setItem('locationalCertifications', JSON.stringify(locationalCertifications));
+        renderLocationalTable();
+    } catch(e) { const local = localStorage.getItem('locationalCertifications'); if(local) locationalCertifications = JSON.parse(local); renderLocationalTable(); }
+}
+
+function renderLocationalTable() {
+    const tbody = document.getElementById('locationalTableBody');
+    if(!tbody) return;
+    const term = document.getElementById('lcSearchInput')?.value.toLowerCase()||'';
+    const filter = document.getElementById('lcStatusFilter')?.value||'';
+    let filtered = locationalCertifications.filter(r => (!term || r.certificationNo?.toLowerCase().includes(term)||r.location?.toLowerCase().includes(term)) && (!filter || r.status===filter));
+    filtered.sort((a,b) => new Date(b.dateIssued) - new Date(a.dateIssued));
+    tbody.innerHTML = filtered.map(r => `<tr><td>${escapeHtml(r.certificationNo)}</td><td>${escapeHtml(r.certificationIssued)}</td><td>${escapeHtml(r.parcels)}</td><td>${escapeHtml(r.location)}</td><td>${escapeHtml(r.totalArea)}</td><td>${formatDate(r.dateIssued)}</td><td>${escapeHtml(r.requestedBy)}</td><td><select class="status-dropdown" onchange="updateLocationalStatus(${r.id}, this.value)"><option ${r.status==='For Review'?'selected':''}>For Review</option><option ${r.status==='For RD Signature'?'selected':''}>For RD Signature</option><option ${r.status==='For Release'?'selected':''}>For Release</option><option ${r.status==='Released'?'selected':''}>Released</option></select></td><td><div class="action-btns"><button class="action-btn view" onclick="viewLocationalRecord(${r.id})">👁️</button><button class="action-btn edit" onclick="editLocationalRecord(${r.id})">✏️</button><button class="action-btn print" onclick="printLocationalRecord(${r.id})">🖨️</button><button class="action-btn delete" onclick="deleteLocationalRecord(${r.id})">🗑️</button></div></td></tr>`).join('');
+}
+
+function updateLocationalStatus(id, newStatus) { /* similar to zoning */ }
+function viewLocationalRecord(id) { /* similar */ }
+async function editLocationalRecord(id) { /* similar */ }
+async function deleteLocationalRecord(id) { /* similar */ }
+function printLocationalRecord(id) { /* similar but different cert name */ }
+function addLocationalLandHolding() { /* add row to #lcLandHoldingsContainer */ }
+function clearLocationalForm() { /* reset form, generate new number */ }
+async function saveLocationalRecord(e) { /* similar to saveZoningRecord but with locational data and separate Google Sheets data_type='locational' */ }
+function switchLocationalView(view) { /* toggle dataEntry/accomplishment */ }
+function filterLocationalTable() { renderLocationalTable(); }
+function clearLocationalSearch() { /* clear inputs and refilter */ }
+function refreshLocationalData() { fetchLocationalCertifications(); }
+function exportLocationalToExcel() { /* export locationalCertifications */ }
+function openMapForLocational() { openEnhancedMapPopup('lc'); }
 // Start the app
 initApp();
 
