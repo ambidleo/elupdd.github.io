@@ -1742,31 +1742,51 @@ function exportCertificationsToExcel() {
     }
 }
         // ========== CERTIFICATION NUMBER MANAGEMENT ==========
-        async function getNextCertificationNumberFromServer() {
-            return new Promise(async (resolve, reject) => {
-                try {
-                    const isOnline = await checkGoogleSheetsConnection();
-                    if (!isOnline) {
-                        const localCounter = JSON.parse(localStorage.getItem('certificationCounter') || '{"lastCertNumber":0}');
-                        const nextNumber = localCounter.lastCertNumber + 1;
-                        const year = new Date().getFullYear().toString().slice(-2);
-                        const certNumber = `SZC${year}-${nextNumber.toString().padStart(3, '0')}`;
-                        addToPendingSync('certNumber', 'reserve', { number: nextNumber, certNumber });
-                        resolve({ number: nextNumber, certNumber, isOnline: false });
-                        return;
-                    }
-                    const params = new URLSearchParams(); params.append('action', 'getNextCertNumber'); params.append('data_type', 'zoning');
-                    const response = await fetch(GOOGLE_SCRIPT_URL + '?' + params.toString(), { method: 'GET' });
-                    const result = await response.json();
-                    if (result.success && result.nextNumber) {
-                        const year = new Date().getFullYear().toString().slice(-2);
-                        const certNumber = `SZC-RVI${year}-${result.nextNumber.toString().padStart(3, '0')}`;
-                        resolve({ number: result.nextNumber, certNumber, isOnline: true });
-                    } else reject(new Error('Failed to get certification number'));
-                } catch (error) { reject(error); }
-            });
-        }
+       // Replace the existing getNextCertificationNumber function
+function getNextCertificationNumber() {
+    // If a manual reset was performed, we respect the local counter's lastCertNumber
+    // which may have been set to 0 by resetCertificationCounter
+    let maxNum = certificationCounter.lastCertNumber;
+    
+    // Also check existing records to avoid reusing numbers
+    let allRecords = [...zoningCertifications];
+    if (pendingSyncData.zoning) {
+        pendingSyncData.zoning.forEach(item => {
+            if (item.action === 'add' && item.data && item.data.certificationNo) {
+                allRecords.push(item.data);
+            }
+        });
+    }
+    const maxFromRecords = getMaxCertNumberFromRecords(allRecords);
+    // Use the larger of the two (counter might be outdated if records have higher numbers)
+    const effectiveMax = Math.max(maxNum, maxFromRecords);
+    const nextNum = effectiveMax + 1;
+    const year = new Date().getFullYear().toString().slice(-2);
+    const certNumber = `SZC-RVI${year}-${nextNum.toString().padStart(3, '0')}`;
+    return { number: nextNum, certNumber };
+}
 
+// Replace the resetCertificationCounter function
+function resetCertificationCounter() {
+    if (confirm('⚠️ Reset counter? This will set the next certification number to 001 (e.g., SZC-RVI25-001).\n\nWARNING: If you already have records, this may cause duplicate numbers later. Only use if you want to start a fresh numbering sequence.')) {
+        // Force counter to 0 so next number becomes 1
+        certificationCounter.lastCertNumber = 0;
+        localStorage.setItem('certificationCounter', JSON.stringify(certificationCounter));
+        
+        // Also clear any pending sync that might affect numbering (optional but safe)
+        // but preserve existing records
+        
+        // Refresh the displayed certification number
+        refreshCertificationNumber();
+        
+        showToast('Counter reset. Next number will be 001.', 'success');
+    }
+}
+async function refreshCertificationNumber() {
+    const { certNumber } = getNextCertificationNumber();
+    document.getElementById('certificationNo').value = certNumber;
+    return certNumber;
+}
         async function generateUniqueCertificationNumber() {
             return new Promise(async (resolve, reject) => {
                 const requestId = Date.now();
