@@ -2974,16 +2974,27 @@ async function manualRefresh() {
 async function initApp() {
     loadCounter();
     await fetchCertifications();
+    
+    // Load CLUP records - THIS IS CRITICAL
+    console.log('Loading CLUP records...');
     await fetchClupRecords();
+    console.log('CLUP records loaded:', clupRecords.length);
+    
     setupClupCascadeEvents();
     await refreshCertificationNumber();
-    if (document.getElementById('landHoldingsContainer').children.length === 0) addLandHolding();
+    
+    if (document.getElementById('landHoldingsContainer').children.length === 0) {
+        addLandHolding();
+    }
+    
     setupConnectionMonitoring();
     addSyncStatusIndicator();
     loadPendingSyncData();
-    setTimeout(() => { if (isGoogleSheetsOnline) syncAllPendingData(); }, 3000);
     
-    // Check authentication - this will show login modal if not logged in
+    setTimeout(() => { 
+        if (isGoogleSheetsOnline) syncAllPendingData(); 
+    }, 3000);
+    
     checkSession();
 }
 
