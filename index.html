@@ -1109,18 +1109,81 @@ body:not([data-role]) .auth-modal {
             <div class="header-badge">Western Visayas • Sustainable Development • Resilient Communities</div>
         </div>
     </header>
+<nav class="nav-bar">
+    <ul>
+        <li><a href="#" onclick="showSection('home')">🏠 Home</a></li>
+        <li class="dropdown">
+            <a href="#" style="cursor: pointer;">🏛️ ELUPDD ▼</a>
+            <div class="dropdown-content">
+                <a href="#" onclick="switchELUPDDModule('locational'); return false;">📍 Locational Clearance</a>
+                <a href="#" onclick="switchELUPDDModule('zoning'); return false;">🏷️ Site Zoning Certification</a>
+            </div>
+        </li>
+        <li><a href="#" onclick="showSection('reports')">📊 Reports</a></li>
+        <li><a href="#" onclick="openAboutModal()">ℹ️ About</a></li>
+    </ul>
+</nav>
 
-    <nav class="nav-bar" aria-label="Main navigation" role="navigation">
-        <ul role="menubar">
-            <li role="none"><a href="#" onclick="showSection('zoning')" class="active" role="menuitem" aria-current="page"><span aria-hidden="true">🏷️</span><span>Site Zoning Certification</span></a></li>
-            <li role="none"><a href="#" onclick="showSection('reports')" role="menuitem"><span aria-hidden="true">📊</span><span>Reports</span></a></li>
-            <li role="none"><a href="#" onclick="openAboutModal()" role="menuitem"><span aria-hidden="true">ℹ️</span><span>About</span></a></li>
-        </ul>
-    </nav>
+<main><div class="container">
+    <!-- HOME Section with Calendar -->
+    <div id="home" class="section">
+        <div class="cert-section">
+            <div class="cert-title"><span>📅</span> Calendar of Activities</div>
+            <div id="calendar" style="margin-bottom: 1rem;"></div>
+            <div style="display: flex; justify-content: flex-end;">
+                <button class="btn btn-primary" onclick="openAddActivityModal()">➕ Add Activity</button>
+            </div>
+        </div>
+    </div>
 
-    <main id="main-content" role="main">
-        <div class="container">
-            <!-- Site Zoning Certification Section with Submenu -->
+    <!-- ELUPDD Modules: Locational Clearance and Site Zoning Certification -->
+    <div id="elupdd-modules" style="display: none;">
+        <!-- Locational Clearance Module -->
+        <div id="locational" class="section">
+            <div class="zoning-subnav">
+                <button class="subnav-link active" onclick="switchLocationalView('dataEntry')">📝 Data Entry</button>
+                <button class="subnav-link" onclick="switchLocationalView('accomplishment')">📊 Accomplishment</button>
+            </div>
+            <div id="locationalDataEntryView" class="zoning-view active">
+                <div class="cert-section">
+                    <div class="cert-title"><span>📍 Locational Clearance - Data Entry</span></div>
+                    <form id="locationalForm" onsubmit="return saveLocationalRecord(event)">
+                        <div class="form-grid">
+                            <div class="form-group"><label>Clearance No.</label><input type="text" id="lcCertificationNo" readonly style="background:#f0f0f0"><small>Auto-generated</small></div>
+                            <div class="form-group"><label>Type</label><select id="lcCertificationIssued" required><option value="">-- Select --</option><option value="Locational Clearance">Locational Clearance</option><option value="Locational Clearance - National Significance">Locational Clearance - National Significance</option></select></div>
+                            <div class="form-group"><label>Series</label><input type="text" id="lcSeries" value="2024" readonly></div>
+                            <div class="form-group"><label>No. of Parcels</label><input type="text" id="lcParcels" required></div>
+                            <div class="form-group full-width"><label>Location</label><input type="text" id="lcLocation" required></div>
+                            <div class="form-group"><label>Latitude</label><input type="text" id="lcLatitude" readonly></div>
+                            <div class="form-group"><label>Longitude</label><input type="text" id="lcLongitude" readonly><button type="button" class="btn btn-map" onclick="openMapForLocational()">🗺️ Open Map</button></div>
+                            <div class="form-group"><label>Total Area (ha)</label><input type="text" id="lcTotalArea" required></div>
+                            <div class="form-group"><label>Proposed Use</label><input type="text" id="lcProposedUse" required></div>
+                            <div class="form-group full-width"><label>Land Holdings</label><button type="button" class="btn btn-success" onclick="addLocationalLandHolding()">➕ Add Property</button><div id="lcLandHoldingsContainer"></div></div>
+                            <div class="form-group"><label>Date Received</label><input type="date" id="lcDateReceived"></div>
+                            <div class="form-group"><label>Date Issued</label><input type="date" id="lcDateIssued" required></div>
+                            <div class="form-group"><label>Requested By</label><input type="text" id="lcRequestedBy" required></div>
+                            <div class="form-group"><label>Amount Paid (₱)</label><input type="text" id="lcAmountPaid" required></div>
+                            <div class="form-group"><label>O.R. No.</label><input type="text" id="lcOrNo"></div>
+                            <div class="form-group"><label>O.R. Date</label><input type="date" id="lcOrDate"></div>
+                            <div class="form-group full-width"><label>Remarks</label><textarea id="lcRemarks" rows="2"></textarea></div>
+                        </div>
+                        <div style="display:flex; gap:1rem; justify-content:center; margin-top:2rem;">
+                            <button type="submit" class="btn btn-success">💾 Save Clearance</button>
+                            <button type="button" class="btn btn-primary" onclick="clearLocationalForm()">🔄 Clear Form</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div id="locationalAccomplishmentView" class="zoning-view">
+                <div class="cert-section">
+                    <div class="cert-title"><span>📊 Locational Clearance Accomplishment</span></div>
+                    <div class="search-bar" style="display:flex; gap:1rem; margin-bottom:1rem; flex-wrap:wrap;"><input type="text" id="lcSearchInput" placeholder="Search..."><select id="lcStatusFilter"><option value="">All Status</option><option value="For Review">For Review</option><option value="For RD Signature">For RD Signature</option><option value="For Release">For Release</option><option value="Released">Released</option></select><button class="btn btn-primary" onclick="filterLocationalTable()">Search</button><button class="btn btn-secondary" onclick="clearLocationalSearch()">Clear</button><button class="btn btn-success" onclick="refreshLocationalData()">Refresh</button></div>
+                    <div style="overflow-x:auto;"><table class="cert-table"><thead><tr><th>Clearance No.</th><th>Type</th><th>Parcels</th><th>Location</th><th>Area</th><th>Date Issued</th><th>Requested By</th><th>Status</th><th>Actions</th></tr></thead><tbody id="locationalTableBody"></tbody></table></div>
+                    <div style="margin-top:1rem;"><button class="btn btn-primary" onclick="switchLocationalView('dataEntry')">⬅️ Back to Data Entry</button><button class="btn btn-success" onclick="exportLocationalToExcel()">📥 Export Excel</button></div>
+                </div>
+            </div>
+        </div>          
+        <!-- Site Zoning Certification Section with Submenu -->
             <div id="zoning" class="section active" role="region" aria-labelledby="zoning-heading">
                 <h1 id="zoning-heading" class="visually-hidden">Site Zoning Certification</h1>
                 
@@ -2791,6 +2854,125 @@ if (!currentEditingZoningId) {
             setTimeout(() => window.print(), 200);
             setTimeout(() => ps.style.display = 'none', 1000);
         }
+        // ========== NEW: Home Calendar ==========
+    let calendar = null;
+    let customActivities = [];
+
+    function loadActivitiesFromStorage() {
+        const stored = localStorage.getItem('calendarActivities');
+        if (stored) customActivities = JSON.parse(stored);
+        else customActivities = [];
+    }
+    function saveActivitiesToStorage() { localStorage.setItem('calendarActivities', JSON.stringify(customActivities)); }
+    function getCalendarEvents() {
+        const events = [];
+        if (typeof zoningCertifications !== 'undefined') {
+            zoningCertifications.forEach(cert => {
+                if (cert.dateIssued) events.push({ title: `📄 Zoning: ${cert.certificationNo}`, start: cert.dateIssued, description: `Type: ${cert.certificationIssued}<br>Requested by: ${cert.requestedBy}`, url: `javascript:viewZoningRecord(${cert.id})` });
+            });
+        }
+        customActivities.forEach(act => { events.push({ title: act.title, start: act.date, description: act.description || '', id: act.id }); });
+        return events;
+    }
+    function renderCalendar() {
+        if (calendar) calendar.destroy();
+        const el = document.getElementById('calendar');
+        if (!el) return;
+        calendar = new FullCalendar.Calendar(el, {
+            initialView: 'dayGridMonth',
+            headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,dayGridWeek' },
+            events: getCalendarEvents(),
+            eventClick: function(info) { alert(info.event.title + '\n' + (info.event.extendedProps.description || '')); return false; },
+            height: 'auto'
+        });
+        calendar.render();
+    }
+    function openAddActivityModal() { document.getElementById('activityModal').classList.add('active'); }
+    function closeActivityModal() { document.getElementById('activityModal').classList.remove('active'); }
+    function saveActivity() {
+        const title = document.getElementById('activityTitle').value.trim();
+        const date = document.getElementById('activityDate').value;
+        if (!title || !date) { alert('Title and date required'); return; }
+        customActivities.push({ id: Date.now(), title, date, description: document.getElementById('activityDesc').value });
+        saveActivitiesToStorage();
+        closeActivityModal();
+        if (document.getElementById('home').style.display !== 'none') renderCalendar();
+        showToast('Activity added', 'success');
+    }
+
+    // ========== NEW: ELUPDD Dropdown Handler ==========
+    function switchELUPDDModule(module) {
+        document.querySelectorAll('#elupdd-modules .section').forEach(s => s.style.display = 'none');
+        document.getElementById(module).style.display = 'block';
+        showSection('elupdd-modules'); // activate the container
+        if (module === 'zoning') {
+            if (typeof renderCertificationsTable === 'function') renderCertificationsTable();
+            if (typeof updateAccomplishmentStats === 'function') updateAccomplishmentStats();
+        } else if (module === 'locational') {
+            if (typeof fetchLocationalCertifications === 'function') fetchLocationalCertifications();
+        }
+    }
+
+    // Override showSection to handle the home/calendar and the new elupdd container
+    const originalShowSection = window.showSection;
+    window.showSection = function(sectionId) {
+        originalShowSection(sectionId);
+        if (sectionId === 'home') {
+            renderCalendar();
+        } else if (sectionId === 'elupdd-modules') {
+            document.getElementById('elupdd-modules').style.display = 'block';
+        } else {
+            document.getElementById('elupdd-modules').style.display = 'none';
+        }
+    };
+
+    // ========== NEW: Locational Clearance Functions (simplified, adapt from zoning) ==========
+    let locationalCertifications = [];
+    let currentEditingLocationalId = null;
+
+    function getNextLocationalNumber() {
+        let max = 0;
+        locationalCertifications.forEach(rec => { const m = rec.certificationNo?.match(/LC-RVI\d{2}-(\d+)$/); if(m) max = Math.max(max, parseInt(m[1])); });
+        const year = new Date().getFullYear().toString().slice(-2);
+        return `LC-RVI${year}-${(max+1).toString().padStart(3,'0')}`;
+    }
+
+    async function fetchLocationalCertifications() {
+        try {
+            const resp = await fetch(GOOGLE_SCRIPT_URL + '?action=get&data_type=locational');
+            const data = await resp.json();
+            if(Array.isArray(data)) locationalCertifications = data.map(r => ({ ...r, landHoldings: typeof r.landHoldings === 'string' ? JSON.parse(r.landHoldings||'[]') : (r.landHoldings||[]), status: r.status||'For Review' }));
+            else locationalCertifications = [];
+            localStorage.setItem('locationalCertifications', JSON.stringify(locationalCertifications));
+            renderLocationalTable();
+        } catch(e) { const local = localStorage.getItem('locationalCertifications'); if(local) locationalCertifications = JSON.parse(local); renderLocationalTable(); }
+    }
+
+    function renderLocationalTable() {
+        const tbody = document.getElementById('locationalTableBody');
+        if(!tbody) return;
+        const term = (document.getElementById('lcSearchInput')?.value || '').toLowerCase();
+        const filter = document.getElementById('lcStatusFilter')?.value || '';
+        let filtered = locationalCertifications.filter(r => (!term || r.certificationNo?.toLowerCase().includes(term)||r.location?.toLowerCase().includes(term)) && (!filter || r.status===filter));
+        filtered.sort((a,b) => new Date(b.dateIssued) - new Date(a.dateIssued));
+        tbody.innerHTML = filtered.map(r => `<tr><td>${escapeHtml(r.certificationNo)}</td><td>${escapeHtml(r.certificationIssued)}</td><td>${escapeHtml(r.parcels)}</td><td>${escapeHtml(r.location)}</td><td>${escapeHtml(r.totalArea)}</td><td>${formatDate(r.dateIssued)}</td><td>${escapeHtml(r.requestedBy)}</td><td><select class="status-dropdown" onchange="updateLocationalStatus(${r.id}, this.value)"><option ${r.status==='For Review'?'selected':''}>For Review</option><option ${r.status==='For RD Signature'?'selected':''}>For RD Signature</option><option ${r.status==='For Release'?'selected':''}>For Release</option><option ${r.status==='Released'?'selected':''}>Released</option></select></td><td><div class="action-btns"><button class="action-btn view" onclick="viewLocationalRecord(${r.id})">👁️</button><button class="action-btn edit" onclick="editLocationalRecord(${r.id})">✏️</button><button class="action-btn print" onclick="printLocationalRecord(${r.id})">🖨️</button><button class="action-btn delete" onclick="deleteLocationalRecord(${r.id})">🗑️</button></div></td></tr>`).join('');
+    }
+
+    // Placeholder implementations (adapt from your existing zoning functions):
+    function updateLocationalStatus(id, ns) { let r = locationalCertifications.find(x=>x.id==id); if(r){ r.status=ns; localStorage.setItem('locationalCertifications',JSON.stringify(locationalCertifications)); renderLocationalTable(); showToast(`Status updated to ${ns}`,'success'); } }
+    function viewLocationalRecord(id) { /* similar to viewZoningRecord */ alert('View locational'); }
+    async function editLocationalRecord(id) { /* similar */ alert('Edit locational'); }
+    async function deleteLocationalRecord(id) { if(confirm('Delete?')) { locationalCertifications = locationalCertifications.filter(r=>r.id!==id); localStorage.setItem('locationalCertifications',JSON.stringify(locationalCertifications)); renderLocationalTable(); } }
+    function printLocationalRecord(id) { /* similar */ alert('Print locational'); }
+    function addLocationalLandHolding() { /* generic add row to #lcLandHoldingsContainer */ }
+    function clearLocationalForm() { document.getElementById('locationalForm').reset(); document.getElementById('lcCertificationNo').value = getNextLocationalNumber(); currentEditingLocationalId=null; }
+    async function saveLocationalRecord(e) { e.preventDefault(); /* similar to saveZoningRecord but with locational data and separate Google Sheets data_type='locational' */ alert('Save locational'); }
+    function switchLocationalView(v) { document.querySelectorAll('#locational .zoning-view').forEach(el=>el.classList.remove('active')); document.getElementById(`locational${v.charAt(0).toUpperCase()+v.slice(1)}View`).classList.add('active'); }
+    function filterLocationalTable() { renderLocationalTable(); }
+    function clearLocationalSearch() { document.getElementById('lcSearchInput').value=''; document.getElementById('lcStatusFilter').value=''; renderLocationalTable(); }
+    function refreshLocationalData() { fetchLocationalCertifications(); }
+    function exportLocationalToExcel() { /* export locationalCertifications */ alert('Export locational'); }
+    function openMapForLocational() { openEnhancedMapPopup(); }
 // ========== REPORT GENERATION ==========
         const PRESCRIBED_DAYS = {
             'Zoning (Simple)': 5, 'Zoning - Simple': 5,
