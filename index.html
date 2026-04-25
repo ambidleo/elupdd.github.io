@@ -1257,6 +1257,7 @@ body:not([data-role]) .auth-modal {
                             </div>
                             <button class="btn btn-primary" onclick="filterCertificationsTable()" style="padding: 0.8rem 1.5rem;">🔍 Search</button>
                             <button class="btn btn-secondary" onclick="clearCertSearch()" style="padding: 0.8rem 1.5rem;">🗑️ Clear</button>
+                            <button class="btn btn-primary" onclick="manualRefresh()" style="background: #28a745;">🔄 Refresh Data</button>
                         </div>
                         <!-- Summary Stats -->
                         <div style="display: flex; gap: 2rem; margin-bottom: 1.5rem; justify-content: space-around; background: #e9f2f9; padding: 1rem; border-radius: 12px;">
@@ -1394,7 +1395,7 @@ body:not([data-role]) .auth-modal {
 
     <script>
         // ========== CONFIGURATION ==========
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxXtSphBEbjyR0BSnBUdjcgsFHDMlZbLYdh_lDtnRJjcn4GLe4R-SUfWel6Dijm1nLhSg/exec";
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzSDP1sG0me7kjiNApPAiYeoSfC7g3kdOwsjauCw0rgd_lNZ5WP5UX8uRacW5WnV6oA/exec";
 
         // ========== SYNC MECHANISM VARIABLES ==========
         let isGoogleSheetsOnline = true;
@@ -1977,59 +1978,116 @@ function exportCertificationsToExcel() {
         let certificationCounter = { lastCertNumber: 0 };
         let currentEditingZoningId = null;
 
-       async function fetchCertifications() {
+     async function fetchCertifications() {
     try {
+        console.log('Fetching certifications from Google Sheets...');
         const response = await fetch(GOOGLE_SCRIPT_URL + '?action=get&data_type=zoning', { method: 'GET' });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
         const data = await response.json();
-
-        // Check if data is a 2D array (rows of values)
-        if (Array.isArray(data) && data.length > 0 && Array.isArray(data[0])) {
-            // Expected column order (28 columns)
-            const headers = [
-                'id', 'certificationNo', 'certificationIssued', 'series', 'parcels', 'location',
-                'latitude', 'longitude', 'totalArea', 'proposedUse', 'landHoldings',
-                'dateReceived', 'dateIssued', 'requestedBy', 'amountPaid', 'orNo', 'orDate',
-                'remarks', 'clupStatus', 'city', 'province', 'approvedBy', 'circularNo',
-                'approvalDate', 'purpose', 'landClass', 'status', 'timestamp'
-            ];
-            zoningCertifications = data.map(row => {
-                let obj = {};
-                headers.forEach((h, idx) => { obj[h] = row[idx] || ''; });
-                // Parse landHoldings if it's a JSON string
-                if (obj.landHoldings && typeof obj.landHoldings === 'string') {
-                    try { obj.landHoldings = JSON.parse(obj.landHoldings); } catch(e) { obj.landHoldings = []; }
-                }
-                if (!obj.status) obj.status = 'For Review';
-                return obj;
-            });
-        } else if (Array.isArray(data)) {
-            // Already objects
-            zoningCertifications = data;
+        console.log('Raw data from server:', data);
+        
+        // Handle different response formats
+        let records = [];
+        
+        if (Array.isArray(data)) {
+            if (data.length > 0 && Array.isArray(data[0])) {
+                // Data is a 2D array (rows of values)
+                const headers = [
+                    'id', 'certificationNo', 'certificationIssued', 'series', 'parcels', 'location',
+                    'latitude', 'longitude', 'totalArea', 'proposedUse', 'landHoldings',
+                    'dateReceived', 'dateIssued', 'requestedBy', 'amountPaid', 'orNo', 'orDate',
+                    'remarks', 'clupStatus', 'city', 'province', 'approvedBy', 'circularNo',
+                    'approvalDate', 'purpose', 'landClass', 'status', 'timestamp'
+                ];
+                
+                records = data.map(row => {
+                    let obj = {};
+                    headers.forEach((h, idx) => {
+                        let value = row[idx];
+                        if (value === null || value === undefined) value = '';
+                        obj[h] = value;
+                    });
+                    
+                    // Parse landHoldings if it's a JSON string
+                    if (obj.landHoldings && typeof obj.landHoldings === 'string') {
+                        try {
+                            obj.landHoldings = JSON.parse(obj.landHoldings);
+                        } catch(e) {
+                            console.warn('Failed to parse landHoldings:', e);
+                            obj.landHoldings = [];
+                        }
+                    }
+                    if (!obj.landHoldings) obj.landHoldings = [];
+                    if (!obj.status) obj.status = 'For Review';
+                    
+                    return obj;
+                });
+            } else {
+                // Data is already objects
+                records = data.map(record => {
+                    // Parse landHoldings if it's a JSON string
+                    if (record.landHoldings && typeof record.landHoldings === 'string') {
+                        try {
+                            record.landHoldings = JSON.parse(record.landHoldings);
+                        } catch(e) {
+                            record.landHoldings = [];
+                        }
+                    }
+                    if (!record.landHoldings) record.landHoldings = [];
+                    if (!record.status) record.status = 'For Review';
+                    return record;
+                });
+            }
+        } else if (data && data.success === false) {
+            console.error('Server error:', data.error);
+            throw new Error(data.error);
+        }
+        
+        // Update the global array
+        zoningCertifications = records;
+        
+        // Save to localStorage as backup
+        localStorage.setItem('zoningCertifications', JSON.stringify(zoningCertifications));
+        
+        console.log(`Loaded ${zoningCertifications.length} certifications`);
+        
+        // Update counter from loaded data
+        await updateLocalCounterAfterSync();
+        
+        // Refresh the UI
+        renderCertificationsTable();
+        updateAccomplishmentStats();
+        
+        return zoningCertifications;
+        
+    } catch (error) {
+        console.error('Error fetching certifications:', error);
+        
+        // Fall back to localStorage
+        const localData = localStorage.getItem('zoningCertifications');
+        if (localData) {
+            zoningCertifications = JSON.parse(localData);
+            console.log(`Loaded ${zoningCertifications.length} certifications from localStorage (fallback)`);
+            renderCertificationsTable();
+            updateAccomplishmentStats();
         } else {
             zoningCertifications = [];
+            console.log('No local data found');
         }
-
-        zoningCertifications.forEach(rec => {
-            if (!rec.status) rec.status = 'For Review';
-            if (!rec.dateReceived) rec.dateReceived = ''; // ensure field exists
-        });
-        localStorage.setItem('zoningCertifications', JSON.stringify(zoningCertifications));
-        await updateLocalCounterAfterSync();
-        renderCertificationsTable();
-        updateAccomplishmentStats();
-    } catch (error) {
-        console.warn('Falling back to localStorage', error);
-        zoningCertifications = JSON.parse(localStorage.getItem('zoningCertifications') || '[]');
-        zoningCertifications.forEach(rec => {
-            if (!rec.status) rec.status = 'For Review';
-            if (!rec.dateReceived) rec.dateReceived = '';
-        });
-        updateCounterFromData();
-        renderCertificationsTable();
-        updateAccomplishmentStats();
+        return zoningCertifications;
     }
 }
-
+async function manualRefresh() {
+    showToast('Refreshing data from Google Sheets...', 'info');
+    await fetchCertifications();
+    renderCertificationsTable();
+    updateAccomplishmentStats();
+    showToast('Data refreshed successfully!', 'success');
+}
         function updateCounterFromData() {
             let maxNum = 0;
             zoningCertifications.forEach(rec => { const match = rec.certificationNo?.match(/-(\d+)$/); if (match) maxNum = Math.max(maxNum, parseInt(match[1], 10)); });
