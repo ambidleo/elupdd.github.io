@@ -2,17 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>ELUPDD Region VI - Site Zoning & Locational Clearance</title>
+   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>ELUPDD Region VI - Site Zoning Certification</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.0.9/main.min.css' rel='stylesheet' />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/shpjs@3.4.3/dist/shp.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.0.9/main.min.js'></script>
     <style>
-        /* ===== YOUR ORIGINAL CSS (unchanged) ===== */
+        /* ===== Full CSS (with added subnav styles) ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #e8f0f9; min-height: 100vh; }
         :root { --primary-dark: #1a4d5e; --primary: #2c6e8f; --primary-light-accessible: #1e7a9c; --secondary: #3a7b5c; --accent-accessible: #d4a017; --earth: #8B5A2B; --water: #3498db; --forest: #27ae60; --urban: #7f8c8d; --background: #f5f9ff; --card-bg: #ffffff; --cert-primary: #8B4513; --cert-secondary: #228B22; --cert-accent: #FFD700; }
@@ -30,7 +28,13 @@
         .btn-warning { background: var(--accent-accessible); color: var(--primary-dark); }
         .btn-warning:hover { background: #b88914; }
         header { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); color: white; padding: 1.5rem 2rem; border-bottom: 5px solid var(--accent-accessible); position: relative; overflow: hidden; display: flex; align-items: center; gap: 2rem; }
-        .logo-container { flex-shrink: 0; background: transparent; display: flex; align-items: center; justify-content: center; }
+       .logo-container { 
+    flex-shrink: 0; 
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
         .logo { background: white; border-radius: 12px; padding: 0.8rem 1.5rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); border: 2px solid var(--accent-accessible); width: 180px; height: 90px; }
         .logo span { font-size: 1.2rem; font-weight: bold; color: var(--primary-dark); }
         .header-content { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
@@ -38,14 +42,9 @@
         .header-content h2 { font-size: 1.4rem; font-weight: 400; opacity: 0.95; font-style: italic; margin-bottom: 0.5rem; }
         .header-badge { background: var(--accent-accessible); color: var(--primary-dark); display: inline-block; padding: 0.3rem 1.5rem; border-radius: 30px; font-weight: bold; box-shadow: 0 2px 10px rgba(0,0,0,0.2); font-size: 1rem; text-align: center; }
         .nav-bar { background: var(--primary-dark); padding: 0.8rem 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.2); position: sticky; top: 0; z-index: 1000; }
-        .nav-bar ul { list-style: none; display: flex; gap: 2rem; max-width: 1400px; margin: 0 auto; flex-wrap: wrap; align-items: center; }
+        .nav-bar ul { list-style: none; display: flex; gap: 2rem; max-width: 1400px; margin: 0 auto; flex-wrap: wrap; }
         .nav-bar a { color: white; text-decoration: none; font-size: 1rem; padding: 0.5rem 1rem; border-radius: 20px; transition: all 0.3s; display: flex; align-items: center; gap: 0.5rem; font-weight: 500; }
         .nav-bar a:hover, .nav-bar a.active { background: var(--accent-accessible); color: var(--primary-dark); transform: translateY(-2px); }
-        .dropdown { position: relative; }
-        .dropdown-content { display: none; position: absolute; background: white; min-width: 220px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); z-index: 1001; border-radius: 8px; overflow: hidden; top: 100%; left: 0; }
-        .dropdown-content a { color: var(--primary-dark); padding: 12px 16px; text-decoration: none; display: block; font-weight: 500; }
-        .dropdown-content a:hover { background: #f1f1f1; }
-        .dropdown:hover .dropdown-content { display: block; }
         .container { max-width: 1400px; margin: 2rem auto; padding: 0 2rem; }
         .section { display: none; }
         .section.active { display: block; }
@@ -126,12 +125,48 @@
         .cert-table th { background: var(--cert-primary); color: white; padding: 0.75rem; text-align: left; }
         .cert-table td { padding: 0.75rem; border-bottom: 1px solid #e0e0e0; }
         .cert-table tr:hover { background: #f8f4e8; }
-        .zoning-subnav { display: flex; gap: 1rem; margin-bottom: 2rem; border-bottom: 2px solid var(--primary-light-accessible); padding-bottom: 0.5rem; }
-        .zoning-subnav .subnav-link { background: none; border: none; padding: 0.8rem 1.8rem; font-size: 1.1rem; font-weight: 600; color: var(--primary-dark); cursor: pointer; border-radius: 30px 30px 0 0; transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem; opacity: 0.7; }
-        .zoning-subnav .subnav-link:hover { opacity: 1; background: rgba(44, 110, 143, 0.1); }
-        .zoning-subnav .subnav-link.active { opacity: 1; color: var(--primary); border-bottom: 3px solid var(--accent-accessible); background: rgba(212, 160, 23, 0.1); }
-        .zoning-view { display: none; }
-        .zoning-view.active { display: block; }
+        
+        /* Zoning Subnav Styles */
+        .zoning-subnav {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--primary-light-accessible);
+            padding-bottom: 0.5rem;
+        }
+        .zoning-subnav .subnav-link {
+            background: none;
+            border: none;
+            padding: 0.8rem 1.8rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary-dark);
+            cursor: pointer;
+            border-radius: 30px 30px 0 0;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            opacity: 0.7;
+        }
+        .zoning-subnav .subnav-link:hover {
+            opacity: 1;
+            background: rgba(44, 110, 143, 0.1);
+        }
+        .zoning-subnav .subnav-link.active {
+            opacity: 1;
+            color: var(--primary);
+            border-bottom: 3px solid var(--accent-accessible);
+            background: rgba(212, 160, 23, 0.1);
+        }
+        .zoning-view {
+            display: none;
+        }
+        .zoning-view.active {
+            display: block;
+        }
+
+        /* Enhanced Map Popup Styles */
         .map-popup-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 30000; justify-content: center; align-items: center; }
         .map-popup-modal.active { display: flex; }
         .map-popup-content { background: white; border-radius: 20px; width: 90%; max-width: 900px; height: 85%; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
@@ -148,7 +183,16 @@
         .layer-name { font-weight: 600; font-size: 0.85rem; }
         .layer-actions { display: flex; gap: 8px; }
         .map-popup-footer { padding: 15px; text-align: right; border-top: 1px solid #ddd; }
-        @media print { .signature-box p:first-of-type { white-space: nowrap !important; } { size: A4; margin: 0.5cm; } body * { visibility: hidden; } #printSection, #printSection * { visibility: visible; } #printSection { position: absolute; left: 0; top: 0; width: 100%; background: white; font-family: 'Times New Roman', Times, serif; } .print-document { margin: 0; padding: 0; max-width: 100%; } .print-document, .print-document * { page-break-after: avoid; page-break-before: avoid; page-break-inside: avoid; } }
+        
+        @media print {
+            .signature-box p:first-of-type { white-space: nowrap !important; }
+            { size: A4; margin: 0.5cm; }
+            body * { visibility: hidden; }
+            #printSection, #printSection * { visibility: visible; }
+            #printSection { position: absolute; left: 0; top: 0; width: 100%; background: white; font-family: 'Times New Roman', Times, serif; }
+            .print-document { margin: 0; padding: 0; max-width: 100%; }
+            .print-document, .print-document * { page-break-after: avoid; page-break-before: avoid; page-break-inside: avoid; }
+        }
         .print-document { font-family: 'Times New Roman', Times, serif; max-width: 100%; margin: 0; padding: 1cm; line-height: 1.0; font-size: 12pt; background: white; box-sizing: border-box; }
         .print-document h2 { text-align: center; font-size: 18pt; font-weight: bold; margin: 0.5cm 0 0.3cm 0; text-transform: uppercase; page-break-after: avoid; }
         .print-document h3 { text-align: center; font-size: 15pt; font-weight: bold; margin: 0.4cm 0 0.2cm 0; page-break-after: avoid; }
@@ -165,13 +209,31 @@
         .print-document .header-right { text-align: right; margin-bottom: 0.5cm; }
         .print-document .basic-info { margin: 0.3cm 0; }
         .print-document .basic-info p { margin: 0.1cm 0; }
-        .print-document .clup-status { margin: 0.3cm 0; padding: 0.3cm; }
+        .print-document .clup-status { margin: 0.3cm 0; padding: 0.3cm;}
         .print-document .page-break { page-break-before: always; }
         .print-document .keep-together { page-break-inside: avoid; }
         .print-document .avoid-break { page-break-inside: avoid; }
         footer { background: linear-gradient(135deg, var(--primary-dark), #0e2f3a); color: white; padding: 2rem; margin-top: 3rem; text-align: center; position: relative; }
         footer p { opacity: 0.9; margin: 0.5rem 0; }
-        @media (max-width: 768px) { header { flex-direction: column; text-align: center; gap: 1rem; padding: 1rem; } .logo-container { width: 100%; display: flex; justify-content: center; } .logo { width: 60px; height: 60px; } .header-content h1 { font-size: 1.5rem; } .header-content h2 { font-size: 1rem; } .nav-bar ul { flex-direction: column; gap: 0.5rem; } .section-header { flex-direction: column; align-items: flex-start; } .btn-group { width: 100%; } .btn { flex: 1; justify-content: center; } .form-grid { grid-template-columns: 1fr; } .form-group.full-width { grid-column: span 1; } .search-bar { flex-direction: column; } .coord-info { flex-direction: column; align-items: center; } .coord-info input { width: 100%; } .zoning-subnav { flex-direction: column; gap: 0.5rem; } .zoning-subnav .subnav-link { border-radius: 30px; justify-content: center; } }
+        @media (max-width: 768px) {
+            header { flex-direction: column; text-align: center; gap: 1rem; padding: 1rem; }
+            .logo-container { width: 100%; display: flex; justify-content: center; }
+         .logo { width: 60px; height: 60px; }
+            .header-content h1 { font-size: 1.5rem; }
+            .header-content h2 { font-size: 1rem; }
+            .nav-bar ul { flex-direction: column; gap: 0.5rem; }
+            .section-header { flex-direction: column; align-items: flex-start; }
+            .btn-group { width: 100%; }
+            .btn { flex: 1; justify-content: center; }
+            .form-grid { grid-template-columns: 1fr; }
+            .form-group.full-width { grid-column: span 1; }
+            .search-bar { flex-direction: column; }
+            .coord-info { flex-direction: column; align-items: center; }
+            .coord-info input { width: 100%; }
+            .zoning-subnav { flex-direction: column; gap: 0.5rem; }
+            .zoning-subnav .subnav-link { border-radius: 30px; justify-content: center; }
+        }
+        /* Sync status indicator styles */
         .sync-status { position: fixed; bottom: 20px; left: 20px; background: white; padding: 8px 12px; border-radius: 20px; font-size: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); z-index: 10000; display: flex; align-items: center; gap: 8px; }
         .sync-status.online { border-left: 3px solid #28a745; }
         .sync-status.offline { border-left: 3px solid #dc3545; }
@@ -197,77 +259,1140 @@
         .stat-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
         .stat-number { font-size: 3rem; font-weight: bold; color: var(--primary-dark); }
         .stat-label { font-size: 1.2rem; color: var(--primary); margin-top: 0.5rem; }
-        /* mobile responsive styles omitted for brevity (already in original) */
-        .auth-modal, .user-info-bar, .role-based styles remain unchanged.
+        /* ===== IMPROVED MOBILE RESPONSIVE STYLES ===== */
+
+/* Base responsive adjustments */
+* {
+    box-sizing: border-box;
+}
+
+/* Make everything fluid on mobile */
+html {
+    font-size: 16px;
+}
+
+@media (max-width: 768px) {
+    html {
+        font-size: 14px;
+    }
+    
+    /* Header adjustments */
+    header {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.8rem;
+        padding: 1rem;
+    }
+    
+    .logo-container {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+    
+    .logo {
+        width: 120px;
+        height: 60px;
+        padding: 0.5rem;
+    }
+    
+    .header-content h1 {
+        font-size: 1.2rem;
+        margin-bottom: 0.2rem;
+    }
+    
+    .header-content h2 {
+        font-size: 0.9rem;
+    }
+    
+    .header-badge {
+        font-size: 0.75rem;
+        padding: 0.2rem 1rem;
+    }
+    
+    /* Navigation - make it horizontal scrollable on mobile */
+    .nav-bar {
+        padding: 0.5rem;
+        overflow-x: auto;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .nav-bar ul {
+        display: flex;
+        flex-direction: row;
+        gap: 0.5rem;
+        justify-content: flex-start;
+        flex-wrap: nowrap;
+        min-width: min-content;
+    }
+    
+    .nav-bar a {
+        font-size: 0.85rem;
+        padding: 0.4rem 0.8rem;
+        white-space: nowrap;
+    }
+    
+    /* Container */
+    .container {
+        margin: 1rem auto;
+        padding: 0 1rem;
+    }
+    
+    /* Section headers */
+    .section-header h3 {
+        font-size: 1.2rem;
+    }
+    
+    /* Form improvements for mobile */
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .form-group.full-width {
+        grid-column: span 1;
+    }
+    
+    .form-control {
+        font-size: 16px; /* Prevents zoom on iOS */
+        padding: 0.75rem;
+    }
+    
+    /* Land holdings row - stack vertically on mobile */
+    .land-holding-row {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0.8rem !important;
+        margin-bottom: 1rem !important;
+        padding: 1rem !important;
+    }
+    
+    .land-holding-row > div {
+        width: 100%;
+    }
+    
+    /* Buttons - full width on mobile */
+    .btn-group {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .btn {
+        width: 100%;
+        justify-content: center;
+        padding: 0.75rem;
+        font-size: 0.9rem;
+    }
+    
+    .action-btns {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .action-btn {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.75rem;
+    }
+    
+    /* Search bar improvements */
+    .search-bar {
+        flex-direction: column;
+        gap: 0.8rem;
+        padding: 1rem;
+    }
+    
+    .search-box {
+        width: 100%;
+    }
+    
+    .search-box input {
+        font-size: 16px;
+        padding: 0.75rem 0.75rem 0.75rem 2.2rem;
+    }
+    
+    .filter-group select {
+        font-size: 16px;
+        padding: 0.75rem;
+    }
+    
+    /* Table - make horizontal scrollable */
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .cert-table {
+        min-width: 800px;
+    }
+    
+    .cert-table th,
+    .cert-table td {
+        padding: 0.5rem;
+        font-size: 0.8rem;
+        white-space: nowrap;
+    }
+    
+    /* Stats cards */
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.8rem;
+    }
+    
+    .stat-card {
+        padding: 1rem;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+    }
+    
+    .stat-label {
+        font-size: 0.85rem;
+    }
+    
+    /* Zoning subnav - horizontal scroll */
+    .zoning-subnav {
+        flex-direction: row;
+        overflow-x: auto;
+        gap: 0rem;
+        padding-bottom: 0;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .zoning-subnav .subnav-link {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.9rem;
+        white-space: nowrap;
+        border-radius: 0;
+    }
+    
+    /* Modal improvements */
+    .modal-content {
+        width: 95%;
+        padding: 1rem;
+        margin: 0.5rem;
+        max-height: 85vh;
+    }
+    
+    .modal-header h2 {
+        font-size: 1.2rem;
+    }
+    
+    /* Radio groups */
+    .radio-group {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    /* CLUP cascade */
+    .clup-cascade-row {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    /* Map popup improvements */
+    .map-popup-content {
+        width: 95%;
+        height: 90%;
+    }
+    
+    .coord-info {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+    }
+    
+    .coord-info input {
+        width: 100%;
+    }
+    
+    .layer-item {
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: stretch;
+        text-align: center;
+    }
+    
+    .layer-actions {
+        justify-content: center;
+    }
+    
+    /* Sync status indicator */
+    .sync-status {
+        bottom: 10px;
+        left: 10px;
+        right: 10px;
+        font-size: 10px;
+        padding: 6px 10px;
+    }
+    
+    /* Footer */
+    footer {
+        padding: 1rem;
+        font-size: 0.75rem;
+    }
+    
+    footer p {
+        margin: 0.25rem 0;
+    }
+    
+    /* Popup map */
+    #popupMap {
+        height: 250px;
+    }
+    
+    /* Print document adjustments */
+    .print-document {
+        padding: 0.5cm;
+    }
+}
+
+/* Small phones (up to 480px) */
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 0.8rem;
+    }
+    
+    .cert-title {
+        font-size: 1.2rem;
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .cert-title span {
+        font-size: 0.8rem;
+    }
+    
+    .cert-subtitle {
+        font-size: 1.1rem;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .section-header h3 {
+        font-size: 1.1rem;
+    }
+    
+    .summary-stats {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .modal-content {
+        width: 98%;
+        padding: 0.8rem;
+    }
+    
+    /* Make buttons more tappable */
+    .btn, 
+    .action-btn,
+    .subnav-link,
+    .nav-bar a {
+        min-height: 44px;
+    }
+}
+
+/* Tablet landscape */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .form-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    
+    .container {
+        padding: 0 1.5rem;
+    }
+}
+
+/* Add touch-friendly improvements */
+@media (hover: none) and (pointer: coarse) {
+    /* Larger tap targets */
+    button, 
+    .btn, 
+    .action-btn,
+    .subnav-link,
+    .nav-bar a,
+    .status-dropdown {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    /* Remove hover effects that might cause issues on touch */
+    .btn:hover {
+        transform: none;
+    }
+    
+    /* Better scrolling for tables */
+    .table-responsive {
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* Loading overlay adjustments */
+.sync-loading-content {
+    width: 80%;
+    max-width: 250px;
+    padding: 1rem;
+}
+
+/* Toast notifications on mobile */
+.toast-notification {
+    bottom: 70px !important;
+    right: 10px !important;
+    left: 10px !important;
+    max-width: none !important;
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+/* Date inputs on mobile */
+input[type="date"] {
+    min-height: 44px;
+}
+
+/* Select dropdowns on mobile */
+select.form-control {
+    min-height: 44px;
+    background-size: 12px;
+    background-position: calc(100% - 15px) center;
+    padding-right: 35px;
+}
+
+/* Improve scrolling experience */
+body {
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Card spacing on mobile */
+.cert-section {
+    padding: 1rem;
+    margin: 1rem 0;
+}
+
+/* Land holdings container */
+#landHoldingsContainer {
+    max-height: 60vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+        /* Touch-friendly improvements */
+@media (max-width: 768px) {
+    /* Improve spacing for touch targets */
+    button, 
+    .btn, 
+    .action-btn,
+    .subnav-link,
+    .nav-bar a,
+    .status-dropdown,
+    .close-btn,
+    .map-popup-close {
+        touch-action: manipulation;
+    }
+    
+    /* Better form spacing */
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    
+    /* Make status dropdown easier to tap */
+    .status-dropdown {
+        padding: 0.5rem;
+        font-size: 0.85rem;
+    }
+    
+    /* Improve modal scrolling */
+    .modal-content {
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Better button contrast on mobile */
+    .btn-primary, .btn-success, .btn-danger, .btn-warning {
+        font-weight: 600;
+    }
+    
+    /* Fix for fixed position elements */
+    .sync-status {
+        position: fixed;
+        z-index: 10000;
+    }
+}
+        /* ===== LOGIN/REGISTRATION MODAL STYLES ===== */
+.auth-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    z-index: 20000;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(5px);
+}
+
+.auth-modal.active {
+    display: flex;
+}
+
+.auth-container {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    max-width: 450px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    animation: modalSlideIn 0.3s ease;
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.auth-header h2 {
+    color: var(--primary-dark);
+    font-size: 1.8rem;
+}
+
+.auth-header p {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.auth-tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid #e0e7ff;
+}
+
+.auth-tab {
+    flex: 1;
+    padding: 0.8rem;
+    background: none;
+    border: none;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    color: #666;
+    transition: all 0.3s;
+}
+
+.auth-tab.active {
+    color: var(--primary);
+    border-bottom: 3px solid var(--accent-accessible);
+}
+
+.auth-form {
+    display: none;
+}
+
+.auth-form.active {
+    display: block;
+}
+
+.auth-form .form-group {
+    margin-bottom: 1.5rem;
+}
+
+.auth-form label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--primary-dark);
+    font-weight: 600;
+}
+
+.auth-form input {
+    width: 100%;
+    padding: 0.8rem;
+    border: 2px solid #e0e7ff;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: all 0.3s;
+}
+
+.auth-form input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.auth-btn {
+    width: 100%;
+    padding: 0.8rem;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.auth-btn:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+}
+
+.auth-footer {
+    text-align: center;
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+}
+
+.auth-footer a {
+    color: var(--primary);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.auth-footer a:hover {
+    text-decoration: underline;
+}
+
+/* User info bar */
+.user-info-bar {
+    position: fixed;
+    top: 10px;
+    right: 20px;
+    background: white;
+    padding: 8px 15px;
+    border-radius: 30px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 1001;
+    font-size: 0.9rem;
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    background: var(--primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+}
+
+.user-name {
+    font-weight: 600;
+    color: var(--primary-dark);
+}
+
+.user-role {
+    font-size: 0.75rem;
+    color: #666;
+}
+
+.logout-btn {
+    background: none;
+    border: none;
+    color: #dc3545;
+    cursor: pointer;
+    font-size: 0.85rem;
+    padding: 4px 8px;
+    border-radius: 5px;
+    transition: all 0.2s;
+}
+
+.logout-btn:hover {
+    background: #dc3545;
+    color: white;
+}
+
+/* Role-based visibility */
+.role-admin, .role-staff, .role-viewer {
+    display: none;
+}
+
+body[data-role="admin"] .role-admin,
+body[data-role="staff"] .role-staff,
+body[data-role="viewer"] .role-viewer {
+    display: inline-flex;
+}
+
+/* Protect sections based on role */
+body[data-role="viewer"] .btn-delete,
+body[data-role="viewer"] .action-btn.delete,
+body[data-role="viewer"] #dataEntryView .btn-danger {
+    display: none !important;
+}
+
+body[data-role="viewer"] .btn-success[onclick*="addLandHolding"],
+body[data-role="viewer"] .btn-warning,
+body[data-role="viewer"] .reset-counter-btn {
+    display: none !important;
+}
+
+@media (max-width: 768px) {
+    .user-info-bar {
+        top: 5px;
+        right: 10px;
+        padding: 5px 10px;
+        font-size: 0.75rem;
+    }
+    
+    .user-avatar {
+        width: 28px;
+        height: 28px;
+        font-size: 0.75rem;
+    }
+    
+    .auth-container {
+        padding: 1.5rem;
+        margin: 1rem;
+    }
+}
+        /* Hide main content until authenticated */
+body:not([data-role]) .container {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+body[data-role] .container {
+    opacity: 1;
+    pointer-events: auto;
+    transition: opacity 0.3s ease;
+}
+        /* Completely hide main content until authenticated */
+body:not([data-role]) .container,
+body:not([data-role]) header,
+body:not([data-role]) .nav-bar,
+body:not([data-role]) footer {
+    display: none !important;
+}
+
+/* Show only the auth modal overlay when not logged in */
+body:not([data-role]) .auth-modal {
+    display: flex !important;
+}
+
+/* When logged in, show everything normally */
+body[data-role] .auth-modal {
+    display: none !important;
+}
+
+body[data-role] .container,
+body[data-role] header,
+body[data-role] .nav-bar,
+body[data-role] footer {
+    display: block;
+}
+
+/* Fix for nav-bar display when logged in */
+body[data-role] .nav-bar {
+    display: block;
+}
+
+body[data-role] .container {
+    display: block;
+}
+        /* Ensure auth modal is visible when not logged in */
+.auth-modal {
+    display: none;
+}
+
+body:not([data-role]) .auth-modal {
+    display: flex !important;
+    z-index: 99999;
+}
+        .logo-container img {
+    background: transparent !important;
+    mix-blend-mode: multiply;
+}
     </style>
-    <!-- Activity Modal (new) -->
-    <div id="activityModal" class="modal"><div class="modal-content"><div class="modal-header"><h2>📝 Add New Activity</h2><button class="close-btn" onclick="closeActivityModal()">&times;</button></div><div class="modal-body"><div class="form-group"><label>Event Title</label><input type="text" id="activityTitle" class="form-control"></div><div class="form-group"><label>Date</label><input type="date" id="activityDate" class="form-control"></div><div class="form-group"><label>Description (optional)</label><textarea id="activityDesc" class="form-control" rows="2"></textarea></div><div style="display:flex; gap:1rem; justify-content:flex-end;"><button class="btn btn-secondary" onclick="closeActivityModal()">Cancel</button><button class="btn btn-success" onclick="saveActivity()">Save Activity</button></div></div></div></div>
 </head>
 <body>
-    <!-- User Info Bar (same as original) -->
-    <div id="userInfoBar" class="user-info-bar" style="display: none;"><div class="user-avatar" id="userAvatar"></div><div><div class="user-name" id="userName"></div><div class="user-role" id="userRole"></div></div><button class="logout-btn" onclick="logout()">🚪 Logout</button></div>
+    <!-- User Info Bar (hidden until logged in) -->
+<div id="userInfoBar" class="user-info-bar" style="display: none;">
+    <div class="user-avatar" id="userAvatar"></div>
+    <div>
+        <div class="user-name" id="userName"></div>
+        <div class="user-role" id="userRole"></div>
+    </div>
+    <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+</div>
 
-    <!-- Login/Register Modal (same as original) -->
-    <div id="authModal" class="auth-modal">
-        <div class="auth-container">
-            <div class="auth-header"><h2>🏛️ ELUPDD Region VI</h2><p>Environmental Land Use and Urban Planning Development Division</p></div>
-            <div class="auth-tabs"><button class="auth-tab active" onclick="switchAuthTab('login')">🔐 Login</button><button class="auth-tab" onclick="switchAuthTab('register')">📝 Register</button></div>
-            <div id="loginForm" class="auth-form active"><form onsubmit="return loginUser(event)"><div class="form-group"><label>📧 Email Address</label><input type="email" id="loginEmail" required placeholder="Enter your email"></div><div class="form-group"><label>🔒 Password</label><input type="password" id="loginPassword" required placeholder="Enter your password"></div><button type="submit" class="auth-btn">Login</button></form></div>
-            <div id="registerForm" class="auth-form"><form onsubmit="return registerUser(event)"><div class="form-group"><label>👤 Full Name</label><input type="text" id="regFullName" required placeholder="Enter your full name"></div><div class="form-group"><label>📧 Email Address</label><input type="email" id="regEmail" required placeholder="Enter your email"></div><div class="form-group"><label>🔒 Password</label><input type="password" id="regPassword" required placeholder="Min. 6 characters"></div><div class="form-group"><label>🔒 Confirm Password</label><input type="password" id="regConfirmPassword" required placeholder="Confirm your password"></div><div class="form-group"><label>👔 Role</label><select id="regRole" class="form-control"><option value="viewer">Viewer (View Only)</option><option value="staff">Staff (Can Add/Edit)</option><option value="admin">Admin (Full Access)</option></select></div><div class="form-group" id="adminCodeGroup" style="display: none;"><label>🔑 Admin Registration Code</label><input type="password" id="adminCode" placeholder="Enter admin code"><small>Required for admin registration</small></div><button type="submit" class="auth-btn">Create Account</button></form></div>
-            <div class="auth-footer"><a onclick="showForgotPassword()">Forgot Password?</a></div>
+<!-- Login/Register Modal -->
+<div id="authModal" class="auth-modal">
+    <div class="auth-container">
+        <div class="auth-header">
+            <h2>🏛️ ELUPDD Region VI</h2>
+            <p>Environmental Land Use and Urban Planning Development Division</p>
+        </div>
+        
+        <div class="auth-tabs">
+            <button class="auth-tab active" onclick="switchAuthTab('login')">🔐 Login</button>
+            <button class="auth-tab" onclick="switchAuthTab('register')">📝 Register</button>
+        </div>
+        
+        <!-- Login Form -->
+        <div id="loginForm" class="auth-form active">
+            <form onsubmit="return loginUser(event)">
+                <div class="form-group">
+                    <label>📧 Email Address</label>
+                    <input type="email" id="loginEmail" required placeholder="Enter your email">
+                </div>
+                <div class="form-group">
+                    <label>🔒 Password</label>
+                    <input type="password" id="loginPassword" required placeholder="Enter your password">
+                </div>
+                <button type="submit" class="auth-btn">Login</button>
+            </form>
+        </div>
+        
+        <!-- Register Form -->
+        <div id="registerForm" class="auth-form">
+            <form onsubmit="return registerUser(event)">
+                <div class="form-group">
+                    <label>👤 Full Name</label>
+                    <input type="text" id="regFullName" required placeholder="Enter your full name">
+                </div>
+                <div class="form-group">
+                    <label>📧 Email Address</label>
+                    <input type="email" id="regEmail" required placeholder="Enter your email">
+                </div>
+                <div class="form-group">
+                    <label>🔒 Password</label>
+                    <input type="password" id="regPassword" required placeholder="Min. 6 characters">
+                </div>
+                <div class="form-group">
+                    <label>🔒 Confirm Password</label>
+                    <input type="password" id="regConfirmPassword" required placeholder="Confirm your password">
+                </div>
+                <div class="form-group">
+                    <label>👔 Role</label>
+                    <select id="regRole" class="form-control">
+                        <option value="viewer">Viewer (View Only)</option>
+                        <option value="staff">Staff (Can Add/Edit)</option>
+                        <option value="admin">Admin (Full Access)</option>
+                    </select>
+                </div>
+                <div class="form-group" id="adminCodeGroup" style="display: none;">
+                    <label>🔑 Admin Registration Code</label>
+                    <input type="password" id="adminCode" placeholder="Enter admin code">
+                    <small>Required for admin registration</small>
+                </div>
+                <button type="submit" class="auth-btn">Create Account</button>
+            </form>
+        </div>
+        
+        <div class="auth-footer">
+            <a onclick="showForgotPassword()">Forgot Password?</a>
         </div>
     </div>
+</div>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
 
     <header role="banner">
-        <div class="logo-container"><img src="DHSUD LOGO.png" alt="DHSUD Logo" style="width:70px; height:70px; object-fit:contain; background:transparent;"></div>
-        <div class="header-content"><h1>ENVIRONMENTAL LAND USE AND URBAN PLANNING</h1><h2>DEVELOPMENT DIVISION - REGION VI</h2><div class="header-badge">Western Visayas • Sustainable Development • Resilient Communities</div></div>
+       <div class="logo-container" style="background: transparent; display: flex; align-items: center; justify-content: center;">
+   <img src="DHSUD LOGO.png" alt="DHSUD Logo" style="width: 70px; height: 70px; object-fit: contain; filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.15)); background: transparent;">
+</div>
+        <div class="header-content">
+            <h1>ENVIRONMENTAL LAND USE AND URBAN PLANNING</h1>
+            <h2>DEVELOPMENT DIVISION - REGION VI</h2>
+            <div class="header-badge">Western Visayas • Sustainable Development • Resilient Communities</div>
+        </div>
     </header>
 
-    <nav class="nav-bar">
-        <ul>
-            <li><a href="#" onclick="showSection('home')">🏠 Home</a></li>
-            <li class="dropdown"><a href="#" style="cursor: pointer;">🏛️ ELUPDD ▼</a><div class="dropdown-content"><a href="#" onclick="switchELUPDDModule('locational'); return false;">📍 Locational Clearance</a><a href="#" onclick="switchELUPDDModule('zoning'); return false;">🏷️ Site Zoning Certification</a></div></li>
-            <li><a href="#" onclick="showSection('reports')">📊 Reports</a></li>
-            <li><a href="#" onclick="openAboutModal()">ℹ️ About</a></li>
+    <nav class="nav-bar" aria-label="Main navigation" role="navigation">
+        <ul role="menubar">
+            <li role="none"><a href="#" onclick="showSection('zoning')" class="active" role="menuitem" aria-current="page"><span aria-hidden="true">🏷️</span><span>Site Zoning Certification</span></a></li>
+            <li role="none"><a href="#" onclick="showSection('reports')" role="menuitem"><span aria-hidden="true">📊</span><span>Reports</span></a></li>
+            <li role="none"><a href="#" onclick="openAboutModal()" role="menuitem"><span aria-hidden="true">ℹ️</span><span>About</span></a></li>
         </ul>
     </nav>
 
-    <main><div class="container">
-        <!-- HOME Section -->
-        <div id="home" class="section"><div class="cert-section"><div class="cert-title"><span>📅</span> Calendar of Activities</div><div id="calendar" style="margin-bottom:1rem;"></div><div style="display:flex; justify-content:flex-end;"><button class="btn btn-primary" onclick="openAddActivityModal()">➕ Add Activity</button></div></div></div>
+    <main id="main-content" role="main">
+        <div class="container">
+            <!-- Site Zoning Certification Section with Submenu -->
+            <div id="zoning" class="section active" role="region" aria-labelledby="zoning-heading">
+                <h1 id="zoning-heading" class="visually-hidden">Site Zoning Certification</h1>
+                
+                <!-- Sub-navigation for Data Entry / Accomplishment -->
+                <div class="zoning-subnav" role="tablist">
+                    <button class="subnav-link active" onclick="switchZoningView('dataEntry')" role="tab" aria-selected="true" aria-controls="dataEntryView">
+                        <span aria-hidden="true">📝</span> Data Entry
+                    </button>
+                    <button class="subnav-link" onclick="switchZoningView('accomplishment')" role="tab" aria-selected="false" aria-controls="accomplishmentView">
+                        <span aria-hidden="true">📊</span> Accomplishment
+                    </button>
+                </div>
 
-        <!-- ELUPDD Modules Container -->
-        <div id="elupdd-modules" style="display:none;">
-            <!-- Locational Clearance Module (simplified but functional) -->
-            <div id="locational" class="section">
-                <div class="zoning-subnav"><button class="subnav-link active" onclick="switchLocationalView('dataEntry')">📝 Data Entry</button><button class="subnav-link" onclick="switchLocationalView('accomplishment')">📊 Accomplishment</button></div>
-                <div id="locationalDataEntryView" class="zoning-view active"><div class="cert-section"><div class="cert-title"><span>📍 Locational Clearance - Data Entry</span></div><form id="locationalForm" onsubmit="return saveLocationalRecord(event)"><div class="form-grid"><div class="form-group"><label>Clearance No.</label><input type="text" id="lcCertificationNo" readonly style="background:#f0f0f0"><small>Auto-generated</small></div><div class="form-group"><label>Type</label><select id="lcCertificationIssued" required><option value="">-- Select --</option><option value="Locational Clearance">Locational Clearance</option><option value="Locational Clearance - National Significance">Locational Clearance - National Significance</option></select></div><div class="form-group"><label>Series</label><input type="text" id="lcSeries" value="2024" readonly></div><div class="form-group"><label>No. of Parcels</label><input type="text" id="lcParcels" required></div><div class="form-group full-width"><label>Location</label><input type="text" id="lcLocation" required></div><div class="form-group"><label>Latitude</label><input type="text" id="lcLatitude" readonly></div><div class="form-group"><label>Longitude</label><input type="text" id="lcLongitude" readonly><button type="button" class="btn btn-map" onclick="openMapForLocational()">🗺️ Open Map</button></div><div class="form-group"><label>Total Area (ha)</label><input type="text" id="lcTotalArea" required></div><div class="form-group"><label>Proposed Use</label><input type="text" id="lcProposedUse" required></div><div class="form-group full-width"><label>Land Holdings</label><button type="button" class="btn btn-success" onclick="addLocationalLandHolding()">➕ Add Property</button><div id="lcLandHoldingsContainer"></div></div><div class="form-group"><label>Date Received</label><input type="date" id="lcDateReceived"></div><div class="form-group"><label>Date Issued</label><input type="date" id="lcDateIssued" required></div><div class="form-group"><label>Requested By</label><input type="text" id="lcRequestedBy" required></div><div class="form-group"><label>Amount Paid (₱)</label><input type="text" id="lcAmountPaid" required></div><div class="form-group"><label>O.R. No.</label><input type="text" id="lcOrNo"></div><div class="form-group"><label>O.R. Date</label><input type="date" id="lcOrDate"></div><div class="form-group full-width"><label>Remarks</label><textarea id="lcRemarks" rows="2"></textarea></div></div><div style="display:flex; gap:1rem; justify-content:center; margin-top:2rem;"><button type="submit" class="btn btn-success">💾 Save Clearance</button><button type="button" class="btn btn-primary" onclick="clearLocationalForm()">🔄 Clear Form</button></div></form></div></div>
-                <div id="locationalAccomplishmentView" class="zoning-view"><div class="cert-section"><div class="cert-title"><span>📊 Locational Clearance Accomplishment</span></div><div class="search-bar"><input type="text" id="lcSearchInput" placeholder="Search..."><select id="lcStatusFilter"><option value="">All Status</option><option value="For Review">For Review</option><option value="For RD Signature">For RD Signature</option><option value="For Release">For Release</option><option value="Released">Released</option></select><button class="btn btn-primary" onclick="filterLocationalTable()">Search</button><button class="btn btn-secondary" onclick="clearLocationalSearch()">Clear</button><button class="btn btn-success" onclick="refreshLocationalData()">Refresh</button></div><div style="overflow-x:auto;"><table class="cert-table"><thead><tr><th>Clearance No.</th><th>Type</th><th>Parcels</th><th>Location</th><th>Area</th><th>Date Issued</th><th>Requested By</th><th>Status</th><th>Actions</th></tr></thead><tbody id="locationalTableBody"></tbody></table></div><div style="margin-top:1rem;"><button class="btn btn-primary" onclick="switchLocationalView('dataEntry')">⬅️ Back to Data Entry</button><button class="btn btn-success" onclick="exportLocationalToExcel()">📥 Export Excel</button></div></div></div>
+                <!-- Data Entry View -->
+                <div id="dataEntryView" class="zoning-view active" role="tabpanel">
+                    <div class="cert-section">
+                        <div class="cert-title"><span aria-hidden="true">🏷️</span> Site Zoning Certification - Data Entry</div>
+                        <form id="zoningForm" onsubmit="return saveZoningRecord(event)" novalidate>
+                            <div class="form-grid">
+                                <div class="form-group"><label for="certificationNo" id="certNoLabel">Certification No.</label><input type="text" class="form-control" id="certificationNo" readonly style="background:#f0f0f0"><small>Auto-generated</small></div>
+                                <div class="form-group"><label for="certificationIssued">Certification Issued</label><select class="form-control" id="certificationIssued" required><option value="">-- Select --</option><option value="Zoning (Simple)">Zoning (Simple)</option><option value="Zoning DAR (Complex)">Zoning DAR (Complex)</option><option value="Zoning DAR (Simple)">Zoning DAR (Simple)</option><option value="Reclass Indorsement">Reclass Indorsement</option><option value="Locational Clearance">Locational Clearance</option><option value="Locational Clearance - National Significance">Locational Clearance - National Significance</option></select></div>
+                                <div class="form-group"><label for="series">Series</label><input type="text" class="form-control" id="series" value="2002" readonly></div>
+                                <div class="form-group"><label for="parcels">No. of Parcels</label><input type="text" class="form-control" id="parcels" placeholder="e.g., Three hundred seventy-five (375) parcels" required></div>
+                                <div class="form-group full-width"><label for="location">Location of the Property</label><input type="text" class="form-control" id="location" placeholder="Enter complete address" required></div>
+                                <div class="form-group"><label for="latitude">Latitude</label><input type="text" class="form-control" id="latitude" placeholder="e.g., 10.7202" readonly style="background:#f0f0f0"></div>
+                                <div class="form-group"><label for="longitude">Longitude</label><input type="text" class="form-control" id="longitude" placeholder="e.g., 122.5621" readonly style="background:#f0f0f0"><button type="button" class="btn btn-map" onclick="openEnhancedMapPopup()" style="margin-top: 5px; width: 100%;">🗺️ Open Map (Upload GeoJSON)</button></div>
+                                <div class="form-group"><label for="totalArea">Total Area (ha.)</label><input type="text" class="form-control" id="totalArea" placeholder="e.g., 15.5026" required></div>
+                                <div class="form-group"><label for="proposedUse">Proposed Use</label><input type="text" class="form-control" id="proposedUse" placeholder="e.g., Residential-3 Zone" required></div>
+                                <div class="form-group full-width">
+                                    <div style="font-weight:600; margin-bottom:0.5rem;">Land Holdings (Multiple Entries)</div>
+                                    <div><button type="button" class="btn btn-success" onclick="addLandHolding()" style="padding:5px 10px; font-size:0.9rem;">➕ Add Another Property</button><small style="margin-left:10px;">Each property can have its own lot number and area</small></div>
+                                    <div id="landHoldingsContainer"></div>
+                                </div>
+                                <div class="form-group"><label for="dateReceived">Date Received</label><input type="date" class="form-control" id="dateReceived"></div>
+                                <div class="form-group"><label for="dateIssued">Date Issued</label><input type="date" class="form-control" id="dateIssued" required></div>
+                                <div class="form-group"><label for="requestedBy">Requested By</label><input type="text" class="form-control" id="requestedBy" placeholder="Name of requester" required></div>
+                                <div class="form-group"><label for="amountPaid">Amount Paid (₱)</label><input type="text" class="form-control" id="amountPaid" placeholder="e.g., 13,680" required></div>
+                                <div class="form-group"><label for="orNo">O.R. No.</label><input type="text" class="form-control" id="orNo" placeholder="Official Receipt Number"></div>
+                                <div class="form-group"><label for="orDate">O.R. Date</label><input type="date" class="form-control" id="orDate"></div>
+                                <div class="form-group full-width"><label for="remarks">Remarks/Notes</label><textarea class="form-control" id="remarks" rows="3"></textarea></div>
+                            </div>
+                            <h3 class="cert-subtitle">CLUP/Zoning Ordinance Status</h3>
+                            <div class="form-group">
+                                <div style="font-weight:600; margin-bottom:0.5rem;">Select Status:</div>
+                                <div class="radio-group">
+                                    <label class="radio-option"><input type="radio" name="clupStatus" value="approved" checked> With Approved CLUP/ZO</label>
+                                    <label class="radio-option"><input type="radio" name="clupStatus" value="pending"> With CLUP/ZO Pending Approval</label>
+                                    <label class="radio-option"><input type="radio" name="clupStatus" value="none"> Without CLUP/ZO</label>
+                                </div>
+                            </div>
+                            <div id="clupCascadeDiv" style="margin-top: 1rem; padding: 1rem; background: #e8f0fe; border-radius: 8px; display: block;">
+                                <div class="form-grid" style="margin-bottom: 1rem;">
+                                    <div class="form-group">
+                                        <label for="provinceSelect">Select Province</label>
+                                        <select id="provinceSelect" class="form-control" onchange="filterLguByProvince()">
+                                            <option value="">-- Choose Province --</option>
+                                        </select>
+                                        <button type="button" onclick="manualCLUPReload()">🔄 Reload CLUP</button>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="lguSelect">Select LGU</label>
+                                        <select id="lguSelect" class="form-control" onchange="fillFromApprovedCLUP()" disabled>
+                                            <option value="">-- First select province --</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <small>Automatically fills City/Municipality, Province, Department Circular/SP Resolution No., and Date of Approval from the approved CLUP record.</small>
+                            </div>
+
+                            <div id="approvedDetails" style="margin-top:1rem; padding:1rem; background:#f8f4e8; border-radius:8px;">
+                                <div class="form-grid">
+                                    <div class="form-group"><label for="city">City/Municipality</label><input type="text" class="form-control" id="city"></div>
+                                    <div class="form-group"><label for="province">Province</label><input type="text" class="form-control" id="province" placeholder="e.g., Iloilo, Aklan, etc."></div>
+                                    <div class="form-group"><label for="approvedBy">Approved by</label><input type="text" class="form-control" id="approvedBy" readonly style="background:#f8f4e8; font-weight:600;"></div>
+                                    <div class="form-group"><label for="circularNo">Department Circular / SP Resolution No.</label><input type="text" class="form-control" id="circularNo" placeholder="Auto-filled from latest CLUP resolution" readonly style="background:#f8f4e8;"></div>
+                                    <div class="form-group"><label for="approvalDate">Date of Approval</label><input type="date" class="form-control" id="approvalDate" readonly style="background:#f8f4e8;"></div>
+                                </div>
+                                <div id="approvalDatesRef" style="margin-top: 0.5rem; font-size: 0.85rem; color: #555; display: none;">
+                                    <strong>Approval dates:</strong> <span id="firstApprovalDateRef"></span> (first) | <span id="latestApprovalDateRef"></span> (latest)
+                                </div>
+                                <div id="iloiloConditionalFields" style="display: none; margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed #ccc;">
+                                    <div class="form-group">
+                                        <label for="purpose">Purpose</label>
+                                        <select id="purpose" class="form-control">
+                                            <option value="">-- Select --</option>
+                                            <option value="Conversion">Conversion</option>
+                                            <option value="ROD">ROD</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+                                    <div id="landClassGroup" style="display: none;">
+                                        <div class="form-group">
+                                            <label for="landClass">Land Class</label>
+                                            <select id="landClass" class="form-control">
+                                                <option value="">-- Select --</option>
+                                                <option value="Agricultural">Agricultural</option>
+                                                <option value="Commercial">Commercial</option>
+                                                <option value="Residential">Residential</option>
+                                                <option value="Industrial">Industrial</option>
+                                                <option value="F and S">F and S</option>
+                                                <option value="Institutional">Institutional</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="formMessages" role="alert" class="visually-hidden"></div>
+                            <div style="display:flex; gap:1rem; margin-top:2rem; justify-content:center; flex-wrap:wrap;">
+                                <button type="submit" class="btn btn-success">💾 Save Certification</button>
+                                <button type="button" class="btn btn-primary" onclick="clearZoningForm()">🔄 Clear Form</button>
+                                <button type="button" class="btn btn-warning" onclick="resetCertificationCounter()">🔄 Reset Counter</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+<!-- Accomplishment View (Records Table) -->
+                <div id="accomplishmentView" class="zoning-view" role="tabpanel">
+                    <div class="cert-section">
+                        <div class="cert-title"><span aria-hidden="true">📊</span> Certification Accomplishment</div>
+                        <div class="search-bar" style="margin-bottom: 1rem; padding: 1rem; background: #f8faff; border-radius: 12px;">
+                            <div class="search-box" style="flex: 2;">
+                                <span aria-hidden="true">🔍</span>
+                                <input type="text" id="certSearchInput" placeholder="Search by Certification No., Location, or Requested By..." onkeyup="filterCertificationsTable()">
+                            </div>
+                            <div class="filter-group" style="min-width: 160px;">
+                                <select id="certStatusFilter" onchange="filterCertificationsTable()">
+                                    <option value="">All Status</option>
+                                    <option value="For Review">For Review</option>
+                                    <option value="For RD Signature">For RD Signature</option>
+                                    <option value="For Release">For Release</option>
+                                    <option value="Released">Released</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary" onclick="filterCertificationsTable()" style="padding: 0.8rem 1.5rem;">🔍 Search</button>
+                            <button class="btn btn-secondary" onclick="clearCertSearch()" style="padding: 0.8rem 1.5rem;">🗑️ Clear</button>
+                            <button class="btn btn-primary" onclick="manualRefresh()" style="background: #28a745;">🔄 Refresh Data</button>
+                        </div>
+                        <!-- Summary Stats -->
+                        <div style="display: flex; gap: 2rem; margin-bottom: 1.5rem; justify-content: space-around; background: #e9f2f9; padding: 1rem; border-radius: 12px;">
+                            <div style="text-align: center;"><span style="font-size: 2rem; font-weight: bold; color: var(--primary-dark);" id="totalCertCount">0</span><br>Total Certifications</div>
+                            <div style="text-align: center;"><span style="font-size: 2rem; font-weight: bold; color: var(--secondary);" id="releasedCertCount">0</span><br>Released</div>
+                            <div style="text-align: center;"><span style="font-size: 2rem; font-weight: bold; color: var(--accent-accessible);" id="pendingCertCount">0</span><br>Pending/Review</div>
+                        </div>
+                        <div style="overflow-x:auto;">
+                            <table class="cert-table" id="certificationsTable">
+                                <thead>
+                                    <tr><th>Certification No.</th><th>Type</th><th>No. of Parcels</th><th>Location</th><th>Total Area</th><th>Date Issued</th><th>Requested By</th><th>Status</th><th>Actions</th></tr>
+                                </thead>
+                                <tbody id="certificationsTableBody"></tbody>
+                            </table>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 1rem;">
+                            <button class="btn btn-primary" onclick="switchZoningView('dataEntry')">⬅️ Back to Data Entry</button>
+                            <div>
+                               <button class="btn btn-success" onclick="exportCertificationsToExcel()">📥 Export to Excel</button>
+                                <button class="btn btn-warning" onclick="openReportModal()">📈 Generate Report</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <!-- Site Zoning Certification Module (original - unchanged) -->
-            <div id="zoning" class="section active">
-                <!-- Your original zoning HTML goes here. Since it's very long, I've included it verbatim from your original file. -->
-                <!-- To keep this answer within limits, I'll include a placeholder comment. In the final file, you must paste your original zoning HTML here. -->
-                <!-- For demonstration, I'll put a short notice – you replace this with your full zoning section. -->
-                <div class="cert-section"><div class="cert-title"><span>🏷️</span> Site Zoning Certification - Data Entry</div><p>Your original zoning form appears here.</p></div>
+<!-- Reports Section -->
+            <div id="reports" class="section" style="display: none;" role="region" aria-labelledby="reports-heading">
+                <h1 id="reports-heading" class="visually-hidden">Planning Reports</h1>
+                <div class="data-section">
+                    <div class="section-header"><h3><span aria-hidden="true">📊</span> Planning Reports</h3></div>
+                    <div class="stats-grid">
+                        <div class="stat-card" onclick="generateSimpleReport('annual')" role="button" tabindex="0" onkeypress="if(event.key==='Enter'||event.key===' ') generateSimpleReport('annual')"><div class="stat-number" aria-hidden="true">📅</div><div class="stat-label">Annual Report</div></div>
+                        <div class="stat-card" onclick="generateSimpleReport('quarterly')" role="button" tabindex="0" onkeypress="if(event.key==='Enter'||event.key===' ') generateSimpleReport('quarterly')"><div class="stat-number" aria-hidden="true">📆</div><div class="stat-label">Quarterly Report</div></div>
+                        <div class="stat-card" onclick="generateSimpleReport('project')" role="button" tabindex="0" onkeypress="if(event.key==='Enter'||event.key===' ') generateSimpleReport('project')"><div class="stat-number" aria-hidden="true">🏗️</div><div class="stat-label">Project Status</div></div>
+                        <div class="stat-card" onclick="generateSimpleReport('environmental')" role="button" tabindex="0" onkeypress="if(event.key==='Enter'||event.key===' ') generateSimpleReport('environmental')"><div class="stat-number" aria-hidden="true">🌳</div><div class="stat-label">Environmental Report</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="dataModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+                <div class="modal-content">
+                    <div class="modal-header"><h2 id="modalTitle">View/Edit Record</h2><button class="close-btn" onclick="closeModal()">&times;</button></div>
+                    <div id="modalBody"></div>
+                </div>
+            </div>
+
+            <!-- Report Modal -->
+            <div id="reportModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="reportModalTitle">
+                <div class="modal-content" style="max-width: 1200px; width: 95%;">
+                    <div class="modal-header">
+                        <h2 id="reportModalTitle">📊 Certification Accomplishment Report</h2>
+                        <button class="close-btn" onclick="closeReportModal()">&times;</button>
+                    </div>
+                    <div id="reportModalBody">
+                        <div style="margin-bottom: 1.5rem;">
+                            <label for="reportMonthFilter">Select Month:</label>
+                            <select id="reportMonthFilter" class="form-control" style="width: auto; display: inline-block; margin-left: 1rem;" onchange="generateReportFromFilter()">
+                                <option value="all">All Months</option>
+                            </select>
+                            <button class="btn btn-primary" onclick="generateReportFromFilter()" style="margin-left: 1rem;">Generate</button>
+                            <button class="btn btn-secondary" onclick="printReport()" style="margin-left: 1rem;">🖨️ Print Report</button>
+                        </div>
+                        <div id="reportSummary" style="margin-bottom: 1rem; padding: 1rem; background: #e9f2f9; border-radius: 8px;">
+                            <!-- Summary will be inserted here -->
+                        </div>
+                        <div style="overflow-x: auto;">
+                            <table class="cert-table" id="reportTable">
+                                <thead>
+                                    <tr>
+                                        <th>Control No.</th><th>Requesting Party</th><th>Certification Issued</th><th>Date Issued</th><th>Report Month</th>
+                                        <th>Owner/Proponents</th><th>Location</th><th>No. of Parcels</th><th>Total Area (ha)</th>
+                                        <th>No. of Days Processed</th><th>On Time / Delayed</th><th>Count_Timeliness</th>
+                                        <th>Longitude</th><th>Latitude</th><th>Remarks</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reportTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
+    </main>
 
-        <!-- Reports Section (unchanged) -->
-        <div id="reports" class="section"><div class="data-section"><div class="section-header"><h3>📊 Planning Reports</h3></div><div class="stats-grid"><div class="stat-card" onclick="generateSimpleReport('annual')">📅 Annual Report</div><div class="stat-card" onclick="generateSimpleReport('quarterly')">📆 Quarterly Report</div><div class="stat-card" onclick="generateSimpleReport('project')">🏗️ Project Status</div><div class="stat-card" onclick="generateSimpleReport('environmental')">🌳 Environmental Report</div></div></div></div>
+    <!-- ENHANCED MAP POPUP MODAL -->
+   <div id="mapPopupModal" class="map-popup-modal">
+        <div class="map-popup-content">
+            <div class="map-popup-header">
+                <h3>🗺️ Select Location & Manage Zoning Layers</h3>
+                <button class="map-popup-close" onclick="closeMapPopup()">&times;</button>
+            </div>
+            <div class="map-popup-body">
+                <div id="popupMap"></div>
+                <div class="coord-info">
+                    <label>Latitude: <input type="text" id="popupLatitude" readonly placeholder="Click on map"></label>
+                    <label>Longitude: <input type="text" id="popupLongitude" readonly placeholder="Click on map"></label>
+                    <button type="button" class="btn btn-danger" onclick="clearSelectedCoordinates()" style="padding: 5px 12px;">🗑️ Clear</button>
+                </div>
+                <div class="layer-panel">
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 10px;">
+                        <input type="file" id="geojsonFileInput" accept=".geojson,.json" style="display:none;">
+                        <button class="btn btn-primary" onclick="document.getElementById('geojsonFileInput').click()">📂 Upload GeoJSON</button>
+                        <button class="btn btn-danger" onclick="clearAllLayers()">🗑️ Clear All Layers</button>
+                        <span style="font-size:0.8rem; color:#555;">Upload zoning boundaries (GeoJSON)</span>
+                    </div>
+                    <div id="layerListContainer" class="layer-list-container">
+                        <div style="text-align:center; color:#888;">No layers loaded. Upload a GeoJSON file.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="map-popup-footer">
+                <button class="btn btn-primary" onclick="saveCoordinatesFromPopup()">✅ Use Selected Coordinates</button>
+                <button class="btn btn-secondary" onclick="closeMapPopup()">Cancel</button>
+            </div>
+        </div>
+    </div>
 
-        <!-- Data Modal, Report Modal etc. (same as original) -->
-        <div id="dataModal" class="modal"><div class="modal-content"><div class="modal-header"><h2 id="modalTitle">View/Edit Record</h2><button class="close-btn" onclick="closeModal()">&times;</button></div><div id="modalBody"></div></div></div>
-        <div id="reportModal" class="modal"><div class="modal-content" style="max-width:1200px;"><div class="modal-header"><h2>📊 Certification Accomplishment Report</h2><button class="close-btn" onclick="closeReportModal()">&times;</button></div><div id="reportModalBody"><div><label for="reportMonthFilter">Select Month:</label><select id="reportMonthFilter" class="form-control" style="width:auto; display:inline-block;" onchange="generateReportFromFilter()"><option value="all">All Months</option></select><button class="btn btn-primary" onclick="generateReportFromFilter()">Generate</button><button class="btn btn-secondary" onclick="printReport()">🖨️ Print Report</button></div><div id="reportSummary"></div><div style="overflow-x:auto;"><table class="cert-table"><thead><tr><th>Control No.</th><th>Requesting Party</th><th>Certification Issued</th><th>Date Issued</th><th>Report Month</th><th>Owner/Proponents</th><th>Location</th><th>No. of Parcels</th><th>Total Area (ha)</th><th>No. of Days Processed</th><th>On Time / Delayed</th><th>Count_Timeliness</th><th>Longitude</th><th>Latitude</th><th>Remarks</th></tr></thead><tbody id="reportTableBody"></tbody></table></div></div></div></div>
-    </div></main>
 
-    <!-- Map Popup (same as original) -->
-    <div id="mapPopupModal" class="map-popup-modal">...</div>
     <div id="printSection" style="display:none;"></div>
-    <div id="syncLoading" class="sync-loading"><div class="spinner"></div><p>Syncing data...</p></div>
+    <div id="syncLoading" class="sync-loading">
+        <div class="sync-loading-content">
+            <div class="spinner"></div>
+            <p>Syncing data with server...</p>
+        </div>
+    </div>
 
-    <footer><p>Environmental Land Use and Urban Planning Development Division</p><p>Department of Human Settlements and Urban Development - Region VI</p><p>📍 3rd Floor, DHSUD Regional Office VI, Diversion Road, Mandurriao, Iloilo City</p><p>📞 (033) 123-4567 | 📧 elupdd.region6@dhsud.gov.ph</p><p>© 2024 All Rights Reserved</p></footer>
+    <footer role="contentinfo">
+        <p>Environmental Land Use and Urban Planning Development Division</p>
+        <p>Department of Human Settlements and Urban Development - Region VI</p>
+        <p>📍 3rd Floor, DHSUD Regional Office VI, Diversion Road, Mandurriao, Iloilo City</p>
+        <p>📞 (033) 123-4567 | 📧 elupdd.region6@dhsud.gov.ph</p>
+        <p style="margin-top:1rem; font-size:0.9rem;">© 2024 All Rights Reserved</p>
+    </footer>
 
     <script>
         // ========== CONFIGURATION ==========
