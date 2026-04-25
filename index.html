@@ -1178,6 +1178,7 @@ body:not([data-role]) .auth-modal {
                                         <select id="provinceSelect" class="form-control" onchange="filterLguByProvince()">
                                             <option value="">-- Choose Province --</option>
                                         </select>
+                                        <button type="button" onclick="manualCLUPReload()">🔄 Reload CLUP</button>
                                     </div>
                                     <div class="form-group">
                                         <label for="lguSelect">Select LGU</label>
@@ -2330,6 +2331,12 @@ function setupClupCascadeEvents() {
         }
         return zoningCertifications;
     }
+}
+        async function manualCLUPReload() {
+  console.log('Manually reloading CLUP...');
+  await fetchClupRecords();
+  populateProvinceSelect();
+  console.log('Done. Provinces:', document.getElementById('provinceSelect').innerHTML);
 }
 async function manualRefresh() {
     showToast('Refreshing data from Google Sheets...', 'info');
