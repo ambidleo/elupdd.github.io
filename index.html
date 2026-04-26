@@ -1402,8 +1402,7 @@ body:not([data-role]) .auth-modal {
         let isGoogleSheetsOnline = true;
         let syncInProgress = false;
         let pendingSyncData = { clup: [], review: [], zoning: [] };
-        let certNumberLock = false;
-        let certNumberQueue = [];
+
 
         // ========== ENHANCED MAP POPUP WITH GEOJSON LAYERS ==========
         let popupMap = null;
@@ -1742,14 +1741,26 @@ function exportCertificationsToExcel() {
     }
 }
         // ========== CERTIFICATION NUMBER MANAGEMENT ==========
-       // Replace the existing getNextCertificationNumber function
+        // ========== SIMPLE, RELIABLE CERTIFICATION NUMBER MANAGEMENT ==========
+// Get the highest number from existing records (including pending offline adds)
+function getMaxCertNumberFromRecords(records) {
+    let max = 0;
+    records.forEach(rec => {
+        const match = rec.certificationNo?.match(/-(\d+)$/);
+        if (match) {
+            const num = parseInt(match[1], 10);
+            if (!isNaN(num) && num > max) max = num;
+        }
+    });
+    return max;
+}
+
+// Calculate next number based on current data + pending adds
 function getNextCertificationNumber() {
-    // If a manual reset was performed, we respect the local counter's lastCertNumber
-    // which may have been set to 0 by resetCertificationCounter
-    let maxNum = certificationCounter.lastCertNumber;
-    
-    // Also check existing records to avoid reusing numbers
+    // Start with existing records
     let allRecords = [...zoningCertifications];
+    
+    // Also include pending 'add' operations (offline)
     if (pendingSyncData.zoning) {
         pendingSyncData.zoning.forEach(item => {
             if (item.action === 'add' && item.data && item.data.certificationNo) {
@@ -1757,63 +1768,38 @@ function getNextCertificationNumber() {
             }
         });
     }
-    const maxFromRecords = getMaxCertNumberFromRecords(allRecords);
-    // Use the larger of the two (counter might be outdated if records have higher numbers)
-    const effectiveMax = Math.max(maxNum, maxFromRecords);
-    const nextNum = effectiveMax + 1;
+    
+    const maxNum = getMaxCertNumberFromRecords(allRecords);
+    const nextNum = maxNum + 1;
     const year = new Date().getFullYear().toString().slice(-2);
     const certNumber = `SZC-RVI${year}-${nextNum.toString().padStart(3, '0')}`;
     return { number: nextNum, certNumber };
 }
 
-// Replace the resetCertificationCounter function
+// Refresh the displayed number in the form
+async function refreshCertificationNumber() {
+    const { certNumber } = getNextCertificationNumber();
+    const certField = document.getElementById('certificationNo');
+    if (certField) certField.value = certNumber;
+    return certNumber;
+}
+
+// Update local counter after changes (called after save/delete)
+function updateLocalCounter() {
+    const maxNum = getMaxCertNumberFromRecords(zoningCertifications);
+    certificationCounter.lastCertNumber = maxNum;
+    localStorage.setItem('certificationCounter', JSON.stringify(certificationCounter));
+}
+
+// Reset counter to zero so next number becomes 001
 function resetCertificationCounter() {
-    if (confirm('⚠️ Reset counter? This will set the next certification number to 001 (e.g., SZC-RVI25-001).\n\nWARNING: If you already have records, this may cause duplicate numbers later. Only use if you want to start a fresh numbering sequence.')) {
-        // Force counter to 0 so next number becomes 1
+    if (confirm('⚠️ Reset certification number counter?\n\nThis will set the NEXT number to 001 (e.g., SZC-RVI25-001).\n\nWARNING: If you already have records, this may cause duplicate numbers later. Only use if you want to start a fresh numbering sequence.')) {
         certificationCounter.lastCertNumber = 0;
         localStorage.setItem('certificationCounter', JSON.stringify(certificationCounter));
-        
-        // Also clear any pending sync that might affect numbering (optional but safe)
-        // but preserve existing records
-        
-        // Refresh the displayed certification number
         refreshCertificationNumber();
-        
         showToast('Counter reset. Next number will be 001.', 'success');
     }
 }
-async function refreshCertificationNumber() {
-    const { certNumber } = getNextCertificationNumber();
-    document.getElementById('certificationNo').value = certNumber;
-    return certNumber;
-}
-        async function generateUniqueCertificationNumber() {
-            return new Promise(async (resolve, reject) => {
-                const requestId = Date.now();
-                certNumberQueue.push({ id: requestId, resolve, reject });
-                if (certNumberLock) return;
-                certNumberLock = true;
-                try {
-                    while (certNumberQueue.length > 0) {
-                        const request = certNumberQueue[0];
-                        try { const result = await getNextCertificationNumberFromServer(); request.resolve(result); } catch (error) { request.reject(error); }
-                        certNumberQueue.shift();
-                    }
-                } finally { certNumberLock = false; }
-            });
-        }
-
-        async function updateLocalCounterAfterSync() {
-            try {
-                const isOnline = await checkGoogleSheetsConnection();
-                if (!isOnline) return;
-                const params = new URLSearchParams(); params.append('action', 'getCurrentMaxNumber'); params.append('data_type', 'zoning');
-                const response = await fetch(GOOGLE_SCRIPT_URL + '?' + params.toString(), { method: 'GET' });
-                const result = await response.json();
-                if (result.success && result.maxNumber) localStorage.setItem('certificationCounter', JSON.stringify({ lastCertNumber: result.maxNumber, lastSync: new Date().toISOString() }));
-            } catch (error) {}
-        }
-
         // ========== SYNC MECHANISM ==========
         function showToast(message, type = 'info') {
             const toast = document.createElement('div');
@@ -2053,6 +2039,28 @@ function filterLguByProvince() {
     console.log(`✅ Added ${uniqueLGUs.size} LGUs to dropdown`);
 }
 
+// [FIXED] Purpose change handler to toggle Land Class group
+function purposeChangeHandler() {
+    const landClassGroup = document.getElementById('landClassGroup');
+    const purposeVal = document.getElementById('purpose')?.value;
+    if (landClassGroup) {
+        landClassGroup.style.display = purposeVal === 'Conversion' ? 'block' : 'none';
+    }
+    if (purposeVal !== 'Conversion') {
+        const landClassField = document.getElementById('landClass');
+        if (landClassField) landClassField.value = '';
+    }
+}
+
+// [FIXED] Initialize conditional field listeners
+function initConditionalFields() {
+    const purposeSelect = document.getElementById('purpose');
+    if (purposeSelect) {
+        purposeSelect.removeEventListener('change', purposeChangeHandler);
+        purposeSelect.addEventListener('change', purposeChangeHandler);
+    }
+}
+
 function fillFromApprovedCLUP() {
     const lguSelect = document.getElementById('lguSelect');
     const selectedOption = lguSelect.options[lguSelect.selectedIndex];
@@ -2155,10 +2163,16 @@ function updateApprovedByFields(plan) {
         approvalDatesRef.style.display = 'block';
     }
     
-    // Iloilo City conditional fields
+    // [FIXED] Iloilo City conditional fields
     const iloiloConditionalFields = document.getElementById('iloiloConditionalFields');
     if (iloiloConditionalFields) {
         iloiloConditionalFields.style.display = isIloiloCity ? 'block' : 'none';
+        if (isIloiloCity) {
+            // Ensure the purpose change listener is active
+            initConditionalFields();
+            // Trigger the handler to set initial Land Class visibility
+            purposeChangeHandler();
+        }
     }
     
     if (!isIloiloCity) {
@@ -2230,19 +2244,8 @@ function setupClupCascadeEvents() {
     toggleClupCascade();
     console.log('CLUP cascade events setup complete');
     
-    const purposeSelect = document.getElementById('purpose');
-    if (purposeSelect) {
-        purposeSelect.addEventListener('change', function() {
-            const landClassGroup = document.getElementById('landClassGroup');
-            if (landClassGroup) {
-                landClassGroup.style.display = this.value === 'Conversion' ? 'block' : 'none';
-            }
-            if (this.value !== 'Conversion') {
-                const landClassField = document.getElementById('landClass');
-                if (landClassField) landClassField.value = '';
-            }
-        });
-    }
+    // [FIXED] Ensure purpose listener is attached
+    initConditionalFields();
 }
         // ========== ZONING CERTIFICATION ==========
         let zoningCertifications = [];
@@ -2393,9 +2396,13 @@ async function manualRefresh() {
             const originalText = saveBtn.innerHTML;
             saveBtn.innerHTML = '⏳ Saving...'; saveBtn.disabled = true;
             try {
-                let certificationNo;
-                if (!currentEditingZoningId) { const certResult = await generateUniqueCertificationNumber(); certificationNo = certResult.certNumber; }
-                else certificationNo = zoningCertifications.find(r => r.id === currentEditingZoningId).certificationNo;
+               let certificationNo;
+if (!currentEditingZoningId) {
+    const { certNumber } = getNextCertificationNumber();
+    certificationNo = certNumber;
+} else {
+    certificationNo = zoningCertifications.find(r => r.id === currentEditingZoningId).certificationNo;
+}
                 
                 const certificationIssued = document.getElementById('certificationIssued').value;
                 const parcels = document.getElementById('parcels').value;
@@ -2449,6 +2456,7 @@ async function manualRefresh() {
                     if (action === 'add') zoningCertifications.push(record);
                     else { const idx = zoningCertifications.findIndex(r => r.id === record.id); if (idx !== -1) zoningCertifications[idx] = record; }
                     localStorage.setItem('zoningCertifications', JSON.stringify(zoningCertifications));
+                    updateLocalCounter();
                     addToPendingSync('zoning', action, record);
                     const localCounter = JSON.parse(localStorage.getItem('certificationCounter') || '{"lastCertNumber":0}');
                     const certNumber = parseInt(record.certificationNo.split('-')[1]);
@@ -2467,6 +2475,7 @@ async function manualRefresh() {
                     if (action === 'add') zoningCertifications.push(record);
                     else { const idx = zoningCertifications.findIndex(r => r.id === record.id); if (idx !== -1) zoningCertifications[idx] = record; }
                     localStorage.setItem('zoningCertifications', JSON.stringify(zoningCertifications));
+                     updateLocalCounter();
                     await updateLocalCounterAfterSync();
                     renderCertificationsTable(); clearZoningForm(); await refreshCertificationNumber();
                     updateAccomplishmentStats();
