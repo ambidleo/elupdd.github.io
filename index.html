@@ -45,6 +45,35 @@
         .nav-bar ul { list-style: none; display: flex; gap: 2rem; max-width: 1400px; margin: 0 auto; flex-wrap: wrap; }
         .nav-bar a { color: white; text-decoration: none; font-size: 1rem; padding: 0.5rem 1rem; border-radius: 20px; transition: all 0.3s; display: flex; align-items: center; gap: 0.5rem; font-weight: 500; }
         .nav-bar a:hover, .nav-bar a.active { background: var(--accent-accessible); color: var(--primary-dark); transform: translateY(-2px); }
+.nav-bar li {
+    position: relative;
+}
+.nav-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: var(--primary-dark);
+    list-style: none;
+    padding: 0.5rem 0;
+    margin: 0;
+    border-radius: 10px;
+    min-width: 220px;
+    display: none;
+    z-index: 1100;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.nav-dropdown li a {
+    display: block;
+    padding: 0.6rem 1.2rem;
+    color: white;
+    text-decoration: none;
+    white-space: nowrap;
+}
+.nav-dropdown li a:hover {
+    background: var(--accent-accessible);
+    color: var(--primary-dark);
+}
         .container { max-width: 1400px; margin: 2rem auto; padding: 0 2rem; }
         .section { display: none; }
         .section.active { display: block; }
@@ -1110,9 +1139,15 @@ body:not([data-role]) .auth-modal {
         </div>
     </header>
 
-    <nav class="nav-bar" aria-label="Main navigation" role="navigation">
+    <nav class="nav-bar"aria-label="Main navigation" role="navigation">
         <ul role="menubar">
-            <li role="none"><a href="#" onclick="showSection('zoning')" class="active" role="menuitem" aria-current="page"><span aria-hidden="true">🏷️</span><span>Site Zoning Certification</span></a></li>
+		<li role="none"><a href="#" onclick="showSection('home')" role="menuitem">🏠 HOME</a></li>
+		<li role="none" id="elupddMenuItem" style="position: relative;">
+    <a href="#" onclick="showSection('elupdd'); return false;" role="menuitem">📋 ELUPDD</a>
+    <ul class="nav-dropdown" id="elupddDropdown">
+    <li><a href="#" onclick="showELUPDDModule('locational'); return false;">📍 Locational Clearance</a></li>
+    <li><a href="#" onclick="showELUPDDModule('siteZoning'); return false;">🏷️ Site Zoning Certification</a></li>
+</ul>
             <li role="none"><a href="#" onclick="showSection('reports')" role="menuitem"><span aria-hidden="true">📊</span><span>Reports</span></a></li>
             <li role="none"><a href="#" onclick="openAboutModal()" role="menuitem"><span aria-hidden="true">ℹ️</span><span>About</span></a></li>
         </ul>
@@ -1120,7 +1155,78 @@ body:not([data-role]) .auth-modal {
 
     <main id="main-content" role="main">
         <div class="container">
-            <!-- Site Zoning Certification Section with Submenu -->
+<!-- HOME SECTION (default active) -->
+<div id="home" class="section active">
+    <div class="data-section">
+        <h3>🏠 Welcome to ELUPDD Region VI</h3>
+        <div class="home-stats" style="display: flex; gap: 2rem; flex-wrap: wrap; margin: 2rem 0;">
+            <div class="home-card" style="background: white; border-radius: 15px; padding: 1.5rem; text-align: center; min-width: 180px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                <div class="stat-number" id="homeZoningCount" style="font-size: 2rem; font-weight: bold; color: var(--primary-dark);">0</div>
+                <div class="stat-label">Total Zoning Certs</div>
+            </div>
+            <div class="home-card">
+                <div class="stat-number" id="homeLocCount" style="font-size: 2rem; font-weight: bold; color: var(--primary-dark);">0</div>
+                <div class="stat-label">Locational Clearances</div>
+            </div>
+            <div class="home-card">
+                <div class="stat-number" id="homeReleasedCount" style="font-size: 2rem; font-weight: bold; color: var(--primary-dark);">0</div>
+                <div class="stat-label">Released Certifications</div>
+            </div>
+        </div>
+        <p>This system manages Site Zoning Certifications and Locational Clearances. Use the ELUPDD section to enter new records or track accomplishments.</p>
+        <div class="stats-grid" style="margin-top: 1.5rem;">
+            <div class="stat-card" onclick="showSection('elupdd')" style="cursor: pointer;">📋 Go to ELUPDD →</div>
+        </div>
+    </div>
+</div>
+<!-- ELUPDD SECTION (combines Locational Clearance + existing Site Zoning) -->
+<div id="elupdd" class="section">
+    <div class="cert-section">
+        <div class="cert-title">📋 ELUPDD - Certification Management</div>
+        <!-- Locational Clearance View (will be filled in Step 4 & 5) -->
+        <div id="locationalView" class="zoning-view active">
+            <div class="cert-title"><span>📍 Locational Clearance - Data Entry</span></div>
+<form id="locationalForm" onsubmit="return saveLocationalRecord(event)">
+    <div class="form-grid">
+        <div class="form-group"><label>Control No.</label><input type="text" id="locControlNo" class="form-control" readonly><small>Auto-generated</small></div>
+        <div class="form-group"><label>Applicant/Proponent *</label><input type="text" id="locApplicant" class="form-control" required></div>
+        <div class="form-group"><label>Project Name *</label><input type="text" id="locProjectName" class="form-control" required></div>
+        <div class="form-group"><label>Location *</label><input type="text" id="locLocation" class="form-control" required></div>
+        <div class="form-group"><label>Total Area (ha) *</label><input type="text" id="locArea" class="form-control" required></div>
+        <div class="form-group"><label>Date Filed</label><input type="date" id="locDateFiled" class="form-control"></div>
+        <div class="form-group"><label>Date Issued *</label><input type="date" id="locDateIssued" class="form-control" required></div>
+        <div class="form-group"><label>Amount Paid (₱) *</label><input type="text" id="locAmountPaid" class="form-control" required></div>
+        <div class="form-group"><label>OR No.</label><input type="text" id="locOrNo" class="form-control"></div>
+        <div class="form-group full-width"><label>Remarks</label><textarea id="locRemarks" class="form-control" rows="2"></textarea></div>
+    </div>
+    <div style="display:flex; gap:1rem; margin-top:1rem;">
+        <button type="submit" class="btn btn-success">💾 Save Locational Clearance</button>
+        <button type="button" class="btn btn-primary" onclick="clearLocationalForm()">🔄 Clear</button>
+    </div>
+</form>
+<hr style="margin:2rem 0">
+<h3>📊 Accomplishment (Locational Clearances)</h3>
+<div class="search-bar" style="margin-bottom:1rem;">
+    <input type="text" id="locSearch" placeholder="Search by Control No., Applicant, Project..." onkeyup="filterLocationalTable()">
+    <select id="locStatusFilter" onchange="filterLocationalTable()">
+        <option value="">All Status</option>
+        <option value="For Review">For Review</option>
+        <option value="For RD Signature">For RD Signature</option>
+        <option value="For Release">For Release</option>
+        <option value="Released">Released</option>
+    </select>
+    <button class="btn btn-primary" onclick="exportLocationalToExcel()">📥 Export Excel</button>
+    <button class="btn btn-warning" onclick="openLocationalReportModal()">📈 Generate Report</button>
+</div>
+<div class="table-responsive">
+    <table class="cert-table" id="locationalTable">
+        <thead><tr><th>Control No.</th><th>Applicant</th><th>Project</th><th>Location</th><th>Date Issued</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="locationalTableBody"></tbody>
+    </table>
+</div>
+        </div>
+        <!-- Site Zoning View (existing #zoning content will be moved here) -->
+<!-- Site Zoning Certification Section with Submenu -->
             <div id="zoning" class="section active" role="region" aria-labelledby="zoning-heading">
                 <h1 id="zoning-heading" class="visually-hidden">Site Zoning Certification</h1>
                 
@@ -1285,6 +1391,10 @@ body:not([data-role]) .auth-modal {
                 </div>
             </div>
 
+        <div id="siteZoningView" class="zoning-view"></div>
+    </div>
+</div>
+            
 <!-- Reports Section -->
             <div id="reports" class="section" style="display: none;" role="region" aria-labelledby="reports-heading">
                 <h1 id="reports-heading" class="visually-hidden">Planning Reports</h1>
@@ -1609,6 +1719,13 @@ body:not([data-role]) .auth-modal {
                 } catch(e) {}
             }
         }
+function showELUPDDSection() {
+    // Close the dropdown
+    const dropdown = document.getElementById('elupddDropdown');
+    if (dropdown) dropdown.style.display = 'none';
+    // Show the ELUPDD section
+    showSection('elupdd');
+}
         // ========== HELPER FUNCTIONS ==========
         function escapeHtml(str) { if (str == null) return ''; return String(str).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]); }
         function formatDate(dateStr) { if (!dateStr || dateStr === 'Pending') return dateStr; const clean = dateStr.split(' ')[0]; if (clean.match(/^\d{4}-\d{2}-\d{2}$/)) { const d = new Date(clean); if (!isNaN(d.getTime())) return d.toLocaleDateString('en-US', {year:'numeric', month:'short', day:'numeric'}); } return dateStr; }
@@ -1619,22 +1736,43 @@ body:not([data-role]) .auth-modal {
         function showLoadingOverlay() { document.getElementById('syncLoading').classList.add('active'); }
         function hideLoadingOverlay() { document.getElementById('syncLoading').classList.remove('active'); }
 
+function switchELUPDDView(view) {
+    document.querySelectorAll('#elupdd .zoning-view').forEach(v => v.classList.remove('active'));
+    if (view === 'locational') {
+document.getElementById('locationalView').classList.add('active');
+        refreshLocationalTable();
+    } else {
+        document.getElementById('siteZoningView').classList.add('active');
+        // existing zoning table render functions will be called later
+        if (typeof renderCertificationsTable === 'function') renderCertificationsTable();
+    }
+}
         // ========== ZONING SUBNAV SWITCH ==========
         function switchZoningView(view) {
-            // Update active tab styles
-            document.querySelectorAll('.zoning-subnav .subnav-link').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.zoning-view').forEach(v => v.classList.remove('active'));
-            
-            if (view === 'dataEntry') {
-                document.querySelector('.subnav-link[onclick*="dataEntry"]').classList.add('active');
-                document.getElementById('dataEntryView').classList.add('active');
-            } else {
-                document.querySelector('.subnav-link[onclick*="accomplishment"]').classList.add('active');
-                document.getElementById('accomplishmentView').classList.add('active');
-                renderCertificationsTable(); // refresh
-                updateAccomplishmentStats();
-            }
-        }
+    const container = document.getElementById('siteZoningView');
+    if (!container) return;
+    
+    // Update active tab styles only inside the container
+    const subnavLinks = container.querySelectorAll('.zoning-subnav .subnav-link');
+    const zoningViews = container.querySelectorAll('.zoning-view');
+    
+    subnavLinks.forEach(btn => btn.classList.remove('active'));
+    zoningViews.forEach(v => v.classList.remove('active'));
+    
+    if (view === 'dataEntry') {
+        const dataEntryBtn = container.querySelector('.subnav-link[onclick*="dataEntry"]');
+        if (dataEntryBtn) dataEntryBtn.classList.add('active');
+        const dataEntryView = document.getElementById('dataEntryView');
+        if (dataEntryView) dataEntryView.classList.add('active');
+    } else {
+        const accompBtn = container.querySelector('.subnav-link[onclick*="accomplishment"]');
+        if (accompBtn) accompBtn.classList.add('active');
+        const accompView = document.getElementById('accomplishmentView');
+        if (accompView) accompView.classList.add('active');
+        if (typeof renderCertificationsTable === 'function') renderCertificationsTable();
+        if (typeof updateAccomplishmentStats === 'function') updateAccomplishmentStats();
+    }
+}
 
         function updateAccomplishmentStats() {
             const total = zoningCertifications.length;
@@ -2997,20 +3135,70 @@ if (!currentEditingZoningId) {
             document.getElementById('dataModal').classList.add('active');
         }
 
-        function showSection(sectionId) {
-            document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
-            document.getElementById(sectionId).style.display = 'block';
-            document.querySelectorAll('.nav-bar a').forEach(link => link.classList.remove('active'));
-            for (let link of document.querySelectorAll('.nav-bar a')) {
-                if (link.getAttribute('onclick')?.includes(sectionId)) link.classList.add('active');
-            }
+       function showSection(sectionId) {
+    document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+    document.getElementById(sectionId).style.display = 'block';
+    document.querySelectorAll('.nav-bar a').forEach(link => link.classList.remove('active'));
+    for (let link of document.querySelectorAll('.nav-bar a')) {
+        if (link.getAttribute('onclick')?.includes(sectionId)) link.classList.add('active');
+    }
+}
+function showELUPDDSiteZoning() {
+    // Show the ELUPDD section
+    showSection('elupdd');
+    // Switch to the Site Zoning tab inside ELUPDD
+    switchELUPDDView('siteZoning');
+    // Ensure the Data Entry sub‑tab is active inside the zoning view
+    setTimeout(() => {
+        const dataEntryBtn = document.querySelector('#siteZoningView .subnav-link[onclick*="dataEntry"]');
+        if (dataEntryBtn) dataEntryBtn.click();
+        else switchZoningView('dataEntry');
+    }, 50);
+}
+// Move existing zoning section into ELUPDD container without altering its code
+function relocateZoningSection() {
+    const zoningSection = document.getElementById('zoning');
+    const targetContainer = document.getElementById('siteZoningView');
+    if (zoningSection && targetContainer && !targetContainer.hasChildNodes()) {
+        // Remove the outer #zoning div but keep its inner content
+        while (zoningSection.firstChild) {
+            targetContainer.appendChild(zoningSection.firstChild);
         }
-
+        zoningSection.remove();
+    }
+}
+// Call after DOM is ready
+setTimeout(relocateZoningSection, 100);
+function showELUPDDModule(module) {
+    const dropdown = document.getElementById('elupddDropdown');
+    if (dropdown) {
+        dropdown.style.display = 'none';
+        // Optional: add a flag to prevent re-opening for 200ms
+        const parent = document.getElementById('elupddMenuItem');
+        if (parent) {
+            parent.style.pointerEvents = 'none';
+            setTimeout(() => {
+                parent.style.pointerEvents = '';
+            }, 200);
+        }
+    }
+    showSection('elupdd');
+    switchELUPDDView(module);
+}
+const elupddMenuItem = document.getElementById('elupddMenuItem');
+const dropdown = document.getElementById('elupddDropdown');
+if (elupddMenuItem && dropdown) {
+    elupddMenuItem.addEventListener('mouseenter', function() {
+        dropdown.style.display = 'block';
+    });
+    elupddMenuItem.addEventListener('mouseleave', function() {
+        dropdown.style.display = 'none';
+    });
+}
        // ========== INITIAL LOAD ==========
 async function initApp() {
     loadCounter();
-    await fetchCertifications();
-    
+    await fetchCertifications(); 
     // Load CLUP records - THIS IS CRITICAL
     console.log('Loading CLUP records...');
     await fetchClupRecords();
@@ -3186,6 +3374,7 @@ function loginUser(event) {
     document.body.setAttribute('data-role', user.role);
     
     updateUserInterface(session);
+    showSection('home');
     closeAuthModal();
     showToast(`Welcome back, ${user.fullName}!`, 'success');
     
@@ -3321,6 +3510,255 @@ window.saveZoningRecord = function(event) {
 
 // Initialize on page load
 initializeUsers();
+// ========== LOCATIONAL CLEARANCE MODULE ==========
+let locationalRecords = [];
+let currentEditingLocId = null;
+
+async function generateLocationalControlNo() {
+    const max = locationalRecords.reduce((m, r) => {
+        const match = r.controlNo?.match(/LC-(\d+)$/);
+        return match ? Math.max(m, parseInt(match[1])) : m;
+    }, 0);
+    const next = max + 1;
+    return `LC-${new Date().getFullYear()}-${next.toString().padStart(4, '0')}`;
+}
+
+async function fetchLocationalRecords() {
+    try {
+        // Try Google Sheets if available, otherwise localStorage
+        const resp = await fetch(`${GOOGLE_SCRIPT_URL}?action=get&data_type=locational`);
+        const data = await resp.json();
+        if (Array.isArray(data)) locationalRecords = data;
+        else locationalRecords = [];
+        localStorage.setItem('locationalRecords', JSON.stringify(locationalRecords));
+    } catch(e) {
+        const local = localStorage.getItem('locationalRecords');
+        if (local) locationalRecords = JSON.parse(local);
+        else locationalRecords = [];
+    }
+    refreshLocationalTable();
+    updateHomeStats();
+}
+
+async function saveLocationalRecord(e) {
+    e.preventDefault();
+    const id = currentEditingLocId || Date.now();
+    const controlNo = currentEditingLocId ? 
+        locationalRecords.find(r => r.id === id).controlNo : 
+        await generateLocationalControlNo();
+    const record = {
+        id, controlNo,
+        applicant: document.getElementById('locApplicant').value.trim(),
+        projectName: document.getElementById('locProjectName').value.trim(),
+        location: document.getElementById('locLocation').value.trim(),
+        area: document.getElementById('locArea').value.trim(),
+        dateFiled: document.getElementById('locDateFiled').value,
+        dateIssued: document.getElementById('locDateIssued').value,
+        amountPaid: document.getElementById('locAmountPaid').value.trim(),
+        orNo: document.getElementById('locOrNo').value.trim(),
+        remarks: document.getElementById('locRemarks').value.trim(),
+        status: 'For Review',
+        timestamp: new Date().toISOString()
+    };
+    if (!record.applicant || !record.projectName || !record.location || !record.area || !record.dateIssued || !record.amountPaid) {
+        alert('Please fill all required fields (*)');
+        return false;
+    }
+    if (currentEditingLocId) {
+        const idx = locationalRecords.findIndex(r => r.id === id);
+        if (idx !== -1) locationalRecords[idx] = record;
+    } else {
+        locationalRecords.push(record);
+    }
+    localStorage.setItem('locationalRecords', JSON.stringify(locationalRecords));
+    // Optional: sync with Google Sheets if online
+    if (await checkGoogleSheetsConnection()) {
+        const params = new URLSearchParams();
+        params.append('action', currentEditingLocId ? 'update' : 'add');
+        params.append('data_type', 'locational');
+        params.append('data', JSON.stringify(record));
+        await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: params });
+    } else {
+        addToPendingSync('locational', currentEditingLocId ? 'update' : 'add', record);
+    }
+    clearLocationalForm();
+    refreshLocationalTable();
+    alert(`Saved: ${controlNo}`);
+    return false;
+}
+
+function refreshLocationalTable() {
+    const tbody = document.getElementById('locationalTableBody');
+    if (!tbody) return;
+    const search = document.getElementById('locSearch')?.value.toLowerCase() || '';
+    const statusFilter = document.getElementById('locStatusFilter')?.value || '';
+    let filtered = locationalRecords.filter(r =>
+        (!search || r.controlNo?.toLowerCase().includes(search) || r.applicant?.toLowerCase().includes(search) || r.projectName?.toLowerCase().includes(search)) &&
+        (!statusFilter || r.status === statusFilter)
+    );
+    filtered.sort((a, b) => new Date(b.dateIssued) - new Date(a.dateIssued));
+    tbody.innerHTML = filtered.map(r => `
+        <tr>
+            <td>${escapeHtml(r.controlNo)}</td>
+            <td>${escapeHtml(r.applicant)}</td>
+            <td>${escapeHtml(r.projectName)}</td>
+            <td>${escapeHtml(r.location)}</td>
+            <td>${formatDate(r.dateIssued)}</td>
+            <td><select class="status-dropdown" onchange="updateLocationalStatus(${r.id}, this.value)">
+                <option ${r.status === 'For Review' ? 'selected' : ''}>For Review</option>
+                <option ${r.status === 'For RD Signature' ? 'selected' : ''}>For RD Signature</option>
+                <option ${r.status === 'For Release' ? 'selected' : ''}>For Release</option>
+                <option ${r.status === 'Released' ? 'selected' : ''}>Released</option>
+            </select></td>
+            <td><div class="action-btns">
+                <button class="action-btn view" onclick="viewLocationalRecord(${r.id})">👁️</button>
+                <button class="action-btn edit" onclick="editLocationalRecord(${r.id})">✏️</button>
+                <button class="action-btn print" onclick="printLocationalRecord(${r.id})">🖨️</button>
+                <button class="action-btn delete" onclick="deleteLocationalRecord(${r.id})">🗑️</button>
+            </div></td>
+        </tr>
+    `).join('');
+}
+
+function updateLocationalStatus(id, newStatus) {
+    const rec = locationalRecords.find(r => r.id === id);
+    if (rec) {
+        rec.status = newStatus;
+        localStorage.setItem('locationalRecords', JSON.stringify(locationalRecords));
+        refreshLocationalTable();
+        showToast(`Status updated to "${newStatus}"`, 'success');
+    }
+}
+
+function viewLocationalRecord(id) {
+    const r = locationalRecords.find(r => r.id === id);
+    if (!r) return;
+    let html = '<div class="form-grid">';
+    for (let [k, v] of Object.entries(r)) if (k !== 'id') html += `<div><strong>${k}:</strong> ${escapeHtml(String(v || ''))}</div>`;
+    html += `</div><button class="btn btn-primary" onclick="closeModal()">Close</button>`;
+    document.getElementById('modalTitle').innerText = 'View Locational Clearance';
+    document.getElementById('modalBody').innerHTML = html;
+    document.getElementById('dataModal').classList.add('active');
+}
+
+function editLocationalRecord(id) {
+    const r = locationalRecords.find(r => r.id === id);
+    if (!r) return;
+    currentEditingLocId = id;
+    document.getElementById('locControlNo').value = r.controlNo;
+    document.getElementById('locApplicant').value = r.applicant;
+    document.getElementById('locProjectName').value = r.projectName;
+    document.getElementById('locLocation').value = r.location;
+    document.getElementById('locArea').value = r.area;
+    document.getElementById('locDateFiled').value = r.dateFiled || '';
+    document.getElementById('locDateIssued').value = r.dateIssued;
+    document.getElementById('locAmountPaid').value = r.amountPaid;
+    document.getElementById('locOrNo').value = r.orNo || '';
+    document.getElementById('locRemarks').value = r.remarks || '';
+    switchELUPDDView('locational');
+}
+
+async function deleteLocationalRecord(id) {
+    if (!confirm('Delete this record?')) return;
+    locationalRecords = locationalRecords.filter(r => r.id !== id);
+    localStorage.setItem('locationalRecords', JSON.stringify(locationalRecords));
+    if (await checkGoogleSheetsConnection()) {
+        const params = new URLSearchParams();
+        params.append('action', 'delete');
+        params.append('data_type', 'locational');
+        params.append('data', JSON.stringify({ id }));
+        await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: params });
+    } else {
+        addToPendingSync('locational', 'delete', { id });
+    }
+    refreshLocationalTable();
+    showToast('Deleted', 'success');
+}
+
+function clearLocationalForm() {
+    document.getElementById('locationalForm').reset();
+    document.getElementById('locControlNo').value = '';
+    currentEditingLocId = null;
+}
+
+function printLocationalRecord(id) {
+    const r = locationalRecords.find(r => r.id === id);
+    if (!r) return;
+    const content = `<div class="print-document"><h2>LOCATIONAL CLEARANCE</h2>
+        <p><strong>Control No:</strong> ${r.controlNo}</p>
+        <p><strong>Applicant:</strong> ${r.applicant}</p>
+        <p><strong>Project:</strong> ${r.projectName}</p>
+        <p><strong>Location:</strong> ${r.location}</p>
+        <p><strong>Area:</strong> ${r.area} ha</p>
+        <p><strong>Date Issued:</strong> ${formatDate(r.dateIssued)}</p>
+        <p><strong>Amount Paid:</strong> ₱${r.amountPaid}</p>
+        <p><strong>OR No.:</strong> ${r.orNo}</p>
+        <p><strong>Remarks:</strong> ${r.remarks}</p>
+        <div class="signature-area"><div class="signature-box"><div class="signature-line"></div><p>EnP. EVA MARIA P. MARFIL, CSEE</p><p>Regional Director</p></div></div>
+    </div>`;
+    const ps = document.getElementById('printSection');
+    ps.innerHTML = content;
+    ps.style.display = 'block';
+    setTimeout(() => window.print(), 200);
+    setTimeout(() => ps.style.display = 'none', 1000);
+}
+
+function exportLocationalToExcel() {
+    if (!locationalRecords.length) { alert('No data to export.'); return; }
+    const ws = XLSX.utils.json_to_sheet(locationalRecords.map(r => ({
+        'Control No': r.controlNo, 'Applicant': r.applicant, 'Project': r.projectName,
+        'Location': r.location, 'Area': r.area, 'Date Issued': r.dateIssued,
+        'Status': r.status, 'Amount': r.amountPaid, 'OR No.': r.orNo
+    })));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Locational_Clearances');
+    XLSX.writeFile(wb, `Locational_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+function openLocationalReportModal() {
+    const modal = document.getElementById('reportModal');
+    document.getElementById('reportModalTitle').innerText = 'Locational Clearance Report';
+    let html = `<div><label>Month: <select id="locReportMonth"><option value="all">All</option></select></label>
+        <button class="btn btn-primary" onclick="generateLocationalReport()">Generate</button>
+        <button class="btn btn-secondary" onclick="printLocationalReport()">Print</button></div>
+        <div id="locReportTableContainer"></div>`;
+    document.getElementById('reportModalBody').innerHTML = html;
+    const monthsSet = new Set();
+    locationalRecords.forEach(r => { if (r.dateIssued) monthsSet.add(r.dateIssued.slice(0,7)); });
+    const select = document.getElementById('locReportMonth');
+    Array.from(monthsSet).sort().reverse().forEach(m => {
+        const opt = document.createElement('option'); opt.value = m; opt.textContent = m; select.appendChild(opt);
+    });
+    generateLocationalReport();
+    modal.classList.add('active');
+}
+
+function generateLocationalReport() {
+    const month = document.getElementById('locReportMonth')?.value || 'all';
+    let filtered = month === 'all' ? locationalRecords : locationalRecords.filter(r => r.dateIssued?.startsWith(month));
+    let html = `<table border="1" cellpadding="5"><tr><th>Control No</th><th>Applicant</th><th>Project</th><th>Date Issued</th><th>Status</th></tr>`;
+    html += filtered.map(r => `<tr><td>${r.controlNo}</td><td>${r.applicant}</td><td>${r.projectName}</td><td>${r.dateIssued}</td><td>${r.status}</td></tr>`).join('');
+    html += `</table>`;
+    document.getElementById('locReportTableContainer').innerHTML = html;
+}
+
+function printLocationalReport() {
+    const printWin = window.open('', '_blank');
+    printWin.document.write('<html><head><title>Locational Report</title><style>table{border-collapse:collapse;}th,td{border:1px solid #000;padding:5px;}</style></head><body>' + document.getElementById('locReportTableContainer').innerHTML + '</body></html>');
+    printWin.document.close();
+    printWin.print();
+}
+
+function filterLocationalTable() { refreshLocationalTable(); }
+
+// Override updateHomeStats to include locational records
+const originalUpdateHomeStats = window.updateHomeStats || function() {};
+window.updateHomeStats = function() {
+    document.getElementById('homeZoningCount').innerText = (typeof zoningCertifications !== 'undefined') ? zoningCertifications.length : 0;
+    document.getElementById('homeLocCount').innerText = locationalRecords.length;
+    const released = ((typeof zoningCertifications !== 'undefined') ? zoningCertifications.filter(r => r.status === 'Released').length : 0) + locationalRecords.filter(r => r.status === 'Released').length;
+    document.getElementById('homeReleasedCount').innerText = released;
+};
     </script>
 </body>
 </html>
