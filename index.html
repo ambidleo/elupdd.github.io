@@ -2732,40 +2732,62 @@ if (!currentEditingZoningId) {
             document.getElementById('dataModal').classList.add('active');
         }
 
-        async function editZoningRecord(id) {
-            const rec = zoningCertifications.find(r => r.id === id); if (!rec) return;
-            currentEditingZoningId = id;
-            switchZoningView('dataEntry');
-            document.getElementById('certificationNo').value = rec.certificationNo;
-            document.getElementById('certificationIssued').value = rec.certificationIssued || '';
-            suppressParcelListener = true;
-document.getElementById('parcels').value = rec.parcels;
-suppressParcelListener = false;
-            document.getElementById('location').value = rec.location;
-            document.getElementById('latitude').value = rec.latitude || '';
-            document.getElementById('longitude').value = rec.longitude || '';
-            document.getElementById('totalArea').value = rec.totalArea;
-            document.getElementById('proposedUse').value = rec.proposedUse;
-            document.getElementById('dateIssued').value = rec.dateIssued;
-            document.getElementById('requestedBy').value = rec.requestedBy;
-            document.getElementById('amountPaid').value = rec.amountPaid;
-            document.getElementById('orNo').value = rec.orNo || '';
-            document.getElementById('orDate').value = rec.orDate || '';
-            document.getElementById('remarks').value = rec.remarks || '';
-            document.getElementById('city').value = rec.city || '';
-            document.getElementById('province').value = rec.province || '';
-            document.getElementById('approvedBy').value = rec.approvedBy || '';
-            document.getElementById('circularNo').value = rec.circularNo || '';
-            document.getElementById('approvalDate').value = rec.approvalDate || '';
-            document.querySelector(`input[name="clupStatus"][value="${rec.clupStatus||'approved'}"]`).checked = true;
-            const container = document.getElementById('landHoldingsContainer'); container.innerHTML = '';
-            if (rec.landHoldings?.length) {
-                rec.landHoldings.forEach(h => { const row = document.createElement('div'); row.className = 'land-holding-row'; row.style.cssText = 'display:grid;grid-template-columns:2fr 1.5fr 1.5fr 1fr 1fr 0.5fr;gap:10px;margin-bottom:15px;padding:15px;background:#f9f9f9;border-radius:5px;border:1px solid #e0e0e0;';
-                row.innerHTML = `<div><label>Registered Owner</label><input type="text" class="form-control" name="registeredOwner[]" value="${escapeHtml(h.registeredOwner)}" required></div><div><label>TCT/OCT No.</label><input type="text" class="form-control" name="tctNo[]" value="${escapeHtml(h.tctNo)}" required></div><div><label>Lot Number</label><input type="text" class="form-control" name="lotNo[]" value="${escapeHtml(h.lotNo||'')}"></div><div><label>Area Per Title (ha)</label><input type="number" step="0.0001" class="form-control" name="areaPerTitle[]" value="${h.areaPerTitle||''}"></div><div><label>Zone Classification</label><input type="text" class="form-control" name="zoneclass[]" value="${escapeHtml(h.zoneclass)}" required></div><div><button type="button" class="btn btn-danger" onclick="removeLandHolding(this)">🗑️</button></div>`;
-                container.appendChild(row); });
-            } else addLandHolding();
-            toggleClupCascade();
-        }
+       async function editZoningRecord(id) {
+    const rec = zoningCertifications.find(r => r.id === id);
+    if (!rec) return;
+    currentEditingZoningId = id;
+    switchZoningView('dataEntry');
+    document.getElementById('certificationNo').value = rec.certificationNo;
+    document.getElementById('certificationIssued').value = rec.certificationIssued || '';
+    suppressParcelListener = true;
+    document.getElementById('parcels').value = rec.parcels;
+    suppressParcelListener = false;
+    document.getElementById('location').value = rec.location;
+    document.getElementById('latitude').value = rec.latitude || '';
+    document.getElementById('longitude').value = rec.longitude || '';
+    document.getElementById('totalArea').value = rec.totalArea;
+    document.getElementById('proposedUse').value = rec.proposedUse;
+    document.getElementById('dateIssued').value = rec.dateIssued;
+    document.getElementById('requestedBy').value = rec.requestedBy;
+    document.getElementById('amountPaid').value = rec.amountPaid;
+    document.getElementById('orNo').value = rec.orNo || '';
+    document.getElementById('orDate').value = rec.orDate || '';
+    document.getElementById('remarks').value = rec.remarks || '';
+    document.getElementById('city').value = rec.city || '';
+    document.getElementById('province').value = rec.province || '';
+    document.getElementById('approvedBy').value = rec.approvedBy || '';
+    document.getElementById('circularNo').value = rec.circularNo || '';
+    document.getElementById('approvalDate').value = rec.approvalDate || '';
+    document.querySelector(`input[name="clupStatus"][value="${rec.clupStatus||'approved'}"]`).checked = true;
+
+    const container = document.getElementById('landHoldingsContainer');
+    container.innerHTML = '';
+
+    if (rec.landHoldings?.length) {
+        rec.landHoldings.forEach(h => {
+            const row = document.createElement('div');
+            row.className = 'land-holding-row';
+            row.style.cssText = 'display:grid;grid-template-columns:2fr 1.5fr 1.5fr 1fr 1fr 0.5fr;gap:10px;margin-bottom:15px;padding:15px;background:#f9f9f9;border-radius:5px;border:1px solid #e0e0e0;';
+            row.innerHTML = `
+                <div><label>Registered Owner</label><input type="text" class="form-control" name="registeredOwner[]" value="${escapeHtml(h.registeredOwner)}" required></div>
+                <div><label>TCT/OCT No.</label><input type="text" class="form-control" name="tctNo[]" value="${escapeHtml(h.tctNo)}" required></div>
+                <div><label>Lot Number</label><input type="text" class="form-control" name="lotNo[]" value="${escapeHtml(h.lotNo||'')}"></div>
+                <div><label>Area Per Title (ha)</label><input type="number" step="0.0001" class="form-control area-per-title" name="areaPerTitle[]" value="${h.areaPerTitle||0}"></div>
+                <div><label>Zone Classification</label><input type="text" class="form-control" name="zoneclass[]" value="${escapeHtml(h.zoneclass)}" required></div>
+                <div style="display:flex;align-items:flex-end;"><button type="button" class="btn btn-danger" onclick="removeLandHolding(this)">🗑️</button></div>
+            `;
+            container.appendChild(row);
+            
+            // Attach event listener to the new area input
+            const areaInput = row.querySelector('input[name="areaPerTitle[]"]');
+            areaInput.addEventListener('input', recalcTotalArea);
+        });
+        recalcTotalArea();
+    } else {
+        addLandHolding();  // this function already attaches listener and recalc
+    }
+    toggleClupCascade();
+}
 
         async function deleteZoningRecord(id) {
             if (confirm('Delete this record?')) {
@@ -2799,20 +2821,38 @@ suppressParcelListener = false;
     toggleClupCascade();
 }
 
-        function addLandHolding() {
-            const container = document.getElementById('landHoldingsContainer');
-            const newRow = document.createElement('div');
-            newRow.className = 'land-holding-row';
-            newRow.style.cssText = 'display:grid;grid-template-columns:2fr 1.5fr 1.5fr 1fr 1fr 0.5fr;gap:10px;margin-bottom:15px;padding:15px;background:#f9f9f9;border-radius:5px;border:1px solid #e0e0e0;';
-            newRow.innerHTML = `<div><label>Registered Owner</label><input type="text" class="form-control" name="registeredOwner[]" placeholder="Enter registered owner" required></div><div><label>TCT/OCT No.</label><input type="text" class="form-control" name="tctNo[]" placeholder="Enter TCT/OCT number" required></div><div><label>Lot Number</label><input type="text" class="form-control" name="lotNo[]" placeholder="e.g., Lot 1234"></div><div><label>Area Per Title (ha)</label><input type="number" step="0.0001" class="form-control" name="areaPerTitle[]" placeholder="0.0000"></div><div><label>Zone Classification</label><input type="text" class="form-control" name="zoneclass[]" placeholder="e.g., Residential-3" required></div><div style="display:flex;align-items:flex-end;"><button type="button" class="btn btn-danger" onclick="removeLandHolding(this)" style="padding:0.6rem 1rem;">🗑️</button></div>`;
-            container.appendChild(newRow);
-        }
+       function addLandHolding() {
+    const container = document.getElementById('landHoldingsContainer');
+    const newRow = document.createElement('div');
+    newRow.className = 'land-holding-row';
+    newRow.style.cssText = 'display:grid;grid-template-columns:2fr 1.5fr 1.5fr 1fr 1fr 0.5fr;gap:10px;margin-bottom:15px;padding:15px;background:#f9f9f9;border-radius:5px;border:1px solid #e0e0e0;';
+    newRow.innerHTML = `
+        <div><label>Registered Owner</label><input type="text" class="form-control" name="registeredOwner[]" placeholder="Enter registered owner" required></div>
+        <div><label>TCT/OCT No.</label><input type="text" class="form-control" name="tctNo[]" placeholder="Enter TCT/OCT number" required></div>
+        <div><label>Lot Number</label><input type="text" class="form-control" name="lotNo[]" placeholder="e.g., Lot 1234"></div>
+        <div><label>Area Per Title (ha)</label><input type="number" step="0.0001" class="form-control area-per-title" name="areaPerTitle[]" placeholder="0.0000" value="0"></div>
+        <div><label>Zone Classification</label><input type="text" class="form-control" name="zoneclass[]" placeholder="e.g., Residential-3" required></div>
+        <div style="display:flex;align-items:flex-end;"><button type="button" class="btn btn-danger" onclick="removeLandHolding(this)" style="padding:0.6rem 1rem;">🗑️</button></div>
+    `;
+    container.appendChild(newRow);
+    
+    // Attach event listener to the new area input
+    const areaInput = newRow.querySelector('input[name="areaPerTitle[]"]');
+    areaInput.addEventListener('input', recalcTotalArea);
+    
+    // Recalculate total after adding a row (initial value may be 0)
+    recalcTotalArea();
+}
 
         function removeLandHolding(btn) {
-            const row = btn.closest('.land-holding-row');
-            if (document.querySelectorAll('.land-holding-row').length > 1) row.remove();
-            else alert('At least one land holding is required.');
-        }
+    const row = btn.closest('.land-holding-row');
+    if (document.querySelectorAll('.land-holding-row').length > 1) {
+        row.remove();
+        recalcTotalArea();
+    } else {
+        alert('At least one land holding is required.');
+    }
+}
 
         function filterCertificationsTable() { renderCertificationsTable(); updateAccomplishmentStats(); }
         function clearCertSearch() { document.getElementById('certSearchInput').value = ''; document.getElementById('certStatusFilter').value = ''; filterCertificationsTable(); }
@@ -3326,11 +3366,11 @@ if (parcelsInput) {
 
         container.innerHTML = '';
         for (let i = 0; i < parcelCount; i++) {
-            addLandHolding();
+            addLandHolding();  // addLandHolding now attaches listeners and recalc
         }
+        recalcTotalArea();  // final recalculation
     });
-}
-    setupConnectionMonitoring();
+}    setupConnectionMonitoring();
     addSyncStatusIndicator();
     loadPendingSyncData();
     
@@ -3896,6 +3936,21 @@ function loadCounter() {
         try {
             certificationCounter = JSON.parse(stored);
         } catch(e) {}
+    }
+}
+
+function recalcTotalArea() {
+    let total = 0;
+    const areaInputs = document.querySelectorAll('input[name="areaPerTitle[]"]');
+    areaInputs.forEach(input => {
+        let val = parseFloat(input.value);
+        if (!isNaN(val) && val > 0) total += val;
+    });
+    const totalAreaField = document.getElementById('totalArea');
+    if (totalAreaField) {
+        totalAreaField.value = total.toFixed(4);
+        // Trigger any validation if needed
+        totalAreaField.dispatchEvent(new Event('input'));
     }
 }
     </script>
