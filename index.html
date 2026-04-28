@@ -450,7 +450,13 @@ html {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
     }
-    
+
+   .zoning-view {
+    display: none;
+}
+.zoning-view.active {
+    display: block;
+} 
     .cert-table {
         min-width: 800px;
     }
@@ -1143,7 +1149,7 @@ body:not([data-role]) .auth-modal {
         <ul role="menubar">
 		<li role="none"><a href="#" onclick="showSection('home')" role="menuitem">🏠 HOME</a></li>
 		<li role="none" id="elupddMenuItem" style="position: relative;">
-    <a href="#" onclick="showSection('elupdd'); return false;" role="menuitem">📋 ELUPDD</a>
+    <a href="#" onclick="showELUPDDDefault(); return false;" role="menuitem">📋 ELUPDD</a>
     <ul class="nav-dropdown" id="elupddDropdown">
     <li><a href="#" onclick="showELUPDDModule('locational'); return false;">📍 Locational Clearance</a></li>
     <li><a href="#" onclick="showELUPDDModule('siteZoning'); return false;">🏷️ Site Zoning Certification</a></li>
@@ -1183,8 +1189,14 @@ body:not([data-role]) .auth-modal {
 <div id="elupdd" class="section">
     <div class="cert-section">
         <div class="cert-title">📋 ELUPDD - Certification Management</div>
+<div id="defaultElupddView" class="zoning-view active" style="text-align: center; padding: 3rem; background: white; border-radius: 15px;">
+    <span style="font-size: 3rem;">📋</span>
+    <h3>ELUPDD Certification Management</h3>
+    <p>Please select a module from the <strong>📋 ELUPDD</strong> dropdown menu above.</p>
+    <p style="margin-top: 1rem;">📍 <strong>Locational Clearance</strong> &nbsp;|&nbsp; 🏷️ <strong>Site Zoning Certification</strong></p>
+</div>
         <!-- Locational Clearance View (will be filled in Step 4 & 5) -->
-        <div id="locationalView" class="zoning-view active">
+       <div id="locationalView" class="zoning-view">
             <div class="cert-title"><span>📍 Locational Clearance - Data Entry</span></div>
 <form id="locationalForm" onsubmit="return saveLocationalRecord(event)">
     <div class="form-grid">
@@ -1232,14 +1244,10 @@ body:not([data-role]) .auth-modal {
                 
                 <!-- Sub-navigation for Data Entry / Accomplishment -->
                 <div class="zoning-subnav" role="tablist">
-                    <button class="subnav-link active" onclick="switchZoningView('dataEntry')" role="tab" aria-selected="true" aria-controls="dataEntryView">
-                        <span aria-hidden="true">📝</span> Data Entry
-                    </button>
-                    <button class="subnav-link" onclick="switchZoningView('accomplishment')" role="tab" aria-selected="false" aria-controls="accomplishmentView">
-                        <span aria-hidden="true">📊</span> Accomplishment
-                    </button>
-                </div>
-
+    <button class="subnav-link active" onclick="switchZoningView('dataEntry')">📝 Data Entry</button>
+    <button class="subnav-link" onclick="switchZoningView('status')">📋 Status</button>
+    <button class="subnav-link" onclick="switchZoningView('accomplishment')">✅ Accomplishment</button>
+</div>
                 <!-- Data Entry View -->
                 <div id="dataEntryView" class="zoning-view active" role="tabpanel">
                     <div class="cert-section">
@@ -1358,19 +1366,17 @@ body:not([data-role]) .auth-modal {
                                     <option value="">All Status</option>
                                     <option value="For Review">For Review</option>
                                     <option value="For RD Signature">For RD Signature</option>
-                                    <option value="For Release">For Release</option>
+                                    <option value="For Releas">For Releasing</option>
                                     <option value="Released">Released</option>
                                 </select>
                             </div>
-                            <button class="btn btn-primary" onclick="filterCertificationsTable()" style="padding: 0.8rem 1.5rem;">🔍 Search</button>
                             <button class="btn btn-secondary" onclick="clearCertSearch()" style="padding: 0.8rem 1.5rem;">🗑️ Clear</button>
                             <button class="btn btn-primary" onclick="manualRefresh()" style="background: #28a745;">🔄 Refresh Data</button>
                         </div>
                         <!-- Summary Stats -->
                         <div style="display: flex; gap: 2rem; margin-bottom: 1.5rem; justify-content: space-around; background: #e9f2f9; padding: 1rem; border-radius: 12px;">
                             <div style="text-align: center;"><span style="font-size: 2rem; font-weight: bold; color: var(--primary-dark);" id="totalCertCount">0</span><br>Total Certifications</div>
-                            <div style="text-align: center;"><span style="font-size: 2rem; font-weight: bold; color: var(--secondary);" id="releasedCertCount">0</span><br>Released</div>
-                            <div style="text-align: center;"><span style="font-size: 2rem; font-weight: bold; color: var(--accent-accessible);" id="pendingCertCount">0</span><br>Pending/Review</div>
+                            <div style="text-align: center;"><span style="font-size: 2rem; font-weight: bold; color: var(--secondary);" id="releasedCertCount">0</span><br>Released</div>         
                         </div>
                         <div style="overflow-x:auto;">
                             <table class="cert-table" id="certificationsTable">
@@ -1383,7 +1389,6 @@ body:not([data-role]) .auth-modal {
                         <div style="display: flex; justify-content: space-between; margin-top: 1rem;">
                             <button class="btn btn-primary" onclick="switchZoningView('dataEntry')">⬅️ Back to Data Entry</button>
                             <div>
-                               <button class="btn btn-success" onclick="exportCertificationsToExcel()">📥 Export to Excel</button>
                                 <button class="btn btn-warning" onclick="openReportModal()">📈 Generate Report</button>
                             </div>
                         </div>
@@ -1394,7 +1399,41 @@ body:not([data-role]) .auth-modal {
         <div id="siteZoningView" class="zoning-view"></div>
     </div>
 </div>
-            
+<!-- Status View (all records, without summary/export) -->
+<div id="statusView" class="zoning-view">
+    <div class="cert-section">
+        <div class="cert-title"><span aria-hidden="true">📋</span> Certification Status</div>
+        <div class="search-bar" style="margin-bottom: 1rem; padding: 1rem; background: #f8faff; border-radius: 12px;">
+            <div class="search-box" style="flex: 2;">
+                <span aria-hidden="true">🔍</span>
+                <input type="text" id="statusSearchInput" placeholder="Search by Certification No., Location, or Requested By..." onkeyup="filterStatusTable()">
+            </div>
+            <div class="filter-group" style="min-width: 160px;">
+                <select id="statusFilter" onchange="filterStatusTable()">
+                    <option value="">All Status</option>
+                    <option value="For Review">For Review</option>
+                    <option value="For RD Signature">For RD Signature</option>
+                    <option value="For Release">For Release</option>
+                    <option value="Released">Released</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" onclick="filterStatusTable()">🔍 Search</button>
+            <button class="btn btn-secondary" onclick="clearStatusSearch()">🗑️ Clear</button>
+        </div>
+        <div style="overflow-x:auto;">
+            <table class="cert-table" id="statusTable">
+                <thead>
+                    <tr>
+                        <th>Certification No.</th><th>Type</th><th>No. of Parcels</th><th>Location</th><th>Total Area</th>
+                        <th>Date Issued</th><th>Requested By</th><th>Status</th><th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="statusTableBody"></tbody>
+            </table>
+	 </div>
+        </div>
+    </div>
+</div>            
 <!-- Reports Section -->
             <div id="reports" class="section" style="display: none;" role="region" aria-labelledby="reports-heading">
                 <h1 id="reports-heading" class="visually-hidden">Planning Reports</h1>
@@ -1423,31 +1462,23 @@ body:not([data-role]) .auth-modal {
                         <h2 id="reportModalTitle">📊 Certification Accomplishment Report</h2>
                         <button class="close-btn" onclick="closeReportModal()">&times;</button>
                     </div>
-                    <div id="reportModalBody">
-                        <div style="margin-bottom: 1.5rem;">
-                            <label for="reportMonthFilter">Select Month:</label>
-                            <select id="reportMonthFilter" class="form-control" style="width: auto; display: inline-block; margin-left: 1rem;" onchange="generateReportFromFilter()">
-                                <option value="all">All Months</option>
-                            </select>
-                            <button class="btn btn-primary" onclick="generateReportFromFilter()" style="margin-left: 1rem;">Generate</button>
-                            <button class="btn btn-secondary" onclick="printReport()" style="margin-left: 1rem;">🖨️ Print Report</button>
-                        </div>
-                        <div id="reportSummary" style="margin-bottom: 1rem; padding: 1rem; background: #e9f2f9; border-radius: 8px;">
-                            <!-- Summary will be inserted here -->
-                        </div>
-                        <div style="overflow-x: auto;">
-                            <table class="cert-table" id="reportTable">
-                                <thead>
-                                    <tr>
-                                        <th>Control No.</th><th>Requesting Party</th><th>Certification Issued</th><th>Date Issued</th><th>Report Month</th>
-                                        <th>Owner/Proponents</th><th>Location</th><th>No. of Parcels</th><th>Total Area (ha)</th>
-                                        <th>No. of Days Processed</th><th>On Time / Delayed</th><th>Count_Timeliness</th>
-                                        <th>Longitude</th><th>Latitude</th><th>Remarks</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="reportTableBody"></tbody>
-                            </table>
-                        </div>
+                    <div style="margin-bottom: 1.5rem;">
+    <label for="reportMonthFilter">Select Month:</label>
+    <select id="reportMonthFilter" class="form-control" style="width: auto; display: inline-block; margin-left: 1rem;" onchange="generateReportFromFilter()">
+        <option value="all">All Months</option>
+    </select>
+    <button class="btn btn-success" onclick="exportFilteredReportToExcel()" style="margin-left: 1rem;">📥 Export to Excel</button>
+    <button class="btn btn-secondary" onclick="printReport()" style="margin-left: 0.5rem;">🖨️ Print Report</button>
+</div>
+<div id="reportSummary" style="margin-bottom: 1rem; padding: 1rem; background: #e9f2f9; border-radius: 8px;"></div>
+<div style="overflow-x: auto;">
+    <table class="cert-table" id="reportTable">
+        <thead>
+            <tr><th>Control No.</th><th>Requesting Party</th><th>Certification Issued</th><th>Date Issued</th><th>Report Month</th><th>Owner/Proponents</th><th>Location</th><th>No. of Parcels</th><th>Total Area (ha)</th><th>No. of Days Processed</th><th>On Time / Delayed</th><th>Count_Timeliness</th><th>Longitude</th><th>Latitude</th><th>Remarks</th></tr>
+        </thead>
+        <tbody id="reportTableBody"></tbody>
+    </table>
+</div>
                     </div>
                 </div>
             </div>
@@ -1737,22 +1768,36 @@ function showELUPDDSection() {
         function hideLoadingOverlay() { document.getElementById('syncLoading').classList.remove('active'); }
 
 function switchELUPDDView(view) {
+    // Hide all zoning-views inside ELUPDD
     document.querySelectorAll('#elupdd .zoning-view').forEach(v => v.classList.remove('active'));
+    
+    // Also hide the default placeholder if it's active
+    const defaultView = document.getElementById('defaultElupddView');
+    if (defaultView) defaultView.classList.remove('active');
+    
     if (view === 'locational') {
-document.getElementById('locationalView').classList.add('active');
+        document.getElementById('locationalView').classList.add('active');
+        clearLocationalForm();          // clear the form each time
         refreshLocationalTable();
-    } else {
+    } else if (view === 'siteZoning') {
         document.getElementById('siteZoningView').classList.add('active');
-        // existing zoning table render functions will be called later
         if (typeof renderCertificationsTable === 'function') renderCertificationsTable();
     }
+}
+function showELUPDDDefault() {
+    // Show the ELUPDD section
+    showSection('elupdd');
+    
+    // Hide both form views and show the default placeholder
+    document.querySelectorAll('#elupdd .zoning-view').forEach(v => v.classList.remove('active'));
+    const defaultView = document.getElementById('defaultElupddView');
+    if (defaultView) defaultView.classList.add('active');
 }
         // ========== ZONING SUBNAV SWITCH ==========
         function switchZoningView(view) {
     const container = document.getElementById('siteZoningView');
     if (!container) return;
     
-    // Update active tab styles only inside the container
     const subnavLinks = container.querySelectorAll('.zoning-subnav .subnav-link');
     const zoningViews = container.querySelectorAll('.zoning-view');
     
@@ -1764,119 +1809,80 @@ document.getElementById('locationalView').classList.add('active');
         if (dataEntryBtn) dataEntryBtn.classList.add('active');
         const dataEntryView = document.getElementById('dataEntryView');
         if (dataEntryView) dataEntryView.classList.add('active');
-    } else {
+    } 
+    else if (view === 'status') {
+        const statusBtn = container.querySelector('.subnav-link[onclick*="status"]');
+        if (statusBtn) statusBtn.classList.add('active');
+        const statusView = document.getElementById('statusView');
+        if (statusView) statusView.classList.add('active');
+        renderStatusTable();   // we will create this function
+    } 
+    else if (view === 'accomplishment') {
         const accompBtn = container.querySelector('.subnav-link[onclick*="accomplishment"]');
         if (accompBtn) accompBtn.classList.add('active');
         const accompView = document.getElementById('accomplishmentView');
         if (accompView) accompView.classList.add('active');
-        if (typeof renderCertificationsTable === 'function') renderCertificationsTable();
+        renderCertificationsTable();  // existing function – we will modify it to show only released
         if (typeof updateAccomplishmentStats === 'function') updateAccomplishmentStats();
     }
 }
 
         function updateAccomplishmentStats() {
-            const total = zoningCertifications.length;
-            const released = zoningCertifications.filter(r => r.status === 'Released').length;
-            const pending = total - released;
-            document.getElementById('totalCertCount').textContent = total;
-            document.getElementById('releasedCertCount').textContent = released;
-            document.getElementById('pendingCertCount').textContent = pending;
-        }
-
-function exportCertificationsToExcel() {
-    if (!zoningCertifications.length) { 
-        alert('No data to export.'); 
-        return; 
+    const total = zoningCertifications.length;
+    const released = zoningCertifications.filter(r => r.status === 'Released').length;
+    document.getElementById('totalCertCount').textContent = total;
+    document.getElementById('releasedCertCount').textContent = released;
+}
+function exportFilteredReportToExcel() {
+    const monthFilter = document.getElementById('reportMonthFilter').value;
+    
+    // Start with only released records
+    let filtered = zoningCertifications.filter(rec => rec.status === 'Released');
+    
+    if (monthFilter !== 'all') {
+        filtered = filtered.filter(cert => {
+            if (!cert.dateIssued) return false;
+            const date = new Date(cert.dateIssued);
+            if (isNaN(date.getTime())) return false;
+            const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+            return monthKey === monthFilter;
+        });
     }
     
-    // Check if SheetJS is loaded
-    if (typeof XLSX === 'undefined') {
-        alert('Excel export library not loaded. Please refresh the page and try again.');
-        console.error('SheetJS not loaded');
+    if (!filtered.length) {
+        alert('No released records to export for the selected month.');
         return;
     }
     
-    try {
-        // Headers with proper formatting
-        const headers = [
-            'Certification No.', 'Type', 'Series', 'No. of Parcels', 'Location', 
-            'Latitude', 'Longitude', 'Total Area (ha)', 'Proposed Use', 
-            'Date Received', 'Date Issued', 'Requested By', 'Amount Paid (₱)', 
-            'OR No.', 'OR Date', 'Status', 'City/Municipality', 'Province', 
-            'Approved By', 'Circular/Res. No.', 'Approval Date', 'Purpose', 
-            'Land Class', 'Remarks'
-        ];
-        
-        // Map certification data to rows
-        const rows = zoningCertifications.map(r => [
-            r.certificationNo || '',
-            r.certificationIssued || '',
-            r.series || '',
-            r.parcels || '',
-            r.location || '',
-            r.latitude || '',
-            r.longitude || '',
-            r.totalArea || '',
-            r.proposedUse || '',
-            r.dateReceived || '',
-            r.dateIssued || '',
-            r.requestedBy || '',
-            r.amountPaid || '',
-            r.orNo || '',
-            r.orDate || '',
-            r.status || 'For Review',
-            r.city || '',
-            r.province || '',
-            r.approvedBy || '',
-            r.circularNo || '',
-            r.approvalDate || '',
-            r.purpose || '',
-            r.landClass || '',
-            r.remarks || ''
-        ]);
-        
-        // Create worksheet
-        const wsData = [headers, ...rows];
-        const wb = XLSX.utils.book_new();
-        const ws = XLSX.utils.aoa_to_sheet(wsData);
-        
-        // Set column widths for better readability
-        ws['!cols'] = [
-            { wch: 18 }, // Cert No.
-            { wch: 25 }, // Type
-            { wch: 8 },  // Series
-            { wch: 15 }, // Parcels
-            { wch: 40 }, // Location
-            { wch: 12 }, // Latitude
-            { wch: 12 }, // Longitude
-            { wch: 12 }, // Total Area
-            { wch: 20 }, // Proposed Use
-            { wch: 12 }, // Date Received
-            { wch: 12 }, // Date Issued
-            { wch: 25 }, // Requested By
-            { wch: 12 }, // Amount Paid
-            { wch: 15 }, // OR No.
-            { wch: 12 }, // OR Date
-            { wch: 12 }, // Status
-            { wch: 25 }, // City
-            { wch: 18 }, // Province
-            { wch: 20 }, // Approved By
-            { wch: 25 }, // Circular No.
-            { wch: 12 }, // Approval Date
-            { wch: 15 }, // Purpose
-            { wch: 15 }, // Land Class
-            { wch: 30 }  // Remarks
-        ];
-        
-        // Add to workbook and download
-        XLSX.utils.book_append_sheet(wb, ws, 'Zoning_Certifications');
-        XLSX.writeFile(wb, `Zoning_Accomplishment_${new Date().toISOString().slice(0,10)}.xlsx`);
-        
-        showToast(`Exported ${zoningCertifications.length} records to Excel`, 'success');
-    } catch (error) {
-        console.error('Export error:', error);
-        alert('Failed to export Excel file: ' + error.message);
-    }
+    const headers = [
+        'Control No.', 'Requesting Party', 'Certification Issued', 'Date Issued', 'Report Month',
+        'Owner/Proponents', 'Location', 'No. of Parcels', 'Total Area (ha)',
+        'No. of Days Processed', 'On Time / Delayed', 'Count_Timeliness', 'Longitude', 'Latitude', 'Remarks'
+    ];
+    
+    const rows = filtered.map(r => [
+        r.certificationNo || '',
+        r.requestedBy || '',
+        r.certificationIssued || '',
+        r.dateIssued ? formatDate(r.dateIssued) : '',
+        r.dateIssued ? new Date(r.dateIssued).toLocaleString('default', { month: 'long', year: 'numeric' }) : '',
+        (r.landHoldings && Array.isArray(r.landHoldings)) ? r.landHoldings.map(h => h.registeredOwner).filter(Boolean).join(', ') : '',
+        r.location || '',
+        r.parcels || '',
+        r.totalArea || '',
+        '',
+        '',
+        '',
+        r.longitude || '',
+        r.latitude || '',
+        r.remarks || ''
+    ]);
+    
+    const wsData = [headers, ...rows];
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    XLSX.utils.book_append_sheet(wb, ws, 'Zoning_Report_Released');
+    XLSX.writeFile(wb, `Zoning_Released_Report_${monthFilter}.xlsx`);
 }
         // ========== CERTIFICATION NUMBER MANAGEMENT ==========
         // ========== SIMPLE, RELIABLE CERTIFICATION NUMBER MANAGEMENT ==========
@@ -2389,6 +2395,7 @@ function setupClupCascadeEvents() {
         let zoningCertifications = [];
         let certificationCounter = { lastCertNumber: 0 };
         let currentEditingZoningId = null;
+let suppressParcelListener = false; 
 
      async function fetchCertifications() {
     try {
@@ -2492,6 +2499,42 @@ function setupClupCascadeEvents() {
         }
         return zoningCertifications;
     }
+}
+function renderStatusTable() {
+    const tbody = document.getElementById('statusTableBody');
+    if (!tbody) return;
+    const searchTerm = document.getElementById('statusSearchInput')?.value.toLowerCase() || '';
+    const statusFilter = document.getElementById('statusFilter')?.value || '';
+    let filtered = zoningCertifications.filter(rec => 
+        (!searchTerm || rec.certificationNo?.toLowerCase().includes(searchTerm) || rec.location?.toLowerCase().includes(searchTerm) || rec.requestedBy?.toLowerCase().includes(searchTerm)) &&
+        (!statusFilter || rec.status === statusFilter)
+    );
+    filtered.sort((a,b) => new Date(b.dateIssued) - new Date(a.dateIssued));
+    tbody.innerHTML = filtered.length ? '' : '<tr><td colspan="9" style="text-align:center;">No records found.</td></tr>';
+    filtered.forEach(rec => {
+        const row = tbody.insertRow();
+        row.innerHTML = `
+            <td>${escapeHtml(rec.certificationNo)}</td>
+            <td>${escapeHtml(rec.certificationIssued || '—')}</td>
+            <td>${escapeHtml(rec.parcels)}</td>
+            <td>${escapeHtml(rec.location)}</td>
+            <td>${escapeHtml(rec.totalArea)} ha</td>
+            <td>${formatDate(rec.dateIssued)}</td>
+            <td>${escapeHtml(rec.requestedBy)}</td>
+            <td><select class="status-dropdown" onchange="updateCertificationStatus(${rec.id}, this.value)">
+                <option ${rec.status==='For Review' ? 'selected' : ''}>For Review</option>
+                <option ${rec.status==='For RD Signature' ? 'selected' : ''}>For RD Signature</option>
+                <option ${rec.status==='For Release' ? 'selected' : ''}>For Release</option>
+                <option ${rec.status==='Released' ? 'selected' : ''}>Released</option>
+            </select></td>
+            <td><div class="action-btns">
+                <button class="action-btn view" onclick="viewZoningRecord(${rec.id})">👁️</button>
+                <button class="action-btn edit" onclick="editZoningRecord(${rec.id})">✏️</button>
+                <button class="action-btn print" onclick="printZoningRecord(${rec.id})">🖨️</button>
+                <button class="action-btn delete" onclick="deleteZoningRecord(${rec.id})">🗑️</button>
+            </div></td>
+        `;
+    });
 }
         async function manualCLUPReload() {
   console.log('Manually reloading CLUP...');
@@ -2653,6 +2696,7 @@ if (!currentEditingZoningId) {
         
         // Re-render the table with no filter
         renderCertificationsTable();
+ 	renderStatusTable(); 
         updateAccomplishmentStats();
         showToast(`Status updated to "${newStatus}"`, 'success');
     }
@@ -2662,10 +2706,11 @@ if (!currentEditingZoningId) {
             if (!tbody) return;
             const searchTerm = document.getElementById('certSearchInput')?.value.toLowerCase() || '';
             const statusFilter = document.getElementById('certStatusFilter')?.value || '';
-            let filtered = zoningCertifications.filter(rec => 
-                (!searchTerm || rec.certificationNo?.toLowerCase().includes(searchTerm) || rec.location?.toLowerCase().includes(searchTerm) || rec.requestedBy?.toLowerCase().includes(searchTerm)) &&
-                (!statusFilter || rec.status === statusFilter)
-            );
+           let filtered = zoningCertifications.filter(rec => 
+    rec.status === 'Released' &&
+    (!searchTerm || rec.certificationNo?.toLowerCase().includes(searchTerm) || rec.location?.toLowerCase().includes(searchTerm) || rec.requestedBy?.toLowerCase().includes(searchTerm)) &&
+    (!statusFilter || rec.status === statusFilter)
+);
             filtered.sort((a,b) => new Date(b.dateIssued) - new Date(a.dateIssued));
             tbody.innerHTML = filtered.length ? '' : '<tr><td colspan="9" style="text-align:center;">No records found.</td></tr>';
             filtered.forEach(rec => {
@@ -2693,7 +2738,9 @@ if (!currentEditingZoningId) {
             switchZoningView('dataEntry');
             document.getElementById('certificationNo').value = rec.certificationNo;
             document.getElementById('certificationIssued').value = rec.certificationIssued || '';
-            document.getElementById('parcels').value = rec.parcels;
+            suppressParcelListener = true;
+document.getElementById('parcels').value = rec.parcels;
+suppressParcelListener = false;
             document.getElementById('location').value = rec.location;
             document.getElementById('latitude').value = rec.latitude || '';
             document.getElementById('longitude').value = rec.longitude || '';
@@ -2735,17 +2782,22 @@ if (!currentEditingZoningId) {
         }
 
         function clearZoningForm() {
-            document.getElementById('zoningForm').reset();
-            document.getElementById('landHoldingsContainer').innerHTML = '';
-            addLandHolding();
-            refreshCertificationNumber();
-            document.getElementById('series').value = '2002';
-            document.getElementById('latitude').value = '';
-            document.getElementById('longitude').value = '';
-            currentEditingZoningId = null;
-            clearApprovedDetailsFields();
-            toggleClupCascade();
-        }
+    document.getElementById('zoningForm').reset();
+    document.getElementById('landHoldingsContainer').innerHTML = '';
+    // Generate rows based on current parcels value (defaults to 1)
+    let parcelCount = parseInt(document.getElementById('parcels').value);
+    if (isNaN(parcelCount) || parcelCount < 1) parcelCount = 1;
+    for (let i = 0; i < parcelCount; i++) {
+        addLandHolding();
+    }
+    refreshCertificationNumber();
+    document.getElementById('series').value = '2002';
+    document.getElementById('latitude').value = '';
+    document.getElementById('longitude').value = '';
+    currentEditingZoningId = null;
+    clearApprovedDetailsFields();
+    toggleClupCascade();
+}
 
         function addLandHolding() {
             const container = document.getElementById('landHoldingsContainer');
@@ -2764,6 +2816,16 @@ if (!currentEditingZoningId) {
 
         function filterCertificationsTable() { renderCertificationsTable(); updateAccomplishmentStats(); }
         function clearCertSearch() { document.getElementById('certSearchInput').value = ''; document.getElementById('certStatusFilter').value = ''; filterCertificationsTable(); }
+// Status tab helper functions
+function filterStatusTable() {
+    renderStatusTable();
+}
+function clearStatusSearch() {
+    document.getElementById('statusSearchInput').value = '';
+    document.getElementById('statusFilter').value = '';
+    renderStatusTable();
+}
+
         function resetCertificationCounter() { if (confirm('Reset counter?')) { certificationCounter.lastCertNumber = 0; localStorage.setItem('certificationCounter', JSON.stringify(certificationCounter)); refreshCertificationNumber(); alert('Counter reset.'); } }
 
         function formatMonthDayYear(dateStr) {
@@ -2952,34 +3014,37 @@ if (!currentEditingZoningId) {
         }
         
         function openReportModal() {
-            const modal = document.getElementById('reportModal');
-            const monthSelect = document.getElementById('reportMonthFilter');
-            
-            const months = new Set();
-            zoningCertifications.forEach(cert => {
-                if (cert.dateIssued) {
-                    const date = new Date(cert.dateIssued);
-                    if (!isNaN(date.getTime())) {
-                        const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-                        months.add(monthKey);
-                    }
-                }
-            });
-            
-            const sortedMonths = Array.from(months).sort((a,b) => b.localeCompare(a));
-            monthSelect.innerHTML = '<option value="all">All Months</option>';
-            sortedMonths.forEach(monthKey => {
-                const [year, month] = monthKey.split('-');
-                const monthName = new Date(year, month-1).toLocaleString('default', { month: 'long', year: 'numeric' });
-                const option = document.createElement('option');
-                option.value = monthKey;
-                option.textContent = monthName;
-                monthSelect.appendChild(option);
-            });
-            
-            modal.classList.add('active');
-            generateReportFromFilter();
+    const modal = document.getElementById('reportModal');
+    const monthSelect = document.getElementById('reportMonthFilter');
+    
+    // Get only released records
+    const releasedRecords = zoningCertifications.filter(rec => rec.status === 'Released');
+    
+    const months = new Set();
+    releasedRecords.forEach(cert => {
+        if (cert.dateIssued) {
+            const date = new Date(cert.dateIssued);
+            if (!isNaN(date.getTime())) {
+                const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                months.add(monthKey);
+            }
         }
+    });
+    
+    const sortedMonths = Array.from(months).sort((a, b) => b.localeCompare(a));
+    monthSelect.innerHTML = '<option value="all">All Months</option>';
+    sortedMonths.forEach(monthKey => {
+        const [year, month] = monthKey.split('-');
+        const monthName = new Date(year, month - 1).toLocaleString('default', { month: 'long', year: 'numeric' });
+        const option = document.createElement('option');
+        option.value = monthKey;
+        option.textContent = monthName;
+        monthSelect.appendChild(option);
+    });
+    
+    modal.classList.add('active');
+    generateReportFromFilter();
+}
         
         function closeReportModal() {
             document.getElementById('reportModal').classList.remove('active');
@@ -2990,125 +3055,152 @@ if (!currentEditingZoningId) {
             generateReport(monthFilter);
         }
         
-        function generateReport(monthFilter) {
-            let filtered = [...zoningCertifications];
-            if (monthFilter !== 'all') {
-                filtered = filtered.filter(cert => {
-                    if (!cert.dateIssued) return false;
-                    const date = new Date(cert.dateIssued);
-                    if (isNaN(date.getTime())) return false;
-                    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-                    return monthKey === monthFilter;
-                });
+       function generateReport(monthFilter) {
+    // First, filter only released records
+    let releasedRecords = zoningCertifications.filter(rec => rec.status === 'Released');
+    
+    let filtered = [...releasedRecords];
+    if (monthFilter !== 'all') {
+        filtered = filtered.filter(cert => {
+            if (!cert.dateIssued) return false;
+            const date = new Date(cert.dateIssued);
+            if (isNaN(date.getTime())) return false;
+            const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+            return monthKey === monthFilter;
+        });
+    }
+    
+    filtered.sort((a, b) => new Date(b.dateIssued) - new Date(a.dateIssued));
+    
+    const tbody = document.getElementById('reportTableBody');
+    tbody.innerHTML = '';
+    
+    let totalProcessed = 0;
+    let onTimeCount = 0;
+    
+    filtered.forEach(cert => {
+        const row = tbody.insertRow();
+        
+        const controlNo = cert.certificationNo || '';
+        const requestingParty = cert.requestedBy || '';
+        const certIssued = cert.certificationIssued || '';
+        const dateIssued = cert.dateIssued ? formatDate(cert.dateIssued) : '';
+        const reportMonth = cert.dateIssued ? new Date(cert.dateIssued).toLocaleString('default', { month: 'long', year: 'numeric' }) : '';
+        
+        let owners = '';
+        if (cert.landHoldings && Array.isArray(cert.landHoldings)) {
+            owners = cert.landHoldings.map(h => h.registeredOwner).filter(Boolean).join(', ');
+        }
+        
+        const location = cert.location || '';
+        const parcels = cert.parcels || '';
+        const totalArea = cert.totalArea || '';
+        
+        let daysProcessed = '';
+        let onTimeDelayed = '';
+        let countTimeliness = '';
+        
+        if (cert.dateReceived && cert.dateIssued) {
+            const received = new Date(cert.dateReceived);
+            const issued = new Date(cert.dateIssued);
+            if (!isNaN(received) && !isNaN(issued) && issued >= received) {
+                const diffTime = issued - received;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                daysProcessed = diffDays;
+                
+                const prescribed = getPrescribedDays(cert.certificationIssued);
+                const isOnTime = diffDays <= prescribed;
+                onTimeDelayed = isOnTime ? 'On Time' : 'Delayed';
+                countTimeliness = isOnTime ? 1 : 0;
+                
+                totalProcessed++;
+                if (isOnTime) onTimeCount++;
             }
-            
-            filtered.sort((a,b) => new Date(b.dateIssued) - new Date(a.dateIssued));
-            
-            const tbody = document.getElementById('reportTableBody');
-            tbody.innerHTML = '';
-            
-            let totalProcessed = 0;
-            let onTimeCount = 0;
-            
-            filtered.forEach(cert => {
-                const row = tbody.insertRow();
-                
-                const controlNo = cert.certificationNo || '';
-                const requestingParty = cert.requestedBy || '';
-                const certIssued = cert.certificationIssued || '';
-                const dateIssued = cert.dateIssued ? formatDate(cert.dateIssued) : '';
-                const reportMonth = cert.dateIssued ? new Date(cert.dateIssued).toLocaleString('default', { month: 'long', year: 'numeric' }) : '';
-                
-                let owners = '';
-                if (cert.landHoldings && Array.isArray(cert.landHoldings)) {
-                    owners = cert.landHoldings.map(h => h.registeredOwner).filter(Boolean).join(', ');
-                }
-                
-                const location = cert.location || '';
-                const parcels = cert.parcels || '';
-                const totalArea = cert.totalArea || '';
-                
-                let daysProcessed = '';
-                let onTimeDelayed = '';
-                let countTimeliness = '';
-                
-                if (cert.dateReceived && cert.dateIssued) {
-                    const received = new Date(cert.dateReceived);
-                    const issued = new Date(cert.dateIssued);
-                    if (!isNaN(received) && !isNaN(issued) && issued >= received) {
-                        const diffTime = issued - received;
-                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                        daysProcessed = diffDays;
-                        
-                        const prescribed = getPrescribedDays(cert.certificationIssued);
-                        const isOnTime = diffDays <= prescribed;
-                        onTimeDelayed = isOnTime ? 'On Time' : 'Delayed';
-                        countTimeliness = isOnTime ? 1 : 0;
-                        
-                        totalProcessed++;
-                        if (isOnTime) onTimeCount++;
-                    }
-                }
-                
-                const longitude = cert.longitude || '';
-                const latitude = cert.latitude || '';
-                const remarks = cert.remarks || '';
-                
-                row.innerHTML = `
-                    <td>${escapeHtml(controlNo)}</td>
-                    <td>${escapeHtml(requestingParty)}</td>
-                    <td>${escapeHtml(certIssued)}</td>
-                    <td>${dateIssued}</td>
-                    <td>${reportMonth}</td>
-                    <td>${escapeHtml(owners)}</td>
-                    <td>${escapeHtml(location)}</td>
-                    <td>${escapeHtml(parcels)}</td>
-                    <td>${escapeHtml(totalArea)}</td>
-                    <td>${daysProcessed}</td>
-                    <td>${onTimeDelayed}</td>
-                    <td>${countTimeliness}</td>
-                    <td>${escapeHtml(longitude)}</td>
-                    <td>${escapeHtml(latitude)}</td>
-                    <td>${escapeHtml(remarks)}</td>
-                `;
-            });
-            
-            const summaryDiv = document.getElementById('reportSummary');
-            const totalCerts = filtered.length;
-            const percentage = totalProcessed > 0 ? ((onTimeCount / totalProcessed) * 100).toFixed(1) : '0.0';
-            summaryDiv.innerHTML = `
-                <strong>Total Certifications Issued:</strong> ${totalCerts} &nbsp;|&nbsp;
-                <strong>Percentage processed within prescribed period:</strong> ${percentage}% (${onTimeCount} out of ${totalProcessed} with complete data)
-            `;
         }
         
-        function printReport() {
-            const reportContent = document.getElementById('reportModalBody').cloneNode(true);
-            const printWindow = window.open('', '_blank', 'width=1200,height=800');
-            printWindow.document.write(`
-                <html>
-                    <head>
-                        <title>Certification Accomplishment Report</title>
-                        <style>
-                            body { font-family: Arial, sans-serif; margin: 20px; }
-                            table { border-collapse: collapse; width: 100%; font-size: 10pt; }
-                            th, td { border: 1px solid #000; padding: 5px; text-align: left; }
-                            th { background: #f2f2f2; }
-                            .summary { margin-bottom: 20px; padding: 10px; background: #e9f2f9; }
-                        </style>
-                    </head>
-                    <body>
-                        <h2>Certification Accomplishment Report</h2>
-                        <div class="summary">${document.getElementById('reportSummary').innerHTML}</div>
-                        ${reportContent.querySelector('table').outerHTML}
-                    </body>
-                </html>
-            `);
-            printWindow.document.close();
-            printWindow.focus();
-            printWindow.print();
-        }
+        const longitude = cert.longitude || '';
+        const latitude = cert.latitude || '';
+        const remarks = cert.remarks || '';
         
+        row.innerHTML = `
+            <td>${escapeHtml(controlNo)}</td>
+            <td>${escapeHtml(requestingParty)}</td>
+            <td>${escapeHtml(certIssued)}</td>
+            <td>${dateIssued}</td>
+            <td>${reportMonth}</td>
+            <td>${escapeHtml(owners)}</td>
+            <td>${escapeHtml(location)}</td>
+            <td>${escapeHtml(parcels)}</td>
+            <td>${escapeHtml(totalArea)}</td>
+            <td>${daysProcessed}</td>
+            <td>${onTimeDelayed}</td>
+            <td>${countTimeliness}</td>
+            <td>${escapeHtml(longitude)}</td>
+            <td>${escapeHtml(latitude)}</td>
+            <td>${escapeHtml(remarks)}</td>
+        `;
+    });
+    
+    const summaryDiv = document.getElementById('reportSummary');
+    const totalCerts = filtered.length;
+    const percentage = totalProcessed > 0 ? ((onTimeCount / totalProcessed) * 100).toFixed(1) : '0.0';
+    summaryDiv.innerHTML = `
+        <strong>Total Certifications Issued (Released):</strong> ${totalCerts} &nbsp;|&nbsp;
+        <strong>Percentage processed within prescribed period:</strong> ${percentage}% (${onTimeCount} out of ${totalProcessed} with complete data)
+    `;
+}
+        
+       function printReport() {
+    // Get the summary and table directly from the modal
+    const summaryDiv = document.getElementById('reportSummary');
+    const table = document.getElementById('reportTable');
+    
+    if (!summaryDiv || !table) {
+        alert('Report data not found. Please ensure there are records to print.');
+        return;
+    }
+    
+    if (table.rows.length === 0) {
+        alert('No data available to print.');
+        return;
+    }
+    
+    const printWindow = window.open('', '_blank', 'width=1200,height=800');
+    if (!printWindow) {
+        alert('Pop‑up blocked. Please allow pop‑ups for this site to print the report.');
+        return;
+    }
+    
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Certification Accomplishment Report</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 20px; font-size: 12pt; }
+                h2 { text-align: center; margin-bottom: 20px; }
+                table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+                th, td { border: 1px solid #000; padding: 8px; text-align: left; vertical-align: top; }
+                th { background-color: #f2f2f2; font-weight: bold; }
+                .summary { background-color: #e9f2f9; padding: 10px; margin-bottom: 20px; border-radius: 5px; }
+                @media print {
+                    body { margin: 0; padding: 10px; }
+                }
+            </style>
+        </head>
+        <body>
+            <h2>Certification Accomplishment Report</h2>
+            <div class="summary">${summaryDiv.innerHTML}</div>
+            ${table.outerHTML}
+        </body>
+        </html>
+    `);
+    
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+    printWindow.onafterprint = function() { printWindow.close(); };
+}      
         // ========== REPORTS & GENERAL ==========
         function generateSimpleReport(type) {
     let title = '', content = '';
@@ -3207,10 +3299,37 @@ async function initApp() {
     setupClupCascadeEvents();
     await refreshCertificationNumber();
     
-    if (document.getElementById('landHoldingsContainer').children.length === 0) {
-        addLandHolding();
-    }
-    
+   // Generate initial land holdings based on the default parcels value (1)
+let initialCount = parseInt(document.getElementById('parcels').value);
+if (isNaN(initialCount) || initialCount < 1) initialCount = 1;
+for (let i = 0; i < initialCount; i++) {
+    addLandHolding();
+}
+    // Auto‑generate land holdings based on number of parcels
+const parcelsInput = document.getElementById('parcels');
+if (parcelsInput) {
+    parcelsInput.addEventListener('change', function() {
+        if (suppressParcelListener) return;
+        let parcelCount = parseInt(this.value);
+        if (isNaN(parcelCount) || parcelCount < 1) parcelCount = 1;
+        if (parcelCount > 50) parcelCount = 50;
+
+        const container = document.getElementById('landHoldingsContainer');
+        const currentRows = container.querySelectorAll('.land-holding-row').length;
+        if (currentRows === parcelCount) return;
+
+        if (currentRows > 0) {
+            if (!confirm('Changing the number of parcels will reset the land holdings list. Continue?')) {
+                return;
+            }
+        }
+
+        container.innerHTML = '';
+        for (let i = 0; i < parcelCount; i++) {
+            addLandHolding();
+        }
+    });
+}
     setupConnectionMonitoring();
     addSyncStatusIndicator();
     loadPendingSyncData();
@@ -3375,6 +3494,8 @@ function loginUser(event) {
     
     updateUserInterface(session);
     showSection('home');
+const dropdown = document.getElementById('elupddDropdown');
+if (dropdown) dropdown.style.display = 'none';
     closeAuthModal();
     showToast(`Welcome back, ${user.fullName}!`, 'success');
     
@@ -3460,12 +3581,17 @@ function checkSession() {
             const userSession = JSON.parse(session);
             updateUserInterface(userSession);
             // Show all content
+
             document.body.setAttribute('data-role', userSession.role);
+const dropdown = document.getElementById('elupddDropdown');
+    if (dropdown) dropdown.style.display = 'none';
             return true;
         } catch(e) {}
     }
     // Remove data-role to hide content
     document.body.removeAttribute('data-role');
+const dropdown = document.getElementById('elupddDropdown');
+if (dropdown) dropdown.style.display = 'none';
     // Show auth modal
     showAuthModal();
     return false;
@@ -3759,6 +3885,19 @@ window.updateHomeStats = function() {
     const released = ((typeof zoningCertifications !== 'undefined') ? zoningCertifications.filter(r => r.status === 'Released').length : 0) + locationalRecords.filter(r => r.status === 'Released').length;
     document.getElementById('homeReleasedCount').innerText = released;
 };
+function loadCounter() {
+    // Load the certification counter from localStorage, if needed.
+    // For now, simply ensure it exists.
+    if (!certificationCounter) {
+        certificationCounter = { lastCertNumber: 0 };
+    }
+    const stored = localStorage.getItem('certificationCounter');
+    if (stored) {
+        try {
+            certificationCounter = JSON.parse(stored);
+        } catch(e) {}
+    }
+}
     </script>
 </body>
 </html>
