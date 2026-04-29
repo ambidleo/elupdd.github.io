@@ -1195,48 +1195,100 @@ body:not([data-role]) .auth-modal {
     <p>Please select a module from the <strong>📋 ELUPDD</strong> dropdown menu above.</p>
     <p style="margin-top: 1rem;">📍 <strong>Locational Clearance</strong> &nbsp;|&nbsp; 🏷️ <strong>Site Zoning Certification</strong></p>
 </div>
-        <!-- Locational Clearance View (will be filled in Step 4 & 5) -->
        <div id="locationalView" class="zoning-view">
+    <!-- Tabs -->
+    <div class="zoning-subnav" role="tablist">
+        <button class="subnav-link active" onclick="switchLocationalView('dataEntry')">📝 Data Entry</button>
+        <button class="subnav-link" onclick="switchLocationalView('status')">📋 Status</button>
+        <button class="subnav-link" onclick="switchLocationalView('accomplishment')">✅ Accomplishment</button>
+    </div>
+
+    <!-- Data Entry View -->
+    <div id="locDataEntryView" class="zoning-view active">
+        <div class="cert-section">
             <div class="cert-title"><span>📍 Locational Clearance - Data Entry</span></div>
-<form id="locationalForm" onsubmit="return saveLocationalRecord(event)">
-    <div class="form-grid">
-        <div class="form-group"><label>Control No.</label><input type="text" id="locControlNo" class="form-control" readonly><small>Auto-generated</small></div>
-        <div class="form-group"><label>Applicant/Proponent *</label><input type="text" id="locApplicant" class="form-control" required></div>
-        <div class="form-group"><label>Project Name *</label><input type="text" id="locProjectName" class="form-control" required></div>
-        <div class="form-group"><label>Location *</label><input type="text" id="locLocation" class="form-control" required></div>
-        <div class="form-group"><label>Total Area (ha) *</label><input type="text" id="locArea" class="form-control" required></div>
-        <div class="form-group"><label>Date Filed</label><input type="date" id="locDateFiled" class="form-control"></div>
-        <div class="form-group"><label>Date Issued *</label><input type="date" id="locDateIssued" class="form-control" required></div>
-        <div class="form-group"><label>Amount Paid (₱) *</label><input type="text" id="locAmountPaid" class="form-control" required></div>
-        <div class="form-group"><label>OR No.</label><input type="text" id="locOrNo" class="form-control"></div>
-        <div class="form-group full-width"><label>Remarks</label><textarea id="locRemarks" class="form-control" rows="2"></textarea></div>
-    </div>
-    <div style="display:flex; gap:1rem; margin-top:1rem;">
-        <button type="submit" class="btn btn-success">💾 Save Locational Clearance</button>
-        <button type="button" class="btn btn-primary" onclick="clearLocationalForm()">🔄 Clear</button>
-    </div>
-</form>
-<hr style="margin:2rem 0">
-<h3>📊 Accomplishment (Locational Clearances)</h3>
-<div class="search-bar" style="margin-bottom:1rem;">
-    <input type="text" id="locSearch" placeholder="Search by Control No., Applicant, Project..." onkeyup="filterLocationalTable()">
-    <select id="locStatusFilter" onchange="filterLocationalTable()">
-        <option value="">All Status</option>
-        <option value="For Review">For Review</option>
-        <option value="For RD Signature">For RD Signature</option>
-        <option value="For Release">For Release</option>
-        <option value="Released">Released</option>
-    </select>
-    <button class="btn btn-primary" onclick="exportLocationalToExcel()">📥 Export Excel</button>
-    <button class="btn btn-warning" onclick="openLocationalReportModal()">📈 Generate Report</button>
-</div>
-<div class="table-responsive">
-    <table class="cert-table" id="locationalTable">
-        <thead><tr><th>Control No.</th><th>Applicant</th><th>Project</th><th>Location</th><th>Date Issued</th><th>Status</th><th>Actions</th></tr></thead>
-        <tbody id="locationalTableBody"></tbody>
-    </table>
-</div>
+            <form id="locationalForm" onsubmit="return saveLocationalRecord(event)">
+                <div class="form-grid">
+                    <div class="form-group"><label>Application No.</label><input type="text" id="locAppNo" class="form-control" readonly><small>Auto-generated (ELUPDD-XX-XXX)</small></div>
+                    <div class="form-group"><label>Decision No.</label><input type="text" id="locDecisionNo" class="form-control" readonly><small>Auto-generated (LC-XX-XXX)</small></div>
+                    <div class="form-group"><label>Date of Receipt</label><input type="date" id="locDateReceipt" class="form-control" required></div>
+                    <div class="form-group"><label>Date of Issue</label><input type="date" id="locDateIssue" class="form-control" required></div>
+                    <div class="form-group"><label>Applicant Name</label><input type="text" id="locApplicant" class="form-control" required></div>
+                    <div class="form-group"><label>Name of Corporation (if applicable)</label><input type="text" id="locCorporation" class="form-control"></div>
+                    <div class="form-group"><label>Applicant Address</label><input type="text" id="locApplicantAddress" class="form-control" required></div>
+                    <div class="form-group"><label>Corporation Address</label><input type="text" id="locCorpAddress" class="form-control"></div>
+                    <div class="form-group"><label>Type of Project</label><input type="text" id="locProjectType" class="form-control" required></div>
+                    <div class="form-group"><label>Area and Location</label><input type="text" id="locAreaLocation" class="form-control" placeholder="e.g., 5,000 sqm, Barangay ..., City ..." required></div>
+                    <div class="form-group"><label>Decision</label><select id="locDecision" class="form-control" required>
+                        <option value="">-- Select --</option>
+                        <option value="Approved">Approved</option>
+                        <option value="Approved with Conditions">Approved with Conditions</option>
+                        <option value="Disapproved">Disapproved</option>
+                    </select></div>
+                    <div class="form-group"><label>Right over Land</label><input type="text" id="locRightOverLand" class="form-control" placeholder="e.g., Owner, Lessee, etc." required></div>
+                    <div class="form-group full-width"><label>Conditions</label><textarea id="locConditions" class="form-control" rows="6" placeholder="List all conditions..."></textarea></div>
+                </div>
+                <hr>
+                <h4>Payment Details</h4>
+                <div class="form-grid">
+                    <div class="form-group"><label>O.R. No.</label><input type="text" id="locOrNo" class="form-control"></div>
+                    <div class="form-group"><label>Amount Paid (₱)</label><input type="text" id="locAmountPaid" class="form-control" required></div>
+                    <div class="form-group"><label>O.R. Date</label><input type="date" id="locOrDate" class="form-control"></div>
+                </div>
+                <div style="display:flex; gap:1rem; margin-top:1rem;">
+                    <button type="submit" class="btn btn-success">💾 Save Locational Clearance</button>
+                    <button type="button" class="btn btn-primary" onclick="clearLocationalForm()">🔄 Clear</button>
+                </div>
+            </form>
         </div>
+    </div>
+
+    <!-- Status View (non‑released records) -->
+    <div id="locStatusView" class="zoning-view">
+        <div class="cert-section">
+            <div class="cert-title"><span>📋 Locational Clearance Status</span></div>
+            <div class="search-bar" style="margin-bottom: 1rem;">
+                <input type="text" id="locStatusSearch" placeholder="Search by Application No., Applicant..." onkeyup="filterLocStatusTable()">
+                <select id="locStatusFilter" onchange="filterLocStatusTable()">
+                    <option value="">All Status</option>
+                    <option value="For Review">For Review</option>
+                    <option value="For RD Signature">For RD Signature</option>
+                    <option value="For Release">For Release</option>
+                </select>
+                <button class="btn btn-primary" onclick="filterLocStatusTable()">🔍 Search</button>
+                <button class="btn btn-secondary" onclick="clearLocStatusSearch()">🗑️ Clear</button>
+            </div>
+            <div style="overflow-x:auto;">
+                <table class="cert-table" id="locStatusTable">
+                    <thead>
+                        <tr><th>Application No.</th><th>Decision No.</th><th>Applicant</th><th>Project Type</th><th>Date of Issue</th><th>Decision</th><th>Status</th><th>Actions</th></tr>
+                    </thead>
+                    <tbody id="locStatusTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Accomplishment View (released records) -->
+    <div id="locAccomplishmentView" class="zoning-view">
+        <div class="cert-section">
+            <div class="cert-title"><span>✅ Locational Clearance Accomplishment</span></div>
+            <div class="search-bar" style="margin-bottom: 1rem;">
+                <input type="text" id="locAccSearch" placeholder="Search..." onkeyup="filterLocAccTable()">
+                <button class="btn btn-secondary" onclick="clearLocAccSearch()">🗑️ Clear</button>
+                <button class="btn btn-primary" onclick="exportLocationalToExcel()">📥 Export Excel</button>
+            </div>
+            <div style="overflow-x:auto;">
+                <table class="cert-table" id="locAccTable">
+                    <thead>
+                        <tr><th>Application No.</th><th>Decision No.</th><th>Applicant</th><th>Project Type</th><th>Date of Issue</th><th>Decision</th><th>Actions</th></tr>
+                    </thead>
+                    <tbody id="locAccTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
         <!-- Site Zoning View (existing #zoning content will be moved here) -->
 <!-- Site Zoning Certification Section with Submenu -->
             <div id="zoning" class="section active" role="region" aria-labelledby="zoning-heading">
@@ -3326,7 +3378,8 @@ if (elupddMenuItem && dropdown) {
        // ========== INITIAL LOAD ==========
 async function initApp() {
     loadCounter();
-    await fetchCertifications(); 
+    await fetchCertifications();
+ await fetchLocationalRecords();
     // Load CLUP records - THIS IS CRITICAL
     console.log('Loading CLUP records...');
     await fetchClupRecords();
@@ -3370,6 +3423,7 @@ if (parcelsInput) {
     addSyncStatusIndicator();
     loadPendingSyncData();
     switchZoningView('dataEntry');
+    switchLocationalView('dataEntry');
     
     setTimeout(() => { 
         if (isGoogleSheetsOnline) syncAllPendingData(); 
@@ -3673,22 +3727,42 @@ window.saveZoningRecord = function(event) {
 
 // Initialize on page load
 initializeUsers();
-// ========== LOCATIONAL CLEARANCE MODULE ==========
+// ========== LOCATIONAL CLEARANCE (UPDATED) ==========
 let locationalRecords = [];
 let currentEditingLocId = null;
 
-async function generateLocationalControlNo() {
+// Generate Application No. (ELUPDD-MM-DDD)
+async function generateApplicationNo() {
     const max = locationalRecords.reduce((m, r) => {
-        const match = r.controlNo?.match(/LC-(\d+)$/);
-        return match ? Math.max(m, parseInt(match[1])) : m;
+        const match = r.applicationNo?.match(/ELUPDD-(\d{2})-(\d{3})$/);
+        if (match) {
+            const num = parseInt(match[2], 10);
+            return Math.max(m, num);
+        }
+        return m;
     }, 0);
-    const next = max + 1;
-    return `LC-${new Date().getFullYear()}-${next.toString().padStart(4, '0')}`;
+    const next = (max + 1).toString().padStart(3, '0');
+    const month = new Date().getMonth() + 1;
+    return `ELUPDD-${month.toString().padStart(2, '0')}-${next}`;
+}
+
+// Generate Decision No. (LC-MM-DDD)
+async function generateDecisionNo() {
+    const max = locationalRecords.reduce((m, r) => {
+        const match = r.decisionNo?.match(/LC-(\d{2})-(\d{3})$/);
+        if (match) {
+            const num = parseInt(match[2], 10);
+            return Math.max(m, num);
+        }
+        return m;
+    }, 0);
+    const next = (max + 1).toString().padStart(3, '0');
+    const month = new Date().getMonth() + 1;
+    return `LC-${month.toString().padStart(2, '0')}-${next}`;
 }
 
 async function fetchLocationalRecords() {
     try {
-        // Try Google Sheets if available, otherwise localStorage
         const resp = await fetch(`${GOOGLE_SCRIPT_URL}?action=get&data_type=locational`);
         const data = await resp.json();
         if (Array.isArray(data)) locationalRecords = data;
@@ -3699,34 +3773,45 @@ async function fetchLocationalRecords() {
         if (local) locationalRecords = JSON.parse(local);
         else locationalRecords = [];
     }
-    refreshLocationalTable();
-    updateHomeStats();
+    refreshLocationalTables();
 }
 
 async function saveLocationalRecord(e) {
     e.preventDefault();
     const id = currentEditingLocId || Date.now();
-    const controlNo = currentEditingLocId ? 
-        locationalRecords.find(r => r.id === id).controlNo : 
-        await generateLocationalControlNo();
+    const applicationNo = currentEditingLocId ? 
+        locationalRecords.find(r => r.id === id).applicationNo : 
+        await generateApplicationNo();
+    const decisionNo = currentEditingLocId ? 
+        locationalRecords.find(r => r.id === id).decisionNo : 
+        await generateDecisionNo();
+
     const record = {
-        id, controlNo,
+        id, applicationNo, decisionNo,
+        dateReceipt: document.getElementById('locDateReceipt').value,
+        dateIssue: document.getElementById('locDateIssue').value,
         applicant: document.getElementById('locApplicant').value.trim(),
-        projectName: document.getElementById('locProjectName').value.trim(),
-        location: document.getElementById('locLocation').value.trim(),
-        area: document.getElementById('locArea').value.trim(),
-        dateFiled: document.getElementById('locDateFiled').value,
-        dateIssued: document.getElementById('locDateIssued').value,
-        amountPaid: document.getElementById('locAmountPaid').value.trim(),
+        corporation: document.getElementById('locCorporation').value.trim(),
+        applicantAddress: document.getElementById('locApplicantAddress').value.trim(),
+        corpAddress: document.getElementById('locCorpAddress').value.trim(),
+        projectType: document.getElementById('locProjectType').value.trim(),
+        areaLocation: document.getElementById('locAreaLocation').value.trim(),
+        decision: document.getElementById('locDecision').value,
+        rightOverLand: document.getElementById('locRightOverLand').value.trim(),
+        conditions: document.getElementById('locConditions').value.trim(),
         orNo: document.getElementById('locOrNo').value.trim(),
-        remarks: document.getElementById('locRemarks').value.trim(),
+        amountPaid: document.getElementById('locAmountPaid').value.trim(),
+        orDate: document.getElementById('locOrDate').value,
         status: 'For Review',
         timestamp: new Date().toISOString()
     };
-    if (!record.applicant || !record.projectName || !record.location || !record.area || !record.dateIssued || !record.amountPaid) {
-        alert('Please fill all required fields (*)');
+
+    // Required validation
+    if (!record.applicant || !record.applicantAddress || !record.projectType || !record.areaLocation || !record.decision || !record.rightOverLand || !record.dateIssue || !record.amountPaid) {
+        alert('Please fill all required fields (*).');
         return false;
     }
+
     if (currentEditingLocId) {
         const idx = locationalRecords.findIndex(r => r.id === id);
         if (idx !== -1) locationalRecords[idx] = record;
@@ -3734,7 +3819,8 @@ async function saveLocationalRecord(e) {
         locationalRecords.push(record);
     }
     localStorage.setItem('locationalRecords', JSON.stringify(locationalRecords));
-    // Optional: sync with Google Sheets if online
+
+    // Sync if online
     if (await checkGoogleSheetsConnection()) {
         const params = new URLSearchParams();
         params.append('action', currentEditingLocId ? 'update' : 'add');
@@ -3744,29 +3830,39 @@ async function saveLocationalRecord(e) {
     } else {
         addToPendingSync('locational', currentEditingLocId ? 'update' : 'add', record);
     }
+
     clearLocationalForm();
-    refreshLocationalTable();
-    alert(`Saved: ${controlNo}`);
+    refreshLocationalTables();
+    alert(`Saved: Application No. ${applicationNo} / Decision No. ${decisionNo}`);
     return false;
 }
 
-function refreshLocationalTable() {
-    const tbody = document.getElementById('locationalTableBody');
+function refreshLocationalTables() {
+    refreshLocStatusTable();
+    refreshLocAccTable();
+}
+
+function refreshLocStatusTable() {
+    const tbody = document.getElementById('locStatusTableBody');
     if (!tbody) return;
-    const search = document.getElementById('locSearch')?.value.toLowerCase() || '';
+    const search = document.getElementById('locStatusSearch')?.value.toLowerCase() || '';
     const statusFilter = document.getElementById('locStatusFilter')?.value || '';
-    let filtered = locationalRecords.filter(r =>
-        (!search || r.controlNo?.toLowerCase().includes(search) || r.applicant?.toLowerCase().includes(search) || r.projectName?.toLowerCase().includes(search)) &&
+    
+    let filtered = locationalRecords.filter(r => 
+        r.status !== 'Released' &&
+        (!search || r.applicationNo?.toLowerCase().includes(search) || r.applicant?.toLowerCase().includes(search)) &&
         (!statusFilter || r.status === statusFilter)
     );
-    filtered.sort((a, b) => new Date(b.dateIssued) - new Date(a.dateIssued));
+    filtered.sort((a,b) => new Date(b.dateIssue) - new Date(a.dateIssue));
+    
     tbody.innerHTML = filtered.map(r => `
         <tr>
-            <td>${escapeHtml(r.controlNo)}</td>
+            <td>${escapeHtml(r.applicationNo)}</td>
+            <td>${escapeHtml(r.decisionNo)}</td>
             <td>${escapeHtml(r.applicant)}</td>
-            <td>${escapeHtml(r.projectName)}</td>
-            <td>${escapeHtml(r.location)}</td>
-            <td>${formatDate(r.dateIssued)}</td>
+            <td>${escapeHtml(r.projectType)}</td>
+            <td>${formatDate(r.dateIssue)}</td>
+            <td>${escapeHtml(r.decision)}</td>
             <td><select class="status-dropdown" onchange="updateLocationalStatus(${r.id}, this.value)">
                 <option ${r.status === 'For Review' ? 'selected' : ''}>For Review</option>
                 <option ${r.status === 'For RD Signature' ? 'selected' : ''}>For RD Signature</option>
@@ -3779,6 +3875,32 @@ function refreshLocationalTable() {
                 <button class="action-btn print" onclick="printLocationalRecord(${r.id})">🖨️</button>
                 <button class="action-btn delete" onclick="deleteLocationalRecord(${r.id})">🗑️</button>
             </div></td>
+        </table>
+    `).join('');
+}
+
+function refreshLocAccTable() {
+    const tbody = document.getElementById('locAccTableBody');
+    if (!tbody) return;
+    const search = document.getElementById('locAccSearch')?.value.toLowerCase() || '';
+    let filtered = locationalRecords.filter(r => 
+        r.status === 'Released' &&
+        (!search || r.applicationNo?.toLowerCase().includes(search) || r.applicant?.toLowerCase().includes(search))
+    );
+    filtered.sort((a,b) => new Date(b.dateIssue) - new Date(a.dateIssue));
+    
+    tbody.innerHTML = filtered.map(r => `
+        <tr>
+            <td>${escapeHtml(r.applicationNo)}</td>
+            <td>${escapeHtml(r.decisionNo)}</td>
+            <td>${escapeHtml(r.applicant)}</td>
+            <td>${escapeHtml(r.projectType)}</td>
+            <td>${formatDate(r.dateIssue)}</td>
+            <td>${escapeHtml(r.decision)}</td>
+            <td><div class="action-btns">
+                <button class="action-btn view" onclick="viewLocationalRecord(${r.id})">👁️</button>
+                <button class="action-btn print" onclick="printLocationalRecord(${r.id})">🖨️</button>
+            </div></td>
         </tr>
     `).join('');
 }
@@ -3788,8 +3910,9 @@ function updateLocationalStatus(id, newStatus) {
     if (rec) {
         rec.status = newStatus;
         localStorage.setItem('locationalRecords', JSON.stringify(locationalRecords));
-        refreshLocationalTable();
+        refreshLocationalTables();
         showToast(`Status updated to "${newStatus}"`, 'success');
+        // Optionally sync with server (omitted for brevity, but you can replicate update logic)
     }
 }
 
@@ -3797,7 +3920,9 @@ function viewLocationalRecord(id) {
     const r = locationalRecords.find(r => r.id === id);
     if (!r) return;
     let html = '<div class="form-grid">';
-    for (let [k, v] of Object.entries(r)) if (k !== 'id') html += `<div><strong>${k}:</strong> ${escapeHtml(String(v || ''))}</div>`;
+    for (let [k, v] of Object.entries(r)) {
+        if (k !== 'id') html += `<div><strong>${k}:</strong> ${escapeHtml(String(v || ''))}</div>`;
+    }
     html += `</div><button class="btn btn-primary" onclick="closeModal()">Close</button>`;
     document.getElementById('modalTitle').innerText = 'View Locational Clearance';
     document.getElementById('modalBody').innerHTML = html;
@@ -3808,17 +3933,23 @@ function editLocationalRecord(id) {
     const r = locationalRecords.find(r => r.id === id);
     if (!r) return;
     currentEditingLocId = id;
-    document.getElementById('locControlNo').value = r.controlNo;
+    document.getElementById('locAppNo').value = r.applicationNo;
+    document.getElementById('locDecisionNo').value = r.decisionNo;
+    document.getElementById('locDateReceipt').value = r.dateReceipt || '';
+    document.getElementById('locDateIssue').value = r.dateIssue || '';
     document.getElementById('locApplicant').value = r.applicant;
-    document.getElementById('locProjectName').value = r.projectName;
-    document.getElementById('locLocation').value = r.location;
-    document.getElementById('locArea').value = r.area;
-    document.getElementById('locDateFiled').value = r.dateFiled || '';
-    document.getElementById('locDateIssued').value = r.dateIssued;
-    document.getElementById('locAmountPaid').value = r.amountPaid;
+    document.getElementById('locCorporation').value = r.corporation || '';
+    document.getElementById('locApplicantAddress').value = r.applicantAddress;
+    document.getElementById('locCorpAddress').value = r.corpAddress || '';
+    document.getElementById('locProjectType').value = r.projectType;
+    document.getElementById('locAreaLocation').value = r.areaLocation;
+    document.getElementById('locDecision').value = r.decision;
+    document.getElementById('locRightOverLand').value = r.rightOverLand;
+    document.getElementById('locConditions').value = r.conditions || '';
     document.getElementById('locOrNo').value = r.orNo || '';
-    document.getElementById('locRemarks').value = r.remarks || '';
-    switchELUPDDView('locational');
+    document.getElementById('locAmountPaid').value = r.amountPaid;
+    document.getElementById('locOrDate').value = r.orDate || '';
+    switchLocationalView('dataEntry');
 }
 
 async function deleteLocationalRecord(id) {
@@ -3834,31 +3965,74 @@ async function deleteLocationalRecord(id) {
     } else {
         addToPendingSync('locational', 'delete', { id });
     }
-    refreshLocationalTable();
+    refreshLocationalTables();
     showToast('Deleted', 'success');
 }
 
 function clearLocationalForm() {
     document.getElementById('locationalForm').reset();
-    document.getElementById('locControlNo').value = '';
+    document.getElementById('locAppNo').value = '';
+    document.getElementById('locDecisionNo').value = '';
     currentEditingLocId = null;
+}
+
+function switchLocationalView(view) {
+    const views = {
+        dataEntry: document.getElementById('locDataEntryView'),
+        status: document.getElementById('locStatusView'),
+        accomplishment: document.getElementById('locAccomplishmentView')
+    };
+    Object.values(views).forEach(v => { if (v) v.classList.remove('active'); });
+    if (views[view]) views[view].classList.add('active');
+    
+    // Update subnav buttons (optional)
+    const btns = document.querySelectorAll('#locationalView .zoning-subnav .subnav-link');
+    btns.forEach(btn => btn.classList.remove('active'));
+    if (view === 'dataEntry') btns[0]?.classList.add('active');
+    else if (view === 'status') btns[1]?.classList.add('active');
+    else if (view === 'accomplishment') btns[2]?.classList.add('active');
+}
+
+function filterLocStatusTable() { refreshLocStatusTable(); }
+function clearLocStatusSearch() {
+    document.getElementById('locStatusSearch').value = '';
+    document.getElementById('locStatusFilter').value = '';
+    refreshLocStatusTable();
+}
+function filterLocAccTable() { refreshLocAccTable(); }
+function clearLocAccSearch() {
+    document.getElementById('locAccSearch').value = '';
+    refreshLocAccTable();
 }
 
 function printLocationalRecord(id) {
     const r = locationalRecords.find(r => r.id === id);
     if (!r) return;
-    const content = `<div class="print-document"><h2>LOCATIONAL CLEARANCE</h2>
-        <p><strong>Control No:</strong> ${r.controlNo}</p>
-        <p><strong>Applicant:</strong> ${r.applicant}</p>
-        <p><strong>Project:</strong> ${r.projectName}</p>
-        <p><strong>Location:</strong> ${r.location}</p>
-        <p><strong>Area:</strong> ${r.area} ha</p>
-        <p><strong>Date Issued:</strong> ${formatDate(r.dateIssued)}</p>
-        <p><strong>Amount Paid:</strong> ₱${r.amountPaid}</p>
-        <p><strong>OR No.:</strong> ${r.orNo}</p>
-        <p><strong>Remarks:</strong> ${r.remarks}</p>
+    
+    const content = `
+    <div class="print-document">
+        <h2>DECISION ON ZONING</h2>
+        <p><strong>Application No.:</strong> ${r.applicationNo}</p>
+        <p><strong>Decision No.:</strong> ${r.decisionNo}</p>
+        <p><strong>Date of Receipt:</strong> ${formatDate(r.dateReceipt)}</p>
+        <p><strong>Date of Issue:</strong> ${formatDate(r.dateIssue)}</p>
+        <p><strong>Applicant:</strong> ${escapeHtml(r.applicant)}</p>
+        <p><strong>Name of Corporation:</strong> ${escapeHtml(r.corporation) || 'N/A'}</p>
+        <p><strong>Applicant Address:</strong> ${escapeHtml(r.applicantAddress)}</p>
+        <p><strong>Corporation Address:</strong> ${escapeHtml(r.corpAddress) || 'N/A'}</p>
+        <p><strong>Type of Project:</strong> ${escapeHtml(r.projectType)}</p>
+        <p><strong>Area and Location:</strong> ${escapeHtml(r.areaLocation)}</p>
+        <p><strong>Decision:</strong> ${escapeHtml(r.decision)}</p>
+        <p><strong>Right over Land:</strong> ${escapeHtml(r.rightOverLand)}</p>
+        <p><strong>Conditions:</strong></p>
+        <pre>${escapeHtml(r.conditions)}</pre>
+        <hr>
+        <p><strong>O.R. No.:</strong> ${escapeHtml(r.orNo)}</p>
+        <p><strong>Amount Paid:</strong> ₱${escapeHtml(r.amountPaid)}</p>
+        <p><strong>O.R. Date:</strong> ${formatDate(r.orDate)}</p>
         <div class="signature-area"><div class="signature-box"><div class="signature-line"></div><p>EnP. EVA MARIA P. MARFIL, CSEE</p><p>Regional Director</p></div></div>
     </div>`;
+    
     const ps = document.getElementById('printSection');
     ps.innerHTML = content;
     ps.style.display = 'block';
@@ -3867,53 +4041,21 @@ function printLocationalRecord(id) {
 }
 
 function exportLocationalToExcel() {
-    if (!locationalRecords.length) { alert('No data to export.'); return; }
-    const ws = XLSX.utils.json_to_sheet(locationalRecords.map(r => ({
-        'Control No': r.controlNo, 'Applicant': r.applicant, 'Project': r.projectName,
-        'Location': r.location, 'Area': r.area, 'Date Issued': r.dateIssued,
-        'Status': r.status, 'Amount': r.amountPaid, 'OR No.': r.orNo
+    const released = locationalRecords.filter(r => r.status === 'Released');
+    if (!released.length) { alert('No released records to export.'); return; }
+    const ws = XLSX.utils.json_to_sheet(released.map(r => ({
+        'Application No.': r.applicationNo,
+        'Decision No.': r.decisionNo,
+        'Applicant': r.applicant,
+        'Project Type': r.projectType,
+        'Date Issued': r.dateIssue,
+        'Decision': r.decision,
+        'Amount Paid': r.amountPaid
     })));
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Locational_Clearances');
-    XLSX.writeFile(wb, `Locational_${new Date().toISOString().slice(0,10)}.xlsx`);
+    XLSX.utils.book_append_sheet(wb, ws, 'Locational_Released');
+    XLSX.writeFile(wb, `Locational_Released_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
-
-function openLocationalReportModal() {
-    const modal = document.getElementById('reportModal');
-    document.getElementById('reportModalTitle').innerText = 'Locational Clearance Report';
-    let html = `<div><label>Month: <select id="locReportMonth"><option value="all">All</option></select></label>
-        <button class="btn btn-primary" onclick="generateLocationalReport()">Generate</button>
-        <button class="btn btn-secondary" onclick="printLocationalReport()">Print</button></div>
-        <div id="locReportTableContainer"></div>`;
-    document.getElementById('reportModalBody').innerHTML = html;
-    const monthsSet = new Set();
-    locationalRecords.forEach(r => { if (r.dateIssued) monthsSet.add(r.dateIssued.slice(0,7)); });
-    const select = document.getElementById('locReportMonth');
-    Array.from(monthsSet).sort().reverse().forEach(m => {
-        const opt = document.createElement('option'); opt.value = m; opt.textContent = m; select.appendChild(opt);
-    });
-    generateLocationalReport();
-    modal.classList.add('active');
-}
-
-function generateLocationalReport() {
-    const month = document.getElementById('locReportMonth')?.value || 'all';
-    let filtered = month === 'all' ? locationalRecords : locationalRecords.filter(r => r.dateIssued?.startsWith(month));
-    let html = `<table border="1" cellpadding="5"><tr><th>Control No</th><th>Applicant</th><th>Project</th><th>Date Issued</th><th>Status</th></tr>`;
-    html += filtered.map(r => `<tr><td>${r.controlNo}</td><td>${r.applicant}</td><td>${r.projectName}</td><td>${r.dateIssued}</td><td>${r.status}</td></tr>`).join('');
-    html += `</table>`;
-    document.getElementById('locReportTableContainer').innerHTML = html;
-}
-
-function printLocationalReport() {
-    const printWin = window.open('', '_blank');
-    printWin.document.write('<html><head><title>Locational Report</title><style>table{border-collapse:collapse;}th,td{border:1px solid #000;padding:5px;}</style></head><body>' + document.getElementById('locReportTableContainer').innerHTML + '</body></html>');
-    printWin.document.close();
-    printWin.print();
-}
-
-function filterLocationalTable() { refreshLocationalTable(); }
-
 // Override updateHomeStats to include locational records
 const originalUpdateHomeStats = window.updateHomeStats || function() {};
 window.updateHomeStats = function() {
