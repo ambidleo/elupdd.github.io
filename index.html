@@ -1363,15 +1363,6 @@ body:not([data-role]) .auth-modal {
                                 <span aria-hidden="true">🔍</span>
                                 <input type="text" id="certSearchInput" placeholder="Search by Certification No., Location, or Requested By..." onkeyup="filterCertificationsTable()">
                             </div>
-                            <div class="filter-group" style="min-width: 160px;">
-                                <select id="certStatusFilter" onchange="filterCertificationsTable()">
-                                    <option value="">All Status</option>
-                                    <option value="For Review">For Review</option>
-                                    <option value="For RD Signature">For RD Signature</option>
-                                    <option value="For Releas">For Releasing</option>
-                                    <option value="Released">Released</option>
-                                </select>
-                            </div>
                             <button class="btn btn-secondary" onclick="clearCertSearch()" style="padding: 0.8rem 1.5rem;">🗑️ Clear</button>
                             <button class="btn btn-primary" onclick="manualRefresh()" style="background: #28a745;">🔄 Refresh Data</button>
                         </div>
