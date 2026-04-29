@@ -189,10 +189,10 @@
             background: rgba(212, 160, 23, 0.1);
         }
         .zoning-view {
-            display: none;
+            display: none !important;
         }
         .zoning-view.active {
-            display: block;
+            display: block !important;
         }
 
         /* Enhanced Map Popup Styles */
@@ -1796,37 +1796,34 @@ function showELUPDDDefault() {
     if (defaultView) defaultView.classList.add('active');
 }
         // ========== ZONING SUBNAV SWITCH ==========
-        function switchZoningView(view) {
-    const container = document.getElementById('siteZoningView');
-    if (!container) return;
+       function switchZoningView(view) {
+    // Get all zoning-view containers inside the siteZoningView or directly by ID
+    const views = {
+        dataEntry: document.getElementById('dataEntryView'),
+        status: document.getElementById('statusView'),
+        accomplishment: document.getElementById('accomplishmentView')
+    };
     
-    const subnavLinks = container.querySelectorAll('.zoning-subnav .subnav-link');
-    const zoningViews = container.querySelectorAll('.zoning-view');
+    // Remove 'active' class from all views
+    Object.values(views).forEach(v => {
+        if (v) v.classList.remove('active');
+    });
     
-    subnavLinks.forEach(btn => btn.classList.remove('active'));
-    zoningViews.forEach(v => v.classList.remove('active'));
-    
-    if (view === 'dataEntry') {
-        const dataEntryBtn = container.querySelector('.subnav-link[onclick*="dataEntry"]');
-        if (dataEntryBtn) dataEntryBtn.classList.add('active');
-        const dataEntryView = document.getElementById('dataEntryView');
-        if (dataEntryView) dataEntryView.classList.add('active');
-    } 
-    else if (view === 'status') {
-        const statusBtn = container.querySelector('.subnav-link[onclick*="status"]');
-        if (statusBtn) statusBtn.classList.add('active');
-        const statusView = document.getElementById('statusView');
-        if (statusView) statusView.classList.add('active');
-        renderStatusTable();   // we will create this function
-    } 
-    else if (view === 'accomplishment') {
-        const accompBtn = container.querySelector('.subnav-link[onclick*="accomplishment"]');
-        if (accompBtn) accompBtn.classList.add('active');
-        const accompView = document.getElementById('accomplishmentView');
-        if (accompView) accompView.classList.add('active');
-        renderCertificationsTable();  // existing function – we will modify it to show only released
-        if (typeof updateAccomplishmentStats === 'function') updateAccomplishmentStats();
+    // Add 'active' class to the selected view
+    if (views[view]) {
+        views[view].classList.add('active');
+    } else {
+        console.warn('Unknown view:', view);
     }
+    
+    // Also update the subnav button active states (optional)
+    const buttons = document.querySelectorAll('.zoning-subnav .subnav-link');
+    buttons.forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.getAttribute('onclick')?.includes(view)) {
+            btn.classList.add('active');
+        }
+    });
 }
 
         function updateAccomplishmentStats() {
@@ -3381,6 +3378,7 @@ if (parcelsInput) {
 }    setupConnectionMonitoring();
     addSyncStatusIndicator();
     loadPendingSyncData();
+    switchZoningView('dataEntry');
     
     setTimeout(() => { 
         if (isGoogleSheetsOnline) syncAllPendingData(); 
