@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+      <title>DHSUD Region VI - Calendar of Activities (Blue)</title>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+      <style>
+         * { margin: 0; padding: 0; box-sizing: border-box; }
+         body { font-family: 'Inter', 'Segoe UI', sans-serif; background: #f1f5f9; color: #0f172a; line-height: 1.5; }
+         :root { --primary: #2563eb; --primary-dark: #1e3a8a; --primary-light: #dbeafe; --secondary: #3a7b5c; --accent: #d4a017; --gray-200: #e2e8f0; --gray-600: #475569; --gray-800: #1e293b; --color-meeting: #3b82f6; --color-workshop: #f59e0b; --color-training: #10b981; --color-seminar: #8b5cf6; --color-hearing: #ef4444; --color-deadline: #ec489a; --color-other: #6b7280; }
+         header { background: white; border-bottom: 1px solid var(--gray-200); position: sticky; top: 0; z-index: 100; backdrop-filter: blur(4px); background: rgba(255,255,255,0.96); }
+         .container { max-width: 1400px; margin: 0 auto; padding: 0 1.8rem; }
+         .navbar { display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; flex-wrap: wrap; gap: 1rem; }
+         .logo { font-weight: 700; font-size: 1.6rem; background: linear-gradient(135deg, #1e3a8a, #2563eb); -webkit-background-clip: text; background-clip: text; color: transparent; }
+         .nav-links { display: flex; gap: 2rem; align-items: center; flex-wrap: wrap; }
+         .nav-links a, .dropbtn { text-decoration: none; font-weight: 500; color: var(--gray-800); transition: color 0.2s; background: none; border: none; font-size: 0.95rem; cursor: pointer; font-family: inherit; }
+         .nav-links a:hover, .dropbtn:hover { color: var(--primary); }
+         .dropdown { position: relative; display: inline-block; }
+         .dropdown-content { display: none; position: absolute; background-color: white; min-width: 200px; box-shadow: 0 12px 24px rgba(0,0,0,0.1); border-radius: 12px; padding: 0.5rem 0; z-index: 1000; border: 1px solid var(--gray-200); }
+         .dropdown-content a { display: block; padding: 0.6rem 1.2rem; color: #1e293b; }
+         .dropdown-content a:hover { background-color: var(--gray-200); }
+         .dropdown:hover .dropdown-content { display: block; }
+         /* submenu for CLUP & ZO */
+         .dropdown-submenu { position: relative; }
+         .submenu-trigger { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 1.2rem; color: #1e293b; font-size: 0.9rem; cursor: pointer; transition: background 0.1s; background: transparent; border: none; width: 100%; text-align: left; font-family: inherit; font-weight: 500; }
+         .submenu-trigger:hover { background: #eff6ff; }
+         .arrow-right { font-size: 0.75rem; margin-left: 1rem; color: #64748b; }
+         .submenu-content { display: none; position: absolute; left: 100%; top: -6px; background: white; min-width: 160px; box-shadow: 0 12px 24px rgba(0,0,0,0.1); border-radius: 12px; z-index: 100; border: 1px solid var(--gray-200); padding: 0.5rem 0; }
+         .dropdown-submenu:hover .submenu-content { display: block; }
+         .submenu-content a { display: block; padding: 0.6rem 1.2rem; color: #1e293b; font-size: 0.85rem; }
+         .submenu-content a:hover { background: #eff6ff; }
+         .hero-banner { background: linear-gradient(120deg, #eef2ff, #ffffff); padding: 1.8rem 0; border-bottom: 1px solid var(--gray-200); }
+         .hero-title { font-size: 1.8rem; font-weight: 700; color: var(--primary-dark); }
+         .hero-sub { color: var(--gray-600); margin-top: 0.3rem; }
+         .view-toggle { display: flex; gap: 0.5rem; background: white; border-radius: 40px; padding: 0.25rem; border: 1px solid var(--gray-200); }
+         .view-btn { padding: 0.5rem 1.2rem; border-radius: 40px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; background: none; border: none; }
+         .view-btn.active { background: var(--primary); color: white; }
+         .card { background: white; border-radius: 28px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.03), 0 2px 6px rgba(0, 0, 0, 0.05); border: 1px solid var(--gray-200); overflow: hidden; margin: 2rem 0; }
+         .card-header { padding: 1.25rem 1.8rem; border-bottom: 1px solid var(--gray-200); background: #ffffff; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+         .card-header h2 { font-size: 1.5rem; font-weight: 600; }
+         .filter-group { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+         .btn { padding: 0.6rem 1.4rem; border-radius: 40px; font-weight: 600; font-size: 0.85rem; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.2s; }
+         .btn-primary { background: var(--primary); color: white; }
+         .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+         .btn-success { background: var(--secondary); color: white; }
+         .btn-success:hover { background: #2b5f44; }
+         .btn-secondary { background: #e2e8f0; color: #1e293b; }
+         .calendar-container { padding: 1.5rem; }
+         .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+         .month-nav { display: flex; gap: 1rem; align-items: center; }
+         .month-nav button { background: none; border: 1px solid var(--gray-200); border-radius: 40px; padding: 0.5rem 1rem; cursor: pointer; }
+         .current-month { font-size: 1.4rem; font-weight: 600; color: var(--primary-dark); }
+         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: var(--gray-200); border-radius: 16px; overflow: hidden; }
+         .calendar-weekday { background: var(--primary-dark); color: white; padding: 0.8rem; text-align: center; font-weight: 600; font-size: 0.85rem; }
+         .calendar-day { background: white; min-height: 120px; padding: 0.5rem; cursor: pointer; }
+         .calendar-day:hover { background: var(--primary-light); }
+         .calendar-day.empty { background: #f9fafb; }
+         .day-number { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem; }
+         .day-events { display: flex; flex-direction: column; gap: 0.25rem; }
+         .event-item { font-size: 0.7rem; padding: 0.2rem 0.4rem; border-radius: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; transition: transform 0.1s; }
+         .event-item:hover { transform: scale(1.02); filter: brightness(0.95); }
+         .event-meeting { background: var(--color-meeting); color: white; }
+         .event-workshop { background: var(--color-workshop); color: white; }
+         .event-training { background: var(--color-training); color: white; }
+         .event-seminar { background: var(--color-seminar); color: white; }
+         .event-hearing { background: var(--color-hearing); color: white; }
+         .event-deadline { background: var(--color-deadline); color: white; }
+         .event-other { background: var(--color-other); color: white; }
+         .legend { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1.5rem; padding: 1rem; background: #f8fafc; border-radius: 16px; align-items: center; }
+         .legend-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; }
+         .legend-color { width: 20px; height: 20px; border-radius: 6px; }
+         .data-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+         .data-table th { text-align: left; padding: 1rem 0.9rem; background: #f1f5f9; font-weight: 600; border-bottom: 2px solid var(--gray-200); }
+         .data-table td { padding: 0.9rem 0.9rem; border-bottom: 1px solid var(--gray-200); vertical-align: middle; }
+         .data-table tr:hover { background: #f8fafc; }
+         .search-bar { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem; align-items: center; }
+         .search-bar input, .search-bar select { padding: 0.6rem 1rem; border-radius: 40px; border: 1px solid var(--gray-200); background: white; flex: 1; }
+         .status-badge { display: inline-block; padding: 0.2rem 0.7rem; border-radius: 20px; font-size: 0.7rem; font-weight: 600; }
+         .status-upcoming { background: #cce5ff; color: #004085; }
+         .status-ongoing { background: #d4edda; color: #155724; }
+         .status-completed { background: #e2e8f0; color: #475569; }
+         .type-badge { display: inline-block; padding: 0.2rem 0.7rem; border-radius: 20px; font-size: 0.7rem; font-weight: 600; color: white; }
+         .action-btns { display: flex; gap: 0.5rem; }
+         .action-btn { padding: 0.25rem 0.65rem; border-radius: 30px; font-size: 0.75rem; font-weight: 600; border: none; cursor: pointer; }
+         .action-btn.view { background: #e0f2fe; color: #0369a1; }
+         .action-btn.edit { background: #fef3c7; color: #b45309; }
+         .action-btn.delete { background: #fee2e2; color: #b91c1c; }
+         .attendee-list { font-size: 0.75rem; color: #475569; margin-top: 0.25rem; }
+         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(3px); }
+         .modal.active { display: flex; }
+         .modal-content { background: white; border-radius: 28px; max-width: 750px; width: 90%; max-height: 85vh; overflow-y: auto; padding: 1.8rem; }
+         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; padding-bottom: 0.8rem; border-bottom: 2px solid var(--gray-200); }
+         .modal-header h3 { font-size: 1.3rem; font-weight: 600; color: var(--primary-dark); }
+         .close-btn { background: none; border: none; font-size: 1.8rem; cursor: pointer; color: var(--gray-600); }
+         .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+         .form-group.full-width { grid-column: span 2; }
+         .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.3rem; }
+         .form-control { width: 100%; padding: 0.7rem 0.9rem; border: 1px solid var(--gray-200); border-radius: 12px; font-size: 0.9rem; font-family: inherit; }
+         textarea.form-control { resize: vertical; min-height: 80px; }
+         .attendee-row { display: flex; gap: 0.5rem; margin-bottom: 0.5rem; align-items: center; }
+         .attendee-row input { flex: 1; }
+         .stats-row { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+         .stat-card { background: white; padding: 0.5rem 1rem; border-radius: 40px; border: 1px solid var(--gray-200); }
+         .stat-number { font-size: 1.3rem; font-weight: 700; color: var(--primary-dark); }
+         .empty-row td { text-align: center; padding: 3rem !important; color: #64748b; }
+         .meeting-link-badge { display: inline-block; background: #10b981; color: white; padding: 0.2rem 0.5rem; border-radius: 20px; font-size: 0.6rem; font-weight: 600; margin-left: 0.5rem; }
+         .join-link-btn { display: inline-flex; align-items: center; gap: 0.3rem; background: #10b981; color: white; padding: 0.2rem 0.6rem; border-radius: 20px; text-decoration: none; font-size: 0.7rem; font-weight: 500; transition: background 0.2s; }
+         .join-link-btn:hover { background: #059669; }
+         footer { background: white; border-top: 1px solid var(--gray-200); padding: 2rem 0; margin-top: 2rem; }
+         .footer-content { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem; }
+         .copyright { margin-top: 1.5rem; text-align: center; font-size: 0.75rem; color: #64748b; }
+         @media (max-width: 768px) { .calendar-day { min-height: 80px; } .event-item { font-size: 0.6rem; white-space: normal; } .form-grid { grid-template-columns: 1fr; } .form-group.full-width { grid-column: span 1; } }
+      </style>
+   </head>
+   <body>
+      <header>
+         <div class="container">
+            <div class="navbar">
+               <div class="logo">DHSUD</div>
+               <div class="nav-links">
+                  <a href="index.html">Home</a>
+                  <div class="dropdown">
+                     <button class="dropbtn">Certification</button>
+                     <div class="dropdown-content"><a href="lc.html">Locational Clearance</a><a href="SZC.html">Site Zoning Clarification</a></div>
+                  </div>
+                  <div class="dropdown">
+                     <button class="dropbtn">Land Use Plans</button>
+                     <div class="dropdown-content">
+                        <div class="dropdown-submenu">
+                           <button class="submenu-trigger">CLUP & ZO <span class="arrow-right">▸</span></button>
+                           <div class="submenu-content"><a href="inventory.html">Inventory</a><a href="status.html">Status</a></div>
+                        </div>
+                        <a href="status.html">PDPFP</a>
+                     </div>
+                  </div>
+                  <a href="lgu-info.html">LGU Information</a><a href="report.html">Reports</a><a href="calendar.html">Calendar of Activities</a>
+                  <div id="userMenuContainer"></div>
+               </div>
+            </div>
+         </div>
+      </header>
+      <div class="hero-banner"></div>
+      <main class="container">
+         <div class="card">
+            <div class="card-header">
+               <h2>📆 Activity Calendar</h2>
+               <div class="filter-group">
+                  <div class="view-toggle"><button class="view-btn active" onclick="setView('calendar')">📅 Calendar View</button><button class="view-btn" onclick="setView('list')">📋 List View</button></div>
+                  <button class="btn btn-success" onclick="openAddModal()">➕ Add Activity</button><button class="btn btn-primary" onclick="exportToExcel()">📥 Export Excel</button>
+               </div>
+            </div>
+            <div class="card-body" style="padding:0;">
+               <div id="calendarView" style="display:block;">
+                  <div class="calendar-container">
+                     <div class="calendar-header">
+                        <div class="month-nav"><button onclick="prevMonth()">◀ Prev</button><button onclick="nextMonth()">Next ▶</button></div>
+                        <div class="current-month" id="currentMonth">May 2026</div>
+                        <button class="btn btn-secondary" onclick="goToToday()">Today</button>
+                     </div>
+                     <div class="calendar-grid" id="calendarGrid"></div>
+                     <div class="legend"><span class="legend-item"><span class="legend-color" style="background:#3b82f6;"></span> Meeting</span><span class="legend-item"><span class="legend-color" style="background:#f59e0b;"></span> Workshop</span><span class="legend-item"><span class="legend-color" style="background:#10b981;"></span> Training</span><span class="legend-item"><span class="legend-color" style="background:#8b5cf6;"></span> Seminar</span><span class="legend-item"><span class="legend-color" style="background:#ef4444;"></span> Hearing</span><span class="legend-item"><span class="legend-color" style="background:#ec489a;"></span> Deadline</span><span class="legend-item"><span class="legend-color" style="background:#6b7280;"></span> Other</span><span class="legend-item"><span class="legend-color" style="background:#10b981;"></span> Has Meeting Link</span></div>
+                  </div>
+               </div>
+               <div id="listView" style="display:none; padding:1.5rem;">
+                  <div class="search-bar">
+                     <input type="text" id="searchInput" placeholder="🔍 Search by activity name, attendee, purpose..." onkeyup="filterList()">
+                     <select id="typeFilter" onchange="filterList()">
+                        <option value="all">All Types</option>
+                        <option value="Meeting">Meeting</option>
+                        <option value="Workshop">Workshop</option>
+                        <option value="Training">Training</option>
+                        <option value="Seminar">Seminar</option>
+                        <option value="Hearing">Hearing</option>
+                        <option value="Deadline">Deadline</option>
+                        <option value="Other">Other</option>
+                     </select>
+                     <select id="statusFilterList" onchange="filterList()">
+                        <option value="all">All Status</option>
+                        <option value="upcoming">Upcoming</option>
+                        <option value="ongoing">Ongoing</option>
+                        <option value="completed">Completed</option>
+                     </select>
+                     <button class="btn btn-secondary" onclick="clearListFilters()">✖ Clear</button>
+                  </div>
+                  <div class="stats-row" id="statsPanel">
+                     <div class="stat-card"><span class="stat-number" id="totalCount">0</span> Total</div>
+                     <div class="stat-card"><span class="stat-number" id="upcomingCount">0</span> Upcoming</div>
+                     <div class="stat-card"><span class="stat-number" id="ongoingCount">0</span> Ongoing</div>
+                     <div class="stat-card"><span class="stat-number" id="completedCount">0</span> Completed</div>
+                  </div>
+                  <div style="overflow-x:auto;">
+                     <table class="data-table" id="activitiesTable">
+                        <thead>
+                           <tr>
+                              <th>Activity Name</th>
+                              <th>Type</th>
+                              <th>Attendees</th>
+                              <th>Start Date & Time</th>
+                              <th>End Date & Time</th>
+                              <th>Purpose</th>
+                              <th>Status</th>
+                              <th>Meeting Link</th>
+                              <th>Actions</th>
+                           </tr>
+                        </thead>
+                        <tbody id="listTableBody"></tbody>
+                     </table>
+                  </div>
+               </div>
+            </div>
+         </div>
+         </div>
+      </main>
+      <div id="activityModal" class="modal">
+         <div class="modal-content">
+            <div class="modal-header">
+               <h3 id="modalTitle">Add New Activity</h3>
+               <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+               <form id="activityForm" onsubmit="return saveActivity(event)">
+                  <input type="hidden" id="activityId">
+                  <div class="form-grid">
+                     <div class="form-group full-width"><label>Activity Name *</label><input type="text" id="activityName" class="form-control" required></div>
+                     <div class="form-group">
+                        <label>Activity Type *</label>
+                        <select id="activityType" class="form-control" required>
+                           <option value="Meeting">📋 Meeting</option>
+                           <option value="Workshop">🛠️ Workshop</option>
+                           <option value="Training">🎓 Training</option>
+                           <option value="Seminar">📚 Seminar</option>
+                           <option value="Hearing">⚖️ Hearing</option>
+                           <option value="Deadline">⏰ Deadline</option>
+                           <option value="Other">📌 Other</option>
+                        </select>
+                     </div>
+                     <div class="form-group">
+                        <label>Status</label>
+                        <select id="statusSelect" class="form-control">
+                           <option value="upcoming">Upcoming</option>
+                           <option value="ongoing">Ongoing</option>
+                           <option value="completed">Completed</option>
+                        </select>
+                     </div>
+                     <div class="form-group"><label>Start Date & Time *</label><input type="datetime-local" id="startDateTime" class="form-control" required></div>
+                     <div class="form-group"><label>End Date & Time *</label><input type="datetime-local" id="endDateTime" class="form-control" required></div>
+                     <div class="form-group full-width">
+                        <label>Attendees / Participants</label>
+                        <div id="attendeesContainer"></div>
+                        <button type="button" class="btn btn-secondary" onclick="addAttendeeField()" style="margin-top:0.5rem;">+ Add Attendee</button>
+                     </div>
+                     <div class="form-group full-width"><label>Purpose / Description *</label><textarea id="purpose" class="form-control" rows="3" required></textarea></div>
+                     <div class="form-group full-width"><label>📍 Location (Optional)</label><input type="text" id="location" class="form-control" placeholder="e.g., DHSUD Conference Room"></div>
+                     <div class="form-group full-width"><label>🔗 Meeting Link (Optional)</label><input type="url" id="meetingLink" class="form-control" placeholder="https://zoom.us/j/..."></div>
+                  </div>
+                  <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:1rem; margin-top:1.5rem;"><button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button><button type="submit" class="btn btn-success">💾 Save Activity</button></div>
+               </form>
+            </div>
+         </div>
+      </div>
+      <div id="viewModal" class="modal">
+         <div class="modal-content">
+            <div class="modal-header">
+               <h3>Activity Details</h3>
+               <button class="close-btn" onclick="closeViewModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="viewModalBody"></div>
+            <div class="modal-footer"><button class="btn btn-primary" onclick="closeViewModal()">Close</button></div>
+         </div>
+      </div>
+      <footer>
+         <div class="container">
+            <div class="footer-content">
+               <div>
+                  <div class="footer-logo">DHSUD</div>
+                  <p style="margin-top:8px;">ELUPDD Region VI – Calendar of Activities with Attendees</p>
+               </div>
+               <div><strong>Contact</strong><br>📞 (033) 123-4567<br>📧 elupdd.region6@dhsud.gov.ph</div>
+            </div>
+            <div class="copyright">© 2026 DHSUD — Calendar of Activities | Western Visayas</div>
+         </div>
+      </footer>
+      <script>let activities=[];let currentEditId=null;let currentView="calendar";let currentDisplayDate=new Date();function getTypeClass(t){const types={Meeting:"event-meeting",Workshop:"event-workshop",Training:"event-training",Seminar:"event-seminar",Hearing:"event-hearing",Deadline:"event-deadline",Other:"event-other"};return types[t]||"event-other";}function getTypeColor(t){const colors={Meeting:"#3b82f6",Workshop:"#f59e0b",Training:"#10b981",Seminar:"#8b5cf6",Hearing:"#ef4444",Deadline:"#ec489a",Other:"#6b7280"};return colors[t]||"#6b7280";}function updateActivityStatus(a){const now=new Date(),start=new Date(a.startDateTime),end=new Date(a.endDateTime);if(end<now)return"completed";if(start<=now&&end>=now)return"ongoing";return"upcoming";}function loadActivities(){const stored=localStorage.getItem("calendarActivities");if(stored){activities=JSON.parse(stored);}else{const now=new Date();activities=[{id:Date.now()+1,name:"CLUP Formulation Workshop",type:"Workshop",startDateTime:"2026-05-20T09:00",endDateTime:"2026-05-22T17:00",purpose:"Comprehensive Land Use Plan workshop.",location:"DHSUD Hall",status:"upcoming",attendees:["Dr. Santos"],meetingLink:""},{id:Date.now()+2,name:"Zoning Ordinance Review",type:"Meeting",startDateTime:"2026-05-15T10:00",endDateTime:"2026-05-15T16:00",purpose:"Review of zoning ordinance amendments.",location:"Zoom",status:"ongoing",attendees:[],meetingLink:"https://zoom.us/j/123456789"},{id:Date.now()+3,name:"Monthly Coordination",type:"Meeting",startDateTime:"2026-05-10T13:30",endDateTime:"2026-05-10T17:00",purpose:"Monthly meeting.",location:"Conference",status:"completed",attendees:[],meetingLink:""},{id:Date.now()+4,name:"GIS Training",type:"Training",startDateTime:"2026-06-05T08:00",endDateTime:"2026-06-07T17:00",purpose:"GIS training.",location:"Lab",status:"upcoming",attendees:[],meetingLink:""}];activities.forEach(a=>a.status=updateActivityStatus(a));localStorage.setItem("calendarActivities",JSON.stringify(activities));}renderCalendar();renderList();updateStats();}function saveToLocalStorage(){localStorage.setItem("calendarActivities",JSON.stringify(activities));}function getAttendeesList(a){return a.attendees?a.attendees.join(", "):"No attendees listed";}function addAttendeeField(v=""){const c=document.getElementById("attendeesContainer");const d=document.createElement("div");d.className="attendee-row";d.innerHTML=`<input type="text" class="form-control attendee-input" placeholder="Full name" value="${escapeHtml(v)}"><button type="button" class="btn btn-secondary remove-attendee" style="padding:0.4rem 0.8rem;">✖</button>`;d.querySelector(".remove-attendee").onclick=function(){d.remove();};c.appendChild(d);}function getAttendeesFromForm(){const inputs=document.querySelectorAll("#attendeesContainer .attendee-input");const a=[];inputs.forEach(i=>{if(i.value.trim())a.push(i.value.trim());});return a;}function renderCalendar(){const y=currentDisplayDate.getFullYear(),m=currentDisplayDate.getMonth();const firstDay=new Date(y,m,1).getDay();const daysInMonth=new Date(y,m+1,0).getDate();const monthNames=["January","February","March","April","May","June","July","August","September","October","November","December"];document.getElementById("currentMonth").innerText=`${monthNames[m]} ${y}`;let html="";const weekdays=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];weekdays.forEach(d=>{html+=`<div class="calendar-weekday">${d}</div>`;});let dayCount=1;for(let i=0;i<42;i++){if(i<firstDay||dayCount>daysInMonth){html+=`<div class="calendar-day empty"></div>`;if(i>=firstDay)dayCount++;}else{const dateStr=`${y}-${String(m+1).padStart(2,"0")}-${String(dayCount).padStart(2,"0")}`;const dayActs=activities.filter(a=>{const sd=new Date(a.startDateTime).toISOString().split("T")[0];const ed=new Date(a.endDateTime).toISOString().split("T")[0];return sd<=dateStr&&ed>=dateStr;});html+=`<div class="calendar-day" onclick="openAddModalForDate('${dateStr}')"><div class="day-number">${dayCount}</div><div class="day-events">`;dayActs.slice(0,3).forEach(act=>{const hasLink=act.meetingLink?"🔗 ":"";html+=`<div class="event-item ${getTypeClass(act.type)}" onclick="event.stopPropagation(); viewActivity(${act.id})" title="${escapeHtml(act.name)} - Attendees: ${getAttendeesList(act)}">${hasLink}${escapeHtml(act.name.substring(0,16))}</div>`;});if(dayActs.length>3)html+=`<div style="font-size:0.6rem; color:#666;">+${dayActs.length-3} more</div>`;html+=`</div></div>`;dayCount++;}}document.getElementById("calendarGrid").innerHTML=html;}function renderList(){const search=document.getElementById("searchInput")?.value.toLowerCase()||"";const typeFilter=document.getElementById("typeFilter")?.value||"all";const statusFilter=document.getElementById("statusFilterList")?.value||"all";let filtered=activities;if(search)filtered=filtered.filter(a=>a.name.toLowerCase().includes(search)||a.purpose.toLowerCase().includes(search)||(a.attendees&&a.attendees.some(att=>att.toLowerCase().includes(search))));if(typeFilter!=="all")filtered=filtered.filter(a=>a.type===typeFilter);if(statusFilter!=="all")filtered=filtered.filter(a=>a.status===statusFilter);filtered.sort((a,b)=>new Date(a.startDateTime)-new Date(b.startDateTime));const tbody=document.getElementById("listTableBody");if(filtered.length===0){tbody.innerHTML='<tr class="empty-row"><td colspan="9">No activities found.</td></tr>';return;}tbody.innerHTML=filtered.map(a=>`<tr><td style="font-weight:600;">${escapeHtml(a.name)}</td><td><span class="type-badge" style="background:${getTypeColor(a.type)};">${a.type}</span></td><td><div class="attendee-list">${a.attendees&&a.attendees.length?a.attendees.map(att=>`<span style="display:inline-block; background:#e2e8f0; padding:2px 6px; border-radius:12px; margin:2px;">${escapeHtml(att)}</span>`).join(""):"<span style='color:#999;'>—</span>"}</div></td><td>${formatDateTime(a.startDateTime)}</td><td>${formatDateTime(a.endDateTime)}</td><td>${escapeHtml(a.purpose.substring(0,50))}${a.purpose.length>50?"...":""}</td><td><span class="status-badge status-${a.status}">${a.status==="upcoming"?"Upcoming":(a.status==="ongoing"?"Ongoing":"Completed")}</span></td><td>${a.meetingLink?`<a href="${escapeHtml(a.meetingLink)}" target="_blank" class="join-link-btn">🎥 Join</a>`:"<span style='color:#999;'>—</span>"}</td><td class="action-btns"><button class="action-btn view" onclick="viewActivity(${a.id})">👁️</button><button class="action-btn edit" onclick="editActivity(${a.id})">✏️</button><button class="action-btn delete" onclick="deleteActivity(${a.id})">🗑️</button></td></tr>`).join("");updateStats();}function formatDateTime(dt){if(!dt)return"";const d=new Date(dt);if(isNaN(d))return dt;return d.toLocaleString();}function updateStats(){document.getElementById("totalCount").innerText=activities.length;document.getElementById("upcomingCount").innerText=activities.filter(a=>a.status==="upcoming").length;document.getElementById("ongoingCount").innerText=activities.filter(a=>a.status==="ongoing").length;document.getElementById("completedCount").innerText=activities.filter(a=>a.status==="completed").length;}function filterList(){renderList();}function clearListFilters(){document.getElementById("searchInput").value="";document.getElementById("typeFilter").value="all";document.getElementById("statusFilterList").value="all";renderList();}function prevMonth(){currentDisplayDate.setMonth(currentDisplayDate.getMonth()-1);renderCalendar();}function nextMonth(){currentDisplayDate.setMonth(currentDisplayDate.getMonth()+1);renderCalendar();}function goToToday(){currentDisplayDate=new Date();renderCalendar();}function setView(view){currentView=view;document.getElementById("calendarView").style.display=view==="calendar"?"block":"none";document.getElementById("listView").style.display=view==="list"?"block":"none";document.querySelectorAll(".view-btn").forEach(btn=>btn.classList.remove("active"));document.querySelector(`.view-btn[onclick="setView('${view}')"]`).classList.add("active");if(view==="list")renderList();else renderCalendar();}function openAddModal(){currentEditId=null;document.getElementById("modalTitle").innerText="Add New Activity";document.getElementById("activityForm").reset();document.getElementById("activityId").value="";document.getElementById("attendeesContainer").innerHTML="";addAttendeeField();document.getElementById("meetingLink").value="";document.getElementById("activityModal").classList.add("active");}function openAddModalForDate(dateStr){openAddModal();document.getElementById("startDateTime").value=`${dateStr}T09:00`;document.getElementById("endDateTime").value=`${dateStr}T17:00`;}function editActivity(id){const a=activities.find(x=>x.id===id);if(!a)return;currentEditId=id;document.getElementById("modalTitle").innerText="Edit Activity";document.getElementById("activityId").value=a.id;document.getElementById("activityName").value=a.name;document.getElementById("activityType").value=a.type;document.getElementById("startDateTime").value=a.startDateTime;document.getElementById("endDateTime").value=a.endDateTime;document.getElementById("purpose").value=a.purpose;document.getElementById("location").value=a.location||"";document.getElementById("meetingLink").value=a.meetingLink||"";document.getElementById("statusSelect").value=a.status;document.getElementById("attendeesContainer").innerHTML="";if(a.attendees&&a.attendees.length)a.attendees.forEach(att=>addAttendeeField(att));else addAttendeeField();document.getElementById("activityModal").classList.add("active");}function saveActivity(e){e.preventDefault();const name=document.getElementById("activityName").value.trim();const type=document.getElementById("activityType").value;const start=document.getElementById("startDateTime").value;const end=document.getElementById("endDateTime").value;const purpose=document.getElementById("purpose").value.trim();const location=document.getElementById("location").value.trim();const meetingLink=document.getElementById("meetingLink").value.trim();const status=document.getElementById("statusSelect").value;const attendees=getAttendeesFromForm();if(!name||!start||!end||!purpose){alert("Please fill all required fields.");return false;}if(new Date(end)<new Date(start)){alert("End date must be after start date.");return false;}const id=parseInt(document.getElementById("activityId").value)||Date.now();const activity={id,name,type,startDateTime:start,endDateTime:end,purpose,location,meetingLink,status,attendees};if(currentEditId){const idx=activities.findIndex(a=>a.id===currentEditId);if(idx!==-1)activities[idx]=activity;}else activities.push(activity);saveToLocalStorage();renderCalendar();renderList();updateStats();closeModal();alert(currentEditId?"Activity updated!":"Activity added!");return false;}function deleteActivity(id){if(confirm("Delete this activity?")){activities=activities.filter(a=>a.id!==id);saveToLocalStorage();renderCalendar();renderList();updateStats();alert("Deleted.");}}function viewActivity(id){const a=activities.find(x=>x.id===id);if(!a)return;const meetingLinkHtml=a.meetingLink?`<div style="margin:0.5rem 0;"><strong>🔗 Meeting Link:</strong> <a href="${escapeHtml(a.meetingLink)}" target="_blank" style="color:#2563eb;">${escapeHtml(a.meetingLink)}</a> <button onclick="copyToClipboard('${escapeHtml(a.meetingLink)}')" style="padding:0.2rem 0.8rem; border-radius:20px; border:none; background:#e2e8f0;">📋 Copy</button></div>`:"";const body=document.getElementById("viewModalBody");body.innerHTML=`<div style="display:flex; flex-direction:column; gap:0.8rem;"><div><strong>Activity Name:</strong> ${escapeHtml(a.name)}</div><div><strong>Type:</strong> <span class="type-badge" style="background:${getTypeColor(a.type)}; color:white; padding:2px 8px;">${a.type}</span></div><div><strong>Start:</strong> ${formatDateTime(a.startDateTime)}</div><div><strong>End:</strong> ${formatDateTime(a.endDateTime)}</div><div><strong>Purpose:</strong> ${escapeHtml(a.purpose)}</div>${a.location?`<div><strong>Location:</strong> ${escapeHtml(a.location)}</div>`:""}${meetingLinkHtml}<div><strong>Status:</strong> <span class="status-badge status-${a.status}">${a.status==="upcoming"?"Upcoming":(a.status==="ongoing"?"Ongoing":"Completed")}</span></div><div><strong>Attendees:</strong> ${a.attendees&&a.attendees.length?`<ul style="margin-top:0.5rem;">${a.attendees.map(att=>`<li>${escapeHtml(att)}</li>`).join("")}</ul>`:"<span style='color:#999;'>No attendees listed</span>"}</div></div>`;document.getElementById("viewModal").classList.add("active");}function copyToClipboard(t){navigator.clipboard.writeText(t).then(()=>alert("Link copied!")).catch(()=>alert("Failed to copy."));}function closeModal(){document.getElementById("activityModal").classList.remove("active");}function closeViewModal(){document.getElementById("viewModal").classList.remove("active");}function exportToExcel(){if(!activities.length){alert("No activities to export.");return;}const data=activities.map(a=>({"Activity Name":a.name,"Type":a.type,"Attendees":a.attendees?a.attendees.join(", "):"","Start Date & Time":formatDateTime(a.startDateTime),"End Date & Time":formatDateTime(a.endDateTime),"Purpose":a.purpose,"Location":a.location||"","Meeting Link":a.meetingLink||"","Status":a.status==="upcoming"?"Upcoming":(a.status==="ongoing"?"Ongoing":"Completed")}));const ws=XLSX.utils.json_to_sheet(data);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Calendar_Activities");XLSX.writeFile(wb,`Calendar_Activities_${new Date().toISOString().slice(0,10)}.xlsx`);alert("Exported!");}function escapeHtml(s){return s?String(s).replace(/[&<>]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;"})[m]):"";}let dropdownTimeout;document.querySelectorAll(".dropdown").forEach(dd=>{const c=dd.querySelector(".dropdown-content");if(!c)return;dd.addEventListener("mouseenter",()=>{clearTimeout(dropdownTimeout);c.style.display="block";});dd.addEventListener("mouseleave",()=>{dropdownTimeout=setTimeout(()=>{c.style.display="none";},250);});c.addEventListener("mouseenter",()=>{clearTimeout(dropdownTimeout);c.style.display="block";});c.addEventListener("mouseleave",()=>{dropdownTimeout=setTimeout(()=>{c.style.display="none";},250);});});loadActivities();setInterval(()=>{let ch=false;activities.forEach(a=>{const ns=updateActivityStatus(a);if(a.status!==ns){a.status=ns;ch=true;}});if(ch){saveToLocalStorage();renderCalendar();renderList();updateStats();}},60000);</script>
+   </body>
+</html>

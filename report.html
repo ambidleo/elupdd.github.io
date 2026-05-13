@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+      <title>DHSUD Region VI - Released Reports Dashboard (Blue)</title>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+      <style>
+         * { margin: 0; padding: 0; box-sizing: border-box; }
+         body { font-family: 'Inter', 'Segoe UI', sans-serif; background: #f1f5f9; color: #0f172a; line-height: 1.5; }
+         :root { --primary: #2563eb; --primary-dark: #1e3a8a; --primary-light: #dbeafe; --secondary: #3a7b5c; --accent: #d4a017; --gray-200: #e2e8f0; --gray-600: #475569; --gray-800: #1e293b; }
+         header { background: white; border-bottom: 1px solid var(--gray-200); position: sticky; top: 0; z-index: 100; backdrop-filter: blur(4px); background: rgba(255,255,255,0.96); }
+         .container { max-width: 1400px; margin: 0 auto; padding: 0 1.8rem; }
+         .navbar { display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; flex-wrap: wrap; gap: 1rem; }
+         .logo { font-weight: 700; font-size: 1.6rem; background: linear-gradient(135deg, #1e3a8a, #2563eb); -webkit-background-clip: text; background-clip: text; color: transparent; }
+         .nav-links { display: flex; gap: 2rem; align-items: center; flex-wrap: wrap; }
+         .nav-links a, .dropbtn { text-decoration: none; font-weight: 500; color: var(--gray-800); transition: color 0.2s; background: none; border: none; font-size: 0.95rem; cursor: pointer; font-family: inherit; }
+         .nav-links a:hover, .dropbtn:hover { color: var(--primary); }
+         .dropdown { position: relative; display: inline-block; }
+         .dropdown-content { display: none; position: absolute; background-color: white; min-width: 200px; box-shadow: 0 12px 24px rgba(0,0,0,0.1); border-radius: 12px; padding: 0.5rem 0; z-index: 1000; border: 1px solid var(--gray-200); }
+         .dropdown-content a { display: block; padding: 0.6rem 1.2rem; color: #1e293b; }
+         .dropdown-content a:hover { background-color: var(--gray-200); }
+         .dropdown:hover .dropdown-content { display: block; }
+         .dropdown-submenu { position: relative; }
+         .submenu-trigger { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 1.2rem; color: #1e293b; font-size: 0.95rem; cursor: pointer; background: transparent; border: none; width: 100%; text-align: left; font-family: inherit; font-weight: 500; }
+         .submenu-trigger:hover { background: #eff6ff; }
+         .arrow-right { font-size: 0.75rem; margin-left: 1rem; color: #64748b; }
+         .submenu-content { display: none; position: absolute; left: 100%; top: -6px; background: white; min-width: 170px; box-shadow: 0 12px 24px rgba(0,0,0,0.1); border-radius: 12px; z-index: 100; border: 1px solid var(--gray-200); padding: 0.5rem 0; }
+         .dropdown-submenu:hover .submenu-content { display: block; }
+         .submenu-content a { display: block; padding: 0.6rem 1.2rem; color: #1e293b; font-size: 0.85rem; }
+         .hero-banner { background: linear-gradient(120deg, #eef2ff, #ffffff); padding: 1.8rem 0; border-bottom: 1px solid var(--gray-200); }
+         .card { background: white; border-radius: 28px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.03); border: 1px solid var(--gray-200); overflow: hidden; margin: 2rem 0; }
+         .card-header { padding: 1.25rem 1.8rem; border-bottom: 1px solid var(--gray-200); background: #ffffff; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+         .card-header h2 { font-size: 1.5rem; font-weight: 600; }
+         .filter-group { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+         .report-selector { padding: 0.6rem 1.2rem; border-radius: 40px; border: 1px solid var(--gray-200); background: white; font-weight: 500; font-size: 0.9rem; cursor: pointer; font-family: inherit; }
+         .month-filter { padding: 0.6rem 1.2rem; border-radius: 40px; border: 1px solid var(--gray-200); background: white; font-weight: 500; font-size: 0.9rem; cursor: pointer; min-width: 160px; }
+         .btn { padding: 0.6rem 1.4rem; border-radius: 40px; font-weight: 600; font-size: 0.85rem; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.2s; }
+         .btn-primary { background: var(--primary); color: white; }
+         .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+         .btn-success { background: var(--secondary); color: white; }
+         .btn-success:hover { background: #2b5f44; }
+         .btn-secondary { background: #e2e8f0; color: #1e293b; }
+         .search-bar { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.8rem; background: #f9fafc; padding: 1rem 1.2rem; border-radius: 24px; align-items: center; }
+         .search-bar input { flex: 2; padding: 0.65rem 1rem; border-radius: 40px; border: 1px solid var(--gray-200); background: white; font-size: 0.9rem; min-width: 220px; }
+         .stats-row { display: flex; gap: 2rem; margin-bottom: 1.8rem; flex-wrap: wrap; background: #f0f7fa; padding: 1rem 1.5rem; border-radius: 20px; }
+         .stat-card { background: white; padding: 0.6rem 1.5rem; border-radius: 40px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+         .stat-number { font-size: 1.9rem; font-weight: 800; color: var(--primary-dark); line-height: 1.2; }
+         .stat-label { font-size: 0.75rem; color: var(--gray-600); letter-spacing: 0.3px; }
+         .report-table-wrapper { overflow-x: auto; border-radius: 20px; }
+         .data-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+         .data-table th { text-align: left; padding: 1rem 0.9rem; background: #f1f5f9; color: var(--gray-800); font-weight: 600; border-bottom: 2px solid var(--gray-200); white-space: nowrap; }
+         .data-table td { padding: 0.9rem 0.9rem; border-bottom: 1px solid var(--gray-200); vertical-align: middle; }
+         .badge-released { background: #d4edda; color: #155724; padding: 0.2rem 0.8rem; border-radius: 30px; font-size: 0.7rem; font-weight: 600; display: inline-block; }
+         .empty-row td { text-align: center; padding: 3rem !important; color: #64748b; font-style: italic; }
+         footer { background: white; border-top: 1px solid var(--gray-200); padding: 2rem 0; margin-top: 2rem; }
+         .footer-content { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem; }
+         .copyright { margin-top: 1.5rem; text-align: center; font-size: 0.75rem; color: #64748b; border-top: 1px solid var(--gray-200); padding-top: 1rem; }
+         .sync-status { position: fixed; bottom: 20px; right: 20px; background: white; padding: 6px 14px; border-radius: 30px; font-size: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 8px; z-index: 1000; }
+         .clear-filter-btn { background: #e2e8f0; border: 1px solid #cbd5e1; padding: 0.6rem 1.2rem; border-radius: 40px; font-size: 0.8rem; cursor: pointer; font-weight: 500; }
+         @media (max-width: 720px) { .container { padding: 0 1rem; } .card-header { flex-direction: column; align-items: stretch; } }
+      </style>
+   </head>
+   <body>
+      <header>
+         <div class="container">
+            <div class="navbar">
+               <div class="logo">DHSUD</div>
+               <div class="nav-links">
+                  <a href="index.html">Home</a>
+                  <div class="dropdown">
+                     <button class="dropbtn">Certification</button>
+                     <div class="dropdown-content"><a href="lc.html">Locational Clearance</a><a href="SZC.html">Site Zoning Clarification</a></div>
+                  </div>
+                  <div class="dropdown">
+                     <button class="dropbtn">Land Use Plans</button>
+                     <div class="dropdown-content">
+                        <div class="dropdown-submenu">
+                           <button class="submenu-trigger">CLUP & ZO <span class="arrow-right">▸</span></button>
+                           <div class="submenu-content"><a href="inventory.html">Inventory</a><a href="status.html">Status</a></div>
+                        </div>
+                        <a href="status.html">PDPFP</a>
+                     </div>
+                  </div>
+                  <a href="lgu-info.html">LGU Information</a><a href="report.html">Reports</a><a href="calendar.html">Calendar of Activities</a>
+                  <div id="userMenuContainer"></div>
+               </div>
+            </div>
+         </div>
+      </header>
+      <div class="hero-banner"></div>
+      <main class="container">
+         <div class="card">
+            <div class="card-header">
+               <h2>📎 Report Dashboard</h2>
+               <div class="filter-group">
+                  <select id="reportTypeSelect" class="report-selector" onchange="switchReportType()">
+                     <option value="locational">📍 Locational Clearance (Released)</option>
+                     <option value="zoning">🗺️ Site Zoning Certification (Released)</option>
+                  </select>
+                  <select id="monthFilter" class="month-filter" onchange="filterReportTable()">
+                     <option value="all">📅 All Months</option>
+                  </select>
+                  <button class="clear-filter-btn" onclick="clearMonthFilter()">✖ Clear Month Filter</button><button class="btn btn-success" onclick="exportCurrentReportToExcel()">📥 Download Excel</button><button class="btn btn-primary" onclick="fetchLiveData()">🔄 Sync from Sheets</button>
+               </div>
+            </div>
+            <div class="card-body" style="padding:1.8rem;">
+               <div class="search-bar"><input type="text" id="reportSearchInput" placeholder="🔍 Search by Control No., Applicant, Location..." onkeyup="filterReportTable()"><span style="font-size:0.75rem; color:#475569;">⬇️ Released records only</span></div>
+               <div class="stats-row" id="statsPanel">
+                  <div class="stat-card">
+                     <div class="stat-number" id="totalCount">-</div>
+                     <div class="stat-label">Total Released</div>
+                  </div>
+                  <div class="stat-card">
+                     <div class="stat-number" id="monthCount">-</div>
+                     <div class="stat-label">Filtered Records</div>
+                  </div>
+                  <div class="stat-card">
+                     <div class="stat-number" id="avgDays">-</div>
+                     <div class="stat-label">Avg. Processing Days</div>
+                  </div>
+               </div>
+               <div class="report-table-wrapper">
+                  <table class="data-table" id="reportTable">
+                     <thead id="tableHeader">
+                        <tr>
+                           <th colspan="12">Loading data from Google Sheets...</th>
+                        </tr>
+                     </thead>
+                     <tbody id="tableBody">
+                        <tr class="empty-row">
+                           <td colspan="12">Please wait, fetching released records...</td>
+                        </tr>
+                     </tbody>
+                  </table>
+               </div>
+               <div style="margin-top:1.5rem; font-size:0.75rem; background:#eef2ff; padding:0.7rem 1rem; border-radius:16px; color:var(--primary-dark);">✅ Report includes ONLY records with status = <strong>"Released"</strong> from live Google Sheets endpoints.</div>
+            </div>
+         </div>
+      </main>
+      <div class="sync-status" id="syncStatus"><span id="statusDot">🟢</span> <span id="statusText">Live</span><button onclick="fetchLiveData()" style="margin-left:8px; background:#e2e8f0; border:none; border-radius:30px; padding:2px 10px; cursor:pointer;">↻</button></div>
+      <footer>
+         <div class="container">
+            <div class="footer-content">
+               <div>
+                  <div class="footer-logo">DHSUD</div>
+                  <p>ELUPDD Region VI – Official Released Reports</p>
+               </div>
+               <div><strong>Contact</strong><br>📞 (033) 123-4567<br>📧 elupdd.region6@dhsud.gov.ph</div>
+            </div>
+            <div class="copyright">© 2026 DHSUD Region VI — Released records report.</div>
+         </div>
+      </footer>
+      <script>const GOOGLE_SCRIPT_URL="https://script.google.com/macros/s/AKfycbwqmnyODjNYtN12VZFWJOV7UAPoMywZvUE7jvKLKrozfUiYZB5TTpD061yazQUyMYcgKQ/exec";let locationalReleased=[],zoningReleased=[],currentReportType="locational",filteredData=[],currentMonthFilter="all";function checkUserAccess(){const s=localStorage.getItem("dhsud_session");if(!s){window.location.href="login.html";return false;}try{const ses=JSON.parse(s);if(ses.role!=="admin"&&ses.role!=="encoder"&&ses.role!=="staff"){alert("Access Denied.");window.location.href="index.html";return false;}return ses;}catch(e){window.location.href="login.html";return false;}}const currentUser=checkUserAccess();function formatDateShort(d){if(!d)return"";const dt=new Date(d);if(isNaN(dt))return d;return dt.toLocaleDateString("en-US",{year:"numeric",month:"short",day:"numeric"});}function getMonthKey(d){if(!d)return"";const dt=new Date(d);if(isNaN(dt))return"";return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}`;}function getMonthYear(d){if(!d)return"";const dt=new Date(d);if(isNaN(dt))return"";return dt.toLocaleDateString("en-US",{year:"numeric",month:"long"});}function calcProcessDays(r,i){if(!r||!i)return null;const s=new Date(r),e=new Date(i);if(isNaN(s)||isNaN(e))return null;const diff=Math.abs(e-s),days=Math.ceil(diff/(1000*60*60*24));return days;}function getTimeliness(d){return d===null?"—":(d<=30?"On Time":"Delayed");}function escapeHtml(s){return s?String(s).replace(/[&<>]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;"})[m]):"";}function populateMonthFilter(){const records=currentReportType==="locational"?locationalReleased:zoningReleased;const months=new Set();records.forEach(rec=>{const d=currentReportType==="locational"?rec.dateIssue:rec.dateIssued;if(d){const key=getMonthKey(d);if(key)months.add(key);}});const sorted=Array.from(months).sort().reverse();const sel=document.getElementById("monthFilter");const cur=sel.value;sel.innerHTML='<option value="all">📅 All Months</option>';sorted.forEach(key=>{const[year,month]=key.split("-");const name=new Date(year,month-1).toLocaleDateString("en-US",{month:"long",year:"numeric"});const opt=document.createElement("option");opt.value=key;opt.textContent=name;sel.appendChild(opt);});if(cur!=="all"&&sorted.includes(cur))sel.value=cur;else if(cur!=="all"){sel.value="all";currentMonthFilter="all";}}function clearMonthFilter(){document.getElementById("monthFilter").value="all";currentMonthFilter="all";filterReportTable();}async function fetchLocationalReleased(){try{const resp=await fetch(`${GOOGLE_SCRIPT_URL}?action=get&data_type=locational`);const data=await resp.json();let records=Array.isArray(data)?data:[];locationalReleased=records.filter(rec=>rec.status&&rec.status.toLowerCase()==="released");}catch(e){locationalReleased=[];try{const local=localStorage.getItem("locationalRecords");if(local){const parsed=JSON.parse(local);locationalReleased=parsed.filter(r=>r.status==="Released");}}catch(e){}}}async function fetchZoningReleased(){try{const resp=await fetch(`${GOOGLE_SCRIPT_URL}?action=get&data_type=zoning`);const data=await resp.json();let records=Array.isArray(data)?data:[];zoningReleased=records.filter(rec=>rec.status&&rec.status.toLowerCase()==="released");}catch(e){zoningReleased=[];try{const local=localStorage.getItem("zoningCertifications");if(local){const parsed=JSON.parse(local);zoningReleased=parsed.filter(r=>r.status==="Released");}}catch(e){}}}async function fetchLiveData(){const statDiv=document.getElementById("syncStatus"),dot=document.getElementById("statusDot"),txt=document.getElementById("statusText");if(statDiv){dot.innerHTML="🟡";txt.innerText="Syncing...";}try{await Promise.all([fetchLocationalReleased(),fetchZoningReleased()]);populateMonthFilter();renderReportTable();if(statDiv){dot.innerHTML="🟢";txt.innerText="Live (Google Sheets)";setTimeout(()=>{if(txt)txt.innerText="Live";},2000);}}catch(e){if(statDiv){dot.innerHTML="🔴";txt.innerText="Sync error";}renderReportTable();}}const LOCATIONAL_COLS=["Application No.","Decision No.","Requesting Party","Date Issued","Report Month","Owner/Proponents","Location","Total Area (ha)","No. of Days Processed","On Time / Delayed","Amount Paid","O.R. No.","Remarks"];const ZONING_COLS=["Certification No.","Requesting Party","Certification Issued","Date Issued","Report Month","Owner/Proponents","Location","No. of Parcels","Total Area (ha)","No. of Days Processed","On Time / Delayed","Amount Paid","O.R. No.","Remarks","Approved By","Resolution No."];function mapLocationalToRow(r){const days=calcProcessDays(r.dateReceipt,r.dateIssue);const timeliness=getTimeliness(days);const reportMonth=getMonthYear(r.dateIssue);const owner=r.applicant+(r.corporation?` (${r.corporation})`:"");const area=r.areaLocation?(r.areaLocation.match(/\d+(?:\.\d+)?/g)||[""])[0]+" sqm":"";return{"Application No.":r.applicationNo||"","Decision No.":r.decisionNo||"","Requesting Party":r.applicant||"","Date Issued":formatDateShort(r.dateIssue),"Report Month":reportMonth,"Owner/Proponents":owner,"Location":r.areaLocation||"","Total Area (ha)":area,"No. of Days Processed":days!==null?days:"","On Time / Delayed":timeliness,"Amount Paid":r.amountPaid?`₱ ${r.amountPaid}`:"","O.R. No.":r.orNo||"","Remarks":r.decision||r.conditions||""};}function mapZoningToRow(r){const days=calcProcessDays(r.dateReceived,r.dateIssued);const timeliness=getTimeliness(days);const reportMonth=getMonthYear(r.dateIssued);let owners=[];if(r.landHoldings&&Array.isArray(r.landHoldings))owners=r.landHoldings.map(h=>h.registeredOwner).filter(Boolean);const ownerProp=owners.length?owners.join(", "):(r.requestedBy||"");const totalArea=r.totalArea?(parseFloat(r.totalArea)?parseFloat(r.totalArea).toFixed(4):r.totalArea):"";const parcels=r.parcels||(r.landHoldings?.length||"1");return{"Certification No.":r.certificationNo||"","Requesting Party":r.requestedBy||"","Certification Issued":r.certificationIssued||"Site Zoning Certification","Date Issued":formatDateShort(r.dateIssued),"Report Month":reportMonth,"Owner/Proponents":ownerProp,"Location":r.location||"","No. of Parcels":parcels,"Total Area (ha)":totalArea,"No. of Days Processed":days!==null?days:"","On Time / Delayed":timeliness,"Amount Paid":r.amountPaid?`₱ ${r.amountPaid}`:"","O.R. No.":r.orNo||"","Remarks":r.remarks||r.proposedUse||"","Approved By":r.approvedBy||"","Resolution No.":r.circularNo||""};}function getCurrentReleased(){return currentReportType==="locational"?locationalReleased:zoningReleased;}function getCurrentColumns(){return currentReportType==="locational"?LOCATIONAL_COLS:ZONING_COLS;}function filterReportTable(){currentMonthFilter=document.getElementById("monthFilter").value;renderReportTable();}function renderReportTable(){let records=getCurrentReleased();const search=document.getElementById("reportSearchInput")?.value.toLowerCase()||"";const monthFilter=currentMonthFilter;let filtered=records;if(search){filtered=filtered.filter(rec=>{let cn,party,loc,owner;if(currentReportType==="locational"){cn=rec.applicationNo;party=rec.applicant;loc=rec.areaLocation;owner=rec.applicant;}else{cn=rec.certificationNo;party=rec.requestedBy;loc=rec.location;if(rec.landHoldings&&Array.isArray(rec.landHoldings))owner=rec.landHoldings.map(h=>h.registeredOwner).join(" ");else owner=rec.requestedBy||"";}return(cn?.toLowerCase().includes(search)||party?.toLowerCase().includes(search)||loc?.toLowerCase().includes(search)||owner?.toLowerCase().includes(search));});}if(monthFilter!=="all"){filtered=filtered.filter(rec=>{const d=currentReportType==="locational"?rec.dateIssue:rec.dateIssued;const key=getMonthKey(d);return key===monthFilter;});}filteredData=filtered;const totalReleased=records.length;const filteredCount=filteredData.length;let totalDays=0,daysCount=0;filteredData.forEach(rec=>{const d1=currentReportType==="locational"?rec.dateReceipt:rec.dateReceived;const d2=currentReportType==="locational"?rec.dateIssue:rec.dateIssued;const days=calcProcessDays(d1,d2);if(days!==null&&!isNaN(days)){totalDays+=days;daysCount++;}});const avgDays=daysCount>0?(totalDays/daysCount).toFixed(1):"0";document.getElementById("totalCount").innerText=totalReleased;document.getElementById("monthCount").innerText=filteredCount;document.getElementById("avgDays").innerText=avgDays;const cols=getCurrentColumns();const thead=document.getElementById("tableHeader");thead.innerHTML=`<tr>${cols.map(c=>`<th>${c}</th>`).join("")}</tr>`;const tbody=document.getElementById("tableBody");if(filteredData.length===0){let msg=currentReportType==="locational"?"📭 No released Locational Clearance records found.":"📭 No released Site Zoning Certification records found.";if(monthFilter!=="all"){const monthName=document.getElementById("monthFilter").options[document.getElementById("monthFilter").selectedIndex]?.text||monthFilter;msg+=` No records found for ${monthName}.`;}tbody.innerHTML=`<tr class="empty-row"><td colspan="${cols.length}">${msg}</td></tr>`;return;}let rows="";filteredData.forEach(rec=>{let vals=[];if(currentReportType==="locational"){const m=mapLocationalToRow(rec);vals=LOCATIONAL_COLS.map(c=>m[c]||"");}else{const m=mapZoningToRow(rec);vals=ZONING_COLS.map(c=>m[c]||"");}rows+=`<tr>${vals.map(v=>`<td>${escapeHtml(String(v))}</td>`).join("")}</tr>`;});tbody.innerHTML=rows;}function switchReportType(){const sel=document.getElementById("reportTypeSelect");currentReportType=sel.value;currentMonthFilter="all";document.getElementById("monthFilter").value="all";populateMonthFilter();renderReportTable();}function exportCurrentReportToExcel(){let records=filteredData.length>0?filteredData:getCurrentReleased();const search=document.getElementById("reportSearchInput")?.value.toLowerCase()||"";const monthFilter=currentMonthFilter;let exportRecords=[...records];if(search&&filteredData.length===0){exportRecords=exportRecords.filter(rec=>{let cn,party,loc,owner;if(currentReportType==="locational"){cn=rec.applicationNo;party=rec.applicant;loc=rec.areaLocation;owner=rec.applicant;}else{cn=rec.certificationNo;party=rec.requestedBy;loc=rec.location;if(rec.landHoldings&&Array.isArray(rec.landHoldings))owner=rec.landHoldings.map(h=>h.registeredOwner).join(" ");else owner=rec.requestedBy||"";}return(cn?.toLowerCase().includes(search)||party?.toLowerCase().includes(search)||loc?.toLowerCase().includes(search)||owner?.toLowerCase().includes(search));});}if(monthFilter!=="all"&&filteredData.length===0){exportRecords=exportRecords.filter(rec=>{const d=currentReportType==="locational"?rec.dateIssue:rec.dateIssued;const key=getMonthKey(d);return key===monthFilter;});}let sheetData=[],cols=[];if(currentReportType==="locational"){cols=LOCATIONAL_COLS;sheetData=exportRecords.map(rec=>{const row=mapLocationalToRow(rec);const out={};cols.forEach(c=>out[c]=row[c]||"");return out;});}else{cols=ZONING_COLS;sheetData=exportRecords.map(rec=>{const row=mapZoningToRow(rec);const out={};cols.forEach(c=>out[c]=row[c]||"");return out;});}if(sheetData.length===0){alert("No records to export.");return;}const ws=XLSX.utils.json_to_sheet(sheetData);const wb=XLSX.utils.book_new();const name=currentReportType==="locational"?"Locational_Clearance_Released":"Site_Zoning_Released";XLSX.utils.book_append_sheet(wb,ws,name);XLSX.writeFile(wb,`${name}_${new Date().toISOString().slice(0,10)}.xlsx`);}let dropdownTimeout;document.querySelectorAll(".dropdown").forEach(dd=>{const c=dd.querySelector(".dropdown-content");if(!c)return;dd.addEventListener("mouseenter",()=>{clearTimeout(dropdownTimeout);c.style.display="block";});dd.addEventListener("mouseleave",()=>{dropdownTimeout=setTimeout(()=>{c.style.display="none";},250);});c.addEventListener("mouseenter",()=>{clearTimeout(dropdownTimeout);c.style.display="block";});c.addEventListener("mouseleave",()=>{dropdownTimeout=setTimeout(()=>{c.style.display="none";},250);});});async function init(){document.getElementById("tableHeader").innerHTML="<tr><th>Loading released records...</th></tr>";await fetchLiveData();setInterval(()=>{fetchLiveData().catch(e=>console.warn(e));},60000);}init();</script>
+   </body>
+</html>

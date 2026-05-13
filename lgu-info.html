@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+      <title>DHSUD - LGU Management Suite (Blue)</title>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+      <style>
+         * { margin: 0; padding: 0; box-sizing: border-box; }
+         body { font-family: 'Inter', sans-serif; background: #f1f5f9; color: #0f172a; line-height: 1.4; }
+         .container { max-width: 1400px; margin: 0 auto; padding: 0 24px; }
+         header { background: white; border-bottom: 1px solid #eef2ff; position: sticky; top: 0; z-index: 20; background: rgba(255,255,255,0.96); backdrop-filter: blur(4px); }
+         .navbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; flex-wrap: wrap; gap: 16px; }
+         .logo { font-size: 1.6rem; font-weight: 700; background: linear-gradient(135deg, #1e3a8a, #2563eb); -webkit-background-clip: text; background-clip: text; color: transparent; }
+         .nav-links { display: flex; gap: 28px; align-items: center; flex-wrap: wrap; }
+         .nav-links a { text-decoration: none; font-weight: 500; color: #1e293b; transition: 0.2s; cursor: pointer; }
+         .nav-links a:hover { color: #2563eb; }
+         .dropdown { position: relative; display: inline-block; }
+         .dropbtn { background: none; border: none; font-weight: 500; font-size: 1rem; font-family: 'Inter', sans-serif; cursor: pointer; color: #1e293b; }
+         .dropdown-content { display: none; position: absolute; background: white; min-width: 220px; box-shadow: 0 12px 24px rgba(0,0,0,0.1); border-radius: 16px; padding: 8px 0; z-index: 20; border: 1px solid #eef2ff; }
+         .dropdown:hover .dropdown-content { display: block; }
+         .dropdown-content a { display: block; padding: 10px 20px; text-decoration: none; color: #1e293b; }
+         .dropdown-submenu { position: relative; }
+         .submenu-trigger { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; color: #1e293b; font-size: 1rem; cursor: pointer; background: transparent; border: none; width: 100%; text-align: left; font-family: inherit; font-weight: 500; }
+         .submenu-trigger:hover { background: #eff6ff; }
+         .arrow-right { font-size: 0.75rem; margin-left: 1rem; color: #64748b; }
+         .submenu-content { display: none; position: absolute; left: 100%; top: -6px; background: white; min-width: 170px; box-shadow: 0 12px 24px rgba(0,0,0,0.1); border-radius: 16px; z-index: 100; border: 1px solid #eef2ff; padding: 8px 0; }
+         .dropdown-submenu:hover .submenu-content { display: block; }
+         .submenu-content a { display: block; padding: 8px 20px; color: #1e293b; font-size: 0.9rem; }
+         .page-header { background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); color: white; padding: 48px 0; margin-bottom: 40px; }
+         .btn-primary { background: #1e3a8a; color: white; border: none; padding: 12px 24px; border-radius: 40px; font-weight: 600; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+         .btn-primary:hover { background: #2563eb; transform: translateY(-2px); }
+         .btn-success { background: #2c6e8f; color: white; }
+         .btn-success:hover { background: #1a4d5e; }
+         .btn-outline { background: white; border: 1px solid #cbd5e1; padding: 10px 20px; border-radius: 40px; font-weight: 500; cursor: pointer; transition: 0.2s; }
+         .search-filter-row { display: flex; flex-wrap: wrap; gap: 16px; background: white; padding: 20px 24px; border-radius: 28px; margin-bottom: 28px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); align-items: flex-end; }
+         .search-group { flex: 2; min-width: 200px; }
+         .filter-group { flex: 1; min-width: 180px; }
+         .search-group label, .filter-group label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: #2563eb; display: block; margin-bottom: 6px; }
+         .search-group input, .filter-group select { width: 100%; padding: 12px 16px; border: 1.5px solid #e2e8f0; border-radius: 60px; font-family: 'Inter', sans-serif; }
+         .lgu-list-container { background: white; border-radius: 28px; padding: 24px; box-shadow: 0 12px 28px rgba(0,0,0,0.06); max-height: 600px; overflow-y: auto; }
+         .lgu-grid { display: flex; flex-direction: column; gap: 16px; }
+         .lgu-card-item { background: #f8fafc; border-radius: 20px; padding: 18px 24px; border: 1px solid #eef2ff; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; transition: 0.2s; }
+         .lgu-card-item:hover { background: #f1f5f9; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+         .lgu-info-summary h3 { font-size: 1.1rem; font-weight: 700; }
+         .lgu-info-summary p { font-size: 0.8rem; color: #475569; margin-top: 4px; }
+         .view-btn { background: #2563eb; color: white; border: none; padding: 8px 20px; border-radius: 40px; cursor: pointer; font-weight: 500; }
+         .view-btn:hover { background: #1e3a8a; }
+         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; }
+         .modal-content { background: white; border-radius: 32px; max-width: 800px; width: 90%; max-height: 85vh; overflow-y: auto; padding: 28px 32px; position: relative; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
+         .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eef2ff; padding-bottom: 16px; margin-bottom: 20px; }
+         .modal-header h2 { font-size: 1.5rem; }
+         .close-modal { background: none; border: none; font-size: 28px; cursor: pointer; color: #94a3b8; }
+         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; margin-bottom: 24px; }
+         .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 14px; font-family: 'Inter', sans-serif; }
+         .modal-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px; }
+         .bell-icon { position: relative; cursor: pointer; font-size: 1.5rem; }
+         .notification-badge { position: absolute; top: -8px; right: -12px; background: #ef4444; color: white; border-radius: 20px; padding: 2px 8px; font-size: 0.7rem; font-weight: bold; }
+         .notification-panel { display: none; position: absolute; right: 0; top: 45px; width: 340px; background: white; border-radius: 20px; box-shadow: 0 20px 35px -12px black; z-index: 30; max-height: 450px; overflow-y: auto; }
+         .relative { position: relative; }
+         .cdra-badge { background: #e0f2fe; color: #1e40af; border-radius: 20px; padding: 4px 12px; font-size: 0.7rem; font-weight: 600; display: inline-block; margin-left: 12px; }
+         .stats-badge { background: #eef2ff; border-radius: 40px; padding: 6px 14px; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 12px; }
+         .info-row { display: flex; padding: 8px 0; border-bottom: 1px solid #eef2ff; }
+         .info-label { width: 170px; font-weight: 600; color: #1e293b; }
+         .info-value { flex: 1; color: #334155; }
+         hr { margin: 16px 0; }
+         .inline-edit-panel { margin-top: 24px; border-top: 1px solid #eef2ff; padding-top: 20px; }
+         @media print { .modal, .action-bar, .search-filter-row, .bell-icon, .btn-primary, .view-btn, .cdra-badge { display: none; } }
+      </style>
+   </head>
+   <body>
+      <header>
+         <div class="container">
+            <div class="navbar">
+               <div class="logo">DHSUD</div>
+               <div class="nav-links">
+                  <a href="index.html">Home</a>
+                  <div class="dropdown">
+                     <button class="dropbtn">Certification</button>
+                     <div class="dropdown-content"><a href="lc.html">Locational Clearance</a><a href="SZC.html">Site Zoning Clarification</a></div>
+                  </div>
+                  <div class="dropdown">
+                     <button class="dropbtn">Land Use Plans</button>
+                     <div class="dropdown-content">
+                        <div class="dropdown-submenu">
+                           <button class="submenu-trigger">CLUP & ZO <span class="arrow-right">▸</span></button>
+                           <div class="submenu-content"><a href="inventory.html">Inventory</a><a href="status.html">Status</a></div>
+                        </div>
+                        <a href="status.html">PDPFP</a>
+                     </div>
+                  </div>
+                  <a href="lgu-info.html">LGU Information</a><a href="report.html">Reports</a><a href="calendar.html">Calendar of Activities</a>
+                  <div id="userMenuContainer"></div>
+               </div>
+            </div>
+         </div>
+      </header>
+      <div class="page-header">
+         <div class="container"></div>
+      </div>
+      <div class="container">
+         <div class="action-bar">
+            <div><button class="btn-primary" onclick="showLGURegModal()">➕ Register New LGU</button><button class="btn-primary" style="background:#2c5f2d;" onclick="showCDRAModal()">📄 Register CDRA Preparation</button></div>
+            <div class="stats-badge" id="totalCountStat">📊 Total LGUs: 0</div>
+            <div class="relative">
+               <div class="bell-icon" id="bellIcon">🔔 <span id="notifCount" class="notification-badge" style="display:none;">0</span></div>
+               <div id="notificationPanel" class="notification-panel">
+                  <div class="notification-header"><span>🔔 Notifications</span><button class="mark-all-read" onclick="markAllNotificationsRead()">✓ Mark all read</button></div>
+                  <div id="notifList"></div>
+               </div>
+            </div>
+         </div>
+         <div class="search-filter-row">
+            <div class="search-group"><label>🔍 SEARCH</label><input type="text" id="globalSearch" placeholder="Municipality, Mayor, MPDC, Email..."></div>
+            <div class="filter-group">
+               <label>🏞️ FILTER BY PROVINCE</label>
+               <select id="provinceFilter">
+                  <option value="">All Provinces</option>
+               </select>
+            </div>
+            <div><button class="btn-primary" id="applyFilterBtn" style="padding:12px 28px;">Apply Filter</button></div>
+         </div>
+         <div class="lgu-list-container" id="lguListContainer">
+            <div id="lguGrid" class="lgu-grid"></div>
+         </div>
+      </div>
+      <div id="lguModal" class="modal">
+         <div class="modal-content">
+            <div class="modal-header">
+               <h2>🏛️ Register New LGU</h2>
+               <button class="close-modal" onclick="closeModal('lguModal')">✕</button>
+            </div>
+            <form id="lguRegForm">
+               <div class="form-grid">
+                  <div class="form-group">
+                     <label>Municipality/City *</label>
+                     <select id="regMunicipality" required>
+                        <option value="">-- Select Municipality/City --</option>
+                     </select>
+                  </div>
+                  <div class="form-group">
+                     <label>Province *</label>
+                     <select id="regProvince" required>
+                        <option value="">-- Select Province --</option>
+                     </select>
+                  </div>
+                  <div class="form-group"><label>Region</label><input type="text" id="regRegion" value="WESTERN VISAYAS"></div>
+                  <div class="form-group">
+                     <label>Income Class</label>
+                     <select id="regIncomeClass">
+                        <option>1ST</option>
+                        <option>2ND</option>
+                        <option>3RD</option>
+                        <option>4TH</option>
+                        <option>5TH</option>
+                        <option>6TH</option>
+                     </select>
+                  </div>
+                  <div class="form-group"><label>Mayor</label><input type="text" id="regMayor"></div>
+                  <div class="form-group">
+                     <label>Mayor Acting?</label>
+                     <select id="regMayorActing">
+                        <option>No</option>
+                        <option>Yes</option>
+                     </select>
+                  </div>
+                  <div class="form-group"><label>Vice Mayor</label><input type="text" id="regViceMayor"></div>
+                  <div class="form-group">
+                     <label>Vice Mayor Acting?</label>
+                     <select id="regViceMayorActing">
+                        <option>No</option>
+                        <option>Yes</option>
+                     </select>
+                  </div>
+                  <div class="form-group"><label>LGU Landline</label><input type="text" id="regLandline"></div>
+                  <div class="form-group"><label>LGU Email</label><input type="email" id="regEmail"></div>
+                  <div class="form-group"><label>MPDC Name</label><input type="text" id="regMpdc"></div>
+                  <div class="form-group"><label>MPDC Landline</label><input type="text" id="regMpdcLandline"></div>
+                  <div class="form-group"><label>MPDC Email</label><input type="email" id="regMpdcEmail"></div>
+                  <div class="form-group"><label>MPDC Mobile</label><input type="text" id="regMpdcMobile"></div>
+               </div>
+               <div class="modal-actions"><button type="submit" class="btn-primary">💾 Save LGU</button><button type="button" class="btn-outline" onclick="closeModal('lguModal')">Cancel</button></div>
+            </form>
+         </div>
+      </div>
+      <div id="cdraModal" class="modal">
+         <div class="modal-content">
+            <div class="modal-header">
+               <h2>📋 Register CDRA Preparation</h2>
+               <button class="close-modal" onclick="closeModal('cdraModal')">✕</button>
+            </div>
+            <form id="cdraForm">
+               <div class="form-grid">
+                  <div class="form-group"><label>Select LGU *</label><select id="cdraLGUId" required></select></div>
+                  <div class="form-group">
+                     <label>CDRA Status</label>
+                     <select id="cdraStatus">
+                        <option>Not Started</option>
+                        <option>Ongoing</option>
+                        <option>Completed</option>
+                        <option>Submitted</option>
+                     </select>
+                  </div>
+                  <div class="form-group"><label>Date Prepared</label><input type="date" id="cdraDate"></div>
+                  <div class="form-group"><label>Remarks</label><textarea id="cdraRemarks" rows="2"></textarea></div>
+               </div>
+               <div class="modal-actions"><button type="submit" class="btn-primary">📌 Register CDRA</button><button type="button" class="btn-outline" onclick="closeModal('cdraModal')">Cancel</button></div>
+            </form>
+         </div>
+      </div>
+      <div id="viewModal" class="modal">
+         <div class="modal-content" style="max-width:750px;">
+            <div class="modal-header">
+               <h2>🏛️ LGU Full Details</h2>
+               <button class="close-modal" onclick="closeModal('viewModal')">✕</button>
+            </div>
+            <div id="viewContent"></div>
+            <div class="modal-actions"><button class="btn-primary" id="inlineEditBtn" onclick="enableInlineEditForCurrentLGU()">✏️ Edit LGU Information</button><button class="btn-outline" onclick="closeModal('viewModal')">Close</button></div>
+            <div id="inlineEditPanel" style="display:none;" class="inline-edit-panel"></div>
+         </div>
+      </div>
+      <script>let lguDatabase=[],cdraDatabase=[],notifications=[];function escapeHtml(s){if(!s)return"";return String(s).replace(/[&<>]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;"})[m]);}function saveToLocalStorage(){localStorage.setItem("lgu_master_db_v3",JSON.stringify(lguDatabase));localStorage.setItem("cdra_master_db_v3",JSON.stringify(cdraDatabase));localStorage.setItem("notif_db_v3",JSON.stringify(notifications));}function addNotification(msg,type="info"){const n={id:Date.now(),message:msg,type,timestamp:new Date().toLocaleString(),read:false};notifications.unshift(n);if(notifications.length>50)notifications.pop();saveToLocalStorage();updateBellBadge();renderNotificationPanel();}function updateBellBadge(){const unread=notifications.filter(n=>!n.read).length;const badge=document.getElementById("notifCount");if(unread>0){badge.style.display="inline-block";badge.innerText=unread;}else badge.style.display="none";}function markAllNotificationsRead(){notifications.forEach(n=>n.read=true);saveToLocalStorage();updateBellBadge();renderNotificationPanel();}function renderNotificationPanel(){const c=document.getElementById("notifList");if(!c)return;if(!notifications.length){c.innerHTML='<div style="padding:16px;text-align:center;">No notifications</div>';return;}c.innerHTML=notifications.map(n=>`<div class="${!n.read?"unread":""}" onclick="markNotifRead(${n.id})" style="padding:12px 16px;border-bottom:1px solid #f0f2f5;cursor:pointer;${!n.read?"background:#eff6ff;":""}"><strong>${n.type==="lgu"?"🏛️ New LGU":"📋 CDRA"}</strong> ${escapeHtml(n.message)}<div style="font-size:0.7rem;color:#64748b;">${n.timestamp}</div></div>`).join("");}function markNotifRead(id){const n=notifications.find(n=>n.id===id);if(n)n.read=true;saveToLocalStorage();updateBellBadge();renderNotificationPanel();}const bellIcon=document.getElementById("bellIcon");const notifPanel=document.getElementById("notificationPanel");if(bellIcon){bellIcon.addEventListener("click",(e)=>{e.stopPropagation();notifPanel.style.display=notifPanel.style.display==="block"?"none":"block";renderNotificationPanel();});document.addEventListener("click",(e)=>{if(!bellIcon?.contains(e.target)&&!notifPanel?.contains(e.target))notifPanel.style.display="none";});}function checkUserAccess(){const s=localStorage.getItem("dhsud_session");if(!s){window.location.href="login.html";return false;}try{const ses=JSON.parse(s);if(ses.role!=="admin"&&ses.role!=="encoder"&&ses.role!=="staff"){alert("Access Denied.");window.location.href="index.html";return false;}return ses;}catch(e){window.location.href="login.html";return false;}}const currentUser=checkUserAccess();const provinceList=["AKLAN","ANTIQUE","CAPIZ","GUIMARAS","ILOILO","NEGROS OCCIDENTAL"];const municipalityByProvince={AKLAN:["ALTAVAS","BALETE","BANGA","BATAN","BURUANGA","IBAJAY","KALIBO","LEZO","LIBACAO","MADALAG","MAKATO","MALAY","MALINAO","NABAS","NEW WASHINGTON","NUMANCIA","TANGALAN"],ANTIQUE:["ANINI-Y","BARBAZA","BELISON","BUGASONG","CALUYA","CULASI","HAMTIC","LAUA-AN","LIBERTAD","PANDAN","PATNONGON","SAN JOSE","SAN REMIGIO","SEBASTE","SIBALOM","TIBIAO","TOBIAS FORNIER","VALDERRAMA"],CAPIZ:["CUARTERO","DAO","DUMALAG","DUMARAO","IVISAN","JAMINDAN","MA-AYON","MAMBUSAO","PANAY","PANITAN","PILAR","PONTEVEDRA","PRESIDENT ROXAS","ROXAS CITY","SAPIAN","SIGMA","TAPAZ"],GUIMARAS:["BUENAVISTA","JORDAN","NUEVA VALENCIA","SAN LORENZO","SIBUNAG"],ILOILO:["AJUY","ALIMODIAN","ANILAO","BADIANGAN","BALASAN","BANATE","BAROTAC NUEVO","BAROTAC VIEJO","BATAD","BINGAWAN","CABATUAN","CALINOG","CARLES","CONCEPCION","DINGLE","DUEÑAS","DUMANGAS","ESTANCIA","GUIMBAL","IGBARAS","ILOILO CITY","JANIUAY","LAMBUNAO","LEGANES","LEMERY","LEON","MAASIN","MIAGAO","MINA","NEW LUCENA","OTON","PAVIA","POTOTAN","SAN DIONISIO","SAN ENRIQUE","SAN JOAQUIN","SAN MIGUEL","SAN RAFAEL","SANTA BARBARA","SARA","TIGBAUAN","TUBUNGAN","ZARRAGA"],"NEGROS OCCIDENTAL":["BACOLOD CITY","BAGO CITY","BINALBAGAN","CADIZ CITY","CALATRAVA","CANDONI","CAUAYAN","ENRIQUE B. MAGALONA","ESCALANTE CITY","HIMAMAYLAN CITY","HINIGARAN","HINOBA-AN","ILOG","ISABELA","KABANKALAN CITY","LA CARLOTA CITY","LA CASTELLANA","MANAPLA","MOISES PADILLA","MURCIA","PONTEVEDRA","PULUPANDAN","SAGAY CITY","SAN CARLOS CITY","SAN ENRIQUE","SILAY CITY","SIPALAY CITY","TALISAY CITY","TOBOSO","VALLADOLID","VICTORIAS CITY"]};function seedExampleLGUs(){const ex=[{municipality:"ALTAVAS",province:"AKLAN",region:"WESTERN VISAYAS",incomeClass:"4TH",mayor:"DENNY B. REFOL, SR.",mayorActing:"No",viceMayor:"JOSEPH JECON L. FLORES",viceMayorActing:"No",landline:"(036)5284030",email:"lgu.altavas@gmail.com",mpdc:"ENGR. ROGELIO C. DELA CRUZ, JR.",mpdcLandline:"036 2691372",mpdcEmail:"mpdc.lgualtavas@gmail.com",mpdcMobile:"09096048634"},{municipality:"KALIBO",province:"AKLAN",region:"WESTERN VISAYAS",incomeClass:"1ST",mayor:"JUSTIN CRUZ",mayorActing:"No",viceMayor:"MARIA SANTOS",viceMayorActing:"No",landline:"(036)2621234",email:"kalibo.lgu@gmail.com",mpdc:"ARCH. LORNA VILLEGAS",mpdcLandline:"036 2625678",mpdcEmail:"mpdc.kalibo@gmail.com",mpdcMobile:"09171234567"}];let id=200;ex.forEach(e=>{lguDatabase.push({id:id++,...e});});}function populateDropdowns(){const provSelect=document.getElementById("regProvince");provSelect.innerHTML='<option value="">-- Select Province --</option>'+provinceList.map(p=>`<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join("");updateMunicipalityDropdown();provSelect.addEventListener("change",updateMunicipalityDropdown);}function updateMunicipalityDropdown(){const provSelect=document.getElementById("regProvince");const munSelect=document.getElementById("regMunicipality");const selected=provSelect.value;if(!selected||!municipalityByProvince[selected]){munSelect.innerHTML='<option value="">-- Select Municipality/City --</option>';return;}const municipalities=municipalityByProvince[selected];munSelect.innerHTML='<option value="">-- Select Municipality/City --</option>'+municipalities.map(m=>`<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`).join("");}function loadData(){const l=localStorage.getItem("lgu_master_db_v3"),c=localStorage.getItem("cdra_master_db_v3"),n=localStorage.getItem("notif_db_v3");if(l)lguDatabase=JSON.parse(l);if(c)cdraDatabase=JSON.parse(c);if(n)notifications=JSON.parse(n);if(lguDatabase.length===0)seedExampleLGUs();updateProvinceFilter();renderLGUList();updateTotalStats();updateBellBadge();updateCDRALGUOptions();populateDropdowns();}function updateProvinceFilter(){const provinces=[...new Set(lguDatabase.map(l=>l.province))].sort();const f=document.getElementById("provinceFilter");f.innerHTML='<option value="">All Provinces</option>'+provinces.map(p=>`<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join("");}function renderLGUList(){const searchTerm=document.getElementById("globalSearch").value.toLowerCase();const provinceVal=document.getElementById("provinceFilter").value;let filtered=lguDatabase.filter(l=>{const matchProvince=provinceVal?l.province===provinceVal:true;const matchSearch=searchTerm===""||l.municipality.toLowerCase().includes(searchTerm)||l.mayor.toLowerCase().includes(searchTerm)||l.mpdc.toLowerCase().includes(searchTerm)||l.email.toLowerCase().includes(searchTerm);return matchProvince&&matchSearch;});const container=document.getElementById("lguGrid");if(filtered.length===0){container.innerHTML='<div class="no-data" style="text-align:center;padding:40px;">No LGU records found.</div>';document.getElementById("totalCountStat").innerHTML=`📊 Total LGUs: ${lguDatabase.length} | Showing: 0`;return;}container.innerHTML=filtered.map(l=>{const cdraCount=cdraDatabase.filter(c=>c.lguId===l.id).length;return`<div class="lgu-card-item"><div class="lgu-info-summary"><h3>🏛️ ${escapeHtml(l.municipality)}, ${escapeHtml(l.province)}</h3><p>Mayor: ${escapeHtml(l.mayor)} | MPDC: ${escapeHtml(l.mpdc)}${cdraCount>0?`<span class="cdra-badge">📋 CDRA: ${cdraCount} record(s)</span>`:""}</p></div><button class="view-btn" onclick="viewLGUPopup(${l.id})">View Details</button></div>`;}).join("");document.getElementById("totalCountStat").innerHTML=`📊 Total LGUs: ${lguDatabase.length} | Showing: ${filtered.length}`;}let currentViewLGU=null;function viewLGUPopup(lguId){const l=lguDatabase.find(l=>l.id===lguId);if(!l)return;currentViewLGU=l;const cdraRecords=cdraDatabase.filter(c=>c.lguId===lguId);const cdraHtml=cdraRecords.map(c=>`<div style="background:#f1f5f9;padding:8px;border-radius:12px;margin-bottom:6px;"><strong>Status:</strong> ${escapeHtml(c.status)} | <strong>Prepared:</strong> ${c.date||"N/A"}<br><small>${escapeHtml(c.remarks||"")}</small></div>`).join("")||"<em>No CDRA records.</em>";const viewContent=`<div class="info-section"><strong>🏛️ ${escapeHtml(l.municipality)}</strong> (${escapeHtml(l.province)}) - ${escapeHtml(l.incomeClass)} class<br>Region: ${escapeHtml(l.region)}</div><hr><div class="info-row"><div class="info-label">Mayor:</div><div class="info-value">${escapeHtml(l.mayor)} ${l.mayorActing==="Yes"?"(Acting)":""}</div></div><div class="info-row"><div class="info-label">Vice Mayor:</div><div class="info-value">${escapeHtml(l.viceMayor)} ${l.viceMayorActing==="Yes"?"(Acting)":""}</div></div><div class="info-row"><div class="info-label">LGU Contact:</div><div class="info-value">${escapeHtml(l.landline)} | ${escapeHtml(l.email)}</div></div><div class="info-row"><div class="info-label">MPDC:</div><div class="info-value">${escapeHtml(l.mpdc)}</div></div><div class="info-row"><div class="info-label">MPDC Contact:</div><div class="info-value">${escapeHtml(l.mpdcLandline)} | ${escapeHtml(l.mpdcEmail)} | ${escapeHtml(l.mpdcMobile)}</div></div><hr><h4>📋 CDRA Preparation Records</h4>${cdraHtml}`;document.getElementById("viewContent").innerHTML=viewContent;document.getElementById("viewModal").style.display="flex";document.getElementById("inlineEditPanel").style.display="none";document.getElementById("inlineEditBtn").onclick=()=>enableInlineEditForCurrentLGU();}function enableInlineEditForCurrentLGU(){if(!currentViewLGU)return;const panel=document.getElementById("inlineEditPanel");panel.style.display="block";panel.innerHTML=`<h4>✏️ Edit LGU Information</h4><div class="form-grid"><div class="form-group"><label>Municipality</label><input id="editMun" value="${escapeHtml(currentViewLGU.municipality)}"></div><div class="form-group"><label>Province</label><input id="editProv" value="${escapeHtml(currentViewLGU.province)}"></div><div class="form-group"><label>Region</label><input id="editReg" value="${escapeHtml(currentViewLGU.region)}"></div><div class="form-group"><label>Income Class</label><select id="editIncome">${["1ST","2ND","3RD","4TH","5TH","6TH"].map(c=>`<option ${currentViewLGU.incomeClass===c?"selected":""}>${c}</option>`).join("")}</select></div><div class="form-group"><label>Mayor</label><input id="editMayor" value="${escapeHtml(currentViewLGU.mayor)}"></div><div class="form-group"><label>Mayor Acting</label><select id="editMayorActing"><option ${currentViewLGU.mayorActing==="Yes"?"selected":""}>Yes</option><option ${currentViewLGU.mayorActing!=="Yes"?"selected":""}>No</option></select></div><div class="form-group"><label>Vice Mayor</label><input id="editVice" value="${escapeHtml(currentViewLGU.viceMayor)}"></div><div class="form-group"><label>Vice Acting</label><select id="editViceActing"><option ${currentViewLGU.viceMayorActing==="Yes"?"selected":""}>Yes</option><option ${currentViewLGU.viceMayorActing!=="Yes"?"selected":""}>No</option></select></div><div class="form-group"><label>Landline</label><input id="editLand" value="${escapeHtml(currentViewLGU.landline)}"></div><div class="form-group"><label>Email</label><input id="editEmail" value="${escapeHtml(currentViewLGU.email)}"></div><div class="form-group"><label>MPDC Name</label><input id="editMpdc" value="${escapeHtml(currentViewLGU.mpdc)}"></div><div class="form-group"><label>MPDC Landline</label><input id="editMpdcLand" value="${escapeHtml(currentViewLGU.mpdcLandline)}"></div><div class="form-group"><label>MPDC Email</label><input id="editMpdcEmail" value="${escapeHtml(currentViewLGU.mpdcEmail)}"></div><div class="form-group"><label>MPDC Mobile</label><input id="editMpdcMobile" value="${escapeHtml(currentViewLGU.mpdcMobile)}"></div></div><div style="display:flex;gap:12px;margin-top:16px;"><button class="btn-primary" onclick="saveInlineEdit(${currentViewLGU.id})">Save Changes</button><button class="btn-outline" onclick="document.getElementById('inlineEditPanel').style.display='none'">Cancel</button></div>`;}function saveInlineEdit(lguId){const l=lguDatabase.find(l=>l.id===lguId);if(!l)return;l.municipality=document.getElementById("editMun").value;l.province=document.getElementById("editProv").value;l.region=document.getElementById("editReg").value;l.incomeClass=document.getElementById("editIncome").value;l.mayor=document.getElementById("editMayor").value;l.mayorActing=document.getElementById("editMayorActing").value;l.viceMayor=document.getElementById("editVice").value;l.viceMayorActing=document.getElementById("editViceActing").value;l.landline=document.getElementById("editLand").value;l.email=document.getElementById("editEmail").value;l.mpdc=document.getElementById("editMpdc").value;l.mpdcLandline=document.getElementById("editMpdcLand").value;l.mpdcEmail=document.getElementById("editMpdcEmail").value;l.mpdcMobile=document.getElementById("editMpdcMobile").value;saveToLocalStorage();updateProvinceFilter();renderLGUList();addNotification(`LGU ${l.municipality} information was updated`,"lgu");closeModal("viewModal");}document.getElementById("lguRegForm")?.addEventListener("submit",(e)=>{e.preventDefault();const mun=document.getElementById("regMunicipality").value;const prov=document.getElementById("regProvince").value;if(!mun||!prov){alert("Please select both Municipality/City and Province.");return;}const newId=Date.now();const newLGU={id:newId,municipality:mun,province:prov,region:document.getElementById("regRegion").value,incomeClass:document.getElementById("regIncomeClass").value,mayor:document.getElementById("regMayor").value,mayorActing:document.getElementById("regMayorActing").value,viceMayor:document.getElementById("regViceMayor").value,viceMayorActing:document.getElementById("regViceMayorActing").value,landline:document.getElementById("regLandline").value,email:document.getElementById("regEmail").value,mpdc:document.getElementById("regMpdc").value,mpdcLandline:document.getElementById("regMpdcLandline").value,mpdcEmail:document.getElementById("regMpdcEmail").value,mpdcMobile:document.getElementById("regMpdcMobile").value};lguDatabase.push(newLGU);saveToLocalStorage();addNotification(`New LGU registered: ${newLGU.municipality}, ${newLGU.province}`,"lgu");updateProvinceFilter();renderLGUList();updateCDRALGUOptions();closeModal("lguModal");document.getElementById("lguRegForm").reset();document.getElementById("regRegion").value="WESTERN VISAYAS";alert("LGU registered successfully!");});function updateCDRALGUOptions(){const select=document.getElementById("cdraLGUId");if(select)select.innerHTML=lguDatabase.map(l=>`<option value="${l.id}">${escapeHtml(l.municipality)}, ${escapeHtml(l.province)}</option>`).join("");}document.getElementById("cdraForm")?.addEventListener("submit",(e)=>{e.preventDefault();const lguId=parseInt(document.getElementById("cdraLGUId").value);const newCDRA={lguId,status:document.getElementById("cdraStatus").value,date:document.getElementById("cdraDate").value,remarks:document.getElementById("cdraRemarks").value,timestamp:new Date().toLocaleString()};cdraDatabase.push(newCDRA);saveToLocalStorage();const lgu=lguDatabase.find(l=>l.id===lguId);addNotification(`CDRA Preparation (${newCDRA.status}) for ${lgu?.municipality} added`,"cdra");renderLGUList();closeModal("cdraModal");document.getElementById("cdraForm").reset();alert("CDRA record added successfully!");});document.getElementById("applyFilterBtn")?.addEventListener("click",()=>renderLGUList());document.getElementById("globalSearch")?.addEventListener("keyup",()=>renderLGUList());function showLGURegModal(){document.getElementById("lguModal").style.display="flex";}function showCDRAModal(){updateCDRALGUOptions();document.getElementById("cdraModal").style.display="flex";}function closeModal(id){document.getElementById(id).style.display="none";document.getElementById("inlineEditPanel").style.display="none";}function updateTotalStats(){renderLGUList();}window.onclick=function(e){if(e.target.classList.contains("modal"))e.target.style.display="none";};(function(){let t;document.querySelectorAll(".dropdown").forEach(dd=>{const c=dd.querySelector(".dropdown-content");if(!c)return;dd.addEventListener("mouseenter",()=>{clearTimeout(t);c.style.display="block";});dd.addEventListener("mouseleave",()=>{t=setTimeout(()=>{c.style.display="none";},250);});c.addEventListener("mouseenter",()=>{clearTimeout(t);c.style.display="block";});c.addEventListener("mouseleave",()=>{t=setTimeout(()=>{c.style.display="none";},250);});});})();loadData();</script>
+   </body>
+</html>
