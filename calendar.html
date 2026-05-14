@@ -73,16 +73,18 @@
     .view-btn.active { background: #2563eb; color: white; }
     .calendar-container { padding: 1.5rem; }
     .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
-    .month-nav button { background: none; border: 1px solid #eef2ff; border-radius: 40px; padding: 0.5rem 1rem; cursor: pointer; }
+    .month-nav button { background: #f1f5f9; border: 1px solid #eef2ff; border-radius: 40px; padding: 0.5rem 1rem; cursor: pointer; font-size: 0.85rem; }
+    .month-nav button:hover { background: #2563eb; color: white; }
     .current-month { font-size: 1.4rem; font-weight: 600; color: #1e3a8a; }
     .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: #eef2ff; border-radius: 16px; overflow: hidden; }
     .calendar-weekday { background: #1e3a8a; color: white; padding: 0.8rem; text-align: center; font-weight: 600; font-size: 0.85rem; }
-    .calendar-day { background: white; min-height: 120px; padding: 0.5rem; cursor: pointer; }
+    .calendar-day { background: white; min-height: 120px; padding: 0.5rem; cursor: pointer; transition: background 0.2s; }
     .calendar-day:hover { background: #dbeafe; }
-    .calendar-day.empty { background: #f9fafb; }
-    .day-number { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem; }
+    .calendar-day.empty { background: #f9fafb; cursor: default; }
+    .day-number { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem; color: #1e293b; }
     .day-events { display: flex; flex-direction: column; gap: 0.25rem; }
-    .event-item { font-size: 0.7rem; padding: 0.2rem 0.4rem; border-radius: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+    .event-item { font-size: 0.7rem; padding: 0.2rem 0.4rem; border-radius: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; transition: transform 0.1s; }
+    .event-item:hover { transform: scale(1.02); filter: brightness(0.95); }
     .event-meeting { background: #3b82f6; color: white; }
     .event-workshop { background: #f59e0b; color: white; }
     .event-training { background: #10b981; color: white; }
@@ -90,14 +92,14 @@
     .event-hearing { background: #ef4444; color: white; }
     .event-deadline { background: #ec489a; color: white; }
     .event-other { background: #6b7280; color: white; }
-    .legend { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1.5rem; padding: 1rem; background: #f8fafc; border-radius: 16px; align-items: center; }
+    .legend { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1.5rem; padding: 1rem; background: #f8fafc; border-radius: 16px; align-items: center; border: 1px solid #eef2ff; }
     .legend-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; }
     .legend-color { width: 20px; height: 20px; border-radius: 6px; }
     .data-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
     .data-table th { text-align: left; padding: 1rem 0.9rem; background: #f1f5f9; font-weight: 600; border-bottom: 2px solid #e2e8f0; }
     .data-table td { padding: 0.9rem 0.9rem; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
     .search-bar { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem; align-items: center; background: #f8fafc; padding: 1rem; border-radius: 20px; }
-    .search-bar input, .search-bar select { padding: 0.6rem 1rem; border-radius: 40px; border: 1px solid #e2e8f0; background: white; flex: 1; }
+    .search-bar input, .search-bar select { padding: 0.6rem 1rem; border-radius: 40px; border: 1px solid #e2e8f0; background: white; flex: 1; font-family: 'Inter', sans-serif; }
     .status-badge { display: inline-block; padding: 0.2rem 0.7rem; border-radius: 20px; font-size: 0.7rem; font-weight: 600; }
     .status-upcoming { background: #cce5ff; color: #004085; }
     .status-ongoing { background: #d4edda; color: #155724; }
@@ -116,8 +118,8 @@
     .close-btn { background: none; border: none; font-size: 1.8rem; cursor: pointer; color: #64748b; }
     .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
     .form-group.full-width { grid-column: span 2; }
-    .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.3rem; }
-    .form-control { width: 100%; padding: 0.7rem 0.9rem; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 0.9rem; font-family: inherit; }
+    .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.3rem; color: #1e293b; }
+    .form-control { width: 100%; padding: 0.7rem 0.9rem; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 0.9rem; font-family: 'Inter', sans-serif; }
     .attendee-row { display: flex; gap: 0.5rem; margin-bottom: 0.5rem; align-items: center; }
     .attendee-row input { flex: 1; }
     .stats-row { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
@@ -187,7 +189,7 @@
       </div>
     </div>
     <div class="card-body" style="padding:0;">
-      <div id="calendarView" style="display:block;">
+      <div id="calendarView">
         <div class="calendar-container">
           <div class="calendar-header">
             <div class="month-nav"><button onclick="prevMonth()">◀ Prev</button><button onclick="nextMonth()">Next ▶</button></div>
@@ -195,7 +197,16 @@
             <button class="btn btn-secondary" onclick="goToToday()">Today</button>
           </div>
           <div class="calendar-grid" id="calendarGrid"></div>
-          <div class="legend"><span class="legend-item"><span class="legend-color" style="background:#3b82f6;"></span> Meeting</span><span class="legend-item"><span class="legend-color" style="background:#f59e0b;"></span> Workshop</span><span class="legend-item"><span class="legend-color" style="background:#10b981;"></span> Training</span><span class="legend-item"><span class="legend-color" style="background:#8b5cf6;"></span> Seminar</span><span class="legend-item"><span class="legend-color" style="background:#ef4444;"></span> Hearing</span><span class="legend-item"><span class="legend-color" style="background:#ec489a;"></span> Deadline</span><span class="legend-item"><span class="legend-color" style="background:#6b7280;"></span> Other</span></div>
+          <div class="legend">
+            <span class="legend-item"><span class="legend-color" style="background:#3b82f6;"></span> Meeting</span>
+            <span class="legend-item"><span class="legend-color" style="background:#f59e0b;"></span> Workshop</span>
+            <span class="legend-item"><span class="legend-color" style="background:#10b981;"></span> Training</span>
+            <span class="legend-item"><span class="legend-color" style="background:#8b5cf6;"></span> Seminar</span>
+            <span class="legend-item"><span class="legend-color" style="background:#ef4444;"></span> Hearing</span>
+            <span class="legend-item"><span class="legend-color" style="background:#ec489a;"></span> Deadline</span>
+            <span class="legend-item"><span class="legend-color" style="background:#6b7280;"></span> Other</span>
+            <span class="legend-item"><span class="legend-color" style="background:#10b981;"></span> Has Meeting Link</span>
+          </div>
         </div>
       </div>
       <div id="listView" style="display:none; padding:1.5rem;">
@@ -241,7 +252,7 @@ let activities = [], currentEditId = null, currentView = "calendar", currentDisp
 let currentUser = null;
 
 function escapeHtml(s) { return s ? String(s).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]) : ''; }
-function formatDateTime(dt) { if(!dt) return ""; const d = new Date(dt); return isNaN(d) ? dt : d.toLocaleString(); }
+function formatDateTime(dt) { if(!dt) return ""; const d = new Date(dt); return isNaN(d.getTime()) ? dt : d.toLocaleString(); }
 function showToastMessage(msg, type) { let t = document.querySelector(".toast-msg"); if(t) t.remove(); let toast = document.createElement("div"); toast.className = "toast-msg"; toast.style.background = type === "error" ? "#b91c1c" : "#166534"; toast.innerText = msg; document.body.appendChild(toast); setTimeout(() => toast.remove(), 3000); }
 function encodePassword(p) { return btoa(p); }
 
@@ -297,71 +308,347 @@ function updateActivityStatus(a) { const now = new Date(), start = new Date(a.st
 
 function loadActivities() {
   const stored = localStorage.getItem("calendarActivities");
-  if(stored) { activities = JSON.parse(stored); }
-  else { const now = new Date(); activities = [{ id: Date.now()+1, name: "CLUP Formulation Workshop", type: "Workshop", startDateTime: "2026-05-20T09:00", endDateTime: "2026-05-22T17:00", purpose: "CLUP workshop", location: "DHSUD Hall", status: "upcoming", attendees: ["Dr. Santos"], meetingLink: "" }, { id: Date.now()+2, name: "Zoning Ordinance Review", type: "Meeting", startDateTime: "2026-05-15T10:00", endDateTime: "2026-05-15T16:00", purpose: "ZO review", location: "Zoom", status: "ongoing", attendees: [], meetingLink: "https://zoom.us/j/123456789" }]; activities.forEach(a => a.status = updateActivityStatus(a)); localStorage.setItem("calendarActivities", JSON.stringify(activities)); }
-  renderCalendar(); renderList(); updateStats();
+  if(stored) { 
+    activities = JSON.parse(stored); 
+  } else { 
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
+    const tomorrow = new Date(now.setDate(now.getDate() + 1)).toISOString().split('T')[0];
+    const nextWeek = new Date(now.setDate(now.getDate() + 7)).toISOString().split('T')[0];
+      activities = [
+      { id: 101, name: "CLUP Formulation Workshop", type: "Workshop", startDateTime: `${tomorrow}T09:00`, endDateTime: `${tomorrow}T17:00`, purpose: "Comprehensive Land Use Plan formulation workshop with LGU planners.", location: "DHSUD Conference Hall", status: "upcoming", attendees: ["Dr. Santos", "EnP. Reyes", "Ms. Gonzales"], meetingLink: "" },
+      { id: 102, name: "Zoning Ordinance Review", type: "Meeting", startDateTime: `${today}T10:00`, endDateTime: `${today}T16:00`, purpose: "Review of proposed zoning ordinance amendments.", location: "Zoom Meeting", status: "ongoing", attendees: ["Atty. Cruz", "EnP. Mendoza"], meetingLink: "https://zoom.us/j/123456789" },
+      { id: 103, name: "GIS Training for Planners", type: "Training", startDateTime: `${nextWeek}T08:00`, endDateTime: `${nextWeek}T17:00`, purpose: "Basic GIS skills for land use mapping.", location: "Computer Lab", status: "upcoming", attendees: ["LGU Planning Officers"], meetingLink: "" },
+      { id: 104, name: "Monthly Coordination Meeting", type: "Meeting", startDateTime: new Date(new Date().setDate(new Date().getDate() - 5)).toISOString().slice(0,16), endDateTime: new Date(new Date().setDate(new Date().getDate() - 5)).toISOString().slice(0,16), purpose: "Monthly regional coordination.", location: "Conference Room", status: "completed", attendees: ["All Division Chiefs"], meetingLink: "" }
+    ];
+    activities.forEach(a => a.status = updateActivityStatus(a));
+    localStorage.setItem("calendarActivities", JSON.stringify(activities));
+  }
+  renderCalendar();
+  renderList();
+  updateStats();
 }
+
 function saveToLocalStorage() { localStorage.setItem("calendarActivities", JSON.stringify(activities)); }
 
-function addAttendeeField(v = "") { const c = document.getElementById("attendeesContainer"); const d = document.createElement("div"); d.className = "attendee-row"; d.innerHTML = `<input type="text" class="form-control attendee-input" placeholder="Full name" value="${escapeHtml(v)}"><button type="button" class="btn btn-secondary remove-attendee" style="padding:0.4rem 0.8rem;">✖</button>`; d.querySelector(".remove-attendee").onclick = function() { d.remove(); }; c.appendChild(d); }
-function getAttendeesFromForm() { const inputs = document.querySelectorAll("#attendeesContainer .attendee-input"); const a = []; inputs.forEach(i => { if(i.value.trim()) a.push(i.value.trim()); }); return a; }
+function addAttendeeField(v = "") { 
+  const c = document.getElementById("attendeesContainer"); 
+  const d = document.createElement("div"); 
+  d.className = "attendee-row"; 
+  d.innerHTML = `<input type="text" class="form-control attendee-input" placeholder="Full name" value="${escapeHtml(v)}"><button type="button" class="btn btn-secondary remove-attendee" style="padding:0.4rem 0.8rem;">✖</button>`; 
+  d.querySelector(".remove-attendee").onclick = function() { d.remove(); }; 
+  c.appendChild(d); 
+}
+
+function getAttendeesFromForm() { 
+  const inputs = document.querySelectorAll("#attendeesContainer .attendee-input"); 
+  const a = []; 
+  inputs.forEach(i => { if(i.value.trim()) a.push(i.value.trim()); }); 
+  return a; 
+}
 
 function renderCalendar() {
-  const y = currentDisplayDate.getFullYear(), m = currentDisplayDate.getMonth();
-  const firstDay = new Date(y, m, 1).getDay(), daysInMonth = new Date(y, m+1, 0).getDate();
-  const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-  document.getElementById("currentMonth").innerText = `${monthNames[m]} ${y}`;
-  let html = `<div class="calendar-grid">`; const weekdays = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]; weekdays.forEach(d => { html += `<div class="calendar-weekday">${d}</div>`; });
-  let dayCount = 1;
+  const year = currentDisplayDate.getFullYear();
+  const month = currentDisplayDate.getMonth();
+  const firstDayOfMonth = new Date(year, month, 1);
+  const startingDayOfWeek = firstDayOfMonth.getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const today = new Date().toISOString().split("T")[0];
+  
+  document.getElementById("currentMonth").innerHTML = `${monthNames[month]} ${year}`;
+  
+  let html = `<div class="calendar-grid">`;
+  const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  weekdays.forEach(day => { html += `<div class="calendar-weekday">${day}</div>`; });
+  
+  let dayCounter = 1;
   for(let i = 0; i < 42; i++) {
-    if(i < firstDay || dayCount > daysInMonth) { html += `<div class="calendar-day empty"></div>`; if(i >= firstDay) dayCount++; }
-    else {
-      const dateStr = `${y}-${String(m+1).padStart(2,"0")}-${String(dayCount).padStart(2,"0")}`;
-      const dayActs = activities.filter(a => { const sd = new Date(a.startDateTime).toISOString().split("T")[0]; const ed = new Date(a.endDateTime).toISOString().split("T")[0]; return sd <= dateStr && ed >= dateStr; });
-      html += `<div class="calendar-day" onclick="openAddModalForDate('${dateStr}')"><div class="day-number">${dayCount}</div><div class="day-events">`;
-      dayActs.slice(0, 3).forEach(act => { html += `<div class="event-item ${getTypeClass(act.type)}" onclick="event.stopPropagation(); viewActivity(${act.id})" title="${escapeHtml(act.name)}">${escapeHtml(act.name.substring(0, 16))}</div>`; });
-      if(dayActs.length > 3) html += `<div style="font-size:0.6rem; color:#666;">+${dayActs.length-3} more</div>`;
-      html += `</div></div>`; dayCount++;
+    if(i < startingDayOfWeek || dayCounter > daysInMonth) {
+      html += `<div class="calendar-day empty"></div>`;
+      if(i >= startingDayOfWeek) dayCounter++;
+    } else {
+      const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(dayCounter).padStart(2, "0")}`;
+      const dayActivities = activities.filter(act => {
+        const startDate = new Date(act.startDateTime).toISOString().split("T")[0];
+        const endDate = new Date(act.endDateTime).toISOString().split("T")[0];
+        return startDate <= dateStr && endDate >= dateStr;
+      });
+      const isToday = dateStr === today;
+      html += `<div class="calendar-day" onclick="openAddModalForDate('${dateStr}')">`;
+      html += `<div class="day-number" style="${isToday ? 'background:#d4a017; color:white; display:inline-block; padding:2px 8px; border-radius:20px;' : ''}">${dayCounter}</div>`;
+      html += `<div class="day-events">`;
+      dayActivities.slice(0, 3).forEach(act => {
+        const hasLink = act.meetingLink ? "🔗 " : "";
+        html += `<div class="event-item ${getTypeClass(act.type)}" onclick="event.stopPropagation(); viewActivity(${act.id})" title="${escapeHtml(act.name)} - ${escapeHtml(act.purpose.substring(0, 50))}">${hasLink}${escapeHtml(act.name.length > 18 ? act.name.substring(0, 16) + '...' : act.name)}</div>`;
+      });
+      if(dayActivities.length > 3) {
+        html += `<div style="font-size:0.6rem; color:#666; text-align:center;">+${dayActivities.length - 3} more</div>`;
+      }
+      html += `</div></div>`;
+      dayCounter++;
     }
   }
-  html += `</div>`; document.getElementById("calendarGrid").innerHTML = html;
+  html += `</div>`;
+  document.getElementById("calendarGrid").innerHTML = html;
 }
 
 function renderList() {
   const search = document.getElementById("searchInput")?.value.toLowerCase() || "";
   const typeFilter = document.getElementById("typeFilter")?.value || "all";
   const statusFilter = document.getElementById("statusFilterList")?.value || "all";
-  let filtered = activities;
-  if(search) filtered = filtered.filter(a => a.name.toLowerCase().includes(search) || a.purpose.toLowerCase().includes(search));
-  if(typeFilter !== "all") filtered = filtered.filter(a => a.type === typeFilter);
-  if(statusFilter !== "all") filtered = filtered.filter(a => a.status === statusFilter);
-  filtered.sort((a,b) => new Date(a.startDateTime) - new Date(b.startDateTime));
+  
+  let filtered = activities.filter(a => {
+    const matchesSearch = search === "" || a.name.toLowerCase().includes(search) || a.purpose.toLowerCase().includes(search) || (a.attendees && a.attendees.some(att => att.toLowerCase().includes(search)));
+    const matchesType = typeFilter === "all" || a.type === typeFilter;
+    const matchesStatus = statusFilter === "all" || a.status === statusFilter;
+    return matchesSearch && matchesType && matchesStatus;
+  });
+  
+  filtered.sort((a, b) => new Date(a.startDateTime) - new Date(b.startDateTime));
+  
   const tbody = document.getElementById("listTableBody");
-  if(filtered.length === 0) { tbody.innerHTML = '<tr class="empty-row"><td colspan="9">No activities found. brow'; return; }
-  tbody.innerHTML = filtered.map(a => `<tr><td style="font-weight:600;">${escapeHtml(a.name)}</td><td><span class="type-badge" style="background:${getTypeColor(a.type)};">${a.type}</span></td><td>${a.attendees && a.attendees.length ? a.attendees.map(att => `<span style="display:inline-block; background:#e2e8f0; padding:2px 6px; border-radius:12px; margin:2px;">${escapeHtml(att)}</span>`).join("") : "<span style='color:#999;'>—</span>"}</td><td>${formatDateTime(a.startDateTime)}</td><td>${formatDateTime(a.endDateTime)}</td><td>${escapeHtml(a.purpose.substring(0, 50))}${a.purpose.length > 50 ? "..." : ""}</td><td><span class="status-badge status-${a.status}">${a.status === "upcoming" ? "Upcoming" : (a.status === "ongoing" ? "Ongoing" : "Completed")}</span></td><td>${a.meetingLink ? `<a href="${escapeHtml(a.meetingLink)}" target="_blank" class="join-link-btn">🎥 Join</a>` : "<span style='color:#999;'>—</span>"}</td><td class="action-btns"><button class="action-btn view" onclick="viewActivity(${a.id})">👁️</button><button class="action-btn edit" onclick="editActivity(${a.id})">✏️</button><button class="action-btn delete" onclick="deleteActivity(${a.id})">🗑️</button></td></tr>`).join("");
+  if(filtered.length === 0) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="9">No activities found. Create one!</td></tr>';
+    return;
+  }
+  
+  tbody.innerHTML = filtered.map(a => `
+    <tr>
+      <td style="font-weight:600;">${escapeHtml(a.name)}</td>
+      <td><span class="type-badge" style="background:${getTypeColor(a.type)};">${a.type}</span></td>
+      <td><div class="attendee-list">${a.attendees && a.attendees.length ? a.attendees.map(att => `<span style="display:inline-block; background:#e2e8f0; padding:2px 8px; border-radius:12px; margin:2px;">${escapeHtml(att)}</span>`).join("") : "<span style='color:#999;'>—</span>"}</div></td>
+      <td>${formatDateTime(a.startDateTime)}</td>
+      <td>${formatDateTime(a.endDateTime)}</td>
+      <td>${escapeHtml(a.purpose.substring(0, 60))}${a.purpose.length > 60 ? "..." : ""}</td>
+      <td><span class="status-badge status-${a.status}">${a.status === "upcoming" ? "Upcoming" : (a.status === "ongoing" ? "Ongoing" : "Completed")}</span></td>
+      <td>${a.meetingLink ? `<a href="${escapeHtml(a.meetingLink)}" target="_blank" class="join-link-btn">🎥 Join</a>` : "<span style='color:#999;'>—</span>"}</td>
+      <td class="action-btns">
+        <button class="action-btn view" onclick="viewActivity(${a.id})">👁️</button>
+        <button class="action-btn edit" onclick="editActivity(${a.id})">✏️</button>
+        <button class="action-btn delete" onclick="deleteActivity(${a.id})">🗑️</button>
+      </td>
+    </tr>
+  `).join("");
   updateStats();
 }
 
-function updateStats() { document.getElementById("totalCount").innerText = activities.length; document.getElementById("upcomingCount").innerText = activities.filter(a => a.status === "upcoming").length; document.getElementById("ongoingCount").innerText = activities.filter(a => a.status === "ongoing").length; document.getElementById("completedCount").innerText = activities.filter(a => a.status === "completed").length; }
-function filterList() { renderList(); }
-function clearListFilters() { document.getElementById("searchInput").value = ""; document.getElementById("typeFilter").value = "all"; document.getElementById("statusFilterList").value = "all"; renderList(); }
-function prevMonth() { currentDisplayDate.setMonth(currentDisplayDate.getMonth() - 1); renderCalendar(); }
-function nextMonth() { currentDisplayDate.setMonth(currentDisplayDate.getMonth() + 1); renderCalendar(); }
-function goToToday() { currentDisplayDate = new Date(); renderCalendar(); }
-function setView(view) { currentView = view; document.getElementById("calendarView").style.display = view === "calendar" ? "block" : "none"; document.getElementById("listView").style.display = view === "list" ? "block" : "none"; document.querySelectorAll(".view-btn").forEach(btn => btn.classList.remove("active")); document.querySelector(`.view-btn[onclick="setView('${view}')"]`).classList.add("active"); if(view === "list") renderList(); else renderCalendar(); }
-function openAddModal() { currentEditId = null; document.getElementById("modalTitle").innerText = "Add New Activity"; document.getElementById("activityForm").reset(); document.getElementById("activityId").value = ""; document.getElementById("attendeesContainer").innerHTML = ""; addAttendeeField(); document.getElementById("meetingLink").value = ""; document.getElementById("activityModal").classList.add("active"); }
-function openAddModalForDate(dateStr) { openAddModal(); document.getElementById("startDateTime").value = `${dateStr}T09:00`; document.getElementById("endDateTime").value = `${dateStr}T17:00`; }
-function editActivity(id) { const a = activities.find(x => x.id === id); if(!a) return; currentEditId = id; document.getElementById("modalTitle").innerText = "Edit Activity"; document.getElementById("activityId").value = a.id; document.getElementById("activityName").value = a.name; document.getElementById("activityType").value = a.type; document.getElementById("startDateTime").value = a.startDateTime; document.getElementById("endDateTime").value = a.endDateTime; document.getElementById("purpose").value = a.purpose; document.getElementById("location").value = a.location || ""; document.getElementById("meetingLink").value = a.meetingLink || ""; document.getElementById("statusSelect").value = a.status; document.getElementById("attendeesContainer").innerHTML = ""; if(a.attendees && a.attendees.length) a.attendees.forEach(att => addAttendeeField(att)); else addAttendeeField(); document.getElementById("activityModal").classList.add("active"); }
-function saveActivity(e) { e.preventDefault(); const name = document.getElementById("activityName").value.trim(); const type = document.getElementById("activityType").value; const start = document.getElementById("startDateTime").value; const end = document.getElementById("endDateTime").value; const purpose = document.getElementById("purpose").value.trim(); const location = document.getElementById("location").value.trim(); const meetingLink = document.getElementById("meetingLink").value.trim(); const status = document.getElementById("statusSelect").value; const attendees = getAttendeesFromForm(); if(!name || !start || !end || !purpose) { alert("Please fill all required fields."); return false; } if(new Date(end) < new Date(start)) { alert("End date must be after start date."); return false; } const id = parseInt(document.getElementById("activityId").value) || Date.now(); const activity = { id, name, type, startDateTime: start, endDateTime: end, purpose, location, meetingLink, status, attendees }; if(currentEditId) { const idx = activities.findIndex(a => a.id === currentEditId); if(idx !== -1) activities[idx] = activity; } else { activities.push(activity); } saveToLocalStorage(); renderCalendar(); renderList(); updateStats(); closeModal(); showToastMessage(currentEditId ? "Activity updated!" : "Activity added!"); return false; }
-function deleteActivity(id) { if(confirm("Delete this activity?")) { activities = activities.filter(a => a.id !== id); saveToLocalStorage(); renderCalendar(); renderList(); updateStats(); showToastMessage("Deleted."); } }
-function viewActivity(id) { const a = activities.find(x => x.id === id); if(!a) return; const meetingLinkHtml = a.meetingLink ? `<div style="margin:0.5rem 0;"><strong>🔗 Meeting Link:</strong> <a href="${escapeHtml(a.meetingLink)}" target="_blank" style="color:#2563eb;">${escapeHtml(a.meetingLink)}</a></div>` : ""; const body = document.getElementById("viewModalBody"); body.innerHTML = `<div style="display:flex; flex-direction:column; gap:0.8rem;"><div><strong>Activity Name:</strong> ${escapeHtml(a.name)}</div><div><strong>Type:</strong> <span class="type-badge" style="background:${getTypeColor(a.type)}; color:white; padding:2px 8px;">${a.type}</span></div><div><strong>Start:</strong> ${formatDateTime(a.startDateTime)}</div><div><strong>End:</strong> ${formatDateTime(a.endDateTime)}</div><div><strong>Purpose:</strong> ${escapeHtml(a.purpose)}</div>${a.location ? `<div><strong>Location:</strong> ${escapeHtml(a.location)}</div>` : ""}${meetingLinkHtml}<div><strong>Status:</strong> <span class="status-badge status-${a.status}">${a.status === "upcoming" ? "Upcoming" : (a.status === "ongoing" ? "Ongoing" : "Completed")}</span></div><div><strong>Attendees:</strong> ${a.attendees && a.attendees.length ? `<ul style="margin-top:0.5rem;">${a.attendees.map(att => `<li>${escapeHtml(att)}</li>`).join("")}</ul>` : "<span style='color:#999;'>No attendees listed</span>"}</div></div>`; document.getElementById("viewModal").classList.add("active"); }
-function closeModal() { document.getElementById("activityModal").classList.remove("active"); }
-function closeViewModal() { document.getElementById("viewModal").classList.remove("active"); }
-function exportToExcel() { if(!activities.length) { alert("No activities to export."); return; } const data = activities.map(a => ({ "Activity Name": a.name, "Type": a.type, "Attendees": a.attendees ? a.attendees.join(", ") : "", "Start Date & Time": formatDateTime(a.startDateTime), "End Date & Time": formatDateTime(a.endDateTime), "Purpose": a.purpose, "Location": a.location || "", "Meeting Link": a.meetingLink || "", "Status": a.status === "upcoming" ? "Upcoming" : (a.status === "ongoing" ? "Ongoing" : "Completed") })); const ws = XLSX.utils.json_to_sheet(data); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Calendar_Activities"); XLSX.writeFile(wb, `Calendar_Activities_${new Date().toISOString().slice(0,10)}.xlsx`); showToastMessage("Exported!"); }
+function updateStats() { 
+  document.getElementById("totalCount").innerText = activities.length; 
+  document.getElementById("upcomingCount").innerText = activities.filter(a => a.status === "upcoming").length; 
+  document.getElementById("ongoingCount").innerText = activities.filter(a => a.status === "ongoing").length; 
+  document.getElementById("completedCount").innerText = activities.filter(a => a.status === "completed").length; 
+}
 
-checkSession(); renderUserMenu(); loadActivities();
-setInterval(() => { let changed = false; activities.forEach(a => { const ns = updateActivityStatus(a); if(a.status !== ns) { a.status = ns; changed = true; } }); if(changed) { saveToLocalStorage(); renderCalendar(); renderList(); updateStats(); } }, 60000);
-window.onclick = function(e) { const modal = document.getElementById("loginModal"); if(e.target === modal) modal.classList.remove("active"); };
+function filterList() { renderList(); }
+function clearListFilters() { 
+  document.getElementById("searchInput").value = ""; 
+  document.getElementById("typeFilter").value = "all"; 
+  document.getElementById("statusFilterList").value = "all"; 
+  renderList(); 
+}
+
+function prevMonth() { 
+  currentDisplayDate.setMonth(currentDisplayDate.getMonth() - 1); 
+  renderCalendar(); 
+}
+
+function nextMonth() { 
+  currentDisplayDate.setMonth(currentDisplayDate.getMonth() + 1); 
+  renderCalendar(); 
+}
+
+function goToToday() { 
+  currentDisplayDate = new Date(); 
+  renderCalendar(); 
+}
+
+function setView(view) { 
+  currentView = view; 
+  document.getElementById("calendarView").style.display = view === "calendar" ? "block" : "none"; 
+  document.getElementById("listView").style.display = view === "list" ? "block" : "none"; 
+  document.querySelectorAll(".view-btn").forEach(btn => btn.classList.remove("active")); 
+  document.querySelector(`.view-btn[onclick="setView('${view}')"]`).classList.add("active"); 
+  if(view === "list") renderList(); 
+  else renderCalendar(); 
+}
+
+function openAddModal() { 
+  currentEditId = null; 
+  document.getElementById("modalTitle").innerText = "Add New Activity"; 
+  document.getElementById("activityForm").reset(); 
+  document.getElementById("activityId").value = ""; 
+  document.getElementById("attendeesContainer").innerHTML = ""; 
+  addAttendeeField(); 
+  document.getElementById("meetingLink").value = ""; 
+  document.getElementById("activityModal").classList.add("active"); 
+}
+
+function openAddModalForDate(dateStr) { 
+  openAddModal(); 
+  document.getElementById("startDateTime").value = `${dateStr}T09:00`; 
+  document.getElementById("endDateTime").value = `${dateStr}T17:00`; 
+}
+
+function editActivity(id) { 
+  const a = activities.find(x => x.id === id); 
+  if(!a) return; 
+  currentEditId = id; 
+  document.getElementById("modalTitle").innerText = "Edit Activity"; 
+  document.getElementById("activityId").value = a.id; 
+  document.getElementById("activityName").value = a.name; 
+  document.getElementById("activityType").value = a.type; 
+  document.getElementById("startDateTime").value = a.startDateTime; 
+  document.getElementById("endDateTime").value = a.endDateTime; 
+  document.getElementById("purpose").value = a.purpose; 
+  document.getElementById("location").value = a.location || ""; 
+  document.getElementById("meetingLink").value = a.meetingLink || ""; 
+  document.getElementById("statusSelect").value = a.status; 
+  document.getElementById("attendeesContainer").innerHTML = ""; 
+  if(a.attendees && a.attendees.length) a.attendees.forEach(att => addAttendeeField(att)); 
+  else addAttendeeField(); 
+  document.getElementById("activityModal").classList.add("active"); 
+}
+
+function saveActivity(e) { 
+  e.preventDefault(); 
+  const name = document.getElementById("activityName").value.trim(); 
+  const type = document.getElementById("activityType").value; 
+  const start = document.getElementById("startDateTime").value; 
+  const end = document.getElementById("endDateTime").value; 
+  const purpose = document.getElementById("purpose").value.trim(); 
+  const location = document.getElementById("location").value.trim(); 
+  const meetingLink = document.getElementById("meetingLink").value.trim(); 
+  const status = document.getElementById("statusSelect").value; 
+  const attendees = getAttendeesFromForm(); 
+  
+  if(!name || !start || !end || !purpose) { 
+    alert("Please fill all required fields."); 
+    return false; 
+  }
+  if(new Date(end) < new Date(start)) { 
+    alert("End date must be after start date."); 
+    return false; 
+  }
+  
+  const id = parseInt(document.getElementById("activityId").value) || Date.now(); 
+  const activity = { id, name, type, startDateTime: start, endDateTime: end, purpose, location, meetingLink, status, attendees }; 
+  
+  if(currentEditId) { 
+    const idx = activities.findIndex(a => a.id === currentEditId); 
+    if(idx !== -1) activities[idx] = activity; 
+  } else { 
+    activities.push(activity); 
+  }
+  
+  saveToLocalStorage(); 
+  renderCalendar(); 
+  renderList(); 
+  updateStats(); 
+  closeModal(); 
+  showToastMessage(currentEditId ? "Activity updated!" : "Activity added!"); 
+  return false; 
+}
+
+function deleteActivity(id) { 
+  if(confirm("Delete this activity?")) { 
+    activities = activities.filter(a => a.id !== id); 
+    saveToLocalStorage(); 
+    renderCalendar(); 
+    renderList(); 
+    updateStats(); 
+    showToastMessage("Deleted."); 
+  } 
+}
+
+function viewActivity(id) { 
+  const a = activities.find(x => x.id === id); 
+  if(!a) return; 
+  const meetingLinkHtml = a.meetingLink ? `<div style="margin:0.5rem 0;"><strong>🔗 Meeting Link:</strong> <a href="${escapeHtml(a.meetingLink)}" target="_blank" style="color:#2563eb;">${escapeHtml(a.meetingLink)}</a> <button onclick="copyToClipboard('${escapeHtml(a.meetingLink)}')" style="padding:0.2rem 0.8rem; border-radius:20px; border:none; background:#e2e8f0; cursor:pointer;">📋 Copy</button></div>` : "";
+  const body = document.getElementById("viewModalBody"); 
+  body.innerHTML = `
+    <div style="display:flex; flex-direction:column; gap:0.8rem;">
+      <div><strong>Activity Name:</strong> ${escapeHtml(a.name)}</div>
+      <div><strong>Type:</strong> <span class="type-badge" style="background:${getTypeColor(a.type)}; color:white; padding:2px 8px;">${a.type}</span></div>
+      <div><strong>Start:</strong> ${formatDateTime(a.startDateTime)}</div>
+      <div><strong>End:</strong> ${formatDateTime(a.endDateTime)}</div>
+      <div><strong>Purpose:</strong> ${escapeHtml(a.purpose)}</div>
+      ${a.location ? `<div><strong>Location:</strong> ${escapeHtml(a.location)}</div>` : ""}
+      ${meetingLinkHtml}
+      <div><strong>Status:</strong> <span class="status-badge status-${a.status}">${a.status === "upcoming" ? "Upcoming" : (a.status === "ongoing" ? "Ongoing" : "Completed")}</span></div>
+      <div><strong>Attendees:</strong> ${a.attendees && a.attendees.length ? `<ul style="margin-top:0.5rem;">${a.attendees.map(att => `<li>${escapeHtml(att)}</li>`).join("")}</ul>` : "<span style='color:#999;'>No attendees listed</span>"}</div>
+    </div>
+  `; 
+  document.getElementById("viewModal").classList.add("active"); 
+}
+
+function copyToClipboard(text) { 
+  navigator.clipboard.writeText(text).then(() => showToastMessage("Link copied!")).catch(() => alert("Failed to copy.")); 
+}
+
+function closeModal() { 
+  document.getElementById("activityModal").classList.remove("active"); 
+}
+
+function closeViewModal() { 
+  document.getElementById("viewModal").classList.remove("active"); 
+}
+
+function exportToExcel() { 
+  if(!activities.length) { 
+    alert("No activities to export."); 
+    return; 
+  } 
+  const data = activities.map(a => ({ 
+    "Activity Name": a.name, 
+    "Type": a.type, 
+    "Attendees": a.attendees ? a.attendees.join(", ") : "", 
+    "Start Date & Time": formatDateTime(a.startDateTime), 
+    "End Date & Time": formatDateTime(a.endDateTime), 
+    "Purpose": a.purpose, 
+    "Location": a.location || "", 
+    "Meeting Link": a.meetingLink || "", 
+    "Status": a.status === "upcoming" ? "Upcoming" : (a.status === "ongoing" ? "Ongoing" : "Completed") 
+  })); 
+  const ws = XLSX.utils.json_to_sheet(data); 
+  const wb = XLSX.utils.book_new(); 
+  XLSX.utils.book_append_sheet(wb, ws, "Calendar_Activities"); 
+  XLSX.writeFile(wb, `Calendar_Activities_${new Date().toISOString().slice(0,10)}.xlsx`); 
+  showToastMessage("Exported to Excel!"); 
+}
+
+// Initialize
+checkSession(); 
+renderUserMenu(); 
+loadActivities();
+
+// Auto-update activity status every minute
+setInterval(() => { 
+  let changed = false; 
+  activities.forEach(a => { 
+    const newStatus = updateActivityStatus(a); 
+    if(a.status !== newStatus) { 
+      a.status = newStatus; 
+      changed = true; 
+    } 
+  }); 
+  if(changed) { 
+    saveToLocalStorage(); 
+    renderCalendar(); 
+    renderList(); 
+    updateStats(); 
+  } 
+}, 60000);
+
+// Close modals when clicking outside
+window.onclick = function(e) { 
+  const loginModal = document.getElementById("loginModal"); 
+  if(e.target === loginModal) loginModal.classList.remove("active"); 
+  const activityModal = document.getElementById("activityModal"); 
+  if(e.target === activityModal) activityModal.classList.remove("active"); 
+  const viewModal = document.getElementById("viewModal"); 
+  if(e.target === viewModal) viewModal.classList.remove("active"); 
+};
 </script>
 </body>
 </html>
