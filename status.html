@@ -1,61 +1,97 @@
 <!DOCTYPE html>
 <html lang="en">
-   <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0, print-scale: 1.0">
-      <title>DHSUD - Status of CLUP/ZO Formulation (Blue)</title>
-      <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
-      <style>
-         * { margin: 0; padding: 0; box-sizing: border-box; }
-         body { font-family: 'Inter', -apple-system, sans-serif; background: #f4f7fc; color: #1a2c3f; line-height: 1.45; }
-         .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
-         header { background: #ffffff; border-bottom: 1px solid #e2eaf1; position: sticky; top: 0; z-index: 100; }
-         .navbar { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; flex-wrap: wrap; gap: 16px; }
-         .logo { font-size: 1.6rem; font-weight: 700; background: linear-gradient(135deg, #1e3a8a, #2563eb); -webkit-background-clip: text; background-clip: text; color: transparent; }
-         .nav-links { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; }
-         .nav-links a, .dropbtn { text-decoration: none; font-weight: 500; font-size: 0.9rem; color: #2c4b66; background: none; border: none; cursor: pointer; font-family: 'Inter', sans-serif; }
-         .dropdown { position: relative; }
-         .dropdown-content { display: none; position: absolute; background: white; min-width: 210px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); margin-top: 10px; border: 1px solid #e2edf2; z-index: 20; }
-         .dropdown-content a { display: block; padding: 10px 18px; font-size: 0.85rem; color: #1f4159; }
-         .dropdown-content a:hover { background: #f0f6fa; }
-         .page-header { background: #e7f0f5; padding: 36px 0 32px; margin-bottom: 32px; border-bottom: 1px solid #d4e2ec; text-align: center; }
-         .report-card { background: white; border-radius: 24px; box-shadow: 0 6px 14px rgba(0, 0, 0, 0.03); overflow: hidden; margin-bottom: 32px; border: 1px solid #e2eaf1; }
-         .report-header { background: #1e3a8a; color: white; padding: 20px 28px; text-align: center; }
-         .report-header h1 { font-size: 1.7rem; font-weight: 600; letter-spacing: -0.2px; }
-         .report-header .sub { font-size: 0.9rem; opacity: 0.9; margin-top: 6px; }
-         .report-body { padding: 28px 32px; }
-         .two-col-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-bottom: 20px; }
-         .info-section { margin-bottom: 28px; break-inside: avoid; text-align: center; }
-         .section-title-sm { font-weight: 700; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.4px; color: #2563eb; border-left: 3px solid #2563eb; padding-left: 12px; margin-bottom: 16px; text-align: left; }
-         .info-row { display: flex; padding: 8px 0; border-bottom: 1px solid #eff3f8; flex-wrap: wrap; font-size: 0.85rem; justify-content: center; }
-         .info-label { width: 180px; font-weight: 600; color: #4a6f88; text-align: left; }
-         .info-value { flex: 1; color: #1f3e54; font-weight: 500; text-align: left; }
-         .badge-status { background: #e1f2ea; color: #176b43; padding: 3px 12px; border-radius: 40px; font-size: 0.7rem; font-weight: 600; display: inline-block; }
-         .action-row { display: flex; justify-content: center; gap: 18px; flex-wrap: wrap; margin: 20px 0 20px; }
-         .btn { padding: 10px 26px; border-radius: 60px; font-weight: 600; font-size: 0.85rem; cursor: pointer; border: 1px solid #cbdde8; background: white; color: #2c4e6b; transition: 0.2s; }
-         .btn-primary { background: #2563eb; border: none; color: white; }
-         .btn-primary:hover { background: #1e3a8a; }
-         .btn-print { background: #f0f6fa; }
-         .edit-panel { background: white; border-radius: 24px; padding: 28px; margin: 20px 0; border: 1px solid #e2eaf1; display: none; text-align: center; }
-         .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 18px; text-align: left; }
-         .form-group label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; color: #5f7f97; display: block; margin-bottom: 5px; }
-         .form-group input, .form-group select { width: 100%; padding: 8px 12px; border: 1px solid #d0dfe8; border-radius: 14px; font-size: 0.85rem; }
-         .submit-btn { background: #2563eb; color: white; padding: 10px 28px; border: none; border-radius: 40px; margin-top: 18px; }
-         .submit-btn:hover { background: #1e3a8a; }
-         .success-msg { background: #dff3e9; color: #146b45; padding: 12px; border-radius: 40px; margin-bottom: 20px; display: none; text-align: center; }
-         .footer { background: #ffffff; border-top: 1px solid #e2eaf1; padding: 40px 0 28px; margin-top: 48px; }
-         .footer-content { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 40px; }
-         .copyright { text-align: center; font-size: 0.7rem; color: #7d99ae; margin-top: 32px; padding-top: 20px; border-top: 1px solid #eef3f8; }
-         @media print { body { background: white; font-size: 9pt; margin: 0.4in; } header, .action-row, .edit-panel, .footer, .btn, .nav-links { display: none !important; } .report-card { box-shadow: none; border: 1px solid #ccc; } .report-header { background: #1e3a8a !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
-      </style>
-   </head>
-   <body>
-      <header>
-      <div class="container">
-            <div class="navbar">
-               <div class="logo">DHSUD</div>
-               <div class="nav-links">
-                   <a href="index.html">Home</a>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, print-scale: 1.0">
+  <title>DHSUD - Status of CLUP/ZO Formulation (Blue)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #f4f7fc; color: #0f2b3a; line-height: 1.45; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+    
+    header { background: white; border-bottom: 1px solid #eef2ff; position: sticky; top: 0; z-index: 100; backdrop-filter: blur(8px); background: rgba(255,255,255,0.96); }
+    .navbar { display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; flex-wrap: wrap; gap: 1rem; }
+    .logo { font-weight: 800; font-size: 1.2rem; background: linear-gradient(135deg, #1e3a8a, #2563eb); background-clip: text; -webkit-background-clip: text; color: transparent; line-height: 1.3; }
+    .nav-links { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
+    .nav-links a { text-decoration: none; color: #334155; font-weight: 500; font-size: 0.9rem; transition: 0.2s; }
+    .nav-links a:hover { color: #2563eb; }
+    .dropdown { position: relative; display: inline-block; }
+    .dropbtn { background: none; border: none; font-weight: 500; font-size: 0.9rem; color: #334155; cursor: pointer; font-family: inherit; padding: 0.4rem 0; }
+    .dropdown-content { display: none; position: absolute; background: white; min-width: 220px; box-shadow: 0 12px 28px rgba(0,0,0,0.1); border-radius: 16px; z-index: 1000; top: 30px; left: 0; border: 1px solid #eef2ff; padding: 0.3rem 0; }
+    .dropdown-content a { display: block; padding: 0.7rem 1.2rem; color: #1e293b; font-size: 0.8rem; text-decoration: none; }
+    .dropdown-content a:hover { background: #eff6ff; }
+    .dropdown.open .dropdown-content { display: block; }
+    .dropdown-submenu { position: relative; }
+    .submenu-trigger { background: none; border: none; width: 100%; text-align: left; padding: 0.7rem 1.2rem; font-size: 0.8rem; font-weight: 500; color: #1e293b; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-family: inherit; }
+    .submenu-trigger:hover { background: #eff6ff; }
+    .arrow-right { font-size: 0.7rem; margin-left: 1rem; }
+    .submenu-content { display: none; position: absolute; left: 100%; top: 0; background: white; min-width: 180px; box-shadow: 0 12px 28px rgba(0,0,0,0.1); border-radius: 16px; border: 1px solid #eef2ff; z-index: 1001; padding: 0.3rem 0; }
+    .submenu-content a { padding: 0.7rem 1.2rem; }
+    .dropdown-submenu.open .submenu-content { display: block; }
+    .user-menu { display: flex; align-items: center; gap: 0.5rem; background: #f1f5f9; padding: 0.3rem 0.8rem 0.3rem 1rem; border-radius: 60px; cursor: pointer; position: relative; }
+    .user-avatar { width: 32px; height: 32px; background: #2563eb; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; }
+    .login-prompt { background: #f1f5f9; padding: 0.3rem 1rem; border-radius: 40px; cursor: pointer; font-size: 0.85rem; font-weight: 500; }
+    .header-logo-img { height: 42px; margin-left: 12px; background: #f1f5f9; padding: 4px 8px; border-radius: 40px; display: inline-flex; align-items: center; }
+    .header-logo-img img { height: 32px; width: auto; }
+    .role-badge-header { background: #e2e8f0; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.65rem; font-weight: 600; margin-left: 0.5rem; }
+    .role-badge-header.admin { background: #dcfce7; color: #166534; }
+    .role-badge-header.staff { background: #dbeafe; color: #1e40af; }
+    
+    .login-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); justify-content: center; align-items: center; z-index: 10000; }
+    .login-modal.active { display: flex; }
+    .login-modal-content { background: white; border-radius: 32px; max-width: 450px; width: 90%; overflow: hidden; animation: modalSlideIn 0.3s ease; }
+    .login-modal-header { background: linear-gradient(135deg, #1e3a8a, #2563eb); padding: 1.5rem; text-align: center; color: white; }
+    .login-modal-header .seal-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+    .login-modal-header h3 { font-size: 1.3rem; font-weight: 700; }
+    .login-modal-body { padding: 1.5rem; }
+    .input-group { margin-bottom: 1.2rem; position: relative; }
+    .input-group label { display: block; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: #54708f; margin-bottom: 0.4rem; }
+    .input-group input { width: 100%; padding: 0.85rem 1rem; border: 1.5px solid #e2e8f0; border-radius: 1rem; font-size: 0.9rem; font-family: 'Inter', sans-serif; padding-right: 45px; }
+    .toggle-password { position: absolute; right: 12px; top: 38px; cursor: pointer; font-size: 1rem; background: none; border: none; color: #94a3b8; }
+    .login-submit-btn { width: 100%; padding: 0.9rem; background: #2563eb; color: white; border: none; border-radius: 1.2rem; font-weight: 700; font-size: 0.9rem; cursor: pointer; margin-top: 0.5rem; }
+    .login-submit-btn:hover { background: #1d4ed8; transform: translateY(-1px); }
+    .login-modal-footer { border-top: 1px solid #eef2ff; padding: 1rem; text-align: center; font-size: 0.65rem; color: #94a3b8; background: #fafcff; }
+    @keyframes modalSlideIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+    .toast-msg { position: fixed; bottom: 20px; right: 20px; background: #1e293b; color: white; padding: 10px 20px; border-radius: 40px; z-index: 9999; font-size: 0.8rem; }
+    
+    .page-header { background: linear-gradient(135deg, #0f2b3a 0%, #1e4a6e 100%); padding: 2rem 0; margin-bottom: 2rem; text-align: center; color: white; border-radius: 0 0 2rem 2rem; }
+    .report-card { background: white; border-radius: 28px; box-shadow: 0 6px 14px rgba(0,0,0,0.03); overflow: hidden; margin-bottom: 32px; border: 1px solid #eef2ff; }
+    .report-header { background: linear-gradient(135deg, #1e3a8a, #2563eb); color: white; padding: 20px 28px; text-align: center; }
+    .report-header h1 { font-size: 1.7rem; font-weight: 600; }
+    .report-body { padding: 28px 32px; }
+    .two-col-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-bottom: 20px; }
+    .info-section { margin-bottom: 28px; }
+    .section-title-sm { font-weight: 700; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.4px; color: #2563eb; border-left: 3px solid #2563eb; padding-left: 12px; margin-bottom: 16px; }
+    .info-row { display: flex; padding: 8px 0; border-bottom: 1px solid #eff3f8; flex-wrap: wrap; font-size: 0.85rem; }
+    .info-label { width: 180px; font-weight: 600; color: #4a6f88; }
+    .info-value { flex: 1; color: #1f3e54; font-weight: 500; }
+    .badge-status { background: #e1f2ea; color: #176b43; padding: 3px 12px; border-radius: 40px; font-size: 0.7rem; font-weight: 600; display: inline-block; }
+    .action-row { display: flex; justify-content: center; gap: 18px; flex-wrap: wrap; margin: 20px 0; }
+    .btn { padding: 10px 26px; border-radius: 60px; font-weight: 600; font-size: 0.85rem; cursor: pointer; border: 1px solid #cbdde8; background: white; color: #2c4e6b; transition: 0.2s; }
+    .btn-primary { background: #2563eb; border: none; color: white; }
+    .btn-primary:hover { background: #1e3a8a; transform: translateY(-1px); }
+    .btn-print { background: #f0f6fa; }
+    .edit-panel { background: white; border-radius: 24px; padding: 28px; margin: 20px 0; border: 1px solid #eef2ff; display: none; }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 18px; }
+    .form-group label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; color: #5f7f97; display: block; margin-bottom: 5px; }
+    .form-group input, .form-group select { width: 100%; padding: 8px 12px; border: 1px solid #d0dfe8; border-radius: 14px; font-size: 0.85rem; font-family: 'Inter', sans-serif; }
+    .submit-btn { background: #2563eb; color: white; padding: 10px 28px; border: none; border-radius: 40px; margin-top: 18px; cursor: pointer; }
+    .submit-btn:hover { background: #1e3a8a; }
+    .success-msg { background: #dff3e9; color: #146b45; padding: 12px; border-radius: 40px; margin-bottom: 20px; display: none; text-align: center; }
+    footer { background: #0f2b3a; color: #cbd5e1; padding: 2rem 0 1.5rem; margin-top: 3rem; }
+    .footer-content { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 2rem; }
+    .copyright { margin-top: 2rem; text-align: center; border-top: 1px solid #2d3a4a; padding-top: 1.5rem; font-size: 0.8rem; }
+    @media print { body { background: white; } header, .action-row, .edit-panel, .footer, .btn, .nav-links { display: none !important; } .report-card { box-shadow: none; border: 1px solid #ccc; } .report-header { background: #1e3a8a !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+  </style>
+</head>
+<body>
+<header>
+  <div class="container">
+    <div class="navbar">
+      <div class="header-logo-img"><img src="DHSUD_LOGO.png" alt="DHSUD Logo">DHSUD VI - ELUPDD Integrated Database and Information System</div>
+      <div class="nav-links">
+        <a href="index.html">Home</a>
         <div class="dropdown auth-required">
           <button class="dropbtn">Certification</button>
           <div class="dropdown-content">
@@ -66,7 +102,6 @@
         <div class="dropdown auth-required">
           <button class="dropbtn">Land Use Plans</button>
           <div class="dropdown-content">
-            <!-- CLUP & ZO submenu (dropright) with Inventory and Status -->
             <div class="dropdown-submenu">
               <button class="submenu-trigger">CLUP & ZO <span class="arrow-right">▸</span></button>
               <div class="submenu-content">
@@ -74,161 +109,224 @@
                 <a href="status.html">Status</a>
               </div>
             </div>
-            <!-- PDPFP renamed link (maps to status.html as per original behavior) -->
             <a href="status.html">PDPFP</a>
           </div>
         </div>
         <a href="lgu-info.html">LGU Information</a>
         <a href="report.html" class="auth-required">Reports</a> 
         <a href="calendar.html" class="auth-required">Calendar of Activities</a>
-        <a href="issuance.html" style="color:#000000; <div class="container">
-            <div class="navbar">
-               <div class="logo">DHSUD</div>
-               <div class="nav-links">
-                   <a href="index.html">Home</a>
-        <div class="dropdown auth-required">
-          <button class="dropbtn">Certification</button>
-          <div class="dropdown-content">
-            <a href="lc.html">Locational Clearance</a>
-            <a href="SZC.html">Site Zoning Clarification</a>
-          </div>
-        </div>	
-        <div class="dropdown auth-required">
-          <button class="dropbtn">Land Use Plans</button>
-          <div class="dropdown-content">
-            <!-- CLUP & ZO submenu (dropright) with Inventory and Status -->
-            <div class="dropdown-submenu">
-              <button class="submenu-trigger">CLUP & ZO <span class="arrow-right">▸</span></button>
-              <div class="submenu-content">
-                <a href="inventory.html">Inventory</a>
-                <a href="status.html">Status</a>
-              </div>
-            </div>
-            <!-- PDPFP renamed link (maps to status.html as per original behavior) -->
-            <a href="status.html">PDPFP</a>
-          </div>
-        </div>
-        <a href="lgu-info.html">LGU Information</a>
-        <a href="report.html" class="auth-required">Reports</a> 
-        <a href="calendar.html" class="auth-required">Calendar of Activities</a>
-        <a href="issuance.html" style="color:#000000; font-weight:700;">Issuances</a>
+        <a href="issuance.html">Issuances</a>
         <a href="#about">About</a>
-        <a href="#contact">Contact</a>                  <div id="userMenuContainer"></div>
-               </div>
-            </div>
-         </div>
-      </header>">Issuances</a>
-        <a href="#about">About</a>
-        <a href="#contact">Contact</a>                  <div id="userMenuContainer"></div>
-               </div>
-            </div>
-         </div>
-      </header>
-      <div class="page-header"></div>
-      <div class="container">
-         <div class="report-card" id="statusReportCard">
-            <div class="report-header">
-               <h1>STATUS OF CLUP/ZO FORMULATION</h1>
-               <div class="sub" id="headerLGU">ALTAVAS, AKLAN</div>
-            </div>
-            <div class="report-body">
-               <div class="two-col-grid">
-                  <div>
-                     <div class="info-section">
-                        <div class="section-title-sm">🏛️ LGU PROFILE</div>
-                        <div class="info-row">
-                           <div class="info-label">Region</div>
-                           <div class="info-value" id="displayRegion">WESTERN VISAYAS</div>
-                        </div>
-                        <div class="info-row">
-                           <div class="info-label">Income Classification</div>
-                           <div class="info-value" id="displayIncomeClass">4TH</div>
-                        </div>
-                        <div class="info-row">
-                           <div class="info-label">City/Municipality</div>
-                           <div class="info-value" id="displayLGU">ALTAVAS</div>
-                        </div>
-                        <div class="info-row">
-                           <div class="info-label">Province</div>
-                           <div class="info-value" id="displayProvince">AKLAN</div>
-                        </div>
-                     </div>
-                     <div class="info-section">
-                        <div class="section-title-sm">📘 LATEST CLUP</div>
-                        <div class="info-row">
-                           <div class="info-label">Year of Approval</div>
-                           <div class="info-value" id="latestYearApproval">2003</div>
-                        </div>
-                        <div class="info-row">
-                           <div class="info-label">Planning Period</div>
-                           <div class="info-value" id="latestPlanningPeriod">2003-2012</div>
-                        </div>
-                        <div class="info-row">
-                           <div class="info-label">SP/HLURB Resolution</div>
-                           <div class="info-value" id="latestResolution">SP R-03-084</div>
-                        </div>
-                        <div class="info-row">
-                           <div class="info-label">Date Approved</div>
-                           <div class="info-value" id="latestDateApproved">3/18/2003</div>
-                        </div>
-                        <div class="info-row">
-                           <div class="info-label">SB/SP Resolution Adopting CLUP</div>
-                           <div class="info-value" id="sbResolution">SB Res. 2003-12</div>
-                        </div>
-                        <div class="info-row">
-                           <div class="info-label">Zoning Ordinance (ZO) No.</div>
-                           <div class="info-value" id="zoNumber">ZO-2003-001</div>
-                        </div>
-                        <div class="info-row">
-                           <div class="info-label">CCA-DRR Mainstreamed</div>
-                           <div class="info-value"><span class="badge-status" id="ccaDrrBadge">Yes</span></div>
-                        </div>
-                     </div>
-                  </div>
-                  <div></div>
-               </div>
-            </div>
-         </div>
-         <div class="edit-panel" id="editPanel">
-            <div id="editSuccessMsg" class="success-msg">✓ Status report updated successfully</div>
-            <h3 style="font-weight:500; margin-bottom:18px;">✏️ Edit CLUP/ZO Formulation Data</h3>
-            <form id="editForm" onsubmit="return updateAllData(event)">
-               <div class="form-grid">
-                  <div class="form-group"><label>City/Municipality</label><input id="editLGU" value="ALTAVAS"></div>
-                  <div class="form-group"><label>Province</label><input id="editProvince" value="AKLAN"></div>
-                  <div class="form-group"><label>Region</label><input id="editRegion" value="WESTERN VISAYAS"></div>
-                  <div class="form-group"><label>Income Class</label><input id="editIncomeClass" value="4TH"></div>
-                  <div class="form-group"><label>Latest CLUP Year Approval</label><input id="editLatestYear" value="2003"></div>
-                  <div class="form-group"><label>Latest CLUP Planning Period</label><input id="editLatestPeriod" value="2003-2012"></div>
-                  <div class="form-group"><label>SP/HLURB Resolution (Latest)</label><input id="editLatestRes" value="SP R-03-084"></div>
-                  <div class="form-group"><label>Date Approved (Latest)</label><input id="editLatestDate" value="3/18/2003"></div>
-                  <div class="form-group"><label>SB/SP Resolution Adopting CLUP</label><input id="editSbRes" value="SB Res. 2003-12"></div>
-                  <div class="form-group"><label>ZO Number</label><input id="editZoNo" value="ZO-2003-001"></div>
-                  <div class="form-group">
-                     <label>CCA-DRR Mainstreamed</label>
-                     <select id="editCcaDrr">
-                        <option>Yes</option>
-                        <option>No</option>
-                     </select>
-                  </div>
-               </div>
-               <button type="submit" class="submit-btn">💾 Save All Changes</button><button type="button" style="margin-left:12px; background:none; border:1px solid #ccc; padding:10px 26px; border-radius:40px;" onclick="hideEditPanel()">Cancel</button>
-            </form>
-         </div>
-         <div class="action-row"><button class="btn btn-primary" onclick="showEditPanel()">✎ Edit Status</button><button class="btn btn-print" onclick="window.print()">🖨️ Print</button></div>
+        <a href="#contact">Contact</a>
+        <div id="userMenuContainer"></div>
       </div>
-      <footer class="footer">
-         <div class="container">
-            <div class="footer-content">
-               <div>
-                  <div style="font-weight:800; font-size:1.4rem;">DHSUD</div>
-                  <p style="margin-top:8px; max-width:260px;">ELUPDD Region VI – Site Zoning Certification</p>
-               </div>
-               <div><strong>Contact</strong><br>📞 (033) 123-4567<br>📧 elupdd.region6@dhsud.gov.ph</div>
-            </div>
-            <div class="copyright">© 2026 DHSUD — Site Zoning Certification System | Western Visayas</div>
-         </div>
-      </footer>
-      <script>function escapeHtml(s){return String(s).replace(/[&<>]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;"})[m]);}function checkUserAccess(){const s=localStorage.getItem("dhsud_session");if(!s){window.location.href="login.html";return false;}try{const ses=JSON.parse(s);if(ses.role!=="admin"&&ses.role!=="encoder"&&ses.role!=="staff"){alert("Access Denied.");window.location.href="index.html";return false;}return ses;}catch(e){window.location.href="login.html";return false;}}const currentUser=checkUserAccess();function updateAllData(e){e.preventDefault();document.getElementById("displayLGU").innerText=document.getElementById("editLGU").value;document.getElementById("displayProvince").innerText=document.getElementById("editProvince").value;document.getElementById("displayRegion").innerText=document.getElementById("editRegion").value;document.getElementById("displayIncomeClass").innerText=document.getElementById("editIncomeClass").value;document.getElementById("headerLGU").innerHTML=`${document.getElementById("editLGU").value}, ${document.getElementById("editProvince").value}`;document.getElementById("latestYearApproval").innerText=document.getElementById("editLatestYear").value;document.getElementById("latestPlanningPeriod").innerText=document.getElementById("editLatestPeriod").value;document.getElementById("latestResolution").innerText=document.getElementById("editLatestRes").value;document.getElementById("latestDateApproved").innerText=document.getElementById("editLatestDate").value;document.getElementById("sbResolution").innerText=document.getElementById("editSbRes").value;document.getElementById("zoNumber").innerText=document.getElementById("editZoNo").value;const cca=document.getElementById("editCcaDrr").value;document.getElementById("ccaDrrBadge").innerHTML=`<span class="badge-status">${cca}</span>`;saveFullData();document.getElementById("editSuccessMsg").style.display="block";document.getElementById("editPanel").style.display="none";setTimeout(()=>document.getElementById("editSuccessMsg").style.display="none",2500);return false;}function saveFullData(){const f={lgu:document.getElementById("displayLGU").innerText,province:document.getElementById("displayProvince").innerText,region:document.getElementById("displayRegion").innerText,income:document.getElementById("displayIncomeClass").innerText,latestYear:document.getElementById("latestYearApproval").innerText,latestPeriod:document.getElementById("latestPlanningPeriod").innerText,latestRes:document.getElementById("latestResolution").innerText,latestDate:document.getElementById("latestDateApproved").innerText,sbRes:document.getElementById("sbResolution").innerText,zoNo:document.getElementById("zoNumber").innerText,ccaDrr:document.getElementById("ccaDrrBadge").innerText};localStorage.setItem("clupFullReport",JSON.stringify(f));}function loadFullData(){const s=localStorage.getItem("clupFullReport");if(!s)return;const d=JSON.parse(s);document.getElementById("displayLGU").innerText=d.lgu;document.getElementById("displayProvince").innerText=d.province;document.getElementById("displayRegion").innerText=d.region;document.getElementById("displayIncomeClass").innerText=d.income;document.getElementById("headerLGU").innerHTML=`${d.lgu}, ${d.province}`;document.getElementById("latestYearApproval").innerText=d.latestYear;document.getElementById("latestPlanningPeriod").innerText=d.latestPeriod;document.getElementById("latestResolution").innerText=d.latestRes;document.getElementById("latestDateApproved").innerText=d.latestDate;document.getElementById("sbResolution").innerText=d.sbRes;document.getElementById("zoNumber").innerText=d.zoNo;document.getElementById("ccaDrrBadge").innerHTML=`<span class="badge-status">${d.ccaDrr}</span>`;}function showEditPanel(){document.getElementById("editLGU").value=document.getElementById("displayLGU").innerText;document.getElementById("editProvince").value=document.getElementById("displayProvince").innerText;document.getElementById("editRegion").value=document.getElementById("displayRegion").innerText;document.getElementById("editIncomeClass").value=document.getElementById("displayIncomeClass").innerText;document.getElementById("editLatestYear").value=document.getElementById("latestYearApproval").innerText;document.getElementById("editLatestPeriod").value=document.getElementById("latestPlanningPeriod").innerText;document.getElementById("editLatestRes").value=document.getElementById("latestResolution").innerText;document.getElementById("editLatestDate").value=document.getElementById("latestDateApproved").innerText;document.getElementById("editSbRes").value=document.getElementById("sbResolution").innerText;document.getElementById("editZoNo").value=document.getElementById("zoNumber").innerText;document.getElementById("editCcaDrr").value=document.getElementById("ccaDrrBadge").innerText.trim();document.getElementById("editPanel").style.display="block";document.getElementById("editPanel").scrollIntoView({behavior:"smooth"});}function hideEditPanel(){document.getElementById("editPanel").style.display="none";}(function(){let t;document.querySelectorAll(".dropdown").forEach(dd=>{const c=dd.querySelector(".dropdown-content");if(!c)return;dd.addEventListener("mouseenter",()=>{clearTimeout(t);c.style.display="block";});dd.addEventListener("mouseleave",()=>{t=setTimeout(()=>{c.style.display="none";},180);});c.addEventListener("mouseenter",()=>{clearTimeout(t);c.style.display="block";});c.addEventListener("mouseleave",()=>{t=setTimeout(()=>{c.style.display="none";},180);});});})();loadFullData();</script>
-   </body>
+    </div>
+  </div>
+</header>
+
+<div class="page-header">
+  <div class="container">
+    <h1>STATUS OF CLUP/ZO FORMULATION</h1>
+    <p>Comprehensive Land Use Plan and Zoning Ordinance Monitoring</p>
+  </div>
+</div>
+
+<div class="container">
+  <div class="report-card" id="statusReportCard">
+    <div class="report-header">
+      <h1>STATUS OF CLUP/ZO FORMULATION</h1>
+      <div class="sub" id="headerLGU">ALTAVAS, AKLAN</div>
+    </div>
+    <div class="report-body">
+      <div class="two-col-grid">
+        <div>
+          <div class="info-section">
+            <div class="section-title-sm">🏛️ LGU PROFILE</div>
+            <div class="info-row"><div class="info-label">Region</div><div class="info-value" id="displayRegion">WESTERN VISAYAS</div></div>
+            <div class="info-row"><div class="info-label">Income Classification</div><div class="info-value" id="displayIncomeClass">4TH</div></div>
+            <div class="info-row"><div class="info-label">City/Municipality</div><div class="info-value" id="displayLGU">ALTAVAS</div></div>
+            <div class="info-row"><div class="info-label">Province</div><div class="info-value" id="displayProvince">AKLAN</div></div>
+          </div>
+          <div class="info-section">
+            <div class="section-title-sm">📘 LATEST CLUP</div>
+            <div class="info-row"><div class="info-label">Year of Approval</div><div class="info-value" id="latestYearApproval">2003</div></div>
+            <div class="info-row"><div class="info-label">Planning Period</div><div class="info-value" id="latestPlanningPeriod">2003-2012</div></div>
+            <div class="info-row"><div class="info-label">SP/HLURB Resolution</div><div class="info-value" id="latestResolution">SP R-03-084</div></div>
+            <div class="info-row"><div class="info-label">Date Approved</div><div class="info-value" id="latestDateApproved">3/18/2003</div></div>
+            <div class="info-row"><div class="info-label">SB/SP Resolution Adopting CLUP</div><div class="info-value" id="sbResolution">SB Res. 2003-12</div></div>
+            <div class="info-row"><div class="info-label">Zoning Ordinance (ZO) No.</div><div class="info-value" id="zoNumber">ZO-2003-001</div></div>
+            <div class="info-row"><div class="info-label">CCA-DRR Mainstreamed</div><div class="info-value"><span class="badge-status" id="ccaDrrBadge">Yes</span></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="edit-panel" id="editPanel">
+    <div id="editSuccessMsg" class="success-msg">✓ Status report updated successfully</div>
+    <h3 style="font-weight:500; margin-bottom:18px;">✏️ Edit CLUP/ZO Formulation Data</h3>
+    <form id="editForm" onsubmit="return updateAllData(event)">
+      <div class="form-grid">
+        <div class="form-group"><label>City/Municipality</label><input id="editLGU" value="ALTAVAS"></div>
+        <div class="form-group"><label>Province</label><input id="editProvince" value="AKLAN"></div>
+        <div class="form-group"><label>Region</label><input id="editRegion" value="WESTERN VISAYAS"></div>
+        <div class="form-group"><label>Income Class</label><input id="editIncomeClass" value="4TH"></div>
+        <div class="form-group"><label>Latest CLUP Year Approval</label><input id="editLatestYear" value="2003"></div>
+        <div class="form-group"><label>Latest CLUP Planning Period</label><input id="editLatestPeriod" value="2003-2012"></div>
+        <div class="form-group"><label>SP/HLURB Resolution (Latest)</label><input id="editLatestRes" value="SP R-03-084"></div>
+        <div class="form-group"><label>Date Approved (Latest)</label><input id="editLatestDate" value="3/18/2003"></div>
+        <div class="form-group"><label>SB/SP Resolution Adopting CLUP</label><input id="editSbRes" value="SB Res. 2003-12"></div>
+        <div class="form-group"><label>ZO Number</label><input id="editZoNo" value="ZO-2003-001"></div>
+        <div class="form-group"><label>CCA-DRR Mainstreamed</label><select id="editCcaDrr"><option>Yes</option><option>No</option></select></div>
+      </div>
+      <button type="submit" class="submit-btn">💾 Save All Changes</button>
+      <button type="button" style="margin-left:12px; background:none; border:1px solid #ccc; padding:10px 26px; border-radius:40px;" onclick="hideEditPanel()">Cancel</button>
+    </form>
+  </div>
+  <div class="action-row"><button class="btn btn-primary" onclick="showEditPanel()">✎ Edit Status</button><button class="btn btn-print" onclick="window.print()">🖨️ Print</button></div>
+</div>
+
+<div id="loginModal" class="login-modal"><div class="login-modal-content"><div class="login-modal-header"><div class="seal-icon">🏛️</div><h3>DHSUD Region VI</h3><p style="font-size:0.8rem; opacity:0.9;">Sign in to access your account</p></div><div class="login-modal-body"><form id="modalLoginForm" onsubmit="return handleModalLogin(event)"><div class="input-group"><label>📧 Email Address</label><input type="email" id="modalLoginEmail" placeholder="name@dhsud.gov.ph" required></div><div class="input-group"><label>🔒 Password</label><input type="password" id="modalLoginPassword" placeholder="Enter your password" required><button type="button" class="toggle-password" onclick="toggleModalPassword()">👁️</button></div><button type="submit" class="login-submit-btn">→ Sign In</button></form></div><div class="login-modal-footer">🔐 Role-Based Access: Admin | Staff/Officer</div></div></div>
+
+<footer>
+  <div class="container">
+    <div class="footer-content">
+      <div><div style="font-weight:800; font-size:1.4rem;">DHSUD</div><p style="margin-top:8px;">ELUPDD Region VI – CLUP/ZO Status Monitoring</p></div>
+      <div><strong>Contact</strong><br>📞 (033) 123-4567<br>📧 elupdd.region6@dhsud.gov.ph</div>
+    </div>
+    <div class="copyright">© 2026 DHSUD — Status of CLUP/ZO Formulation | Western Visayas</div>
+  </div>
+</footer>
+
+<script>
+let currentUser = null;
+function escapeHtml(s) { return String(s).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]); }
+function showToastMessage(msg, type) { let t = document.querySelector(".toast-msg"); if(t) t.remove(); let toast = document.createElement("div"); toast.className = "toast-msg"; toast.style.background = type === "error" ? "#b91c1c" : "#166534"; toast.innerText = msg; document.body.appendChild(toast); setTimeout(() => toast.remove(), 3000); }
+function encodePassword(p) { return btoa(p); }
+
+function checkSession() { const raw = localStorage.getItem("dhsud_session"); if (raw) { try { const s = JSON.parse(raw); const diff = (new Date() - new Date(s.loggedInAt)) / (1000 * 60 * 60); if (diff < 12 && s.email) { currentUser = s; return true; } else localStorage.removeItem("dhsud_session"); } catch(e) { localStorage.removeItem("dhsud_session"); } } currentUser = null; return false; }
+
+function renderUserMenu() {
+  const container = document.getElementById("userMenuContainer"); if(!container) return;
+  if (currentUser) {
+    const initials = (currentUser.fullName?.split(" ")[0][0] + (currentUser.fullName?.split(" ")[1]?.[0] || currentUser.fullName?.[0] || "U")).toUpperCase();
+    const firstName = currentUser.fullName?.split(" ")[0] || "User";
+    const isAdmin = currentUser.role === "admin";
+    const roleLabel = currentUser.role === "admin" ? "👑 Admin" : "📋 Staff/Officer";
+    const roleClass = currentUser.role === "admin" ? "admin" : "staff";
+    container.innerHTML = `<div class="user-menu" id="userMenuDropdown"><div class="user-avatar">${initials}</div><span class="user-name">${escapeHtml(firstName)}</span><span class="role-badge-header ${roleClass}" style="font-size:0.65rem;">${roleLabel}</span><span style="font-size:0.7rem;">▼</span><div class="user-dropdown-menu" style="position:absolute; top:48px; right:0; background:white; border-radius:20px; min-width:180px; box-shadow:0 20px 35px -12px rgba(0,0,0,0.15); border:1px solid #eef2ff; overflow:hidden; display:none;"><div class="user-dropdown-item" style="padding:0.8rem 1.2rem; border-bottom:1px solid #f1f5f9;">👤 ${escapeHtml(currentUser.email)}</div><div class="user-dropdown-item" style="padding:0.8rem 1.2rem; border-bottom:1px solid #f1f5f9;">🏢 ${escapeHtml(currentUser.office||"ELUPDD")}</div>${isAdmin ? `<div class="user-dropdown-item" id="adminConsoleLink" style="padding:0.8rem 1.2rem; cursor:pointer;">⚙️ Manage Users (Admin Panel)</div>` : ""}<div class="user-dropdown-item" id="logoutDropdownBtn" style="padding:0.8rem 1.2rem; color:#dc2626; cursor:pointer;">🚪 Sign Out</div></div></div>`;
+    const userDiv = document.getElementById("userMenuDropdown");
+    if (userDiv) { userDiv.addEventListener("click", (e) => { e.stopPropagation(); const menu = userDiv.querySelector(".user-dropdown-menu"); if(menu) menu.style.display = menu.style.display === "block" ? "none" : "block"; }); document.addEventListener("click", () => { const menu = userDiv.querySelector(".user-dropdown-menu"); if(menu) menu.style.display = "none"; }); }
+    if (isAdmin) { const adminBtn = document.getElementById("adminConsoleLink"); if(adminBtn) adminBtn.addEventListener("click", () => window.location.href = "admin.html"); }
+    const logoutBtn = document.getElementById("logoutDropdownBtn"); if(logoutBtn) logoutBtn.addEventListener("click", () => { localStorage.removeItem("dhsud_session"); showToastMessage("Logged out successfully.", "info"); setTimeout(() => window.location.reload(), 700); });
+  } else {
+    container.innerHTML = `<div class="login-prompt" onclick="openLoginModal()">🔐 Sign In</div>`;
+  }
+}
+
+function openLoginModal() { document.getElementById("loginModal").classList.add("active"); }
+function toggleModalPassword() { let pwd = document.getElementById("modalLoginPassword"); pwd.type = pwd.type === "password" ? "text" : "password"; }
+async function handleModalLogin(e) {
+  e.preventDefault();
+  const email = document.getElementById("modalLoginEmail").value.trim().toLowerCase();
+  const password = document.getElementById("modalLoginPassword").value;
+  const btn = e.submitter; const originalText = btn.innerHTML;
+  btn.innerHTML = "⏳ Authenticating..."; btn.disabled = true;
+  try {
+    const resp = await fetch(`https://script.google.com/macros/s/AKfycbw8fpw0CcxnNel8hqyYuOwpEWIlVEZX2lRCutAIzSylhwt4zJzJmMdum6Eo4JteHMItmQ/exec?action=get&data_type=users&_=${Date.now()}`);
+    const users = await resp.json();
+    const user = users.find(u => u.email?.toLowerCase() === email);
+    if (!user) { showToastMessage("Account not found.", "error"); btn.innerHTML = originalText; btn.disabled = false; return false; }
+    const encodedPassword = encodePassword(password);
+    if (user.password === encodedPassword) {
+      const session = { userId: user.id, email: user.email, fullName: user.fullName, office: user.office || "ELUPDD", role: user.role, loggedInAt: new Date().toISOString() };
+      localStorage.setItem("dhsud_session", JSON.stringify(session));
+      showToastMessage(`Welcome ${user.fullName?.split(" ")[0] || ""}!`, "success");
+      document.getElementById("loginModal").classList.remove("active");
+      setTimeout(() => window.location.reload(), 1000);
+    } else { showToastMessage("Invalid password.", "error"); }
+  } catch(error) { showToastMessage("Connection error. Please try again.", "error"); }
+  finally { btn.innerHTML = originalText; btn.disabled = false; }
+  return false;
+}
+
+function updateAllData(e) {
+  e.preventDefault();
+  document.getElementById("displayLGU").innerText = document.getElementById("editLGU").value;
+  document.getElementById("displayProvince").innerText = document.getElementById("editProvince").value;
+  document.getElementById("displayRegion").innerText = document.getElementById("editRegion").value;
+  document.getElementById("displayIncomeClass").innerText = document.getElementById("editIncomeClass").value;
+  document.getElementById("headerLGU").innerHTML = `${document.getElementById("editLGU").value}, ${document.getElementById("editProvince").value}`;
+  document.getElementById("latestYearApproval").innerText = document.getElementById("editLatestYear").value;
+  document.getElementById("latestPlanningPeriod").innerText = document.getElementById("editLatestPeriod").value;
+  document.getElementById("latestResolution").innerText = document.getElementById("editLatestRes").value;
+  document.getElementById("latestDateApproved").innerText = document.getElementById("editLatestDate").value;
+  document.getElementById("sbResolution").innerText = document.getElementById("editSbRes").value;
+  document.getElementById("zoNumber").innerText = document.getElementById("editZoNo").value;
+  const cca = document.getElementById("editCcaDrr").value;
+  document.getElementById("ccaDrrBadge").innerHTML = `<span class="badge-status">${cca}</span>`;
+  saveFullData();
+  document.getElementById("editSuccessMsg").style.display = "block";
+  document.getElementById("editPanel").style.display = "none";
+  setTimeout(() => document.getElementById("editSuccessMsg").style.display = "none", 2500);
+  return false;
+}
+
+function saveFullData() {
+  const f = {
+    lgu: document.getElementById("displayLGU").innerText,
+    province: document.getElementById("displayProvince").innerText,
+    region: document.getElementById("displayRegion").innerText,
+    income: document.getElementById("displayIncomeClass").innerText,
+    latestYear: document.getElementById("latestYearApproval").innerText,
+    latestPeriod: document.getElementById("latestPlanningPeriod").innerText,
+    latestRes: document.getElementById("latestResolution").innerText,
+    latestDate: document.getElementById("latestDateApproved").innerText,
+    sbRes: document.getElementById("sbResolution").innerText,
+    zoNo: document.getElementById("zoNumber").innerText,
+    ccaDrr: document.getElementById("ccaDrrBadge").innerText
+  };
+  localStorage.setItem("clupFullReport", JSON.stringify(f));
+}
+
+function loadFullData() {
+  const s = localStorage.getItem("clupFullReport");
+  if(!s) return;
+  const d = JSON.parse(s);
+  document.getElementById("displayLGU").innerText = d.lgu;
+  document.getElementById("displayProvince").innerText = d.province;
+  document.getElementById("displayRegion").innerText = d.region;
+  document.getElementById("displayIncomeClass").innerText = d.income;
+  document.getElementById("headerLGU").innerHTML = `${d.lgu}, ${d.province}`;
+  document.getElementById("latestYearApproval").innerText = d.latestYear;
+  document.getElementById("latestPlanningPeriod").innerText = d.latestPeriod;
+  document.getElementById("latestResolution").innerText = d.latestRes;
+  document.getElementById("latestDateApproved").innerText = d.latestDate;
+  document.getElementById("sbResolution").innerText = d.sbRes;
+  document.getElementById("zoNumber").innerText = d.zoNo;
+  document.getElementById("ccaDrrBadge").innerHTML = `<span class="badge-status">${d.ccaDrr}</span>`;
+}
+
+function showEditPanel() {
+  document.getElementById("editLGU").value = document.getElementById("displayLGU").innerText;
+  document.getElementById("editProvince").value = document.getElementById("displayProvince").innerText;
+  document.getElementById("editRegion").value = document.getElementById("displayRegion").innerText;
+  document.getElementById("editIncomeClass").value = document.getElementById("displayIncomeClass").innerText;
+  document.getElementById("editLatestYear").value = document.getElementById("latestYearApproval").innerText;
+  document.getElementById("editLatestPeriod").value = document.getElementById("latestPlanningPeriod").innerText;
+  document.getElementById("editLatestRes").value = document.getElementById("latestResolution").innerText;
+  document.getElementById("editLatestDate").value = document.getElementById("latestDateApproved").innerText;
+  document.getElementById("editSbRes").value = document.getElementById("sbResolution").innerText;
+  document.getElementById("editZoNo").value = document.getElementById("zoNumber").innerText;
+  document.getElementById("editCcaDrr").value = document.getElementById("ccaDrrBadge").innerText.trim();
+  document.getElementById("editPanel").style.display = "block";
+  document.getElementById("editPanel").scrollIntoView({ behavior: "smooth" });
+}
+
+function hideEditPanel() { document.getElementById("editPanel").style.display = "none"; }
+
+checkSession(); renderUserMenu(); loadFullData();
+window.onclick = function(e) { const modal = document.getElementById("loginModal"); if(e.target === modal) modal.classList.remove("active"); };
+</script>
+</body>
 </html>
