@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>DHSUD | CLUP/ZO Templates & Legal Issuances</title>
+  <title>DHSUD Region VI | CLUP/ZO Knowledge Hub (Excel Compilation)</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -13,9 +13,8 @@
       color: #0f2b3a;
       line-height: 1.45;
     }
-    .container { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+    .container { max-width: 1400px; margin: 0 auto; padding: 0 24px; }
     
-    /* header style matching main portal (blue theme) */
     header { background: white; border-bottom: 1px solid #eef2ff; position: sticky; top: 0; z-index: 100; backdrop-filter: blur(8px); background: rgba(255,255,255,0.96); }
     .navbar { display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; flex-wrap: wrap; gap: 1rem; }
     .logo { font-weight: 800; font-size: 1.5rem; background: linear-gradient(135deg, #1e3a8a, #2563eb); background-clip: text; -webkit-background-clip: text; color: transparent; }
@@ -25,69 +24,54 @@
     .dropdown { position: relative; display: inline-block; }
     .dropbtn { background: none; border: none; font-weight: 500; font-size: 0.9rem; color: #334155; cursor: pointer; font-family: inherit; }
     .dropdown-content { display: none; position: absolute; background: white; min-width: 220px; box-shadow: 0 12px 28px rgba(0,0,0,0.1); border-radius: 16px; z-index: 1; top: 30px; left: 0; border: 1px solid #eef2ff; padding: 0.3rem 0; }
-    .dropdown-content a { display: block; padding: 0.7rem 1.2rem; color: #1e293b; font-size: 0.8rem; text-decoration: none; transition: background 0.1s; }
+    .dropdown-content a { display: block; padding: 0.7rem 1.2rem; color: #1e293b; font-size: 0.8rem; text-decoration: none; }
     .dropdown-content a:hover { background: #eff6ff; }
-    .dropdown-submenu { position: relative; }
-    .submenu-trigger { display: flex; justify-content: space-between; align-items: center; padding: 0.7rem 1.2rem; color: #1e293b; font-size: 0.8rem; cursor: pointer; background: transparent; border: none; width: 100%; text-align: left; font-family: inherit; font-weight: 500; }
-    .submenu-trigger:hover { background: #eff6ff; }
-    .arrow-right { font-size: 0.75rem; margin-left: 1rem; color: #64748b; }
-    .submenu-content { display: none; position: absolute; left: 100%; top: -6px; background: white; min-width: 170px; box-shadow: 0 12px 28px rgba(0,0,0,0.12); border-radius: 16px; z-index: 100; border: 1px solid #eef2ff; padding: 0.3rem 0; }
-    .dropdown-submenu:hover .submenu-content { display: block; }
-    .submenu-content a { display: block; padding: 0.7rem 1.2rem; color: #1e293b; font-size: 0.8rem; white-space: nowrap; }
     .btn-outline { border: 1.5px solid #2563eb; border-radius: 40px; padding: 6px 18px; background: transparent; color: #2563eb; font-weight: 600; cursor: pointer; }
     .user-menu { display: flex; align-items: center; gap: 0.5rem; background: #f1f5f9; padding: 0.3rem 0.8rem 0.3rem 1rem; border-radius: 60px; cursor: pointer; position: relative; }
-    .user-avatar { width: 32px; height: 32px; background: #2563eb; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.85rem; }
-    .user-name { font-size: 0.8rem; font-weight: 500; color: #1e293b; }
+    .user-avatar { width: 32px; height: 32px; background: #2563eb; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; }
     .login-prompt { background: #f1f5f9; padding: 0.3rem 1rem; border-radius: 40px; cursor: pointer; font-size: 0.85rem; font-weight: 500; }
-    .header-right { display: flex; align-items: center; gap: 1rem; }
     
-    /* page hero */
-    .page-hero { background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); color: white; padding: 2.5rem 0; margin-bottom: 2rem; border-radius: 0 0 2rem 2rem; text-align: center; }
+    .page-hero { background: linear-gradient(135deg, #0f2b3a 0%, #1e4a6e 100%); color: white; padding: 2.5rem 0; margin-bottom: 2rem; border-radius: 0 0 2rem 2rem; text-align: center; }
     .page-hero h1 { font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; }
-    .page-hero p { opacity: 0.9; font-size: 1rem; max-width: 720px; margin: 0 auto; }
+    .page-hero p { opacity: 0.9; max-width: 800px; margin: 0 auto; }
     
-    /* tabs style */
-    .tabs-container { display: flex; gap: 0.75rem; margin-bottom: 2rem; border-bottom: 2px solid #e2e8f0; flex-wrap: wrap; }
-    .tab-btn { background: none; border: none; padding: 0.7rem 1.8rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; border-radius: 40px 40px 0 0; transition: all 0.2s; color: #475569; }
-    .tab-btn.active { background: #2563eb; color: white; box-shadow: 0 -2px 0 #2563eb; border-radius: 40px 40px 12px 12px; }
-    .tab-pane { display: none; animation: fadeIn 0.25s ease; }
+    .tabs-container { display: flex; gap: 0.5rem; margin-bottom: 2rem; flex-wrap: wrap; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.25rem; }
+    .tab-btn { background: none; border: none; padding: 0.6rem 1.4rem; font-size: 0.85rem; font-weight: 600; cursor: pointer; border-radius: 40px 40px 12px 12px; transition: all 0.2s; color: #475569; }
+    .tab-btn.active { background: #2563eb; color: white; box-shadow: 0 -2px 0 #2563eb; }
+    .tab-pane { display: none; animation: fadeIn 0.2s ease; }
     .tab-pane.active { display: block; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     
-    /* document cards */
-    .doc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; margin: 1.5rem 0; }
+    .doc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.5rem; margin: 1.5rem 0; }
     .doc-card { background: white; border-radius: 1.5rem; border: 1px solid #e2e8f0; transition: all 0.2s; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
-    .doc-card:hover { transform: translateY(-4px); box-shadow: 0 16px 28px -12px rgba(0,0,0,0.12); border-color: #cbd5e1; }
+    .doc-card:hover { transform: translateY(-3px); box-shadow: 0 20px 28px -12px rgba(0,0,0,0.12); border-color: #cbd5e1; }
     .doc-header { background: #f8fafc; padding: 1rem 1.2rem; border-bottom: 1px solid #eef2ff; display: flex; align-items: center; gap: 0.7rem; }
     .doc-icon { font-size: 1.6rem; }
     .doc-title { font-weight: 700; font-size: 1rem; color: #0f172a; line-height: 1.3; }
-    .doc-meta { padding: 0.8rem 1.2rem; background: white; font-size: 0.75rem; color: #475569; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; }
+    .doc-meta { padding: 0.7rem 1.2rem; background: white; font-size: 0.7rem; color: #475569; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; }
     .doc-category { background: #eef2ff; padding: 0.2rem 0.6rem; border-radius: 30px; color: #1e40af; font-weight: 600; font-size: 0.65rem; }
-    .doc-desc { padding: 1rem 1.2rem; font-size: 0.8rem; color: #334155; border-bottom: 1px solid #f1f5f9; }
+    .doc-desc { padding: 1rem 1.2rem; font-size: 0.8rem; color: #334155; border-bottom: 1px solid #f1f5f9; max-height: 100px; overflow-y: auto; }
     .doc-footer { padding: 0.8rem 1.2rem; background: #fafcff; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.6rem; }
-    .btn-download { background: #2563eb; color: white; border: none; padding: 0.4rem 1rem; border-radius: 40px; font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
-    .btn-download:hover { background: #1e3a8a; transform: scale(0.98); }
-    .btn-view { background: #f1f5f9; color: #1e293b; border: none; padding: 0.4rem 1rem; border-radius: 40px; font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
-    .btn-view:hover { background: #e2e8f0; }
-    
-    .search-filter-bar { background: white; border-radius: 2rem; padding: 0.8rem 1.2rem; margin: 1rem 0 2rem; display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; box-shadow: 0 2px 6px rgba(0,0,0,0.03); border: 1px solid #eef2ff; }
+    .btn-download { background: #2563eb; color: white; border: none; padding: 0.4rem 1rem; border-radius: 40px; font-size: 0.7rem; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-download:hover { background: #1e3a8a; }
+    .btn-view { background: #f1f5f9; color: #1e293b; border: none; padding: 0.4rem 1rem; border-radius: 40px; font-size: 0.7rem; font-weight: 600; cursor: pointer; }
+    .search-filter-bar { background: white; border-radius: 2rem; padding: 0.8rem 1.2rem; margin: 1rem 0 1.8rem; display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; box-shadow: 0 2px 6px rgba(0,0,0,0.03); border: 1px solid #eef2ff; }
     .search-input { flex: 2; min-width: 200px; padding: 0.6rem 1rem; border-radius: 2rem; border: 1px solid #e2e8f0; font-family: 'Inter', sans-serif; font-size: 0.85rem; }
     .filter-select { padding: 0.6rem 1rem; border-radius: 2rem; border: 1px solid #e2e8f0; background: white; font-size: 0.8rem; cursor: pointer; }
     .clear-btn { background: #f1f5f9; border: none; border-radius: 2rem; padding: 0.6rem 1.2rem; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
-    
     .empty-state { text-align: center; padding: 3rem; background: white; border-radius: 2rem; color: #64748b; }
     footer { background: #0f2b3a; color: #cbd5e1; padding: 2rem 0 1.5rem; margin-top: 3rem; }
     .toast-msg { position: fixed; bottom: 20px; right: 20px; background: #1e293b; color: white; padding: 10px 20px; border-radius: 40px; z-index: 9999; font-size: 0.8rem; }
-    @media (max-width: 700px) { .doc-grid { grid-template-columns: 1fr; } .tabs-container { justify-content: center; } }
+    @media (max-width: 700px) { .doc-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
 <header>
   <div class="container">
     <div class="navbar">
-      <div class="logo">DHSUD</div>
+      <div class="logo">DHSUD Region VI</div>
       <div class="nav-links">
-        <a href="index.html">Home</a>
+       <a href="index.html">Home</a>
         <div class="dropdown">
           <button class="dropbtn">Certification</button>
           <div class="dropdown-content"><a href="lc.html">Locational Clearance</a><a href="SZC.html">Site Zoning Clarification</a></div>
@@ -105,8 +89,9 @@
         <a href="lgu-info.html">LGU Information</a>
         <a href="report.html">Reports</a> 
         <a href="calendar.html">Calendar of Activities</a>
-        <a href="issuance.html" style="color:#000000b; font-weight:700;">Templates & Laws</a>
+        <a href="issuance.html" style="color:#000000; font-weight:700;">Issuances</a>
         <div id="userMenuContainer"></div>
+
       </div>
     </div>
   </div>
@@ -114,266 +99,197 @@
 
 <div class="page-hero">
   <div class="container">
-    <h1>📚 CLUP / ZO Templates, Laws & Issuances</h1>
-    <p>Official references, legal frameworks, and downloadable templates for Comprehensive Land Use Plans and Zoning Ordinances (Western Visayas)</p>
+    <h1>📘 CLUP / ZO Compilation of Guidelines</h1>
+    <p>Based on official issuances, development controls, templates, and legal frameworks — complete reference for Local Government Units in Western Visayas</p>
   </div>
 </div>
 
 <div class="container">
   <div class="search-filter-bar">
-    <input type="text" id="globalSearch" class="search-input" placeholder="🔍 Search by title, description, or reference...">
+    <input type="text" id="globalSearch" class="search-input" placeholder="🔍 Search by title, legal basis, description...">
     <select id="categoryFilter" class="filter-select">
       <option value="all">📂 All Categories</option>
-      <option value="Template">📄 CLUP/ZO Templates</option>
-      <option value="Law">⚖️ National Laws</option>
-      <option value="IRR">📜 Implementing Rules (IRR)</option>
-      <option value="Memorandum">📋 DHSUD Memoranda / Circulars</option>
-      <option value="Guideline">📘 Technical Guidelines</option>
+      <option value="Template">📄 Templates / Forms</option>
+      <option value="Guideline">📘 Guidelines & Manuals</option>
+      <option value="Law">⚖️ Laws (RA, PD, EO)</option>
+      <option value="Memorandum">📋 Circulars / MC / JMC / Resolutions</option>
+      <option value="Development Control">🏭 Development Controls & Distance Reqts</option>
     </select>
     <button class="clear-btn" id="clearFiltersBtn">✖ Clear Filters</button>
   </div>
 
   <div class="tabs-container">
-    <button class="tab-btn active" data-tab="templates">📄 CLUP / ZO Formalulation</button>
+    <button class="tab-btn active" data-tab="templates">📄 Templates & Forms</button>
+    <button class="tab-btn" data-tab="guidelines">📘 Guidelines & Man.</button>
     <button class="tab-btn" data-tab="laws">⚖️ Laws & Issuances</button>
-    <button class="tab-btn" data-tab="guidelines">📘 Guidelines & Manuals</button>
+    <button class="tab-btn" data-tab="devcontrols">🏭 Development Controls</button>
   </div>
 
-  <!-- Templates Pane -->
-  <div id="templatesPane" class="tab-pane active">
-    <div class="doc-grid" id="templatesGrid"></div>
-  </div>
-  <!-- Laws Pane -->
-  <div id="lawsPane" class="tab-pane">
-    <div class="doc-grid" id="lawsGrid"></div>
-  </div>
-  <!-- Guidelines Pane -->
-  <div id="guidelinesPane" class="tab-pane">
-    <div class="doc-grid" id="guidelinesGrid"></div>
-  </div>
-  <div id="emptyMessage" class="empty-state" style="display: none;">📭 No matching documents found. Try adjusting your search or filters.</div>
+  <div id="templatesPane" class="tab-pane active"><div class="doc-grid" id="templatesGrid"></div></div>
+  <div id="guidelinesPane" class="tab-pane"><div class="doc-grid" id="guidelinesGrid"></div></div>
+  <div id="lawsPane" class="tab-pane"><div class="doc-grid" id="lawsGrid"></div></div>
+  <div id="devcontrolsPane" class="tab-pane"><div class="doc-grid" id="devcontrolsGrid"></div></div>
+  <div id="emptyMessage" class="empty-state" style="display: none;">📭 No matching documents. Adjust filters or search.</div>
 </div>
 
-<footer class="footer" id="contact">
+<footer>
   <div class="container">
     <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:1rem;">
-      <div><strong>DHSUD Region VI</strong><br>ELUPDD – CLUP & ZO Platform</div>
+      <div><strong>DHSUD Region VI - ELUPDD</strong><br>Comprehensive Land Use Plan & Zoning Ordinance Portal</div>
       <div>📞 (033) 123-4567<br>📧 elupdd.region6@dhsud.gov.ph</div>
     </div>
-    <div style="text-align:center; margin-top:2rem; border-top:1px solid #2d4a5a; padding-top:1rem;">© 2026 DHSUD — Comprehensive Land Use Plan & Zoning Ordinance System</div>
+    <div style="text-align:center; margin-top:2rem; border-top:1px solid #2d4a5a; padding-top:1rem;">© 2026 DHSUD — Data derived from official CLUP/ZO formulation compendium</div>
   </div>
 </footer>
 
 <script>
-  // ---------- MASTER DATASET: Templates, Laws, Issuances ----------
+  // --------------------------------------------------------------
+  // FULL DATASET extracted from Compilation of Guidelines.xlsx
+  // Sheets: CLUP-ZO Formulation, CLUP Templates, PDPFP Formulation,
+  // Review & Approval, Important Laws, Devt Controls, Checklists-Forms
+  // --------------------------------------------------------------
   const documents = [
-    // ========== TEMPLATES (Category: Template) ==========
-    { id: 1, title: "CLUP Formulation Guidebook (Vol. 1)", category: "Template", subCategory: "CLUP", description: "Step-by-step guide for LGUs in preparing Comprehensive Land Use Plans, including stakeholder engagement and situational analysis.", downloadLink: "#", refNumber: "DHSUD-GUIDE-001", year: "2022", tags: ["clup", "guidebook"] },
-    { id: 2, title: "Zoning Ordinance Standard Template", category: "Template", subCategory: "ZO", description: "Standard Zoning Ordinance format adopted by DHSUD containing zoning districts, use regulations, and map integration.", downloadLink: "#", refNumber: "ZO-TMPL-2023", year: "2023", tags: ["zoning", "template"] },
-    { id: 3, title: "CLUP Volume II – Sectoral Studies Template", category: "Template", subCategory: "CLUP", description: "Template for sectoral studies (DEMOGRAPHIC, ECONOMIC, INFRASTRUCTURE, ENVIRONMENT). Includes data tables and analysis framework.", downloadLink: "#", refNumber: "CLUP-SEC-02", year: "2021", tags: ["sectoral", "annex"] },
-    { id: 4, title: "Participatory Land Use Planning Toolkit", category: "Template", subCategory: "Toolkit", description: "Guide and template matrices for public consultations, workshops, and multi-stakeholder validation.", downloadLink: "#", refNumber: "PLUP-2022", year: "2022", tags: ["participation", "workshop"] },
-    { id: 5, title: "CDRA Integration Matrix for CLUP", category: "Template", subCategory: "Guideline", description: "Template for integrating Climate and Disaster Risk Assessment into CLUP (CCA-DRR compliant).", downloadLink: "#", refNumber: "CDRA-CLUP-01", year: "2023", tags: ["cdra", "climate"] },
-    // ========== LAWS & NATIONAL LEGISLATIONS ==========
-    { id: 6, title: "RA 11201 – DHSUD Act", category: "Law", subCategory: "National Law", description: "An Act creating the Department of Human Settlements and Urban Development, defining its mandate, powers and functions.", downloadLink: "#", refNumber: "RA 11201", year: "2019", tags: ["dhsud", "creation"] },
-    { id: 7, title: "RA 7160 – Local Government Code (Book I-III)", category: "Law", subCategory: "Local Governance", description: "Powers of LGUs relative to land use planning, zoning, and issuance of land use permits.", downloadLink: "#", refNumber: "RA 7160", year: "1991", tags: ["lgc", "lgu"] },
-    { id: 8, title: "PD 1308 – Regulation of the Planning Profession", category: "Law", subCategory: "Professional Regulation", description: "Regulating the practice of environmental planning, creation of Board of Environmental Planning.", downloadLink: "#", refNumber: "PD 1308", year: "1978", tags: ["planner"] },
-    { id: 9, title: "RA 10121 – Philippine DRRM Act", category: "Law", subCategory: "Disaster Risk Reduction", description: "Integrating DRRM in land use planning and zoning, mandatory mainstreaming.", downloadLink: "#", refNumber: "RA 10121", year: "2010", tags: ["drrm", "hazard"] },
-    { id: 10, title: "EO 72 (1993) – Comprehensive Land Use Policy", category: "Law", subCategory: "Executive Order", description: "Providing for the preparation and implementation of CLUPs by LGUs in coordination with HLURB.", downloadLink: "#", refNumber: "EO 72", year: "1993", tags: ["clup", "policy"] },
-    // ========== IRR / MEMORANDA / CIRCULARS ==========
-    { id: 11, title: "IRR of RA 11201 (DHSUD)", category: "IRR", subCategory: "Implementing Rules", description: "Rules and regulations implementing DHSUD Act, including devolved planning functions from HLURB.", downloadLink: "#", refNumber: "IRR-RA11201", year: "2020", tags: ["irr", "dhsud"] },
-    { id: 12, title: "MC 2023-02 – CLUP Endorsement Guidelines", category: "Memorandum", subCategory: "DHSUD Circular", description: "Memorandum Circular on streamlined CLUP endorsement for LGUs in Region VI (updated submission protocols).", downloadLink: "#", refNumber: "MC 2023-02", year: "2023", tags: ["endorsement", "region6"] },
-    { id: 13, title: "HLURB Resolution No. 854 – ZO Standard", category: "Memorandum", subCategory: "HLURB Resolution", description: "Adopting the model Zoning Ordinance for component cities and municipalities.", downloadLink: "#", refNumber: "Res. 854", year: "2008", tags: ["zo", "standard"] },
-    { id: 14, title: "Memorandum Circular No. 2022-05 (Land Use Data Management)", category: "Memorandum", subCategory: "Data Standards", description: "Guidelines for geospatial data submission and CLUP inventory archiving.", downloadLink: "#", refNumber: "MC 2022-05", year: "2022", tags: ["gis", "data"] },
-    { id: 15, title: "Joint DHSUD-DILG Memo on CLUP Consistency", category: "Memorandum", subCategory: "Joint Circular", description: "Ensuring alignment of CLUP with CDP (Comprehensive Development Plan) and local investment programming.", downloadLink: "#", refNumber: "JMC-2021-001", year: "2021", tags: ["cdp", "alignment"] },
-    // ========== GUIDELINES & MANUALS ==========
-    { id: 16, title: "CLUP & ZO Users Manual (Volume III)", category: "Guideline", subCategory: "Technical Manual", description: "Operational manual for planners, including hazard overlay mapping, zoning matrix, and admin procedures.", downloadLink: "#", refNumber: "DHSUD-MAN-03", year: "2022", tags: ["manual", "operation"] },
-    { id: 17, title: "Guide for Mainstreaming SDGs into CLUP", category: "Guideline", subCategory: "Sustainable Development", description: "Framework and indicators for integrating Sustainable Development Goals into local land use plans.", downloadLink: "#", refNumber: "SDG-CLUP", year: "2020", tags: ["sdg", "sustainability"] },
-    { id: 18, title: "Transport-Oriented Development (TOD) Guideline", category: "Guideline", subCategory: "Special Area Planning", description: "Guidelines for integrating TOD concepts in zoning and land use for urban corridors.", downloadLink: "#", refNumber: "TOD-2023", year: "2023", tags: ["transit", "urban"] },
-    { id: 19, title: "Environmental Impact Assessment and Zoning Handbook", category: "Guideline", subCategory: "EIA Integration", description: "Linking EIS system with Zoning Ordinance compliance and locational clearance.", downloadLink: "#", refNumber: "EIA-ZO-01", year: "2021", tags: ["eia", "compliance"] }
+    // ===================== TEMPLATES & FORMS (Category: Template) ====================
+    { id: 1, title: "Harmonized EP-CDRA Revised Digital Template", category: "Template", sub: "CLUP Template", description: "Digital template for Enhanced Plan - Climate & Disaster Risk Assessment (EP-CDRA) – required for risk-informed land use plans.", refNumber: "v.100125", year: "2025", tags: ["cdra","template"] },
+    { id: 2, title: "CLUP Digital Template (Full Volume)", category: "Template", sub: "CLUP Template", description: "Standard digital CLUP template with sectoral chapters, land use map integration, and zoning matrix.", refNumber: "CLUP-DT-100625", year: "2025", tags: ["clup","digital"] },
+    { id: 3, title: "Zoning Ordinance Digital Template", category: "Template", sub: "ZO Template", description: "Model Zoning Ordinance template containing zoning districts, use regulations, and permit processes.", refNumber: "ZO-TMP-031025", year: "2025", tags: ["zoning","ordinance"] },
+    { id: 4, title: "EP-CDRA Data Requirements Checklist", category: "Template", sub: "Data Tool", description: "Excel-based data inventory for CDRA inputs: hazard exposure, vulnerability, and risk assessment.", refNumber: "EPCDRA-DATA", year: "2025", tags: ["cdra","data"] },
+    { id: 5, title: "Checklist for CLUP Review", category: "Template", sub: "Checklist", description: "Official review checklist for CLUP compliance (parameters, sections, legal basis alignment).", refNumber: "CLUP-CHK-REV", year: "2022", tags: ["checklist","review"] },
+    { id: 6, title: "Checklist for CLUP Ratification", category: "Template", sub: "Checklist", description: "Procedural requirements for CLUP ratification by Sanggunian and submission.", refNumber: "RAT-CHECK", year: "2022", tags: ["ratification"] },
+    { id: 7, title: "Checklist for CLUP Amendments (Reclassification/Rezoning)", category: "Template", sub: "Checklist", description: "Application requirements for land reclassification and spot zoning amendments.", refNumber: "AMEND-CHECK", year: "2023", tags: ["amendment","reclassification"] },
+    { id: 8, title: "Checklist for PDPFP Review", category: "Template", sub: "Checklist", description: "Provincial Development & Physical Framework Plan review checklist.", refNumber: "PDPFP-CHECK", year: "2023", tags: ["pdpfp"] },
+    { id: 9, title: "Site Zoning Certification Form", category: "Template", sub: "Form", description: "Official request form for Site Zoning Certification issued by planning office.", refNumber: "SZC-FORM", year: "2021", tags: ["zc","certificate"] },
+    { id: 10, title: "Locational Clearance - Base Station/Wireless Infrastructure", category: "Template", sub: "Form", description: "Application form for telecommunication tower and wireless facility locational clearance.", refNumber: "LC-WIRELESS", year: "2021", tags: ["telco","clearance"] },
+    
+    // ===================== GUIDELINES & MANUALS ====================
+    { id: 11, title: "HLURB Guidebook Vol. 1: CLUP Planning Process", category: "Guideline", sub: "CLUP Process", description: "Step-by-step process for CLUP preparation, stakeholder engagement, and situational analysis.", refNumber: "HLURB-Vol1", year: "2018", tags: ["process","guidebook"] },
+    { id: 12, title: "HLURB Guidebook Vol. 2: Sectoral Analysis & Tools", category: "Guideline", sub: "Sectoral", description: "Sectoral studies (economic, demographic, infra) and special area studies tools.", refNumber: "HLURB-Vol2", year: "2018", tags: ["sectoral","tools"] },
+    { id: 13, title: "HLURB Guidebook Vol. 3: Model Zoning Ordinance", category: "Guideline", sub: "ZO Model", description: "Model zoning ordinance provisions, land use categories, and map integration.", refNumber: "HLURB-Vol3", year: "2018", tags: ["zo","model"] },
+    { id: 14, title: "Enhanced Housing Subsector Supplemental Guidebook", category: "Guideline", sub: "Housing", description: "Integration of Local Shelter Plan standards into CLUP housing subsector; includes working tables and computation templates.", refNumber: "DC 2024-011", year: "2024", tags: ["housing","shelter"] },
+    { id: 15, title: "Enhanced Climate & Disaster Risk Assessment (CDRA) Workbook", category: "Guideline", sub: "CDRA", description: "Mainstreaming CDRA results into CLUP; zero backlog by 2028 directive. Parameters for risk-informed land use plans.", refNumber: "MC 2025-004", year: "2025", tags: ["cdra","disaster"] },
+    { id: 16, title: "Resilient Urban Design & Development Guidelines", category: "Guideline", sub: "Urban Design", description: "Strategies for climate-resilient urban form, inclusive public spaces, design guidelines for special area studies.", refNumber: "DC 2025-005", year: "2025", tags: ["resilience","design"] },
+    { id: 17, title: "Guidelines on New Towns & Planned Unit Development (PUD)", category: "Guideline", sub: "PUD", description: "Planning standards for new towns, growth centers, and PUD design integration into CLUP.", refNumber: "DC 2025-015", year: "2025", tags: ["new towns","pud"] },
+    { id: 18, title: "Open Space Development Guidelines (Green Green Green Program)", category: "Guideline", sub: "Open Space", description: "Design strategies for open space networks, inventory for CLUP, and LGSF-Green Green Green alignment.", refNumber: "DC 2025-016", year: "2025", tags: ["openspace","green"] },
+    { id: 19, title: "Urban Planning & Design for Climate Resilience", category: "Guideline", sub: "Climate", description: "Urban planning strategies and design interventions for climate resilience in comprehensive plans.", refNumber: "MC 2021-001", year: "2021", tags: ["resilience","climate"] },
+    { id: 20, title: "Interim Guidelines for PDPFP Formulation (JMC 2023-001)", category: "Guideline", sub: "PDPFP", description: "Joint DHSUD-DepDEV-DILG guidelines for Provincial Development and Physical Framework Plans.", refNumber: "JMC 2023-001", year: "2023", tags: ["pdpfp","provincial"] },
+    { id: 21, title: "Technical Guidance: CDRA for PDPFPs", category: "Guideline", sub: "PDPFP CDRA", description: "Climate and disaster risk assessment process for formulation/updating of Provincial Development Plans.", refNumber: "DC 2025-007", year: "2025", tags: ["pdpfp","cdra"] },
+    { id: 22, title: "CLUP Communication Plan (Mandatory Requirement)", category: "Guideline", sub: "Communication", description: "Prescribing submission of CLUP Communication Plan as approval requirement for CLUP.", refNumber: "DO 2024-002", year: "2024", tags: ["commplan","approval"] },
+
+    // ===================== LAWS & NATIONAL ISSUANCES (RA, PD, EO, Key Memoranda) ====================
+    { id: 23, title: "RA 7160 - Local Government Code (Sec.20 Land Reclassification)", category: "Law", sub: "LGC", description: "Authority of cities/municipalities to reclassify agricultural lands subject to limits and DAR/DA clearances.", refNumber: "RA 7160", year: "1991", tags: ["lgc","reclassification"] },
+    { id: 24, title: "EO 72 (1993) - Preparation & Implementation of CLUPs", category: "Law", sub: "Executive Order", description: "Providing for preparation of CLUPs by LGUs pursuant to LGC and HLURB coordination.", refNumber: "EO 72", year: "1993", tags: ["clup","policy"] },
+    { id: 25, title: "PD 1096 - National Building Code of the Philippines", category: "Law", sub: "Building Code", description: "Primary building regulations with referral codes (Green Building Code).", refNumber: "PD 1096", year: "1977", tags: ["building","code"] },
+    { id: 26, title: "BP 220 - Economic & Socialized Housing Standards", category: "Law", sub: "Housing", description: "Rules and standards for economic and socialized housing projects, subdivision development.", refNumber: "BP 220", year: "1992", tags: ["housing","subdivision"] },
+    { id: 27, title: "BP 344 - Accessibility Law", category: "Law", sub: "Accessibility", description: "Mandating facilities for persons with disabilities in buildings, public utilities, and establishments.", refNumber: "BP 344", year: "1983", tags: ["pwd","accessibility"] },
+    { id: 28, title: "RA 11201 - DHSUD Act", category: "Law", sub: "DHSUD", description: "Creating Department of Human Settlements and Urban Development, transferring HLURB functions.", refNumber: "RA 11201", year: "2019", tags: ["dhsud","mandate"] },
+    { id: 29, title: "RA 10121 - Philippine DRRM Act", category: "Law", sub: "DRRM", description: "Integration of disaster risk reduction in land use planning, zoning, and local development.", refNumber: "RA 10121", year: "2010", tags: ["drrm","hazard"] },
+    { id: 30, title: "RA 12289 - ARROW Act (Right-of-Way)", category: "Law", sub: "ROW", description: "Accelerated and Reformed Right-of-Way Act for infrastructure projects.", refNumber: "RA 12289", year: "2024", tags: ["row","expropriation"] },
+    { id: 31, title: "E-NIPAS (RA 11038) - Protected Areas Management", category: "Law", sub: "Environment", description: "Amending NIPAS Act, declaring protected areas and management framework.", refNumber: "RA 11038", year: "2018", tags: ["nipas","protected"] },
+    { id: 32, title: "PD 856 - Sanitation Code", category: "Law", sub: "Health", description: "Code on sanitation requirements for establishments, water supply, waste management.", refNumber: "PD 856", year: "1975", tags: ["sanitation","health"] },
+    { id: 33, title: "PD 957 - Subdivision & Condominium Buyers Protective Decree", category: "Law", sub: "Real Estate", description: "Regulating subdivision and condominium development, buyer protection.", refNumber: "PD 957", year: "1976", tags: ["subdivision","condo"] },
+
+    // ===================== MEMORANDA, CIRCULARS, RESOLUTIONS (category: Memorandum) ====================
+    { id: 34, title: "MC 54 s.1993 - Agricultural Land Reclassification Guidelines", category: "Memorandum", sub: "Reclassification", description: "Prescribing guidelines for Section 20 of RA 7160, limits and procedure for land conversion.", refNumber: "MC 54 s.1993", year: "1993", tags: ["agri","conversion"] },
+    { id: 35, title: "Joint HLRB-DAR-DA-DILG MC (Implementing MC 54)", category: "Memorandum", sub: "Reclassification", description: "Rules implementing the authority of LGUs to reclassify lands within prescribed limits.", refNumber: "JMC 1995", year: "1995", tags: ["reclassification","jmc"] },
+    { id: 36, title: "DA MC 26 s.2022 - DA Certification for Land Reclassification", category: "Memorandum", sub: "Agriculture", description: "Issuance of DA certification pursuant to MC 54 and Joint Memorandum Circular.", refNumber: "DA MC 26-2022", year: "2022", tags: ["da","clearance"] },
+    { id: 37, title: "12-Year CLUP Planning Period (Standardization)", category: "Memorandum", sub: "Planning", description: "Adoption of standardized 12-year planning period for all CLUPs nationwide.", refNumber: "DC 2025-018", year: "2025", tags: ["period","standard"] },
+    { id: 38, title: "DHSUD MC 2021-005 - CLUP/ZO Review & Approval Process (HUCs, ICCs, CCMs)", category: "Memorandum", sub: "Approval Process", description: "Revised review timelines, Annexes: timelines for cities/municipalities and HUCs; Parameters for CLUP review.", refNumber: "MC 2021-005", year: "2021", tags: ["review","approval"] },
+    { id: 39, title: "DHSUD MC 2021-009 - PDPFP Review & Approval Process", category: "Memorandum", sub: "PDPFP", description: "Revised process for Provincial Physical Framework Plans (PDPFPs) of provinces.", refNumber: "MC 2021-009", year: "2021", tags: ["pdpfp","review"] },
+    { id: 40, title: "DO 2020-009 - Locational Guidelines for Telecom Base Stations", category: "Memorandum", sub: "Telecom", description: "Revised locational guidelines for cellular towers, wireless communication infrastructures.", refNumber: "DO 2020-009", year: "2020", tags: ["telco","tower"] },
+    { id: 41, title: "HLURB Resolution No. 925 S.2015 - Slaughterhouse/Abattoir Guidelines", category: "Memorandum", sub: "Livestock", description: "Amending guidelines for slaughterhouse locational clearance (national/local significance).", refNumber: "Res.925", year: "2015", tags: ["abattoir","slaughter"] },
+    { id: 42, title: "LTFRB MC 2017-030 - Off-Street Terminal Operations", category: "Memorandum", sub: "Transport", description: "Guidelines for transport terminals, off-street parking and terminal standards.", refNumber: "MC 2017-030", year: "2017", tags: ["terminal","transport"] },
+
+    // ===================== DEVELOPMENT CONTROLS (distance requirements, specific standards) ====================
+    { id: 43, title: "DENR DAO 2021-07 - Legal Easements Along Seas, Rivers, Lakes, Esteros", category: "Development Control", sub: "Easement", description: "Establishment of legal easements, buffer zones along water bodies.", refNumber: "DAO 2021-07", year: "2021", tags: ["easement","buffer"] },
+    { id: 44, title: "EMB MC 2014-005 - EIS System Coverage & Requirements", category: "Development Control", sub: "EIA", description: "Screening and standardized requirements under Philippine Environmental Impact Statement System.", refNumber: "MC 2014-005", year: "2014", tags: ["eia","environment"] },
+    { id: 45, title: "BAI AO 04 s.2004 - Distance Between Poultry/Livestock Farms", category: "Development Control", sub: "Agriculture", description: "Regulating minimum distance between livestock and poultry farms.", refNumber: "BAI AO 04", year: "2004", tags: ["livestock","distance"] },
+    { id: 46, title: "DENR AO 2004-59 - Special Uses of Forestlands", category: "Development Control", sub: "Forestry", description: "Rules governing special land use permits within forestlands.", refNumber: "DAO 2004-59", year: "2004", tags: ["forest","special use"] },
+    { id: 47, title: "DOE DC 2017-11-0011 - Liquid Fuels Retailing (TSRO)", category: "Development Control", sub: "Energy", description: "Rules for liquid fuels retail outlets, TSRO requirements.", refNumber: "DC 2017-11-0011", year: "2017", tags: ["fuel","retail"] },
+    { id: 48, title: "DHSUD DC 2025-021 - Locational Clearance for Liquid Fuels & Auto-LPG Stations", category: "Development Control", sub: "Energy", description: "Processing of locational clearance for fuel stations and LPG dispensing.", refNumber: "DC 2025-021", year: "2025", tags: ["lpg","clearance"] },
+    { id: 49, title: "CAAP Manual of Standards for Aerodromes", category: "Development Control", sub: "Aviation", description: "Design and safety standards for aerodromes, airport protection zones.", refNumber: "CAAP", year: "2020", tags: ["aerodrome","airport"] },
+    { id: 50, title: "Areas for Priority Development (APD) - Blighted/Vacant Lands", category: "Development Control", sub: "Urban Renewal", description: "Land use planning guidelines for APD: blighted areas, idle lands redevelopment.", refNumber: "APD Guidelines", year: "2015", tags: ["apd","blighted"] },
+    { id: 51, title: "Cockpit Design Standards & Guidelines", category: "Development Control", sub: "Recreation", description: "Locational and structural design standards for cockpits/arenas.", refNumber: "Cockpit", year: "2018", tags: ["cockpit","arena"] },
+    { id: 52, title: "Columbarium Projects - Rules & Regulations", category: "Development Control", sub: "Cemetery", description: "Governs columbarium development, setbacks, and locational criteria.", refNumber: "Columbarium", year: "2019", tags: ["columbarium"] },
+    { id: 53, title: "Funeral Establishments - Locational Clearance & Design Standards", category: "Development Control", sub: "Public Services", description: "Application and design standards for funeral homes and chapels.", refNumber: "Funeral Est", year: "2017", tags: ["funeral"] },
+    { id: 54, title: "Memorial Parks & Cemeteries (Amended AO 13)", category: "Development Control", sub: "Cemetery", description: "Rules and regulations for memorial park development, setbacks, landscaping.", refNumber: "AO 13", year: "2016", tags: ["cemetery"] },
+    { id: 55, title: "Land Terminals - Design Standards (DPWH/LTFRB)", category: "Development Control", sub: "Transport", description: "Design standards and guidelines for land transport terminals and garages.", refNumber: "Terminal Std", year: "2018", tags: ["terminal","garage"] },
+    { id: 56, title: "Manufacturing Industries - Locational Guidelines", category: "Development Control", sub: "Industry", description: "Locational standards and buffer zones for manufacturing plants.", refNumber: "Ind'l Guide", year: "2012", tags: ["manufacturing","industry"] },
+    { id: 57, title: "BJMP Manual on Habitat, Water, Sanitation in Jails", category: "Development Control", sub: "Correctional", description: "Design and sanitation standards for jail facilities (ICRC-BJMP).", refNumber: "BJMP Manual", year: "2019", tags: ["jail","detention"] },
+    { id: 58, title: "Green Building Code (Referral Code of PD 1096)", category: "Development Control", sub: "Sustainability", description: "Energy efficiency, water conservation, and sustainable design provisions.", refNumber: "GB Code", year: "2015", tags: ["green","sustainable"] },
+    { id: 59, title: "Farmlot Subdivisions - Design Standards", category: "Development Control", sub: "Agri", description: "AO and design standards for agricultural farmlot subdivisions.", refNumber: "Farmlot", year: "2010", tags: ["farmlot","agri"] },
+    { id: 60, title: "Industrial Estate - Design & Locational Guidelines", category: "Development Control", sub: "Industrial", description: "Standards for industrial estate development, utilities, and buffer.", refNumber: "Ind'l Estate", year: "2014", tags: ["industrial estate"] },
+    { id: 61, title: "DENR MC 2009-14 - 50m Buffer Zone for Banana Plantations", category: "Development Control", sub: "Agriculture", description: "Strict implementation of 50m buffer from residential areas/water bodies to banana plantations.", refNumber: "MC 2009-14", year: "2009", tags: ["buffer","banana"] },
+    { id: 62, title: "DepED Educational Facilities Manual (DRR Integration)", category: "Development Control", sub: "Education", description: "Handbook on educational facilities integrating disaster risk reduction in school construction.", refNumber: "DepED Manual", year: "2010", tags: ["school","drr"] },
+    { id: 63, title: "DOH Hospital Planning & Design Guidelines", category: "Development Control", sub: "Health", description: "Standards for hospital location, bed capacity, and facility design.", refNumber: "DOH Hosp", year: "2014", tags: ["hospital","health"] },
+    { id: 64, title: "WHO District Hospitals: Guidelines for Development", category: "Development Control", sub: "Health", description: "International standards for district hospital planning and catchment area.", refNumber: "WHO", year: "2018", tags: ["who","hospital"] },
+    { id: 65, title: "DPWH Design Guidelines Vol.6 - Public Buildings", category: "Development Control", sub: "Infra", description: "Criteria and standards for public buildings, government facilities.", refNumber: "DPWH Vol6", year: "2019", tags: ["public bldg"] },
+    { id: 66, title: "Heritage Conservation Issuances", category: "Development Control", sub: "Heritage", description: "Guidelines for conservation districts, heritage zones, and protected structures.", refNumber: "Heritage", year: "2010", tags: ["heritage","conservation"] },
+    { id: 67, title: "RA 7076 & RA 7942 - Small Scale Mining & Philippine Mining Act IRR", category: "Development Control", sub: "Mining", description: "Implementing rules for people's small-scale mining and large-scale mining permits.", refNumber: "Mining Act", year: "1995", tags: ["mining","small scale"] },
+    { id: 68, title: "Gaming Site Regulatory Manual (Distance Requirements)", category: "Development Control", sub: "Gaming", description: "Site location distance requirements for casinos, bingo parlors, gaming establishments.", refNumber: "Gaming", year: "2018", tags: ["gaming","casino"] }
   ];
 
-  // Helper Functions
+  // Helper functions
   function escapeHtml(str) { if(!str) return ''; return String(str).replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' })[m]); }
+  function showToast(msg) { let t = document.querySelector(".toast-msg"); if(t) t.remove(); let toast = document.createElement("div"); toast.className = "toast-msg"; toast.innerText = msg; document.body.appendChild(toast); setTimeout(() => toast.remove(), 2500); }
 
   function renderCards(docArray, containerId) {
     const container = document.getElementById(containerId);
     if (!container) return;
-    if (!docArray.length) {
-      container.innerHTML = '<div class="empty-state" style="grid-column:1/-1;">📭 No documents found in this category.</div>';
-      return;
-    }
+    if (!docArray.length) { container.innerHTML = '<div class="empty-state" style="grid-column:1/-1;">📭 No entries match.</div>'; return; }
     container.innerHTML = docArray.map(doc => `
       <div class="doc-card" data-id="${doc.id}">
-        <div class="doc-header">
-          <span class="doc-icon">${doc.category === 'Template' ? '📄' : (doc.category === 'Law' ? '⚖️' : (doc.category === 'IRR' ? '📜' : (doc.category === 'Memorandum' ? '📋' : '📘')))}</span>
-          <div class="doc-title">${escapeHtml(doc.title)}</div>
-        </div>
-        <div class="doc-meta">
-          <span class="doc-category">${escapeHtml(doc.category)}${doc.subCategory ? ` / ${escapeHtml(doc.subCategory)}` : ''}</span>
-          <span>📅 ${doc.year || '—'}</span>
-          <span>🔖 ${escapeHtml(doc.refNumber || 'N/A')}</span>
-        </div>
+        <div class="doc-header"><span class="doc-icon">${doc.category === 'Template' ? '📄' : (doc.category === 'Guideline' ? '📘' : (doc.category === 'Law' ? '⚖️' : (doc.category === 'Memorandum' ? '📋' : '🏭')))}</span>
+        <div class="doc-title">${escapeHtml(doc.title)}</div></div>
+        <div class="doc-meta"><span class="doc-category">${escapeHtml(doc.category)}${doc.sub ? ` / ${escapeHtml(doc.sub)}` : ''}</span><span>📅 ${doc.year || '—'}</span><span>🔖 ${escapeHtml(doc.refNumber || 'N/A')}</span></div>
         <div class="doc-desc">${escapeHtml(doc.description)}</div>
-        <div class="doc-footer">
-          <a href="${doc.downloadLink}" class="btn-download" target="_blank" onclick="previewAction(event, '${escapeHtml(doc.title)}')">📥 Download / View</a>
-          <button class="btn-view" onclick="showDetails(${doc.id})">ℹ️ Details</button>
-        </div>
+        <div class="doc-footer"><a href="#" class="btn-download" onclick="previewAction(event, '${escapeHtml(doc.title)}')">📥 View Reference</a>
+        <button class="btn-view" onclick="showDetails(${doc.id})">ℹ️ Legal Basis</button></div>
       </div>
     `).join('');
   }
 
-  // Filter logic across active tab
-  let currentTab = "templates";
-  let globalSearchTerm = "";
-  let categoryFilterVal = "all";
+  window.showDetails = function(id) {
+    const doc = documents.find(d => d.id === id);
+    if(doc) alert(`📌 ${doc.title}\n📂 Category: ${doc.category}\n📜 Legal/Ref: ${doc.refNumber}\n📝 Description: ${doc.description}\n🏷️ Tags: ${doc.tags?.join(', ') || '—'}`);
+  };
+  window.previewAction = function(e, title) { e.preventDefault(); showToast(`📄 "${title}" — available from DHSUD Region VI official repository.`); };
 
+  let globalSearch = "", categoryFilter = "all", activeTab = "templates";
   function filterAndRender() {
-    let filtered = [...documents];
-    // filter by search (title, description, refNumber, tags)
-    if (globalSearchTerm.trim() !== "") {
-      const term = globalSearchTerm.toLowerCase();
-      filtered = filtered.filter(doc => 
-        doc.title.toLowerCase().includes(term) ||
-        doc.description.toLowerCase().includes(term) ||
-        doc.refNumber.toLowerCase().includes(term) ||
-        (doc.tags && doc.tags.some(tag => tag.toLowerCase().includes(term)))
-      );
-    }
-    // category filter (all categories or specific)
-    if (categoryFilterVal !== "all") {
-      filtered = filtered.filter(doc => doc.category === categoryFilterVal);
-    }
-    
-    // split per tab view (templates pane = category Template; laws = Law/IRR/Memorandum; guidelines = Guideline)
-    let templatesDocs = filtered.filter(d => d.category === "Template");
-    let lawsDocs = filtered.filter(d => d.category === "Law" || d.category === "IRR" || d.category === "Memorandum");
-    let guidelinesDocs = filtered.filter(d => d.category === "Guideline");
-    
-    renderCards(templatesDocs, "templatesGrid");
-    renderCards(lawsDocs, "lawsGrid");
-    renderCards(guidelinesDocs, "guidelinesGrid");
-    
-    // optional empty global message - but each container handles emptiness
-    const anyVisible = (templatesDocs.length + lawsDocs.length + guidelinesDocs.length) > 0;
+    let filtered = documents.filter(d => {
+      let matchSearch = globalSearch === "" || d.title.toLowerCase().includes(globalSearch) || d.description.toLowerCase().includes(globalSearch) || d.refNumber.toLowerCase().includes(globalSearch) || (d.tags && d.tags.some(t => t.includes(globalSearch)));
+      let matchCat = categoryFilter === "all" || d.category === categoryFilter;
+      return matchSearch && matchCat;
+    });
+    let templates = filtered.filter(d => d.category === "Template");
+    let guidelines = filtered.filter(d => d.category === "Guideline");
+    let lawsCombined = filtered.filter(d => d.category === "Law" || d.category === "Memorandum");
+    let devControls = filtered.filter(d => d.category === "Development Control");
+    renderCards(templates, "templatesGrid");
+    renderCards(guidelines, "guidelinesGrid");
+    renderCards(lawsCombined, "lawsGrid");
+    renderCards(devControls, "devcontrolsGrid");
+    let anyVisible = (templates.length+guidelines.length+lawsCombined.length+devControls.length)>0;
     document.getElementById("emptyMessage").style.display = anyVisible ? "none" : "block";
   }
 
-  // Tab switching
   function switchTab(tabId) {
-    currentTab = tabId;
-    document.querySelectorAll(".tab-pane").forEach(pane => pane.classList.remove("active"));
+    activeTab = tabId;
+    document.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
     document.getElementById(`${tabId}Pane`).classList.add("active");
     document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
     document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add("active");
-    // re-run filter to reflect current filtering state in each pane
-    filterAndRender();
   }
 
-  // Detail modal using simple alert with formatted content (non-intrusive)
-  function showDetails(docId) {
-    const doc = documents.find(d => d.id === docId);
-    if (!doc) return;
-    const details = `📌 ${doc.title}\n📂 Category: ${doc.category}${doc.subCategory ? ` (${doc.subCategory})` : ''}\n🔖 Reference: ${doc.refNumber}\n📅 Year: ${doc.year}\n📝 Description: ${doc.description}\n🏷️ Tags: ${doc.tags ? doc.tags.join(', ') : '—'}\n\n🔗 Download/View link: ${doc.downloadLink}`;
-    alert(details);
-  }
-
-  function previewAction(event, title) {
-    event.preventDefault();
-    showToast(`🔍 "${title}" — In full portal, this would open the official PDF / document repository. (Demo)`, "info");
-  }
-
-  function showToast(msg, type="info") {
-    const existing = document.querySelector(".toast-msg");
-    if (existing) existing.remove();
-    const toast = document.createElement("div");
-    toast.className = "toast-msg";
-    toast.innerText = msg;
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 2800);
-  }
-
-  // Clear filters
-  function clearFilters() {
-    document.getElementById("globalSearch").value = "";
-    document.getElementById("categoryFilter").value = "all";
-    globalSearchTerm = "";
-    categoryFilterVal = "all";
-    filterAndRender();
-    showToast("Filters cleared", "info");
-  }
-
-  // dropdown hover for main site consistency
-  function setupDropdowns() {
-    let timeout;
-    document.querySelectorAll(".dropdown").forEach(dd => {
-      const c = dd.querySelector(".dropdown-content");
-      if (!c) return;
-      dd.addEventListener("mouseenter", () => { clearTimeout(timeout); c.style.display = "block"; });
-      dd.addEventListener("mouseleave", () => { timeout = setTimeout(() => { if(!dd.matches(":hover") && !c.matches(":hover")) c.style.display = "none"; }, 150); });
-      c.addEventListener("mouseenter", () => { clearTimeout(timeout); c.style.display = "block"; });
-      c.addEventListener("mouseleave", () => { timeout = setTimeout(() => c.style.display = "none", 150); });
-    });
-  }
-
-  // simple user session mimic from index (read from localStorage)
-  function renderUserMenu() {
-    const container = document.getElementById("userMenuContainer");
-    if (!container) return;
-    const sessionRaw = localStorage.getItem("dhsud_session");
-    if (sessionRaw) {
-      try {
-        const session = JSON.parse(sessionRaw);
-        const initials = (session.fullName || "U").charAt(0).toUpperCase();
-        container.innerHTML = `
-          <div class="user-menu" id="userMenuDropdown">
-            <div class="user-avatar">${initials}</div>
-            <span class="user-name">${session.fullName?.split(" ")[0] || "User"}</span>
-            <span style="font-size:0.7rem;">▼</span>
-            <div class="user-dropdown-menu" style="position:absolute; top:48px; right:0; background:white; border-radius:20px; min-width:160px; box-shadow:0 12px 28px rgba(0,0,0,0.1); display:none; z-index:200;">
-              <div class="user-dropdown-item" style="padding:0.7rem 1rem; border-bottom:1px solid #eef2ff;">👤 ${escapeHtml(session.email)}</div>
-              <div class="user-dropdown-item" id="logoutUserBtn" style="padding:0.7rem 1rem; color:#dc2626; cursor:pointer;">🚪 Sign Out</div>
-            </div>
-          </div>
-        `;
-        const dropdownDiv = document.getElementById("userMenuDropdown");
-        if (dropdownDiv) {
-          dropdownDiv.addEventListener("click", (e) => {
-            e.stopPropagation();
-            const panel = dropdownDiv.querySelector(".user-dropdown-menu");
-            if (panel) panel.style.display = panel.style.display === "block" ? "none" : "block";
-          });
-          document.addEventListener("click", () => {
-            const panel = dropdownDiv.querySelector(".user-dropdown-menu");
-            if (panel) panel.style.display = "none";
-          });
-          document.getElementById("logoutUserBtn")?.addEventListener("click", () => {
-            localStorage.removeItem("dhsud_session");
-            window.location.reload();
-          });
-        }
-      } catch(e) { container.innerHTML = `<div class="login-prompt" onclick="window.location.href='login.html'">🔐 Sign In</div>`; }
-    } else {
-      container.innerHTML = `<div class="login-prompt" onclick="window.location.href='login.html'">🔐 Sign In</div>`;
-    }
-  }
-
-  // event listeners
   document.addEventListener("DOMContentLoaded", () => {
-    renderUserMenu();
-    setupDropdowns();
     filterAndRender();
-    // tab click handlers
-    document.querySelectorAll(".tab-btn").forEach(btn => {
-      btn.addEventListener("click", (e) => {
-        const tab = btn.getAttribute("data-tab");
-        if (tab) switchTab(tab);
-      });
-    });
-    const searchInput = document.getElementById("globalSearch");
-    const categorySelect = document.getElementById("categoryFilter");
-    if (searchInput) searchInput.addEventListener("input", (e) => { globalSearchTerm = e.target.value; filterAndRender(); });
-    if (categorySelect) categorySelect.addEventListener("change", (e) => { categoryFilterVal = e.target.value; filterAndRender(); });
-    document.getElementById("clearFiltersBtn")?.addEventListener("click", clearFilters);
+    document.querySelectorAll(".tab-btn").forEach(btn => btn.addEventListener("click", (e) => { switchTab(btn.getAttribute("data-tab")); }));
+    document.getElementById("globalSearch").addEventListener("input", (e) => { globalSearch = e.target.value.toLowerCase(); filterAndRender(); });
+    document.getElementById("categoryFilter").addEventListener("change", (e) => { categoryFilter = e.target.value; filterAndRender(); });
+    document.getElementById("clearFiltersBtn").addEventListener("click", () => { document.getElementById("globalSearch").value = ""; document.getElementById("categoryFilter").value = "all"; globalSearch = ""; categoryFilter = "all"; filterAndRender(); showToast("Filters cleared"); });
+    const session = localStorage.getItem("dhsud_session") ? JSON.parse(localStorage.getItem("dhsud_session")) : null;
+    const userContainer = document.getElementById("userMenuContainer");
+    if (userContainer) userContainer.innerHTML = session ? `<div class="user-menu"><div class="user-avatar">${session.fullName?.charAt(0) || 'U'}</div><span class="user-name">${session.fullName?.split(' ')[0]}</span></div>` : `<div class="login-prompt">🔐 Sign In</div>`;
   });
 </script>
 </body>
