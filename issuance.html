@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>DHSUD | CLUP/ZO Templates & Legal Issuances</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f4f7fc;
+      color: #0f2b3a;
+      line-height: 1.45;
+    }
+    .container { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+    
+    /* header style matching main portal (blue theme) */
+    header { background: white; border-bottom: 1px solid #eef2ff; position: sticky; top: 0; z-index: 100; backdrop-filter: blur(8px); background: rgba(255,255,255,0.96); }
+    .navbar { display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; flex-wrap: wrap; gap: 1rem; }
+    .logo { font-weight: 800; font-size: 1.5rem; background: linear-gradient(135deg, #1e3a8a, #2563eb); background-clip: text; -webkit-background-clip: text; color: transparent; }
+    .nav-links { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
+    .nav-links a { text-decoration: none; color: #334155; font-weight: 500; font-size: 0.9rem; transition: 0.2s; }
+    .nav-links a:hover { color: #2563eb; }
+    .dropdown { position: relative; display: inline-block; }
+    .dropbtn { background: none; border: none; font-weight: 500; font-size: 0.9rem; color: #334155; cursor: pointer; font-family: inherit; }
+    .dropdown-content { display: none; position: absolute; background: white; min-width: 220px; box-shadow: 0 12px 28px rgba(0,0,0,0.1); border-radius: 16px; z-index: 1; top: 30px; left: 0; border: 1px solid #eef2ff; padding: 0.3rem 0; }
+    .dropdown-content a { display: block; padding: 0.7rem 1.2rem; color: #1e293b; font-size: 0.8rem; text-decoration: none; transition: background 0.1s; }
+    .dropdown-content a:hover { background: #eff6ff; }
+    .dropdown-submenu { position: relative; }
+    .submenu-trigger { display: flex; justify-content: space-between; align-items: center; padding: 0.7rem 1.2rem; color: #1e293b; font-size: 0.8rem; cursor: pointer; background: transparent; border: none; width: 100%; text-align: left; font-family: inherit; font-weight: 500; }
+    .submenu-trigger:hover { background: #eff6ff; }
+    .arrow-right { font-size: 0.75rem; margin-left: 1rem; color: #64748b; }
+    .submenu-content { display: none; position: absolute; left: 100%; top: -6px; background: white; min-width: 170px; box-shadow: 0 12px 28px rgba(0,0,0,0.12); border-radius: 16px; z-index: 100; border: 1px solid #eef2ff; padding: 0.3rem 0; }
+    .dropdown-submenu:hover .submenu-content { display: block; }
+    .submenu-content a { display: block; padding: 0.7rem 1.2rem; color: #1e293b; font-size: 0.8rem; white-space: nowrap; }
+    .btn-outline { border: 1.5px solid #2563eb; border-radius: 40px; padding: 6px 18px; background: transparent; color: #2563eb; font-weight: 600; cursor: pointer; }
+    .user-menu { display: flex; align-items: center; gap: 0.5rem; background: #f1f5f9; padding: 0.3rem 0.8rem 0.3rem 1rem; border-radius: 60px; cursor: pointer; position: relative; }
+    .user-avatar { width: 32px; height: 32px; background: #2563eb; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.85rem; }
+    .user-name { font-size: 0.8rem; font-weight: 500; color: #1e293b; }
+    .login-prompt { background: #f1f5f9; padding: 0.3rem 1rem; border-radius: 40px; cursor: pointer; font-size: 0.85rem; font-weight: 500; }
+    .header-right { display: flex; align-items: center; gap: 1rem; }
+    
+    /* page hero */
+    .page-hero { background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); color: white; padding: 2.5rem 0; margin-bottom: 2rem; border-radius: 0 0 2rem 2rem; text-align: center; }
+    .page-hero h1 { font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .page-hero p { opacity: 0.9; font-size: 1rem; max-width: 720px; margin: 0 auto; }
+    
+    /* tabs style */
+    .tabs-container { display: flex; gap: 0.75rem; margin-bottom: 2rem; border-bottom: 2px solid #e2e8f0; flex-wrap: wrap; }
+    .tab-btn { background: none; border: none; padding: 0.7rem 1.8rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; border-radius: 40px 40px 0 0; transition: all 0.2s; color: #475569; }
+    .tab-btn.active { background: #2563eb; color: white; box-shadow: 0 -2px 0 #2563eb; border-radius: 40px 40px 12px 12px; }
+    .tab-pane { display: none; animation: fadeIn 0.25s ease; }
+    .tab-pane.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    
+    /* document cards */
+    .doc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; margin: 1.5rem 0; }
+    .doc-card { background: white; border-radius: 1.5rem; border: 1px solid #e2e8f0; transition: all 0.2s; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
+    .doc-card:hover { transform: translateY(-4px); box-shadow: 0 16px 28px -12px rgba(0,0,0,0.12); border-color: #cbd5e1; }
+    .doc-header { background: #f8fafc; padding: 1rem 1.2rem; border-bottom: 1px solid #eef2ff; display: flex; align-items: center; gap: 0.7rem; }
+    .doc-icon { font-size: 1.6rem; }
+    .doc-title { font-weight: 700; font-size: 1rem; color: #0f172a; line-height: 1.3; }
+    .doc-meta { padding: 0.8rem 1.2rem; background: white; font-size: 0.75rem; color: #475569; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; }
+    .doc-category { background: #eef2ff; padding: 0.2rem 0.6rem; border-radius: 30px; color: #1e40af; font-weight: 600; font-size: 0.65rem; }
+    .doc-desc { padding: 1rem 1.2rem; font-size: 0.8rem; color: #334155; border-bottom: 1px solid #f1f5f9; }
+    .doc-footer { padding: 0.8rem 1.2rem; background: #fafcff; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.6rem; }
+    .btn-download { background: #2563eb; color: white; border: none; padding: 0.4rem 1rem; border-radius: 40px; font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-download:hover { background: #1e3a8a; transform: scale(0.98); }
+    .btn-view { background: #f1f5f9; color: #1e293b; border: none; padding: 0.4rem 1rem; border-radius: 40px; font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-view:hover { background: #e2e8f0; }
+    
+    .search-filter-bar { background: white; border-radius: 2rem; padding: 0.8rem 1.2rem; margin: 1rem 0 2rem; display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; box-shadow: 0 2px 6px rgba(0,0,0,0.03); border: 1px solid #eef2ff; }
+    .search-input { flex: 2; min-width: 200px; padding: 0.6rem 1rem; border-radius: 2rem; border: 1px solid #e2e8f0; font-family: 'Inter', sans-serif; font-size: 0.85rem; }
+    .filter-select { padding: 0.6rem 1rem; border-radius: 2rem; border: 1px solid #e2e8f0; background: white; font-size: 0.8rem; cursor: pointer; }
+    .clear-btn { background: #f1f5f9; border: none; border-radius: 2rem; padding: 0.6rem 1.2rem; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
+    
+    .empty-state { text-align: center; padding: 3rem; background: white; border-radius: 2rem; color: #64748b; }
+    footer { background: #0f2b3a; color: #cbd5e1; padding: 2rem 0 1.5rem; margin-top: 3rem; }
+    .toast-msg { position: fixed; bottom: 20px; right: 20px; background: #1e293b; color: white; padding: 10px 20px; border-radius: 40px; z-index: 9999; font-size: 0.8rem; }
+    @media (max-width: 700px) { .doc-grid { grid-template-columns: 1fr; } .tabs-container { justify-content: center; } }
+  </style>
+</head>
+<body>
+<header>
+  <div class="container">
+    <div class="navbar">
+      <div class="logo">DHSUD</div>
+      <div class="nav-links">
+        <a href="index.html">Home</a>
+        <div class="dropdown">
+          <button class="dropbtn">Certification</button>
+          <div class="dropdown-content"><a href="lc.html">Locational Clearance</a><a href="SZC.html">Site Zoning Clarification</a></div>
+        </div>	
+        <div class="dropdown">
+          <button class="dropbtn">Land Use Plans</button>
+          <div class="dropdown-content">
+            <div class="dropdown-submenu">
+              <button class="submenu-trigger">CLUP & ZO <span class="arrow-right">▸</span></button>
+              <div class="submenu-content"><a href="inventory.html">Inventory</a><a href="status.html">Status</a></div>
+            </div>
+            <a href="status.html">PDPFP</a>
+          </div>
+        </div>
+        <a href="lgu-info.html">LGU Information</a>
+        <a href="report.html">Reports</a> 
+        <a href="calendar.html">Calendar of Activities</a>
+        <a href="templates-laws.html" style="color:#2563eb; font-weight:700;">📚 Templates & Laws</a>
+        <div id="userMenuContainer"></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page-hero">
+  <div class="container">
+    <h1>📚 CLUP / ZO Templates, Laws & Issuances</h1>
+    <p>Official references, legal frameworks, and downloadable templates for Comprehensive Land Use Plans and Zoning Ordinances (Western Visayas)</p>
+  </div>
+</div>
+
+<div class="container">
+  <div class="search-filter-bar">
+    <input type="text" id="globalSearch" class="search-input" placeholder="🔍 Search by title, description, or reference...">
+    <select id="categoryFilter" class="filter-select">
+      <option value="all">📂 All Categories</option>
+      <option value="Template">📄 CLUP/ZO Templates</option>
+      <option value="Law">⚖️ National Laws</option>
+      <option value="IRR">📜 Implementing Rules (IRR)</option>
+      <option value="Memorandum">📋 DHSUD Memoranda / Circulars</option>
+      <option value="Guideline">📘 Technical Guidelines</option>
+    </select>
+    <button class="clear-btn" id="clearFiltersBtn">✖ Clear Filters</button>
+  </div>
+
+  <div class="tabs-container">
+    <button class="tab-btn active" data-tab="templates">📄 CLUP / ZO Templates</button>
+    <button class="tab-btn" data-tab="laws">⚖️ Laws & Issuances</button>
+    <button class="tab-btn" data-tab="guidelines">📘 Guidelines & Manuals</button>
+  </div>
+
+  <!-- Templates Pane -->
+  <div id="templatesPane" class="tab-pane active">
+    <div class="doc-grid" id="templatesGrid"></div>
+  </div>
+  <!-- Laws Pane -->
+  <div id="lawsPane" class="tab-pane">
+    <div class="doc-grid" id="lawsGrid"></div>
+  </div>
+  <!-- Guidelines Pane -->
+  <div id="guidelinesPane" class="tab-pane">
+    <div class="doc-grid" id="guidelinesGrid"></div>
+  </div>
+  <div id="emptyMessage" class="empty-state" style="display: none;">📭 No matching documents found. Try adjusting your search or filters.</div>
+</div>
+
+<footer class="footer" id="contact">
+  <div class="container">
+    <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:1rem;">
+      <div><strong>DHSUD Region VI</strong><br>ELUPDD – CLUP & ZO Platform</div>
+      <div>📞 (033) 123-4567<br>📧 elupdd.region6@dhsud.gov.ph</div>
+    </div>
+    <div style="text-align:center; margin-top:2rem; border-top:1px solid #2d4a5a; padding-top:1rem;">© 2026 DHSUD — Comprehensive Land Use Plan & Zoning Ordinance System</div>
+  </div>
+</footer>
+
+<script>
+  // ---------- MASTER DATASET: Templates, Laws, Issuances ----------
+  const documents = [
+    // ========== TEMPLATES (Category: Template) ==========
+    { id: 1, title: "CLUP Formulation Guidebook (Vol. 1)", category: "Template", subCategory: "CLUP", description: "Step-by-step guide for LGUs in preparing Comprehensive Land Use Plans, including stakeholder engagement and situational analysis.", downloadLink: "#", refNumber: "DHSUD-GUIDE-001", year: "2022", tags: ["clup", "guidebook"] },
+    { id: 2, title: "Zoning Ordinance Standard Template", category: "Template", subCategory: "ZO", description: "Standard Zoning Ordinance format adopted by DHSUD containing zoning districts, use regulations, and map integration.", downloadLink: "#", refNumber: "ZO-TMPL-2023", year: "2023", tags: ["zoning", "template"] },
+    { id: 3, title: "CLUP Volume II – Sectoral Studies Template", category: "Template", subCategory: "CLUP", description: "Template for sectoral studies (DEMOGRAPHIC, ECONOMIC, INFRASTRUCTURE, ENVIRONMENT). Includes data tables and analysis framework.", downloadLink: "#", refNumber: "CLUP-SEC-02", year: "2021", tags: ["sectoral", "annex"] },
+    { id: 4, title: "Participatory Land Use Planning Toolkit", category: "Template", subCategory: "Toolkit", description: "Guide and template matrices for public consultations, workshops, and multi-stakeholder validation.", downloadLink: "#", refNumber: "PLUP-2022", year: "2022", tags: ["participation", "workshop"] },
+    { id: 5, title: "CDRA Integration Matrix for CLUP", category: "Template", subCategory: "Guideline", description: "Template for integrating Climate and Disaster Risk Assessment into CLUP (CCA-DRR compliant).", downloadLink: "#", refNumber: "CDRA-CLUP-01", year: "2023", tags: ["cdra", "climate"] },
+    // ========== LAWS & NATIONAL LEGISLATIONS ==========
+    { id: 6, title: "RA 11201 – DHSUD Act", category: "Law", subCategory: "National Law", description: "An Act creating the Department of Human Settlements and Urban Development, defining its mandate, powers and functions.", downloadLink: "#", refNumber: "RA 11201", year: "2019", tags: ["dhsud", "creation"] },
+    { id: 7, title: "RA 7160 – Local Government Code (Book I-III)", category: "Law", subCategory: "Local Governance", description: "Powers of LGUs relative to land use planning, zoning, and issuance of land use permits.", downloadLink: "#", refNumber: "RA 7160", year: "1991", tags: ["lgc", "lgu"] },
+    { id: 8, title: "PD 1308 – Regulation of the Planning Profession", category: "Law", subCategory: "Professional Regulation", description: "Regulating the practice of environmental planning, creation of Board of Environmental Planning.", downloadLink: "#", refNumber: "PD 1308", year: "1978", tags: ["planner"] },
+    { id: 9, title: "RA 10121 – Philippine DRRM Act", category: "Law", subCategory: "Disaster Risk Reduction", description: "Integrating DRRM in land use planning and zoning, mandatory mainstreaming.", downloadLink: "#", refNumber: "RA 10121", year: "2010", tags: ["drrm", "hazard"] },
+    { id: 10, title: "EO 72 (1993) – Comprehensive Land Use Policy", category: "Law", subCategory: "Executive Order", description: "Providing for the preparation and implementation of CLUPs by LGUs in coordination with HLURB.", downloadLink: "#", refNumber: "EO 72", year: "1993", tags: ["clup", "policy"] },
+    // ========== IRR / MEMORANDA / CIRCULARS ==========
+    { id: 11, title: "IRR of RA 11201 (DHSUD)", category: "IRR", subCategory: "Implementing Rules", description: "Rules and regulations implementing DHSUD Act, including devolved planning functions from HLURB.", downloadLink: "#", refNumber: "IRR-RA11201", year: "2020", tags: ["irr", "dhsud"] },
+    { id: 12, title: "MC 2023-02 – CLUP Endorsement Guidelines", category: "Memorandum", subCategory: "DHSUD Circular", description: "Memorandum Circular on streamlined CLUP endorsement for LGUs in Region VI (updated submission protocols).", downloadLink: "#", refNumber: "MC 2023-02", year: "2023", tags: ["endorsement", "region6"] },
+    { id: 13, title: "HLURB Resolution No. 854 – ZO Standard", category: "Memorandum", subCategory: "HLURB Resolution", description: "Adopting the model Zoning Ordinance for component cities and municipalities.", downloadLink: "#", refNumber: "Res. 854", year: "2008", tags: ["zo", "standard"] },
+    { id: 14, title: "Memorandum Circular No. 2022-05 (Land Use Data Management)", category: "Memorandum", subCategory: "Data Standards", description: "Guidelines for geospatial data submission and CLUP inventory archiving.", downloadLink: "#", refNumber: "MC 2022-05", year: "2022", tags: ["gis", "data"] },
+    { id: 15, title: "Joint DHSUD-DILG Memo on CLUP Consistency", category: "Memorandum", subCategory: "Joint Circular", description: "Ensuring alignment of CLUP with CDP (Comprehensive Development Plan) and local investment programming.", downloadLink: "#", refNumber: "JMC-2021-001", year: "2021", tags: ["cdp", "alignment"] },
+    // ========== GUIDELINES & MANUALS ==========
+    { id: 16, title: "CLUP & ZO Users Manual (Volume III)", category: "Guideline", subCategory: "Technical Manual", description: "Operational manual for planners, including hazard overlay mapping, zoning matrix, and admin procedures.", downloadLink: "#", refNumber: "DHSUD-MAN-03", year: "2022", tags: ["manual", "operation"] },
+    { id: 17, title: "Guide for Mainstreaming SDGs into CLUP", category: "Guideline", subCategory: "Sustainable Development", description: "Framework and indicators for integrating Sustainable Development Goals into local land use plans.", downloadLink: "#", refNumber: "SDG-CLUP", year: "2020", tags: ["sdg", "sustainability"] },
+    { id: 18, title: "Transport-Oriented Development (TOD) Guideline", category: "Guideline", subCategory: "Special Area Planning", description: "Guidelines for integrating TOD concepts in zoning and land use for urban corridors.", downloadLink: "#", refNumber: "TOD-2023", year: "2023", tags: ["transit", "urban"] },
+    { id: 19, title: "Environmental Impact Assessment and Zoning Handbook", category: "Guideline", subCategory: "EIA Integration", description: "Linking EIS system with Zoning Ordinance compliance and locational clearance.", downloadLink: "#", refNumber: "EIA-ZO-01", year: "2021", tags: ["eia", "compliance"] }
+  ];
+
+  // Helper Functions
+  function escapeHtml(str) { if(!str) return ''; return String(str).replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' })[m]); }
+
+  function renderCards(docArray, containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    if (!docArray.length) {
+      container.innerHTML = '<div class="empty-state" style="grid-column:1/-1;">📭 No documents found in this category.</div>';
+      return;
+    }
+    container.innerHTML = docArray.map(doc => `
+      <div class="doc-card" data-id="${doc.id}">
+        <div class="doc-header">
+          <span class="doc-icon">${doc.category === 'Template' ? '📄' : (doc.category === 'Law' ? '⚖️' : (doc.category === 'IRR' ? '📜' : (doc.category === 'Memorandum' ? '📋' : '📘')))}</span>
+          <div class="doc-title">${escapeHtml(doc.title)}</div>
+        </div>
+        <div class="doc-meta">
+          <span class="doc-category">${escapeHtml(doc.category)}${doc.subCategory ? ` / ${escapeHtml(doc.subCategory)}` : ''}</span>
+          <span>📅 ${doc.year || '—'}</span>
+          <span>🔖 ${escapeHtml(doc.refNumber || 'N/A')}</span>
+        </div>
+        <div class="doc-desc">${escapeHtml(doc.description)}</div>
+        <div class="doc-footer">
+          <a href="${doc.downloadLink}" class="btn-download" target="_blank" onclick="previewAction(event, '${escapeHtml(doc.title)}')">📥 Download / View</a>
+          <button class="btn-view" onclick="showDetails(${doc.id})">ℹ️ Details</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // Filter logic across active tab
+  let currentTab = "templates";
+  let globalSearchTerm = "";
+  let categoryFilterVal = "all";
+
+  function filterAndRender() {
+    let filtered = [...documents];
+    // filter by search (title, description, refNumber, tags)
+    if (globalSearchTerm.trim() !== "") {
+      const term = globalSearchTerm.toLowerCase();
+      filtered = filtered.filter(doc => 
+        doc.title.toLowerCase().includes(term) ||
+        doc.description.toLowerCase().includes(term) ||
+        doc.refNumber.toLowerCase().includes(term) ||
+        (doc.tags && doc.tags.some(tag => tag.toLowerCase().includes(term)))
+      );
+    }
+    // category filter (all categories or specific)
+    if (categoryFilterVal !== "all") {
+      filtered = filtered.filter(doc => doc.category === categoryFilterVal);
+    }
+    
+    // split per tab view (templates pane = category Template; laws = Law/IRR/Memorandum; guidelines = Guideline)
+    let templatesDocs = filtered.filter(d => d.category === "Template");
+    let lawsDocs = filtered.filter(d => d.category === "Law" || d.category === "IRR" || d.category === "Memorandum");
+    let guidelinesDocs = filtered.filter(d => d.category === "Guideline");
+    
+    renderCards(templatesDocs, "templatesGrid");
+    renderCards(lawsDocs, "lawsGrid");
+    renderCards(guidelinesDocs, "guidelinesGrid");
+    
+    // optional empty global message - but each container handles emptiness
+    const anyVisible = (templatesDocs.length + lawsDocs.length + guidelinesDocs.length) > 0;
+    document.getElementById("emptyMessage").style.display = anyVisible ? "none" : "block";
+  }
+
+  // Tab switching
+  function switchTab(tabId) {
+    currentTab = tabId;
+    document.querySelectorAll(".tab-pane").forEach(pane => pane.classList.remove("active"));
+    document.getElementById(`${tabId}Pane`).classList.add("active");
+    document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+    document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add("active");
+    // re-run filter to reflect current filtering state in each pane
+    filterAndRender();
+  }
+
+  // Detail modal using simple alert with formatted content (non-intrusive)
+  function showDetails(docId) {
+    const doc = documents.find(d => d.id === docId);
+    if (!doc) return;
+    const details = `📌 ${doc.title}\n📂 Category: ${doc.category}${doc.subCategory ? ` (${doc.subCategory})` : ''}\n🔖 Reference: ${doc.refNumber}\n📅 Year: ${doc.year}\n📝 Description: ${doc.description}\n🏷️ Tags: ${doc.tags ? doc.tags.join(', ') : '—'}\n\n🔗 Download/View link: ${doc.downloadLink}`;
+    alert(details);
+  }
+
+  function previewAction(event, title) {
+    event.preventDefault();
+    showToast(`🔍 "${title}" — In full portal, this would open the official PDF / document repository. (Demo)`, "info");
+  }
+
+  function showToast(msg, type="info") {
+    const existing = document.querySelector(".toast-msg");
+    if (existing) existing.remove();
+    const toast = document.createElement("div");
+    toast.className = "toast-msg";
+    toast.innerText = msg;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2800);
+  }
+
+  // Clear filters
+  function clearFilters() {
+    document.getElementById("globalSearch").value = "";
+    document.getElementById("categoryFilter").value = "all";
+    globalSearchTerm = "";
+    categoryFilterVal = "all";
+    filterAndRender();
+    showToast("Filters cleared", "info");
+  }
+
+  // dropdown hover for main site consistency
+  function setupDropdowns() {
+    let timeout;
+    document.querySelectorAll(".dropdown").forEach(dd => {
+      const c = dd.querySelector(".dropdown-content");
+      if (!c) return;
+      dd.addEventListener("mouseenter", () => { clearTimeout(timeout); c.style.display = "block"; });
+      dd.addEventListener("mouseleave", () => { timeout = setTimeout(() => { if(!dd.matches(":hover") && !c.matches(":hover")) c.style.display = "none"; }, 150); });
+      c.addEventListener("mouseenter", () => { clearTimeout(timeout); c.style.display = "block"; });
+      c.addEventListener("mouseleave", () => { timeout = setTimeout(() => c.style.display = "none", 150); });
+    });
+  }
+
+  // simple user session mimic from index (read from localStorage)
+  function renderUserMenu() {
+    const container = document.getElementById("userMenuContainer");
+    if (!container) return;
+    const sessionRaw = localStorage.getItem("dhsud_session");
+    if (sessionRaw) {
+      try {
+        const session = JSON.parse(sessionRaw);
+        const initials = (session.fullName || "U").charAt(0).toUpperCase();
+        container.innerHTML = `
+          <div class="user-menu" id="userMenuDropdown">
+            <div class="user-avatar">${initials}</div>
+            <span class="user-name">${session.fullName?.split(" ")[0] || "User"}</span>
+            <span style="font-size:0.7rem;">▼</span>
+            <div class="user-dropdown-menu" style="position:absolute; top:48px; right:0; background:white; border-radius:20px; min-width:160px; box-shadow:0 12px 28px rgba(0,0,0,0.1); display:none; z-index:200;">
+              <div class="user-dropdown-item" style="padding:0.7rem 1rem; border-bottom:1px solid #eef2ff;">👤 ${escapeHtml(session.email)}</div>
+              <div class="user-dropdown-item" id="logoutUserBtn" style="padding:0.7rem 1rem; color:#dc2626; cursor:pointer;">🚪 Sign Out</div>
+            </div>
+          </div>
+        `;
+        const dropdownDiv = document.getElementById("userMenuDropdown");
+        if (dropdownDiv) {
+          dropdownDiv.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const panel = dropdownDiv.querySelector(".user-dropdown-menu");
+            if (panel) panel.style.display = panel.style.display === "block" ? "none" : "block";
+          });
+          document.addEventListener("click", () => {
+            const panel = dropdownDiv.querySelector(".user-dropdown-menu");
+            if (panel) panel.style.display = "none";
+          });
+          document.getElementById("logoutUserBtn")?.addEventListener("click", () => {
+            localStorage.removeItem("dhsud_session");
+            window.location.reload();
+          });
+        }
+      } catch(e) { container.innerHTML = `<div class="login-prompt" onclick="window.location.href='login.html'">🔐 Sign In</div>`; }
+    } else {
+      container.innerHTML = `<div class="login-prompt" onclick="window.location.href='login.html'">🔐 Sign In</div>`;
+    }
+  }
+
+  // event listeners
+  document.addEventListener("DOMContentLoaded", () => {
+    renderUserMenu();
+    setupDropdowns();
+    filterAndRender();
+    // tab click handlers
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        const tab = btn.getAttribute("data-tab");
+        if (tab) switchTab(tab);
+      });
+    });
+    const searchInput = document.getElementById("globalSearch");
+    const categorySelect = document.getElementById("categoryFilter");
+    if (searchInput) searchInput.addEventListener("input", (e) => { globalSearchTerm = e.target.value; filterAndRender(); });
+    if (categorySelect) categorySelect.addEventListener("change", (e) => { categoryFilterVal = e.target.value; filterAndRender(); });
+    document.getElementById("clearFiltersBtn")?.addEventListener("click", clearFilters);
+  });
+</script>
+</body>
+</html>
