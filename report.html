@@ -68,23 +68,35 @@
             <div class="navbar">
                <div class="logo">DHSUD</div>
                <div class="nav-links">
-                  <a href="index.html">Home</a>
-                  <div class="dropdown">
-                     <button class="dropbtn">Certification</button>
-                     <div class="dropdown-content"><a href="lc.html">Locational Clearance</a><a href="SZC.html">Site Zoning Clarification</a></div>
-                  </div>
-                  <div class="dropdown">
-                     <button class="dropbtn">Land Use Plans</button>
-                     <div class="dropdown-content">
-                        <div class="dropdown-submenu">
-                           <button class="submenu-trigger">CLUP & ZO <span class="arrow-right">▸</span></button>
-                           <div class="submenu-content"><a href="inventory.html">Inventory</a><a href="status.html">Status</a></div>
-                        </div>
-                        <a href="status.html">PDPFP</a>
-                     </div>
-                  </div>
-                  <a href="lgu-info.html">LGU Information</a><a href="report.html">Reports</a><a href="calendar.html">Calendar of Activities</a>
-                  <a href="issuance.html" style="color:#000000; font-weight:700;">Issuances</a>
+                   <a href="index.html">Home</a>
+        <div class="dropdown auth-required">
+          <button class="dropbtn">Certification</button>
+          <div class="dropdown-content">
+            <a href="lc.html">Locational Clearance</a>
+            <a href="SZC.html">Site Zoning Clarification</a>
+          </div>
+        </div>	
+        <div class="dropdown auth-required">
+          <button class="dropbtn">Land Use Plans</button>
+          <div class="dropdown-content">
+            <!-- CLUP & ZO submenu (dropright) with Inventory and Status -->
+            <div class="dropdown-submenu">
+              <button class="submenu-trigger">CLUP & ZO <span class="arrow-right">▸</span></button>
+              <div class="submenu-content">
+                <a href="inventory.html">Inventory</a>
+                <a href="status.html">Status</a>
+              </div>
+            </div>
+            <!-- PDPFP renamed link (maps to status.html as per original behavior) -->
+            <a href="status.html">PDPFP</a>
+          </div>
+        </div>
+        <a href="lgu-info.html">LGU Information</a>
+        <a href="report.html" class="auth-required">Reports</a> 
+        <a href="calendar.html" class="auth-required">Calendar of Activities</a>
+        <a href="issuance.html" style="color:#000000; font-weight:700;">Issuances</a>
+        <a href="#about">About</a>
+        <a href="#contact">Contact</a>
                   <div id="userMenuContainer"></div>
                </div>
             </div>
