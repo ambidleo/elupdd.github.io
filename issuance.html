@@ -17,7 +17,7 @@
     
     header { background: white; border-bottom: 1px solid #eef2ff; position: sticky; top: 0; z-index: 100; backdrop-filter: blur(8px); background: rgba(255,255,255,0.96); }
     .navbar { display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; flex-wrap: wrap; gap: 1rem; }
-    .logo { font-weight: 800; font-size: 1.5rem; background: linear-gradient(135deg, #1e3a8a, #2563eb); background-clip: text; -webkit-background-clip: text; color: transparent; }
+    .logo { font-weight: 800; font-size: 1.2rem; background: linear-gradient(135deg, #1e3a8a, #2563eb); background-clip: text; -webkit-background-clip: text; color: transparent; line-height: 1.3; }
     .nav-links { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
     .nav-links a { text-decoration: none; color: #334155; font-weight: 500; font-size: 0.9rem; transition: 0.2s; }
     .nav-links a:hover { color: #2563eb; }
@@ -45,6 +45,10 @@
     .user-menu { display: flex; align-items: center; gap: 0.5rem; background: #f1f5f9; padding: 0.3rem 0.8rem 0.3rem 1rem; border-radius: 60px; cursor: pointer; position: relative; }
     .user-avatar { width: 32px; height: 32px; background: #2563eb; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; }
     .login-prompt { background: #f1f5f9; padding: 0.3rem 1rem; border-radius: 40px; cursor: pointer; font-size: 0.85rem; font-weight: 500; }
+    
+    /* header logo image */
+    .header-logo-img { height: 42px; margin-left: 12px; background: #f1f5f9; padding: 4px 8px; border-radius: 40px; display: inline-flex; align-items: center; }
+    .header-logo-img img { height: 32px; width: auto; }
     
     .page-hero { background: linear-gradient(135deg, #0f2b3a 0%, #1e4a6e 100%); color: white; padding: 2.5rem 0; margin-bottom: 2rem; border-radius: 0 0 2rem 2rem; text-align: center; }
     .page-hero h1 { font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; }
@@ -78,15 +82,32 @@
     footer { background: #0f2b3a; color: #cbd5e1; padding: 2rem 0 1.5rem; margin-top: 3rem; }
     .toast-msg { position: fixed; bottom: 20px; right: 20px; background: #1e293b; color: white; padding: 10px 20px; border-radius: 40px; z-index: 9999; font-size: 0.8rem; }
     @media (max-width: 700px) { .doc-grid { grid-template-columns: 1fr; } }
+    
+    /* login modal */
+    .login-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); justify-content: center; align-items: center; z-index: 10000; }
+    .login-modal.active { display: flex; }
+    .login-modal-content { background: white; border-radius: 32px; max-width: 450px; width: 90%; overflow: hidden; animation: modalSlideIn 0.3s ease; }
+    .login-modal-header { background: linear-gradient(135deg, #1e3a8a, #2563eb); padding: 1.5rem; text-align: center; color: white; }
+    .login-modal-header .seal-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+    .login-modal-header h3 { font-size: 1.3rem; font-weight: 700; }
+    .login-modal-body { padding: 1.5rem; }
+    .input-group { margin-bottom: 1.2rem; position: relative; }
+    .input-group label { display: block; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: #54708f; margin-bottom: 0.4rem; }
+    .input-group input { width: 100%; padding: 0.85rem 1rem; border: 1.5px solid #e2e8f0; border-radius: 1rem; font-size: 0.9rem; font-family: 'Inter', sans-serif; padding-right: 45px; }
+    .toggle-password { position: absolute; right: 12px; top: 38px; cursor: pointer; font-size: 1rem; background: none; border: none; color: #94a3b8; }
+    .login-submit-btn { width: 100%; padding: 0.9rem; background: #2563eb; color: white; border: none; border-radius: 1.2rem; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; margin-top: 0.5rem; }
+    .login-submit-btn:hover { background: #1d4ed8; transform: translateY(-1px); }
+    .login-modal-footer { border-top: 1px solid #eef2ff; padding: 1rem; text-align: center; font-size: 0.65rem; color: #94a3b8; background: #fafcff; }
+    @keyframes modalSlideIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
   </style>
 </head>
 <body>
 <div class="container">
   <div class="navbar">
-    <div class="logo">DHSUD</div>
+    <div class="header-logo-img"><img src="DHSUD_LOGO.png" alt="DHSUD Logo"></div>
+    <div class="logo">DHSUD VI - ELUPDD Integrated Database and Information System</div>
     <div class="nav-links">
       <a href="index.html">Home</a>
-      <!-- Certification dropdown (click-based) -->
       <div class="dropdown" id="certDropdown">
         <button class="dropbtn" id="certBtn">Certification</button>
         <div class="dropdown-content">
@@ -94,11 +115,9 @@
           <a href="SZC.html">Site Zoning Clarification</a>
         </div>
       </div>
-      <!-- Land Use Plans dropdown with nested submenu -->
       <div class="dropdown" id="landUseDropdown">
         <button class="dropbtn" id="landUseBtn">Land Use Plans</button>
         <div class="dropdown-content">
-          <!-- CLUP & ZO submenu (click-based) -->
           <div class="dropdown-submenu" id="clupSubmenu">
             <button class="submenu-trigger">CLUP & ZO <span class="arrow-right">▸</span></button>
             <div class="submenu-content">
@@ -165,11 +184,116 @@
   </div>
 </footer>
 
+<!-- Login Modal -->
+<div id="loginModal" class="login-modal">
+  <div class="login-modal-content">
+    <div class="login-modal-header">
+      <div class="seal-icon">🏛️</div>
+      <h3>DHSUD Region VI</h3>
+      <p style="font-size:0.8rem; opacity:0.9;">Sign in to access your account</p>
+    </div>
+    <div class="login-modal-body">
+      <form id="modalLoginForm" onsubmit="return handleModalLogin(event)">
+        <div class="input-group">
+          <label>📧 Email Address</label>
+          <input type="email" id="modalLoginEmail" placeholder="name@dhsud.gov.ph" required>
+        </div>
+        <div class="input-group">
+          <label>🔒 Password</label>
+          <input type="password" id="modalLoginPassword" placeholder="Enter your password" required>
+          <button type="button" class="toggle-password" onclick="toggleModalPassword()">👁️</button>
+        </div>
+        <button type="submit" class="login-submit-btn">→ Sign In</button>
+      </form>
+    </div>
+    <div class="login-modal-footer">🔐 Role-Based Access: Admin | Staff/Officer</div>
+  </div>
+</div>
+
 <script>
-  // --------------------------------------------------------------
-  // FULL DATASET (same as before)
-  // --------------------------------------------------------------
-  const documents = [
+  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw8fpw0CcxnNel8hqyYuOwpEWIlVEZX2lRCutAIzSylhwt4zJzJmMdum6Eo4JteHMItmQ/exec";
+  let currentUser = null;
+
+  function encodePassword(p) { return btoa(p); }
+  function escapeHtml(str) { if(!str) return ''; return String(str).replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' })[m]); }
+  function showToastMessage(msg, type="info") {
+    let t = document.querySelector(".toast-msg"); if(t) t.remove();
+    let toast = document.createElement("div"); toast.className = "toast-msg"; 
+    toast.style.background = type === "error" ? "#b91c1c" : "#166534";
+    toast.innerText = msg; document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  }
+  function checkSession() {
+    const raw = localStorage.getItem("dhsud_session");
+    if (raw) {
+      try {
+        const s = JSON.parse(raw);
+        const diff = (new Date() - new Date(s.loggedInAt)) / (1000 * 60 * 60);
+        if (diff < 12 && s.email) { currentUser = s; return true; }
+        else localStorage.removeItem("dhsud_session");
+      } catch(e) { localStorage.removeItem("dhsud_session"); }
+    }
+    currentUser = null; return false;
+  }
+  function getUserInitials(n) { if(!n) return "U"; let p = n.split(" "); if(p.length>=2) return (p[0][0]+p[1][0]).toUpperCase(); return n.substring(0,2).toUpperCase(); }
+  function getRoleLabel(r) { if(r==="admin") return "👑 Admin"; if(r==="encoder"||r==="staff") return "📋 Staff/Officer"; return "👁️ Viewer"; }
+  function getRoleClass(r) { if(r==="admin") return "admin"; if(r==="encoder"||r==="staff") return "staff"; return "viewer"; }
+  function renderUserMenu() {
+    const container = document.getElementById("userMenuContainer"); if(!container) return;
+    if (currentUser) {
+      const initials = getUserInitials(currentUser.fullName);
+      const firstName = currentUser.fullName?.split(" ")[0] || "User";
+      const isAdmin = currentUser.role === "admin";
+      const roleLabel = getRoleLabel(currentUser.role);
+      const roleClass = getRoleClass(currentUser.role);
+      container.innerHTML = `<div class="user-menu" id="userMenuDropdown"><div class="user-avatar">${initials}</div><span class="user-name">${escapeHtml(firstName)}</span><span class="role-badge-header ${roleClass}" style="font-size:0.65rem;">${roleLabel}</span><span style="font-size:0.7rem;">▼</span><div class="user-dropdown-menu" style="position:absolute; top:48px; right:0; background:white; border-radius:20px; min-width:180px; box-shadow:0 20px 35px -12px rgba(0,0,0,0.15); border:1px solid #eef2ff; overflow:hidden; display:none;"><div class="user-dropdown-item" style="display:flex; align-items:center; gap:10px; padding:0.8rem 1.2rem; font-size:0.8rem; border-bottom:1px solid #f1f5f9;">👤 ${escapeHtml(currentUser.email)}</div><div class="user-dropdown-item" style="padding:0.8rem 1.2rem; border-bottom:1px solid #f1f5f9;">🏢 ${escapeHtml(currentUser.office||"ELUPDD")}</div>${isAdmin ? `<div class="user-dropdown-item" id="adminConsoleLink" style="padding:0.8rem 1.2rem; cursor:pointer;">⚙️ Manage Users (Admin Panel)</div>` : ""}<div class="user-dropdown-item" id="logoutDropdownBtn" style="padding:0.8rem 1.2rem; color:#dc2626; cursor:pointer;">🚪 Sign Out</div></div></div>`;
+      const userDiv = document.getElementById("userMenuDropdown");
+      if (userDiv) {
+        userDiv.addEventListener("click", (e) => { e.stopPropagation(); const menu = userDiv.querySelector(".user-dropdown-menu"); if(menu) menu.style.display = menu.style.display === "block" ? "none" : "block"; });
+        document.addEventListener("click", () => { const menu = userDiv.querySelector(".user-dropdown-menu"); if(menu) menu.style.display = "none"; });
+      }
+      if (isAdmin) { const adminBtn = document.getElementById("adminConsoleLink"); if(adminBtn) adminBtn.addEventListener("click", () => window.location.href = "admin.html"); }
+      const logoutBtn = document.getElementById("logoutDropdownBtn"); if(logoutBtn) logoutBtn.addEventListener("click", () => { localStorage.removeItem("dhsud_session"); showToastMessage("Logged out successfully.", "info"); setTimeout(() => window.location.reload(), 700); });
+    } else {
+      container.innerHTML = `<div class="login-prompt" onclick="openLoginModal()">🔐 Sign In</div>`;
+    }
+  }
+  function openLoginModal() { document.getElementById("loginModal").classList.add("active"); }
+  function toggleModalPassword() { let pwd = document.getElementById("modalLoginPassword"); pwd.type = pwd.type === "password" ? "text" : "password"; }
+  async function handleModalLogin(e) {
+    e.preventDefault();
+    const email = document.getElementById("modalLoginEmail").value.trim().toLowerCase();
+    const password = document.getElementById("modalLoginPassword").value;
+    const btn = e.submitter; const originalText = btn.innerHTML;
+    btn.innerHTML = "⏳ Authenticating..."; btn.disabled = true;
+    try {
+      const resp = await fetch(`${GOOGLE_SCRIPT_URL}?action=get&data_type=users&_=${Date.now()}`);
+      const users = await resp.json();
+      const user = users.find(u => u.email?.toLowerCase() === email);
+      if (!user) { showToastMessage("Account not found.", "error"); btn.innerHTML = originalText; btn.disabled = false; return false; }
+      const encodedPassword = encodePassword(password);
+      if (user.password === encodedPassword) {
+        const session = { userId: user.id, email: user.email, fullName: user.fullName, office: user.office || "ELUPDD", role: user.role, loggedInAt: new Date().toISOString() };
+        localStorage.setItem("dhsud_session", JSON.stringify(session));
+        showToastMessage(`Welcome ${user.fullName?.split(" ")[0] || ""}!`, "success");
+        document.getElementById("loginModal").classList.remove("active");
+        setTimeout(() => window.location.reload(), 1000);
+      } else { showToastMessage("Invalid password.", "error"); }
+    } catch(error) { showToastMessage("Connection error. Please try again.", "error"); }
+    finally { btn.innerHTML = originalText; btn.disabled = false; }
+    return false;
+  }
+  function closeAllDropdowns() { document.querySelectorAll('.dropdown').forEach(drop => drop.classList.remove('open')); document.querySelectorAll('.dropdown-submenu').forEach(sub => sub.classList.remove('open')); }
+  function initClickDropdowns() {
+    const certDropdown = document.getElementById('certDropdown'); const landUseDropdown = document.getElementById('landUseDropdown');
+    const certBtn = document.getElementById('certBtn'); const landUseBtn = document.getElementById('landUseBtn'); const clupSubmenu = document.getElementById('clupSubmenu');
+    if (certBtn && certDropdown) { certBtn.addEventListener('click', (e) => { e.stopPropagation(); closeAllDropdowns(); certDropdown.classList.add('open'); }); }
+    if (landUseBtn && landUseDropdown) { landUseBtn.addEventListener('click', (e) => { e.stopPropagation(); closeAllDropdowns(); landUseDropdown.classList.add('open'); }); }
+    if (clupSubmenu) { const subTrigger = clupSubmenu.querySelector('.submenu-trigger'); subTrigger.addEventListener('click', (e) => { e.stopPropagation(); document.querySelectorAll('.dropdown-submenu').forEach(sub => { if (sub !== clupSubmenu) sub.classList.remove('open'); }); clupSubmenu.classList.toggle('open'); }); }
+    document.addEventListener('click', function(e) { if (!e.target.closest('.dropdown') && !e.target.closest('.dropdown-submenu')) closeAllDropdowns(); });
+  }
+
+  const documents = [ /* full documents array from original issuance.html - omitted for brevity but must be included exactly as original */ 
     { id: 1, title: "Harmonized EP-CDRA Revised Digital Template", category: "Template", sub: "CLUP Template", description: "Digital template for Enhanced Plan - Climate & Disaster Risk Assessment (EP-CDRA) – required for risk-informed land use plans.", refNumber: "v.100125", year: "2025", tags: ["cdra","template"], docUrl: "https://docs.google.com/document/d/1gMW_0EQDapi6KocdoEjPaAaAzgkngrXD/edit?usp=drive_link&ouid=113490008011186302290&rtpof=true&sd=true" },
     { id: 2, title: "CLUP Digital Template (Full Volume)", category: "Template", sub: "CLUP Template", description: "Standard digital CLUP template with sectoral chapters, land use map integration, and zoning matrix.", refNumber: "CLUP-DT-100625", year: "2025", tags: ["clup","digital"], docUrl: "https://docs.google.com/document/d/113r6EythhDYjF2wV3rfsKE2cO1SJS3Kx/edit?usp=drive_link&ouid=113490008011186302290&rtpof=true&sd=true" },
     { id: 3, title: "Zoning Ordinance Digital Template", category: "Template", sub: "ZO Template", description: "Model Zoning Ordinance template containing zoning districts, use regulations, and permit processes.", refNumber: "ZO-TMP-031025", year: "2025", tags: ["zoning","ordinance"], docUrl: "https://docs.google.com/document/d/1wgbJgHyy4lKKbBRF09Yx5qoIr78192Md/edit?usp=drive_link&ouid=113490008011186302290&rtpof=true&sd=true" },
@@ -240,9 +364,6 @@
     { id: 68, title: "Gaming Site Regulatory Manual (Distance Requirements)", category: "Development Control", sub: "Gaming", description: "Site location distance requirements for casinos, bingo parlors, gaming establishments.", refNumber: "Gaming", year: "2018", tags: ["gaming","casino"], docUrl: "https://drive.google.com/file/d/1ZZ0U-bYVgkT-eD2UKVRSy4fJmjJKnCA8/view?usp=sharing" }
   ];
 
-  function escapeHtml(str) { if(!str) return ''; return String(str).replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' })[m]); }
-  function showToast(msg) { let t = document.querySelector(".toast-msg"); if(t) t.remove(); let toast = document.createElement("div"); toast.className = "toast-msg"; toast.innerText = msg; document.body.appendChild(toast); setTimeout(() => toast.remove(), 2500); }
-
   function renderCards(docArray, containerId) {
     const container = document.getElementById(containerId);
     if (!container) return;
@@ -293,66 +414,16 @@
     document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add("active");
   }
 
-  // ---------- CLICK-BASED DROPDOWN LOGIC ----------
-  function closeAllDropdowns() {
-    document.querySelectorAll('.dropdown').forEach(drop => drop.classList.remove('open'));
-    document.querySelectorAll('.dropdown-submenu').forEach(sub => sub.classList.remove('open'));
-  }
-
-  function initClickDropdowns() {
-    const certDropdown = document.getElementById('certDropdown');
-    const landUseDropdown = document.getElementById('landUseDropdown');
-    const certBtn = document.getElementById('certBtn');
-    const landUseBtn = document.getElementById('landUseBtn');
-    const clupSubmenu = document.getElementById('clupSubmenu');
-
-    // Toggle main dropdowns on button click
-    if (certBtn && certDropdown) {
-      certBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        closeAllDropdowns();
-        certDropdown.classList.add('open');
-      });
-    }
-    if (landUseBtn && landUseDropdown) {
-      landUseBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        closeAllDropdowns();
-        landUseDropdown.classList.add('open');
-      });
-    }
-
-    // Submenu toggle (CLUP & ZO)
-    if (clupSubmenu) {
-      const subTrigger = clupSubmenu.querySelector('.submenu-trigger');
-      subTrigger.addEventListener('click', (e) => {
-        e.stopPropagation();
-        // Close other submenus if needed, but allow this one to toggle
-        document.querySelectorAll('.dropdown-submenu').forEach(sub => {
-          if (sub !== clupSubmenu) sub.classList.remove('open');
-        });
-        clupSubmenu.classList.toggle('open');
-      });
-    }
-
-    // Close dropdowns when clicking anywhere else on the page
-    document.addEventListener('click', function(e) {
-      if (!e.target.closest('.dropdown') && !e.target.closest('.dropdown-submenu')) {
-        closeAllDropdowns();
-      }
-    });
-  }
-
   document.addEventListener("DOMContentLoaded", () => {
+    checkSession();
+    renderUserMenu();
     filterAndRender();
     document.querySelectorAll(".tab-btn").forEach(btn => btn.addEventListener("click", (e) => { switchTab(btn.getAttribute("data-tab")); }));
     document.getElementById("globalSearch").addEventListener("input", (e) => { globalSearch = e.target.value.toLowerCase(); filterAndRender(); });
     document.getElementById("categoryFilter").addEventListener("change", (e) => { categoryFilter = e.target.value; filterAndRender(); });
-    document.getElementById("clearFiltersBtn").addEventListener("click", () => { document.getElementById("globalSearch").value = ""; document.getElementById("categoryFilter").value = "all"; globalSearch = ""; categoryFilter = "all"; filterAndRender(); showToast("Filters cleared"); });
-    const session = localStorage.getItem("dhsud_session") ? JSON.parse(localStorage.getItem("dhsud_session")) : null;
-    const userContainer = document.getElementById("userMenuContainer");
-    if (userContainer) userContainer.innerHTML = session ? `<div class="user-menu"><div class="user-avatar">${session.fullName?.charAt(0) || 'U'}</div><span class="user-name">${session.fullName?.split(' ')[0]}</span></div>` : `<div class="login-prompt">🔐 Sign In</div>`;
+    document.getElementById("clearFiltersBtn").addEventListener("click", () => { document.getElementById("globalSearch").value = ""; document.getElementById("categoryFilter").value = "all"; globalSearch = ""; categoryFilter = "all"; filterAndRender(); showToastMessage("Filters cleared"); });
     initClickDropdowns();
+    window.onclick = function(e) { const modal = document.getElementById("loginModal"); if(e.target === modal) modal.classList.remove("active"); };
   });
 </script>
 </body>
