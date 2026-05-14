@@ -21,11 +21,26 @@
     .nav-links { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
     .nav-links a { text-decoration: none; color: #334155; font-weight: 500; font-size: 0.9rem; transition: 0.2s; }
     .nav-links a:hover { color: #2563eb; }
+    
+    /* Dropdown (click-based) */
     .dropdown { position: relative; display: inline-block; }
-    .dropbtn { background: none; border: none; font-weight: 500; font-size: 0.9rem; color: #334155; cursor: pointer; font-family: inherit; }
-    .dropdown-content { display: none; position: absolute; background: white; min-width: 220px; box-shadow: 0 12px 28px rgba(0,0,0,0.1); border-radius: 16px; z-index: 1; top: 30px; left: 0; border: 1px solid #eef2ff; padding: 0.3rem 0; }
+    .dropbtn { background: none; border: none; font-weight: 500; font-size: 0.9rem; color: #334155; cursor: pointer; font-family: inherit; padding: 0.4rem 0; }
+    .dropdown-content { display: none; position: absolute; background: white; min-width: 220px; box-shadow: 0 12px 28px rgba(0,0,0,0.1); border-radius: 16px; z-index: 1000; top: 30px; left: 0; border: 1px solid #eef2ff; padding: 0.3rem 0; }
     .dropdown-content a { display: block; padding: 0.7rem 1.2rem; color: #1e293b; font-size: 0.8rem; text-decoration: none; }
     .dropdown-content a:hover { background: #eff6ff; }
+    
+    /* Show dropdown when open class is added */
+    .dropdown.open .dropdown-content { display: block; }
+    
+    /* Submenu (nested, click-based) */
+    .dropdown-submenu { position: relative; }
+    .submenu-trigger { background: none; border: none; width: 100%; text-align: left; padding: 0.7rem 1.2rem; font-size: 0.8rem; font-weight: 500; color: #1e293b; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-family: inherit; }
+    .submenu-trigger:hover { background: #eff6ff; }
+    .arrow-right { font-size: 0.7rem; margin-left: 1rem; }
+    .submenu-content { display: none; position: absolute; left: 100%; top: 0; background: white; min-width: 180px; box-shadow: 0 12px 28px rgba(0,0,0,0.1); border-radius: 16px; border: 1px solid #eef2ff; z-index: 1001; padding: 0.3rem 0; }
+    .submenu-content a { padding: 0.7rem 1.2rem; }
+    .dropdown-submenu.open .submenu-content { display: block; }
+    
     .btn-outline { border: 1.5px solid #2563eb; border-radius: 40px; padding: 6px 18px; background: transparent; color: #2563eb; font-weight: 600; cursor: pointer; }
     .user-menu { display: flex; align-items: center; gap: 0.5rem; background: #f1f5f9; padding: 0.3rem 0.8rem 0.3rem 1rem; border-radius: 60px; cursor: pointer; position: relative; }
     .user-avatar { width: 32px; height: 32px; background: #2563eb; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; }
@@ -41,52 +56,7 @@
     .tab-pane { display: none; animation: fadeIn 0.2s ease; }
     .tab-pane.active { display: block; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-.dropdown:hover .dropdown-content {
-  display: block;
-}
-
-.dropdown-submenu {
-  position: relative;
-}
-.dropdown-submenu .submenu-content {
-  display: none;
-  position: absolute;
-  left: 100%;
-  top: 0;
-  background: white;
-  min-width: 180px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-  border-radius: 12px;
-  border: 1px solid #eef2ff;
-  z-index: 10;
-}
-.dropdown-submenu:hover .submenu-content {
-  display: block;
-}
-    /* Show dropdown on hover */
-.dropdown:hover .dropdown-content {
-  display: block;
-}
-
-/* Style submenu */
-.dropdown-submenu {
-  position: relative;
-}
-.dropdown-submenu .submenu-content {
-  display: none;
-  position: absolute;
-  left: 100%;
-  top: 0;
-  background: white;
-  min-width: 180px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-  border-radius: 12px;
-  border: 1px solid #eef2ff;
-  z-index: 10;
-}
-.dropdown-submenu:hover .submenu-content {
-  display: block;
-}
+    
     .doc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.5rem; margin: 1.5rem 0; }
     .doc-card { background: white; border-radius: 1.5rem; border: 1px solid #e2e8f0; transition: all 0.2s; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
     .doc-card:hover { transform: translateY(-3px); box-shadow: 0 20px 28px -12px rgba(0,0,0,0.12); border-color: #cbd5e1; }
@@ -111,44 +81,45 @@
   </style>
 </head>
 <body>
- <div class="container">
-            <div class="navbar">
-               <div class="logo">DHSUD</div>
-               <div class="nav-links">
-                   <a href="index.html">Home</a>
-        <div class="dropdown auth-required">
-          <button class="dropbtn">Certification</button>
-          <div class="dropdown-content">
-            <a href="lc.html">Locational Clearance</a>
-            <a href="SZC.html">Site Zoning Clarification</a>
-          </div>
-        </div>	
-        <div class="dropdown auth-required">
-          <button class="dropbtn">Land Use Plans</button>
-          <div class="dropdown-content">
-            <!-- CLUP & ZO submenu (dropright) with Inventory and Status -->
-            <div class="dropdown-submenu">
-              <button class="submenu-trigger">CLUP & ZO <span class="arrow-right">▸</span></button>
-              <div class="submenu-content">
-                <a href="inventory.html">Inventory</a>
-                <a href="status.html">Status</a>
-              </div>
-            </div>
-            <!-- PDPFP renamed link (maps to status.html as per original behavior) -->
-            <a href="status.html">PDPFP</a>
-          </div>
+<div class="container">
+  <div class="navbar">
+    <div class="logo">DHSUD</div>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <!-- Certification dropdown (click-based) -->
+      <div class="dropdown" id="certDropdown">
+        <button class="dropbtn" id="certBtn">Certification</button>
+        <div class="dropdown-content">
+          <a href="lc.html">Locational Clearance</a>
+          <a href="SZC.html">Site Zoning Clarification</a>
         </div>
-        <a href="lgu-info.html">LGU Information</a>
-        <a href="report.html" class="auth-required">Reports</a> 
-        <a href="calendar.html" class="auth-required">Calendar of Activities</a>
-        <a href="issuance.html" style="color:#000000;">Issuances</a>
-        <a href="#about">About</a>
-        <a href="#contact">Contact</a>            
-                 <div id="userMenuContainer"></div>
-               </div>
+      </div>
+      <!-- Land Use Plans dropdown with nested submenu -->
+      <div class="dropdown" id="landUseDropdown">
+        <button class="dropbtn" id="landUseBtn">Land Use Plans</button>
+        <div class="dropdown-content">
+          <!-- CLUP & ZO submenu (click-based) -->
+          <div class="dropdown-submenu" id="clupSubmenu">
+            <button class="submenu-trigger">CLUP & ZO <span class="arrow-right">▸</span></button>
+            <div class="submenu-content">
+              <a href="inventory.html">Inventory</a>
+              <a href="status.html">Status</a>
             </div>
-         </div>
-      </header>
+          </div>
+          <a href="status.html">PDPFP</a>
+        </div>
+      </div>
+      <a href="lgu-info.html">LGU Information</a>
+      <a href="report.html" class="auth-required">Reports</a>
+      <a href="calendar.html" class="auth-required">Calendar of Activities</a>
+      <a href="issuance.html" style="color:#000000;">Issuances</a>
+      <a href="#about">About</a>
+      <a href="#contact">Contact</a>
+      <div id="userMenuContainer"></div>
+    </div>
+  </div>
+</div>
+
 <div class="page-hero">
   <div class="container">
     <h1>📘 CLUP / ZO Compilation of Guidelines</h1>
@@ -196,12 +167,9 @@
 
 <script>
   // --------------------------------------------------------------
-  // FULL DATASET extracted from Compilation of Guidelines.xlsx
-  // Each entry now includes a 'docUrl' field that provides a direct link (placeholder)
-  // Replace the docUrl values with actual file paths or external URLs when available.
+  // FULL DATASET (same as before)
   // --------------------------------------------------------------
   const documents = [
-    // ===================== TEMPLATES & FORMS (Category: Template) ====================
     { id: 1, title: "Harmonized EP-CDRA Revised Digital Template", category: "Template", sub: "CLUP Template", description: "Digital template for Enhanced Plan - Climate & Disaster Risk Assessment (EP-CDRA) – required for risk-informed land use plans.", refNumber: "v.100125", year: "2025", tags: ["cdra","template"], docUrl: "https://docs.google.com/document/d/1gMW_0EQDapi6KocdoEjPaAaAzgkngrXD/edit?usp=drive_link&ouid=113490008011186302290&rtpof=true&sd=true" },
     { id: 2, title: "CLUP Digital Template (Full Volume)", category: "Template", sub: "CLUP Template", description: "Standard digital CLUP template with sectoral chapters, land use map integration, and zoning matrix.", refNumber: "CLUP-DT-100625", year: "2025", tags: ["clup","digital"], docUrl: "https://docs.google.com/document/d/113r6EythhDYjF2wV3rfsKE2cO1SJS3Kx/edit?usp=drive_link&ouid=113490008011186302290&rtpof=true&sd=true" },
     { id: 3, title: "Zoning Ordinance Digital Template", category: "Template", sub: "ZO Template", description: "Model Zoning Ordinance template containing zoning districts, use regulations, and permit processes.", refNumber: "ZO-TMP-031025", year: "2025", tags: ["zoning","ordinance"], docUrl: "https://docs.google.com/document/d/1wgbJgHyy4lKKbBRF09Yx5qoIr78192Md/edit?usp=drive_link&ouid=113490008011186302290&rtpof=true&sd=true" },
@@ -212,8 +180,6 @@
     { id: 8, title: "Checklist for PDPFP Review", category: "Template", sub: "Checklist", description: "Provincial Development & Physical Framework Plan review checklist.", refNumber: "PDPFP-CHECK", year: "2023", tags: ["pdpfp"], docUrl: "https://drive.google.com/file/d/1aWegFnPpdjlQQuLgQKxqXWNsWpWPz0Ru/view?usp=drive_link" },
     { id: 9, title: "Site Zoning Certification Form", category: "Template", sub: "Form", description: "Official request form for Site Zoning Certification issued by planning office.", refNumber: "SZC-FORM", year: "2021", tags: ["zc","certificate"], docUrl: "https://drive.google.com/file/d/1wBS1HUG9XG5mtIYEpgSSHJ8GsXS1B7u8/view?usp=drive_link" },
     { id: 10, title: "Locational Clearance - Base Station/Wireless Infrastructure", category: "Template", sub: "Form", description: "Application form for telecommunication tower and wireless facility locational clearance.", refNumber: "LC-WIRELESS", year: "2021", tags: ["telco","clearance"], docUrl: "https://drive.google.com/file/d/18ME_kxyPyFD8kVffw2pyxu4SUuiWRGFw/view?usp=sharing" },
-    
-    // ===================== GUIDELINES & MANUALS ====================
     { id: 11, title: "HLURB Guidebook Vol. 1: CLUP Planning Process", category: "Guideline", sub: "CLUP Process", description: "Step-by-step process for CLUP preparation, stakeholder engagement, and situational analysis.", refNumber: "HLURB-Vol1", year: "2018", tags: ["process","guidebook"], docUrl: "https://drive.google.com/file/d/1G6pBpzGrS9g2hbOlPFDH51xjlm79sh3B/view" },
     { id: 12, title: "HLURB Guidebook Vol. 2: Sectoral Analysis & Tools", category: "Guideline", sub: "Sectoral", description: "Sectoral studies (economic, demographic, infra) and special area studies tools.", refNumber: "HLURB-Vol2", year: "2018", tags: ["sectoral","tools"], docUrl: "https://drive.google.com/file/d/1CQ165vb8Y-EvDnZDososyrQVnuATo3ID/view" },
     { id: 13, title: "HLURB Guidebook Vol. 3: Model Zoning Ordinance", category: "Guideline", sub: "ZO Model", description: "Model zoning ordinance provisions, land use categories, and map integration.", refNumber: "HLURB-Vol3", year: "2018", tags: ["zo","model"], docUrl: "https://drive.google.com/file/d/1r4qigs72q3pYDDW1vgXNKUdTddo7KUJe/view" },
@@ -226,8 +192,6 @@
     { id: 20, title: "Interim Guidelines for PDPFP Formulation (JMC 2023-001)", category: "Guideline", sub: "PDPFP", description: "Joint DHSUD-DepDEV-DILG guidelines for Provincial Development and Physical Framework Plans.", refNumber: "JMC 2023-001", year: "2023", tags: ["pdpfp","provincial"], docUrl: "https://drive.google.com/file/d/1DiMF1dJHcerphaksfSsVL4iTUnvG7XGx/view?usp=sharing" },
     { id: 21, title: "Technical Guidance: CDRA for PDPFPs", category: "Guideline", sub: "PDPFP CDRA", description: "Climate and disaster risk assessment process for formulation/updating of Provincial Development Plans.", refNumber: "DC 2025-007", year: "2025", tags: ["pdpfp","cdra"], docUrl: "https://drive.google.com/file/d/1eSVJmzCwHCfYqyIIdhsT8sFctQWiQ9Sn/view" },
     { id: 22, title: "CLUP Communication Plan (Mandatory Requirement)", category: "Guideline", sub: "Communication", description: "Prescribing submission of CLUP Communication Plan as approval requirement for CLUP.", refNumber: "DO 2024-002", year: "2024", tags: ["commplan","approval"], docUrl: "https://drive.google.com/file/d/1z7CKYxiBBU2QI-_sdq5KxSpm31zRC2sO/view?usp=drive_link" },
-
-    // ===================== LAWS & NATIONAL ISSUANCES (RA, PD, EO, Key Memoranda) ====================
     { id: 23, title: "RA 7160 - Local Government Code (Sec.20 Land Reclassification)", category: "Law", sub: "LGC", description: "Authority of cities/municipalities to reclassify agricultural lands subject to limits and DAR/DA clearances.", refNumber: "RA 7160", year: "1991", tags: ["lgc","reclassification"], docUrl: "https://www.officialgazette.gov.ph/1991/10/10/republic-act-no-7160/" },
     { id: 24, title: "EO 72 (1993) - Preparation & Implementation of CLUPs", category: "Law", sub: "Executive Order", description: "Providing for preparation of CLUPs by LGUs pursuant to LGC and HLURB coordination.", refNumber: "EO 72", year: "1993", tags: ["clup","policy"], docUrl: "https://www.officialgazette.gov.ph/1993/02/26/executive-order-no-72-s-1993/" },
     { id: 25, title: "PD 1096 - National Building Code of the Philippines", category: "Law", sub: "Building Code", description: "Primary building regulations with referral codes (Green Building Code).", refNumber: "PD 1096", year: "1977", tags: ["building","code"], docUrl: "https://dpwh.gov.ph/dpwh/sites/default/files/issuances/PD1096.pdf" },
@@ -239,8 +203,6 @@
     { id: 31, title: "E-NIPAS (RA 11038) - Protected Areas Management", category: "Law", sub: "Environment", description: "Amending NIPAS Act, declaring protected areas and management framework.", refNumber: "RA 11038", year: "2018", tags: ["nipas","protected"], docUrl: "https://www.officialgazette.gov.ph/2018/06/22/republic-act-no-11038/" },
     { id: 32, title: "PD 856 - Sanitation Code", category: "Law", sub: "Health", description: "Code on sanitation requirements for establishments, water supply, waste management.", refNumber: "PD 856", year: "1975", tags: ["sanitation","health"], docUrl: "/docs/PD856_Sanitation_Code.pdf" },
     { id: 33, title: "PD 957 - Subdivision & Condominium Buyers Protective Decree", category: "Law", sub: "Real Estate", description: "Regulating subdivision and condominium development, buyer protection.", refNumber: "PD 957", year: "1976", tags: ["subdivision","condo"], docUrl: "/docs/PD957_Subdivision_Decree.pdf" },
-
-    // ===================== MEMORANDA, CIRCULARS, RESOLUTIONS (category: Memorandum) ====================
     { id: 34, title: "MC 54 s.1993 - Agricultural Land Reclassification Guidelines", category: "Memorandum", sub: "Reclassification", description: "Prescribing guidelines for Section 20 of RA 7160, limits and procedure for land conversion.", refNumber: "MC 54 s.1993", year: "1993", tags: ["agri","conversion"], docUrl: "https://drive.google.com/file/d/1sc4Xlm0p2Z-aV7lsqAYzd4eCc2yh0Lun/view?usp=drive_link" },
     { id: 35, title: "Joint HLRB-DAR-DA-DILG MC (Implementing MC 54)", category: "Memorandum", sub: "Reclassification", description: "Rules implementing the authority of LGUs to reclassify lands within prescribed limits.", refNumber: "JMC 1995", year: "1995", tags: ["reclassification","jmc"], docUrl: "https://drive.google.com/file/d/1Pw5-PzMUxuU9eV7TRuF7ddKgzB14tiHo/view?usp=drive_link" },
     { id: 36, title: "DA MC 26 s.2022 - DA Certification for Land Reclassification", category: "Memorandum", sub: "Agriculture", description: "Issuance of DA certification pursuant to MC 54 and Joint Memorandum Circular.", refNumber: "DA MC 26-2022", year: "2022", tags: ["da","clearance"], docUrl: "https://drive.google.com/file/d/1lRVA8UIBuBhxEahADQ4OhLernhaMHhIn/view?usp=drive_link" },
@@ -250,8 +212,6 @@
     { id: 40, title: "DO 2020-009 - Locational Guidelines for Telecom Base Stations", category: "Memorandum", sub: "Telecom", description: "Revised locational guidelines for cellular towers, wireless communication infrastructures.", refNumber: "DO 2020-009", year: "2020", tags: ["telco","tower"], docUrl: "https://drive.google.com/drive/folders/1GVcZusHnARFCKtb0VUbHAXayr4Ala3LG?usp=drive_link" },
     { id: 41, title: "HLURB Resolution No. 925 S.2015 - Slaughterhouse/Abattoir Guidelines", category: "Memorandum", sub: "Livestock", description: "Amending guidelines for slaughterhouse locational clearance (national/local significance).", refNumber: "Res.925", year: "2015", tags: ["abattoir","slaughter"], docUrl: "https://drive.google.com/file/d/1ZenP7LXP5hwyQqe5JkdHaeo0kw2cEQ2O/view?usp=drive_link" },
     { id: 42, title: "LTFRB MC 2017-030 - Off-Street Terminal Operations", category: "Memorandum", sub: "Transport", description: "Guidelines for transport terminals, off-street parking and terminal standards.", refNumber: "MC 2017-030", year: "2017", tags: ["terminal","transport"], docUrl: "https://drive.google.com/file/d/17ECfbpzFPHw7pWs7pRpkqFbbJ-0UKc2u/view?usp=drive_link" },
-
-    // ===================== DEVELOPMENT CONTROLS (distance requirements, specific standards) ====================
     { id: 43, title: "DENR DAO 2021-07 - Legal Easements Along Seas, Rivers, Lakes, Esteros", category: "Development Control", sub: "Easement", description: "Establishment of legal easements, buffer zones along water bodies.", refNumber: "DAO 2021-07", year: "2021", tags: ["easement","buffer"], docUrl: "https://drive.google.com/drive/u/3/folders/1LcN9vY2ifGyxoNCi_bjenW6thZBcb40x" },
     { id: 44, title: "EMB MC 2014-005 - EIS System Coverage & Requirements", category: "Development Control", sub: "EIA", description: "Screening and standardized requirements under Philippine Environmental Impact Statement System.", refNumber: "MC 2014-005", year: "2014", tags: ["eia","environment"], docUrl: "https://drive.google.com/file/d/1063AuhXTJ3DNomr553Axs6m1r58XulWZ/view?usp=drive_link" },
     { id: 45, title: "BAI AO 04 s.2004 - Distance Between Poultry/Livestock Farms", category: "Development Control", sub: "Agriculture", description: "Regulating minimum distance between livestock and poultry farms.", refNumber: "BAI AO 04", year: "2004", tags: ["livestock","distance"], docUrl: "https://drive.google.com/drive/folders/1AwdYveEgZrrxfTxLmgePGqsgQmp_X7t4?usp=drive_link" },
@@ -333,6 +293,56 @@
     document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add("active");
   }
 
+  // ---------- CLICK-BASED DROPDOWN LOGIC ----------
+  function closeAllDropdowns() {
+    document.querySelectorAll('.dropdown').forEach(drop => drop.classList.remove('open'));
+    document.querySelectorAll('.dropdown-submenu').forEach(sub => sub.classList.remove('open'));
+  }
+
+  function initClickDropdowns() {
+    const certDropdown = document.getElementById('certDropdown');
+    const landUseDropdown = document.getElementById('landUseDropdown');
+    const certBtn = document.getElementById('certBtn');
+    const landUseBtn = document.getElementById('landUseBtn');
+    const clupSubmenu = document.getElementById('clupSubmenu');
+
+    // Toggle main dropdowns on button click
+    if (certBtn && certDropdown) {
+      certBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        closeAllDropdowns();
+        certDropdown.classList.add('open');
+      });
+    }
+    if (landUseBtn && landUseDropdown) {
+      landUseBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        closeAllDropdowns();
+        landUseDropdown.classList.add('open');
+      });
+    }
+
+    // Submenu toggle (CLUP & ZO)
+    if (clupSubmenu) {
+      const subTrigger = clupSubmenu.querySelector('.submenu-trigger');
+      subTrigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        // Close other submenus if needed, but allow this one to toggle
+        document.querySelectorAll('.dropdown-submenu').forEach(sub => {
+          if (sub !== clupSubmenu) sub.classList.remove('open');
+        });
+        clupSubmenu.classList.toggle('open');
+      });
+    }
+
+    // Close dropdowns when clicking anywhere else on the page
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.dropdown') && !e.target.closest('.dropdown-submenu')) {
+        closeAllDropdowns();
+      }
+    });
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
     filterAndRender();
     document.querySelectorAll(".tab-btn").forEach(btn => btn.addEventListener("click", (e) => { switchTab(btn.getAttribute("data-tab")); }));
@@ -342,6 +352,7 @@
     const session = localStorage.getItem("dhsud_session") ? JSON.parse(localStorage.getItem("dhsud_session")) : null;
     const userContainer = document.getElementById("userMenuContainer");
     if (userContainer) userContainer.innerHTML = session ? `<div class="user-menu"><div class="user-avatar">${session.fullName?.charAt(0) || 'U'}</div><span class="user-name">${session.fullName?.split(' ')[0]}</span></div>` : `<div class="login-prompt">🔐 Sign In</div>`;
+    initClickDropdowns();
   });
 </script>
 </body>
