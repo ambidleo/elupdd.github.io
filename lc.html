@@ -297,5 +297,6 @@ checkSession(); renderUserMenu(); fetchRecords();
 window.switchView = switchView; window.updateStatus = updateStatus; window.viewRecord = viewRecord; window.editRecord = editRecord; window.deleteRecord = deleteRecord; window.printRecord = printRecord; window.clearStatusSearch = clearStatusSearch; window.clearAccSearch = clearAccSearch; window.clearForm = clearForm; window.exportToExcel = exportToExcel; window.closeModal = closeModal; window.manualRefresh = manualRefresh;
 window.onclick = function(e) { const modal = document.getElementById("loginModal"); if(e.target === modal) modal.classList.remove("active"); };
 </script>
+  <script src="dropdown.js"></script>
 </body>
 </html>
