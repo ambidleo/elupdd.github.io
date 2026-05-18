@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>DHSUD - LGU Management Suite (Blue)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ===== REFRESHED STYLES - MATCHING issuance.html ===== */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f4f7fc;
+      color: #0f2b3a;
+      line-height: 1.45;
+    }
+    .container { max-width: 1400px; margin: 0 auto; padding: 0 24px; }
+    
+    /* Header & Navigation (same as issuance.html) */
+    header { background: white; border-bottom: 1px solid #eef2ff; position: sticky; top: 0; z-index: 100; backdrop-filter: blur(8px); background: rgba(255,255,255,0.96); }
+    .navbar { display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; flex-wrap: wrap; gap: 1rem; }
+    .logo { font-weight: 800; font-size: 1.2rem; background: linear-gradient(135deg, #1e3a8a, #2563eb); background-clip: text; -webkit-background-clip: text; color: transparent; line-height: 1.3; }
+    .nav-links { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
+    .nav-links a { text-decoration: none; color: #334155; font-weight: 500; font-size: 0.9rem; transition: 0.2s; }
+    .nav-links a:hover { color: #2563eb; }
+    .dropdown { position: relative; display: inline-block; }
+    .dropbtn { background: none; border: none; font-weight: 500; font-size: 0.9rem; color: #334155; cursor: pointer; font-family: inherit; padding: 0.4rem 0; }
+    .dropdown-content { display: none; position: absolute; background: white; min-width: 220px; box-shadow: 0 12px 28px rgba(0,0,0,0.1); border-radius: 16px; z-index: 1000; top: 30px; left: 0; border: 1px solid #eef2ff; padding: 0.3rem 0; }
+    .dropdown-content a { display: block; padding: 0.7rem 1.2rem; color: #1e293b; font-size: 0.8rem; text-decoration: none; }
+    .dropdown-content a:hover { background: #eff6ff; }
+    .dropdown.open .dropdown-content { display: block; }
+    .dropdown-submenu { position: relative; }
+    .submenu-trigger { background: none; border: none; width: 100%; text-align: left; padding: 0.7rem 1.2rem; font-size: 0.8rem; font-weight: 500; color: #1e293b; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-family: inherit; }
+    .submenu-trigger:hover { background: #eff6ff; }
+    .arrow-right { font-size: 0.7rem; margin-left: 1rem; }
+    .submenu-content { display: none; position: absolute; left: 100%; top: 0; background: white; min-width: 180px; box-shadow: 0 12px 28px rgba(0,0,0,0.1); border-radius: 16px; border: 1px solid #eef2ff; z-index: 1001; padding: 0.3rem 0; }
+    .submenu-content a { padding: 0.7rem 1.2rem; }
+    .dropdown-submenu.open .submenu-content { display: block; }
+    .btn-outline { border: 1.5px solid #2563eb; border-radius: 40px; padding: 6px 18px; background: transparent; color: #2563eb; font-weight: 600; cursor: pointer; }
+    .user-menu { display: flex; align-items: center; gap: 0.5rem; background: #f1f5f9; padding: 0.3rem 0.8rem 0.3rem 1rem; border-radius: 60px; cursor: pointer; position: relative; }
+    .user-avatar { width: 32px; height: 32px; background: #2563eb; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; }
+    .login-prompt { background: #f1f5f9; padding: 0.3rem 1rem; border-radius: 40px; cursor: pointer; font-size: 0.85rem; font-weight: 500; }
+    .header-logo-img { height: 42px; margin-left: 12px; background: #f1f5f9; padding: 4px 8px; border-radius: 40px; display: inline-flex; align-items: center; }
+    .header-logo-img img { height: 32px; width: auto; }
+    .role-badge-header { background: #e2e8f0; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.65rem; font-weight: 600; margin-left: 0.5rem; }
+    .role-badge-header.admin { background: #dcfce7; color: #166534; }
+    .role-badge-header.staff { background: #dbeafe; color: #1e40af; }
+    
+    /* Page Hero (matching issuance page-hero) */
+    .page-header {
+      background: linear-gradient(135deg, #0f2b3a 0%, #1e4a6e 100%);
+      color: white;
+      padding: 2.5rem 0;
+      margin-bottom: 2rem;
+      border-radius: 0 0 2rem 2rem;
+      text-align: center;
+    }
+    .page-header h1 { font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .page-header p { opacity: 0.9; max-width: 800px; margin: 0 auto; }
+    
+    /* Stats grid (clean) */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 32px 0; }
+    .stat-card { background: white; padding: 24px; border-radius: 28px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; transition: all 0.2s; }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 12px 20px -12px rgba(0,0,0,0.08); }
+    .stat-number { font-size: 2rem; font-weight: 800; color: #1e3a8a; }
+    
+    /* Hyperlink card */
+    .lgu-hyperlink { background: linear-gradient(135deg, #1e3a8a, #2563eb); border-radius: 28px; padding: 20px; margin-bottom: 30px; text-align: center; }
+    .lgu-hyperlink a { color: white; font-size: 1.2rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 12px; padding: 12px 28px; background: rgba(255,255,255,0.15); border-radius: 50px; transition: 0.3s; }
+    .lgu-hyperlink a:hover { background: rgba(255,255,255,0.25); transform: translateY(-2px); }
+    
+    /* Modal */
+    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); backdrop-filter: blur(4px); }
+    .modal-content { background: white; border-radius: 32px; max-width: 650px; width: 90%; max-height: 85vh; overflow-y: auto; }
+    @keyframes modalFadeIn { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
+    .modal-header { background: linear-gradient(135deg, #1e3a8a, #2563eb); color: white; padding: 20px 24px; border-radius: 32px 32px 0 0; display: flex; justify-content: space-between; align-items: center; }
+    .modal-header h3 { font-size: 1.3rem; margin: 0; }
+    .close-modal { color: white; font-size: 28px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+    .close-modal:hover { color: #94a3b8; }
+    .modal-body { padding: 24px; max-height: 550px; overflow-y: auto; }
+    .selector-group { margin-bottom: 20px; }
+    .selector-group label { display: block; font-weight: 600; margin-bottom: 8px; color: #1e293b; font-size: 0.85rem; }
+    .selector-group select, .selector-group input { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 16px; font-family: 'Inter', sans-serif; background: white; font-size: 0.9rem; }
+    .hidden { display: none; }
+    .selected-info { background: #eef2ff; padding: 12px; border-radius: 20px; margin-bottom: 20px; text-align: center; font-weight: 500; color: #1e40af; }
+    .drive-folder { background: #f8fafc; border-radius: 20px; padding: 16px; margin-bottom: 20px; border: 1px solid #eef2ff; }
+    .drive-folder h4 { color: #0f172a; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; font-weight: 700; }
+    .drive-doc-list { list-style: none; }
+    .drive-doc-list li { padding: 12px 0; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; gap: 12px; }
+    .drive-doc-list li:last-child { border-bottom: none; }
+    .drive-doc-list a { text-decoration: none; color: #2563eb; font-weight: 500; flex: 1; }
+    .drive-doc-list a:hover { text-decoration: underline; }
+    .google-drive-link { background: #eef2ff; border-radius: 20px; padding: 16px; margin-top: 16px; text-align: center; }
+    .btn-drive { display: inline-block; background: #1e3a8a; color: white; padding: 10px 20px; border-radius: 40px; text-decoration: none; margin-top: 10px; font-size: 0.85rem; transition: 0.2s; }
+    .btn-drive:hover { background: #2563eb; }
+    .submit-doc-btn { background: #2563eb; color: white; border: none; padding: 12px 24px; border-radius: 40px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 16px; transition: 0.2s; }
+    .submit-doc-btn:hover { background: #1e3a8a; transform: translateY(-1px); }
+    .note-text { font-size: 0.8rem; color: #64748b; margin-top: 16px; text-align: center; }
+    
+    /* Footer */
+    footer { background: #0f2b3a; color: #cbd5e1; padding: 2rem 0 1.5rem; margin-top: 3rem; }
+    .footer-content { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 2rem; }
+    .copyright { margin-top: 2rem; text-align: center; border-top: 1px solid #2d3a4a; padding-top: 1.5rem; font-size: 0.8rem; }
+    
+    /* Responsive */
+    @media (max-width: 900px) { .stats-grid { gap: 16px; } .modal-content { max-width: 95%; } }
+  </style>
+</head>
+<body>
+<header>
+  <div class="container">
+    <div class="navbar">
+      <div class="header-logo-img"><img src="DHSUD_LOGO.png" alt="DHSUD Logo">DHSUD VI - ELUPDD Integrated Database and Information System</div>
+      <div class="nav-links">
+        <a href="index.html">Home</a>
+        <div class="dropdown auth-required">
+          <button class="dropbtn">Certification</button>
+          <div class="dropdown-content">
+            <a href="lc.html">Locational Clearance</a>
+            <a href="SZC.html">Site Zoning Clarification</a>
+          </div>
+        </div>	
+        <div class="dropdown auth-required">
+          <button class="dropbtn">Land Use Plans</button>
+          <div class="dropdown-content">
+            <div class="dropdown-submenu">
+              <button class="submenu-trigger">CLUP & ZO <span class="arrow-right">▸</span></button>
+              <div class="submenu-content">
+                <a href="inventory.html">Inventory</a>
+                <a href="status.html">Status</a>
+              </div>
+            </div>
+            <a href="status.html">PDPFP</a>
+          </div>
+        </div>
+        <a href="lgu-info.html">LGU Information</a>
+        <a href="report.html" class="auth-required">Reports</a> 
+        <a href="calendar.html" class="auth-required">Calendar of Activities</a>
+        <a href="issuance.html">Issuances</a>
+        <a href="#about">About</a>
+        <a href="#contact">Contact</a>                  
+        <div id="userMenuContainer"></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page-header">
+  <div class="container">
+    <h1>Inventory of CLUP and ZO</h1>
+    <p>Complete catalog of Comprehensive Land Use Plans and Zoning Ordinances</p>
+  </div>
+</div>
+
+<section style="padding: 20px 0 60px;">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-number">342</div><div>Total CLUP Documents</div></div>
+      <div class="stat-card"><div class="stat-number">298</div><div>Total ZO Documents</div></div>
+      <div class="stat-card"><div class="stat-number">156</div><div>LGUs Covered</div></div>
+      <div class="stat-card"><div class="stat-number">89%</div><div>Digitization Rate</div></div>
+    </div>
+    <div class="lgu-hyperlink"><a href="#" id="lguHyperlinkBtn">📁 Click here to access CLUP/ZO Documents <span style="font-size:1.2rem;">📂</span></a></div>
+  </div>
+</section>
+
+<div id="documentModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>📂 CLUP/ZO Documents Viewer</h3>
+      <span class="close-modal">&times;</span>
+    </div>
+    <div class="modal-body">
+      <div class="selector-group">
+        <label>🏛️ Select Province:</label>
+        <select id="provinceSelect">
+          <option value="">-- Select Province --</option>
+          <option value="Aklan">AKLAN</option>
+          <option value="Antique">ANTIQUE</option>
+          <option value="Capiz">CAPIZ</option>
+          <option value="Guimaras">GUIMARAS</option>
+          <option value="Iloilo">ILOILO</option>
+        </select>
+      </div>
+      <div class="selector-group" id="lguSelectorGroup" style="display:none;">
+        <label>🏘️ Select Municipality/City:</label>
+        <select id="lguSelect">
+          <option value="">-- Select LGU --</option>
+        </select>
+      </div>
+      <div id="selectedInfo" class="selected-info hidden">📍 Viewing documents for: <span id="selectedLocation">-</span></div>
+      <div id="documentsContainer" style="display:none;">
+        <div class="drive-folder">
+          <h4>📁 CLUP Documents</h4>
+          <ul class="drive-doc-list" id="clupDocList"><li>Select a province and LGU first</li></ul>
+        </div>
+        <div class="drive-folder">
+          <h4>⚖️ ZO Documents</h4>
+          <ul class="drive-doc-list" id="zoDocList"><li>Select a province and LGU first</li></ul>
+        </div>
+        <div class="drive-folder">
+          <h4>📊 Supporting Documents</h4>
+          <ul class="drive-doc-list" id="supportingDocList"><li>Select a province and LGU first</li></ul>
+        </div>
+        <div class="google-drive-link" id="googleDriveLink" style="display:none;">
+          <p>📁 <strong>Access Full Google Drive Folder:</strong></p>
+          <a href="#" target="_blank" class="btn-drive" id="driveFolderLink">🔗 Open CLUP/ZO Google Drive Folder</a>
+        </div>
+      </div>
+      <div id="requestFormContainer" style="display:none;">
+        <form id="documentRequestForm" onsubmit="return submitDocumentRequest(event)">
+          <div class="selector-group"><label>📝 Request Additional Document:</label><input type="text" placeholder="Enter document name you need" id="requestDocName"></div>
+          <div class="selector-group"><input type="email" placeholder="Your email address" id="requestEmail"></div>
+          <button type="submit" class="submit-doc-btn">📧 Request Document</button>
+        </form>
+      </div>
+      <p class="note-text">💡 Tip: First select a Province, then choose an LGU to view documents</p>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-content">
+      <div>
+        <div style="font-weight:800; font-size:1.4rem;">DHSUD</div>
+        <p style="margin-top:8px; max-width:260px;">ELUPDD Region VI – Site Zoning Certification</p>
+      </div>
+      <div><strong>Contact</strong><br>📞 (033) 123-4567<br>📧 elupdd.region6@dhsud.gov.ph<br>📍 Mandurriao, Iloilo City</div>
+    </div>
+    <div class="copyright">© 2026 DHSUD — Site Zoning Certification System | Western Visayas</div>
+  </div>
+</footer>
+
+<script>
+  function checkUserAccess() {
+    const s = localStorage.getItem("dhsud_session");
+    if (!s) { window.location.href = "login.html"; return false; }
+    try {
+      const ses = JSON.parse(s);
+      if (ses.role !== "admin" && ses.role !== "encoder" && ses.role !== "staff") {
+        alert("Access Denied.");
+        window.location.href = "index.html";
+        return false;
+      }
+      return ses;
+    } catch(e) { window.location.href = "login.html"; return false; }
+  }
+  const currentUser = checkUserAccess();
+  const modal = document.getElementById("documentModal");
+  const hyperlinkBtn = document.getElementById("lguHyperlinkBtn");
+  const closeBtn = document.querySelector(".close-modal");
+  
+  hyperlinkBtn.addEventListener("click", function(e) {
+    e.preventDefault();
+    modal.style.display = "block";
+    document.body.style.overflow = "hidden";
+    resetModalState();
+  });
+  closeBtn.addEventListener("click", function() {
+    modal.style.display = "none";
+    document.body.style.overflow = "auto";
+  });
+  window.addEventListener("click", function(e) {
+    if (e.target === modal) {
+      modal.style.display = "none";
+      document.body.style.overflow = "auto";
+    }
+  });
+  
+  const provinceData = {
+    Aklan: { lgus: ["Altavas","Balete","Banga","Batan","Buruanga","Ibajay","Kalibo","Lezo","Libacao","Madalag","Makato","Malay","Malinao","Nabas","New Washington","Numancia","Tangalan"], driveFolder: "https://drive.google.com/drive/folders/1X3ko9XJe_aIF2v_0Qwf4kvpK4HSrePqo?usp=sharing" },
+    Antique: { lgus: ["Anini-y","Barbaza","Belison","Bugasong","Caluya","Culasi","Hamtic","Laua-an","Libertad","Pandan","Patnongon","San Jose","San Remigio","Sebaste","Sibalom","Tibiao","Tobias Fornier","Valderrama"], driveFolder: "https://drive.google.com/drive/folders/1AntiqueFolder?usp=sharing" },
+    Capiz: { lgus: ["Cuartero","Dao","Dumalag","Dumarao","Ivisan","Jamindan","Ma-ayon","Mambusao","Panay","Panitan","Pilar","Pontevedra","President Roxas","Roxas City","Sapian","Sigma","Tapaz"], driveFolder: "https://drive.google.com/drive/folders/1CapizFolder?usp=sharing" },
+    Guimaras: { lgus: ["Buenavista","Jordan","Nueva Valencia","San Lorenzo","Sibunag"], driveFolder: "https://drive.google.com/drive/folders/1GuimarasFolder?usp=sharing" },
+    Iloilo: { lgus: ["Ajuy","Alimodian","Anilao","Badiangan","Balasan","Banate","Barotac Nuevo","Barotac Viejo","Batad","Bingawan","Cabatuan","Calinog","Carles","Concepcion","Dingle","Dueñas","Dumangas","Estancia","Guimbal","Igbaras","Iloilo City","Janiuay","Lambunao","Leganes","Lemery","Leon","Maasin","Miagao","Mina","New Lucena","Oton","Pavia","Pototan","San Dionisio","San Enrique","San Joaquin","San Miguel","San Rafael","Santa Barbara","Sara","Tigbauan","Tubungan","Zarraga"], driveFolder: "https://drive.google.com/drive/folders/1IloiloFolder?usp=sharing" }
+  };
+  
+  const documentData = {
+    Altavas: { clup: [{ name: "Altavas CLUP 2003-2012.pdf", link: "https://drive.google.com/file/d/1Xo445Gj6onPeMTkOLIpHVpoz3UaVYAFC/view?usp=drive_link" },{ name: "Altavas CLUP Updated 2015.jpeg", link: "https://drive.google.com/file/d/1uz_FQH4idjW4Ws5WfbQCWqQFiCaN_96V/view?usp=drive_link" }], zo: [{ name: "Zoning Ordinance Altavas.pdf", link: "https://drive.google.com/file/d/example/view?usp=drive_link" }], supporting: [{ name: "SP Resolution for Altavas.pdf", link: "https://drive.google.com/file/d/example2/view?usp=drive_link" }] }
+  };
+  
+  function resetModalState() {
+    document.getElementById("provinceSelect").value = "";
+    document.getElementById("lguSelectorGroup").style.display = "none";
+    document.getElementById("documentsContainer").style.display = "none";
+    document.getElementById("requestFormContainer").style.display = "none";
+    document.getElementById("selectedInfo").classList.add("hidden");
+    document.getElementById("lguSelect").innerHTML = '<option value="">-- Select LGU --</option>';
+    document.querySelector(".modal-header h3").innerHTML = "📂 CLUP/ZO Documents Viewer";
+  }
+  
+  const provinceSelect = document.getElementById("provinceSelect");
+  const lguSelect = document.getElementById("lguSelect");
+  const lguSelectorGroup = document.getElementById("lguSelectorGroup");
+  const documentsContainer = document.getElementById("documentsContainer");
+  const requestFormContainer = document.getElementById("requestFormContainer");
+  const selectedInfo = document.getElementById("selectedInfo");
+  const selectedLocationSpan = document.getElementById("selectedLocation");
+  
+  provinceSelect.addEventListener("change", function() {
+    const p = this.value;
+    if (p === "") {
+      lguSelectorGroup.style.display = "none";
+      documentsContainer.style.display = "none";
+      requestFormContainer.style.display = "none";
+      selectedInfo.classList.add("hidden");
+      return;
+    }
+    lguSelectorGroup.style.display = "block";
+    lguSelect.innerHTML = '<option value="">-- Select LGU --</option>';
+    const lgus = provinceData[p]?.lgus || [];
+    lgus.forEach(l => {
+      const opt = document.createElement("option");
+      opt.value = l;
+      opt.textContent = `🏘️ ${l}`;
+      lguSelect.appendChild(opt);
+    });
+    document.querySelector(".modal-header h3").innerHTML = `📂 CLUP/ZO Documents - ${p} Province`;
+  });
+  
+  lguSelect.addEventListener("change", function() {
+    const p = provinceSelect.value;
+    const l = this.value;
+    if (l === "") {
+      documentsContainer.style.display = "none";
+      requestFormContainer.style.display = "none";
+      selectedInfo.classList.add("hidden");
+      return;
+    }
+    documentsContainer.style.display = "block";
+    requestFormContainer.style.display = "block";
+    selectedInfo.classList.remove("hidden");
+    selectedLocationSpan.innerHTML = `${l}, ${p}`;
+    const driveFolderLink = document.getElementById("driveFolderLink");
+    const googleDriveLinkDiv = document.getElementById("googleDriveLink");
+    const folderUrl = provinceData[p]?.driveFolder || "#";
+    driveFolderLink.href = folderUrl;
+    googleDriveLinkDiv.style.display = "block";
+    loadDocumentsForLGU(l);
+  });
+  
+  function loadDocumentsForLGU(lgu) {
+    const data = documentData[lgu] || getDefaultDocuments(lgu);
+    const clupList = document.getElementById("clupDocList");
+    if (data.clup && data.clup.length) clupList.innerHTML = data.clup.map(d => `<li><span class="doc-icon">📄</span> <a href="${d.link}" target="_blank">${d.name}</a></li>`).join("");
+    else clupList.innerHTML = '<li>No CLUP documents available</li>';
+    const zoList = document.getElementById("zoDocList");
+    if (data.zo && data.zo.length) zoList.innerHTML = data.zo.map(d => `<li><span class="doc-icon">📜</span> <a href="${d.link}" target="_blank">${d.name}</a></li>`).join("");
+    else zoList.innerHTML = '<li>No ZO documents available</li>';
+    const supList = document.getElementById("supportingDocList");
+    if (data.supporting && data.supporting.length) supList.innerHTML = data.supporting.map(d => `<li><span class="doc-icon">📊</span> <a href="${d.link}" target="_blank">${d.name}</a></li>`).join("");
+    else supList.innerHTML = '<li>No supporting documents available</li>';
+  }
+  
+  function getDefaultDocuments(lgu) {
+    return {
+      clup: [{ name: `${lgu} CLUP Document.pdf`, link: "https://drive.google.com/drive/folders/1X3ko9XJe_aIF2v_0Qwf4kvpK4HSrePqo?usp=sharing" }],
+      zo: [{ name: `${lgu} Zoning Ordinance.pdf`, link: "https://drive.google.com/drive/folders/1X3ko9XJe_aIF2v_0Qwf4kvpK4HSrePqo?usp=sharing" }],
+      supporting: [{ name: `${lgu} Supporting Documents.pdf`, link: "https://drive.google.com/drive/folders/1X3ko9XJe_aIF2v_0Qwf4kvpK4HSrePqo?usp=sharing" }]
+    };
+  }
+  
+  window.submitDocumentRequest = function(e) {
+    e.preventDefault();
+    const docName = document.getElementById("requestDocName").value;
+    const email = document.getElementById("requestEmail").value;
+    const p = provinceSelect.value;
+    const l = lguSelect.value;
+    if (docName && email) {
+      alert(`✅ Request submitted!\nProvince: ${p}\nLGU: ${l}\nDocument: ${docName}\nEmail: ${email}\n\nWe will send the document link to your email within 24 hours.`);
+      document.getElementById("requestDocName").value = "";
+      document.getElementById("requestEmail").value = "";
+    } else alert("⚠️ Please fill in both document name and email address.");
+    return false;
+  };
+  
+  let dropdownTimeout;
+  document.querySelectorAll(".dropdown").forEach(dd => {
+    const c = dd.querySelector(".dropdown-content");
+    if (!c) return;
+    dd.addEventListener("mouseenter", () => { clearTimeout(dropdownTimeout); c.style.display = "block"; });
+    dd.addEventListener("mouseleave", () => { dropdownTimeout = setTimeout(() => { c.style.display = "none"; }, 250); });
+    c.addEventListener("mouseenter", () => { clearTimeout(dropdownTimeout); c.style.display = "block"; });
+    c.addEventListener("mouseleave", () => { dropdownTimeout = setTimeout(() => { c.style.display = "none"; }, 250); });
+  });
+</script>
+</body>
+</html>
