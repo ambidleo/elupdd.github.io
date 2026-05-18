@@ -217,5 +217,6 @@ function setupNewsTabs() { document.querySelectorAll(".news-tab-btn").forEach(bt
 function init() { checkSession(); renderUserMenu(); loadActivities(); setupNewsTabs(); document.getElementById("prevMonthWidget")?.addEventListener("click",()=>{ widgetCurrentDate.setMonth(widgetCurrentDate.getMonth()-1); renderMiniCalendar(); }); document.getElementById("nextMonthWidget")?.addEventListener("click",()=>{ widgetCurrentDate.setMonth(widgetCurrentDate.getMonth()+1); renderMiniCalendar(); }); window.onclick = function(e) { const modal = document.getElementById("loginModal"); if(e.target === modal) modal.classList.remove("active"); const eventModal = document.getElementById("eventModal"); if(e.target === eventModal) eventModal.style.display = "none"; }; }
 init();
 </script>
+  <script src="dropdown.js"></script>
 </body>
 </html>
